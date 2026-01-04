@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Flame, TrendingUp } from 'lucide-react';
 import { Button, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
+import { useSound } from '@/hooks/useSound';
 import { getLevelFromXp, getXpProgress } from '@/types';
 import type { Lesson } from '@/types';
 
@@ -16,14 +17,26 @@ interface RewardStepProps {
 
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { totalXp, currentStreak } = useStore();
+  const { playComplete, playLevelUp, playXpCount, playStreak } = useSound();
   const [displayXp, setDisplayXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const soundPlayedRef = useRef(false);
 
   const previousXp = totalXp;
   const newTotalXp = totalXp + xpEarned;
   const previousLevel = getLevelFromXp(previousXp);
   const newLevel = getLevelFromXp(newTotalXp);
   const leveledUp = newLevel.level > previousLevel.level;
+
+  // Play initial sounds
+  useEffect(() => {
+    if (!soundPlayedRef.current) {
+      soundPlayedRef.current = true;
+      // Play completion sound and XP counting
+      playComplete();
+      setTimeout(() => playXpCount(Math.min(xpEarned, 15)), 200);
+    }
+  }, [playComplete, playXpCount, xpEarned]);
 
   // Animate XP count
   useEffect(() => {
@@ -39,7 +52,10 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         clearInterval(timer);
 
         if (leveledUp) {
-          setTimeout(() => setShowLevelUp(true), 300);
+          setTimeout(() => {
+            setShowLevelUp(true);
+            playLevelUp();
+          }, 300);
         }
       } else {
         setDisplayXp(Math.floor(current));
@@ -47,7 +63,15 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, [xpEarned, leveledUp]);
+  }, [xpEarned, leveledUp, playLevelUp]);
+
+  // Play streak sound if milestone
+  useEffect(() => {
+    const newStreak = currentStreak + 1;
+    if (newStreak === 7 || newStreak === 14 || newStreak === 30 || newStreak === 100) {
+      setTimeout(() => playStreak(), 1200);
+    }
+  }, [currentStreak, playStreak]);
 
   const xpProgress = getXpProgress(newTotalXp);
 

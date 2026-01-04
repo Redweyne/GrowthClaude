@@ -6,12 +6,14 @@ import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TodaysLesson } from '@/components/home/TodaysLesson';
 import { WorldMap } from '@/components/world/WorldMap';
 import { LessonExperience } from '@/components/lesson/LessonExperience';
+import { PracticeMode } from '@/components/practice';
+import { WeeklyCheckin } from '@/components/checkin';
 import stoicismWorld from '@/content/stoicism';
 
-type AppView = 'home' | 'map' | 'lesson' | 'settings';
+type AppView = 'home' | 'map' | 'lesson' | 'practice' | 'checkin' | 'settings';
 
 export default function Home() {
-  const { onboardingComplete, completedLessons } = useStore();
+  const { onboardingComplete, completedLessons, isCheckinDue } = useStore();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -95,6 +97,26 @@ export default function Home() {
     );
   }
 
+  // Practice mode
+  if (currentView === 'practice') {
+    return (
+      <PracticeMode
+        onComplete={() => setCurrentView('home')}
+        onExit={() => setCurrentView('home')}
+      />
+    );
+  }
+
+  // Weekly check-in
+  if (currentView === 'checkin') {
+    return (
+      <WeeklyCheckin
+        onComplete={() => setCurrentView('home')}
+        onSkip={() => setCurrentView('home')}
+      />
+    );
+  }
+
   // World map
   if (currentView === 'map') {
     return (
@@ -134,6 +156,9 @@ export default function Home() {
       onStartLesson={handleStartLesson}
       onOpenMap={() => setCurrentView('map')}
       onOpenSettings={() => setCurrentView('settings')}
+      onOpenPractice={() => setCurrentView('practice')}
+      onOpenCheckin={() => setCurrentView('checkin')}
+      isCheckinDue={isCheckinDue()}
     />
   );
 }

@@ -2,6 +2,20 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { TransformationGoal } from '@/types';
 
+interface CheckinResponseData {
+  promptId: string;
+  mainResponse: string;
+  followUpResponse?: string;
+}
+
+interface WeeklyCheckinData {
+  id: string;
+  date: string;
+  weekNumber: number;
+  responses: CheckinResponseData[];
+  xpEarned: number;
+}
+
 interface UserState {
   // User identity
   userId: string | null;
@@ -28,6 +42,10 @@ interface UserState {
   // Lesson progress (map of lessonId -> completed)
   completedLessons: Record<string, boolean>;
 
+  // Weekly check-ins
+  weeklyCheckins: WeeklyCheckinData[];
+  lastCheckinDate: string | null;
+
   // Settings
   soundEnabled: boolean;
   hapticEnabled: boolean;
@@ -51,6 +69,11 @@ interface UserActions {
   updateStreak: () => void;
   useGraceDay: () => boolean;
   earnGraceDay: () => void;
+
+  // Weekly check-ins
+  completeWeeklyCheckin: (responses: CheckinResponseData[]) => void;
+  isCheckinDue: () => boolean;
+  getWeekNumber: () => number;
 
   // Settings
   toggleSound: () => void;
@@ -76,6 +99,8 @@ const initialState: UserState = {
   currentWorldSlug: null,
   currentLessonId: null,
   completedLessons: {},
+  weeklyCheckins: [],
+  lastCheckinDate: null,
   soundEnabled: true,
   hapticEnabled: true,
 };
@@ -169,6 +194,53 @@ export const useStore = create<UserState & UserActions>()(
       earnGraceDay: () => {
         const state = get();
         set({ graceDays: Math.min(state.graceDays + 1, 5) }); // Max 5 grace days
+      },
+
+      // Weekly check-in actions
+      getWeekNumber: () => {
+        const state = get();
+        const onboardingDate = state.userId ? new Date() : new Date();
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - onboardingDate.getTime());
+        const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+        return diffWeeks + 1;
+      },
+
+      isCheckinDue: () => {
+        const state = get();
+        const lastCheckin = state.lastCheckinDate;
+
+        // If never done a check-in and completed at least 3 lessons, it's due
+        if (!lastCheckin) {
+          const completedCount = Object.keys(state.completedLessons).length;
+          return completedCount >= 3;
+        }
+
+        // Check if it's been at least 7 days since last check-in
+        const lastDate = new Date(lastCheckin);
+        const now = new Date();
+        const diffDays = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays >= 7;
+      },
+
+      completeWeeklyCheckin: (responses) => {
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+        const xpEarned = 50; // Bonus XP for completing check-in
+
+        const newCheckin: WeeklyCheckinData = {
+          id: crypto.randomUUID(),
+          date: today,
+          weekNumber: get().getWeekNumber(),
+          responses,
+          xpEarned,
+        };
+
+        set({
+          weeklyCheckins: [...state.weeklyCheckins, newCheckin],
+          lastCheckinDate: today,
+          totalXp: state.totalXp + xpEarned,
+        });
       },
 
       // Settings

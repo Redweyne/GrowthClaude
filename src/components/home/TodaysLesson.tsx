@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Play, Flame, Zap, Map, Settings } from 'lucide-react';
+import { Play, Flame, Zap, Map, Settings, Brain, Calendar } from 'lucide-react';
 import { Button, Card, StreakBadge, XPBadge, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp, getXpProgress } from '@/types';
@@ -13,6 +13,9 @@ interface TodaysLessonProps {
   onStartLesson: () => void;
   onOpenMap: () => void;
   onOpenSettings: () => void;
+  onOpenPractice: () => void;
+  onOpenCheckin: () => void;
+  isCheckinDue: boolean;
 }
 
 export function TodaysLesson({
@@ -21,6 +24,9 @@ export function TodaysLesson({
   onStartLesson,
   onOpenMap,
   onOpenSettings,
+  onOpenPractice,
+  onOpenCheckin,
+  isCheckinDue,
 }: TodaysLessonProps) {
   const { name, totalXp, currentStreak, completedLessons } = useStore();
   const level = getLevelFromXp(totalXp);
@@ -70,7 +76,7 @@ export function TodaysLesson({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="mb-8"
+        className="mb-6"
       >
         <Card variant="glass" padding="md">
           <div className="flex items-center justify-between mb-3">
@@ -92,6 +98,31 @@ export function TodaysLesson({
         </Card>
       </motion.div>
 
+      {/* Weekly check-in banner */}
+      {isCheckinDue && (
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          onClick={onOpenCheckin}
+          className="w-full mb-6 p-4 rounded-xl bg-gradient-to-r from-rose-500/20 to-pink-500/20 border border-rose-500/30 flex items-center justify-between hover:from-rose-500/30 hover:to-pink-500/30 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center">
+              <Calendar size={20} className="text-rose-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-white font-medium">Weekly Check-in</p>
+              <p className="text-xs text-zinc-400">Reflect on your progress</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 text-amber-400">
+            <Zap size={14} />
+            <span className="text-sm font-medium">+50 XP</span>
+          </div>
+        </motion.button>
+      )}
+
       {/* Main content - Today's lesson */}
       <div className="flex-1 flex flex-col justify-center">
         {allComplete ? (
@@ -107,12 +138,20 @@ export function TodaysLesson({
             <h2 className="text-2xl font-bold text-white mb-2">
               All caught up!
             </h2>
-            <p className="text-zinc-400 mb-8">
+            <p className="text-zinc-400 mb-6">
               You&apos;ve completed all available lessons in {world.name}.
-              <br />
-              Come back tomorrow for practice sessions.
             </p>
-            <Button variant="secondary" onClick={onOpenMap}>
+            <Button size="lg" onClick={onOpenPractice} className="w-full mb-3">
+              <Brain size={18} className="mr-2" />
+              Practice Mode
+            </Button>
+            {isCheckinDue && (
+              <Button size="lg" variant="secondary" onClick={onOpenCheckin} className="w-full mb-3">
+                <Calendar size={18} className="mr-2" />
+                Weekly Check-in
+              </Button>
+            )}
+            <Button variant="secondary" onClick={onOpenMap} className="w-full">
               <Map size={18} className="mr-2" />
               View Progress
             </Button>
@@ -168,7 +207,7 @@ export function TodaysLesson({
             </Card>
 
             {/* World progress */}
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm mb-4">
               <button
                 onClick={onOpenMap}
                 className="flex items-center gap-2 text-zinc-400 hover:text-zinc-300 transition-colors"
@@ -180,6 +219,28 @@ export function TodaysLesson({
                 {completedCount}/{allLessons.length} complete
               </span>
             </div>
+
+            {/* Practice mode button - only show if there are completed lessons */}
+            {completedCount > 0 && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                onClick={onOpenPractice}
+                className="w-full p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between hover:bg-indigo-500/20 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
+                    <Brain size={20} className="text-indigo-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-medium">Practice Mode</p>
+                    <p className="text-xs text-zinc-500">Reinforce what you&apos;ve learned</p>
+                  </div>
+                </div>
+                <Zap size={16} className="text-amber-400" />
+              </motion.button>
+            )}
           </motion.div>
         )}
       </div>

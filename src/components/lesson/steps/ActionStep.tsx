@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useSound } from '@/hooks/useSound';
 import type { Lesson } from '@/types';
 
 interface ActionStepProps {
@@ -14,6 +15,8 @@ interface ActionStepProps {
 export function ActionStep({ lesson, onComplete }: ActionStepProps) {
   const [timerState, setTimerState] = useState<'idle' | 'running' | 'paused' | 'done'>('idle');
   const [timeRemaining, setTimeRemaining] = useState(lesson.actionDurationSeconds);
+  const { playSuccess, playClick } = useSound();
+  const soundPlayedRef = useRef(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -32,6 +35,19 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
 
     return () => clearInterval(interval);
   }, [timerState, timeRemaining]);
+
+  // Play sound when timer completes
+  useEffect(() => {
+    if (timerState === 'done' && !soundPlayedRef.current) {
+      soundPlayedRef.current = true;
+      playSuccess();
+    }
+  }, [timerState, playSuccess]);
+
+  const handleStartTimer = () => {
+    playClick();
+    setTimerState('running');
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -141,7 +157,7 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
         <div className="flex items-center justify-center gap-4">
           {timerState === 'idle' && (
             <Button
-              onClick={() => setTimerState('running')}
+              onClick={handleStartTimer}
               className="flex items-center gap-2"
             >
               <Play size={20} />
@@ -172,6 +188,7 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
                 onClick={() => {
                   setTimeRemaining(lesson.actionDurationSeconds);
                   setTimerState('idle');
+                  soundPlayedRef.current = false;
                 }}
               >
                 <RotateCcw size={20} />
