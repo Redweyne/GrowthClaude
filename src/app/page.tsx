@@ -1,0 +1,139 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useStore } from '@/store/useStore';
+import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
+import { TodaysLesson } from '@/components/home/TodaysLesson';
+import { WorldMap } from '@/components/world/WorldMap';
+import { LessonExperience } from '@/components/lesson/LessonExperience';
+import stoicismWorld from '@/content/stoicism';
+
+type AppView = 'home' | 'map' | 'lesson' | 'settings';
+
+export default function Home() {
+  const { onboardingComplete, completedLessons } = useStore();
+  const [currentView, setCurrentView] = useState<AppView>('home');
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Handle hydration mismatch
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Get current world (for MVP, just Stoicism)
+  const currentWorld = stoicismWorld;
+
+  // Find the next incomplete lesson
+  const getNextLesson = () => {
+    for (const chapter of currentWorld.chapters) {
+      for (const lesson of chapter.lessons) {
+        if (!completedLessons[lesson.id]) {
+          return lesson;
+        }
+      }
+    }
+    return null;
+  };
+
+  // Get a specific lesson by ID
+  const getLessonById = (id: string) => {
+    for (const chapter of currentWorld.chapters) {
+      for (const lesson of chapter.lessons) {
+        if (lesson.id === id) {
+          return lesson;
+        }
+      }
+    }
+    return null;
+  };
+
+  const nextLesson = getNextLesson();
+  const selectedLesson = selectedLessonId ? getLessonById(selectedLessonId) : null;
+
+  // Handle lesson start from home
+  const handleStartLesson = () => {
+    if (nextLesson) {
+      setSelectedLessonId(nextLesson.id);
+      setCurrentView('lesson');
+    }
+  };
+
+  // Handle lesson select from map
+  const handleSelectLesson = (lessonId: string) => {
+    setSelectedLessonId(lessonId);
+    setCurrentView('lesson');
+  };
+
+  // Handle lesson completion
+  const handleLessonComplete = () => {
+    setSelectedLessonId(null);
+    setCurrentView('home');
+  };
+
+  // Loading state for hydration
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-4 border-zinc-800 border-t-indigo-500 animate-spin" />
+      </div>
+    );
+  }
+
+  // Onboarding flow
+  if (!onboardingComplete) {
+    return <OnboardingFlow />;
+  }
+
+  // Lesson experience
+  if (currentView === 'lesson' && selectedLesson) {
+    return (
+      <LessonExperience
+        lesson={selectedLesson}
+        onComplete={handleLessonComplete}
+      />
+    );
+  }
+
+  // World map
+  if (currentView === 'map') {
+    return (
+      <div>
+        <button
+          onClick={() => setCurrentView('home')}
+          className="fixed top-4 left-4 z-50 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors text-sm"
+        >
+          ← Back
+        </button>
+        <WorldMap world={currentWorld} onSelectLesson={handleSelectLesson} />
+      </div>
+    );
+  }
+
+  // Settings (simple placeholder for now)
+  if (currentView === 'settings') {
+    return (
+      <div className="min-h-screen bg-zinc-950 p-6">
+        <button
+          onClick={() => setCurrentView('home')}
+          className="mb-8 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors text-sm"
+        >
+          ← Back
+        </button>
+        <h1 className="text-2xl font-bold text-white mb-4">Settings</h1>
+        <p className="text-zinc-400">Settings coming soon...</p>
+      </div>
+    );
+  }
+
+  // Home - Today's Lesson
+  return (
+    <TodaysLesson
+      lesson={nextLesson}
+      world={currentWorld}
+      onStartLesson={handleStartLesson}
+      onOpenMap={() => setCurrentView('map')}
+      onOpenSettings={() => setCurrentView('settings')}
+    />
+  );
+}

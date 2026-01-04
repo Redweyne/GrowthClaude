@@ -1,0 +1,306 @@
+// Transformation Hub - Database Schema
+// A Duolingo-style app for personal transformation
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================
+// USER & IDENTITY
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Profile
+  name      String?
+  avatarUrl String?
+
+  // Onboarding answers - defines their transformation goal
+  transformationGoal    String? // "calmer", "disciplined", "confident", "leader", "focused"
+  whyStatement          String? // Their personal "why" - free text
+  dailyCommitmentMinutes Int     @default(5) // 3, 5, 10, 15 minutes
+
+  // Gamification
+  totalXp       Int @default(0)
+  currentLevel  Int @default(1)
+  currentStreak Int @default(0)
+  longestStreak Int @default(0)
+  graceDays     Int @default(1) // Earned streak protection
+
+  // Timestamps for streak calculation
+  lastLessonAt    DateTime?
+  streakStartDate DateTime?
+
+  // Settings
+  notificationsEnabled Boolean @default(true)
+  preferredTime        String? // "morning", "afternoon", "evening"
+  soundEnabled         Boolean @default(true)
+  hapticEnabled        Boolean @default(true)
+
+  // Onboarding complete
+  onboardingComplete Boolean @default(false)
+
+  // Relations
+  lessonProgress   LessonProgress[]
+  reflections      Reflection[]
+  achievements     UserAchievement[]
+  streakHistory    StreakRecord[]
+  practiceHistory  PracticeSession[]
+  identityStatements IdentityStatement[]
+  weeklyCheckIns   WeeklyCheckIn[]
+
+  @@map("users")
+}
+
+// ============================================
+// WISDOM WORLDS - CONTENT STRUCTURE
+// ============================================
+
+model World {
+  id          String   @id @default(cuid())
+  slug        String   @unique // "stoicism", "atomic-habits"
+  name        String   // "Stoicism"
+  subtitle    String   // "The Art of Inner Peace"
+  description String   // Longer description
+  iconName    String   // Icon identifier
+  color       String   // Primary color hex
+  order       Int      // Display order
+  isPremium   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+
+  // Metadata
+  estimatedDays   Int // How many days to complete
+  totalLessons    Int // Pre-calculated for display
+
+  chapters Chapter[]
+
+  @@map("worlds")
+}
+
+model Chapter {
+  id          String @id @default(cuid())
+  worldId     String
+  slug        String // "perception", "action", "will"
+  name        String // "Perception"
+  subtitle    String // "See clearly before you act"
+  description String
+  order       Int    // Order within world
+  iconName    String
+
+  world   World    @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@unique([worldId, slug])
+  @@map("chapters")
+}
+
+model Lesson {
+  id        String @id @default(cuid())
+  chapterId String
+  slug      String // "the-dichotomy-of-control"
+  order     Int    // Order within chapter
+
+  // Core content
+  title         String   // "The Dichotomy of Control"
+  wisdomText    String   // The teaching (≤120 words)
+  wisdomSource  String?  // "Marcus Aurelius" or "James Clear"
+
+  // Micro-action
+  actionPrompt     String // "For the next 2 minutes, write down..."
+  actionType       String // "write", "reflect", "observe", "breathe", "act"
+  actionDurationSeconds Int @default(120)
+
+  // Reflection
+  reflectionPrompt String // "What did you notice about..."
+
+  // Mentor responses (randomized selection)
+  mentorResponses String // JSON array of possible responses
+
+  // Gamification
+  xpReward Int @default(10)
+
+  // For spaced repetition
+  coreConceptTag String // Used to resurface in practice
+
+  chapter          Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  progress         LessonProgress[]
+  reflections      Reflection[]
+  practiceHistory  PracticeSession[]
+
+  @@unique([chapterId, slug])
+  @@map("lessons")
+}
+
+// ============================================
+// USER PROGRESS & HISTORY
+// ============================================
+
+model LessonProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+
+  // Completion tracking
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+
+  // Quality metrics (for spaced repetition weight)
+  actionCompleted    Boolean @default(false)
+  reflectionWritten  Boolean @default(false)
+  timeSpentSeconds   Int     @default(0)
+
+  // XP earned (can vary with bonuses)
+  xpEarned Int @default(0)
+
+  // For spaced repetition
+  lastPracticedAt DateTime?
+  practiceCount   Int       @default(0)
+  masteryLevel    Int       @default(0) // 0-5, like Duolingo crowns
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+model Reflection {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+
+  // The reflection content
+  content     String
+  wordCount   Int
+
+  // Sentiment tracking (optional, for analytics)
+  sentiment   String? // "positive", "neutral", "challenging"
+
+  // Was the action actually done?
+  actionHonesty String? // "yes", "partially", "no" - user self-report
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("reflections")
+}
+
+// ============================================
+// STREAKS & GAMIFICATION
+// ============================================
+
+model StreakRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime // The day
+  completed Boolean  @default(true)
+
+  // Was grace day used?
+  graceDayUsed Boolean @default(false)
+
+  // XP earned that day
+  xpEarned Int @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("streak_records")
+}
+
+model UserAchievement {
+  id         String   @id @default(cuid())
+  userId     String
+  achievementId String
+  unlockedAt DateTime @default(now())
+
+  // Achievement metadata stored here for flexibility
+  achievementName String
+  achievementDescription String
+  achievementIcon String
+  xpBonus Int @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// ============================================
+// SPACED REPETITION / PRACTICE
+// ============================================
+
+model PracticeSession {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  createdAt DateTime @default(now())
+
+  // Practice type
+  practiceType String // "scenario", "recall", "application"
+
+  // Content
+  scenarioText String? // The practice scenario presented
+  userResponse String? // What they wrote/chose
+
+  // Scoring
+  completed Boolean @default(false)
+  xpEarned  Int     @default(0)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("practice_sessions")
+}
+
+// ============================================
+// IDENTITY EVOLUTION
+// ============================================
+
+model IdentityStatement {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+
+  // "I am someone who..."
+  statement String
+
+  // Context
+  triggeredByLessonId String?
+  worldSlug           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("identity_statements")
+}
+
+model WeeklyCheckIn {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+  weekOf    DateTime // Start of the week
+
+  // Self-assessment questions (1-5 scale)
+  awarenessRating    Int? // "How aware were you of your reactions?"
+  actionRating       Int? // "How often did you apply what you learned?"
+  progressFeeling    Int? // "How do you feel about your progress?"
+
+  // Free text
+  biggestWin         String?
+  biggestChallenge   String?
+  nextWeekIntention  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekOf])
+  @@map("weekly_check_ins")
+}
