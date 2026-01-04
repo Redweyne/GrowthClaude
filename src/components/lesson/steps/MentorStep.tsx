@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -19,34 +19,34 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
-  // Select mentor response
-  const getMentorMessage = () => {
+  // Memoize the mentor message so it doesn't change on re-renders
+  const personalizedMessage = useMemo(() => {
+    let message: string;
+
     // Check for streak milestone first
     const streakMessage = getStreakMilestoneMessage(currentStreak + 1);
     if (streakMessage) {
-      return streakMessage;
+      message = streakMessage;
+    } else if (lesson.mentorResponses.length > 0) {
+      // Get a lesson-specific response
+      message = lesson.mentorResponses[Math.floor(Math.random() * lesson.mentorResponses.length)];
+    } else if (reflection.length > 100) {
+      // Fall back to generic responses
+      message = getRandomMentorResponse(MENTOR_RESPONSES.reflectionWritten);
+    } else {
+      message = getRandomMentorResponse(MENTOR_RESPONSES.lessonComplete);
     }
 
-    // Try to get a lesson-specific response
-    if (lesson.mentorResponses.length > 0) {
-      return lesson.mentorResponses[Math.floor(Math.random() * lesson.mentorResponses.length)];
-    }
-
-    // Fall back to generic responses
-    if (reflection.length > 100) {
-      return getRandomMentorResponse(MENTOR_RESPONSES.reflectionWritten);
-    }
-    return getRandomMentorResponse(MENTOR_RESPONSES.lessonComplete);
-  };
-
-  const mentorMessage = getMentorMessage();
-  const personalizedMessage = name
-    ? mentorMessage.replace(/^/, `${name}, `)
-    : mentorMessage;
+    // Personalize with name
+    return name ? `${name}, ${message.charAt(0).toLowerCase()}${message.slice(1)}` : message;
+  }, [lesson.id]); // Only recalculate if lesson changes
 
   // Typewriter effect
   useEffect(() => {
     let index = 0;
+    setDisplayedText('');
+    setIsTyping(true);
+
     const timer = setInterval(() => {
       if (index < personalizedMessage.length) {
         setDisplayedText(personalizedMessage.slice(0, index + 1));
