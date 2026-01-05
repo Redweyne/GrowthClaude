@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Feather } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useSound } from '@/hooks/useSound';
 import type { Lesson } from '@/types';
 
 interface ReflectionStepProps {
@@ -13,9 +14,13 @@ interface ReflectionStepProps {
 
 export function ReflectionStep({ lesson, onComplete }: ReflectionStepProps) {
   const [reflection, setReflection] = useState('');
+  const { playTap, playSuccess, playWhoosh } = useSound();
   const minCharacters = 20;
 
   const handleSubmit = () => {
+    playTap();
+    playSuccess();
+    playWhoosh();
     onComplete(reflection.trim());
   };
 

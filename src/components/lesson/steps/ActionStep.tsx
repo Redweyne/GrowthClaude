@@ -15,7 +15,7 @@ interface ActionStepProps {
 export function ActionStep({ lesson, onComplete }: ActionStepProps) {
   const [timerState, setTimerState] = useState<'idle' | 'running' | 'paused' | 'done'>('idle');
   const [timeRemaining, setTimeRemaining] = useState(lesson.actionDurationSeconds);
-  const { playSuccess, playClick } = useSound();
+  const { playSuccess, playTap, playCorrect, playWhoosh, playDing } = useSound();
   const soundPlayedRef = useRef(false);
 
   useEffect(() => {
@@ -45,8 +45,34 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
   }, [timerState, playSuccess]);
 
   const handleStartTimer = () => {
-    playClick();
+    playTap();
+    playDing();
     setTimerState('running');
+  };
+
+  const handlePause = () => {
+    playTap();
+    setTimerState('paused');
+  };
+
+  const handleResume = () => {
+    playTap();
+    setTimerState('running');
+  };
+
+  const handleReset = () => {
+    playTap();
+    setTimeRemaining(lesson.actionDurationSeconds);
+    setTimerState('idle');
+    soundPlayedRef.current = false;
+  };
+
+  const handleComplete = (completed: boolean) => {
+    if (completed) {
+      playCorrect();
+    }
+    playWhoosh();
+    onComplete(completed);
   };
 
   const formatTime = (seconds: number) => {
@@ -167,7 +193,7 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
           {timerState === 'running' && (
             <Button
               variant="secondary"
-              onClick={() => setTimerState('paused')}
+              onClick={handlePause}
               className="flex items-center gap-2"
             >
               <Pause size={20} />
@@ -177,7 +203,7 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
           {timerState === 'paused' && (
             <>
               <Button
-                onClick={() => setTimerState('running')}
+                onClick={handleResume}
                 className="flex items-center gap-2"
               >
                 <Play size={20} />
@@ -185,11 +211,7 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => {
-                  setTimeRemaining(lesson.actionDurationSeconds);
-                  setTimerState('idle');
-                  soundPlayedRef.current = false;
-                }}
+                onClick={handleReset}
               >
                 <RotateCcw size={20} />
               </Button>
@@ -217,14 +239,14 @@ export function ActionStep({ lesson, onComplete }: ActionStepProps) {
       >
         <Button
           size="lg"
-          onClick={() => onComplete(true)}
+          onClick={() => handleComplete(true)}
           className="w-full"
           disabled={timerState === 'idle'}
         >
           I did it
         </Button>
         <button
-          onClick={() => onComplete(false)}
+          onClick={() => handleComplete(false)}
           className="w-full text-zinc-500 hover:text-zinc-400 text-sm transition-colors py-2"
         >
           I couldn&apos;t do it this time (that&apos;s okay)

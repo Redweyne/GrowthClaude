@@ -18,7 +18,7 @@ interface RewardStepProps {
 
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { totalXp, currentStreak, lastLessonDate } = useStore();
-  const { playLevelUp, playXpCount, playStreak } = useSound();
+  const { playLevelUp, playXpCount, playStreak, playCelebration, playTap, playWhoosh } = useSound();
   const [displayXp, setDisplayXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const soundsPlayedRef = useRef(false);
@@ -40,44 +40,54 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
   // Animate XP count and play sounds
   useEffect(() => {
-    const duration = 1000;
-    const steps = 20;
-    const increment = xpEarned / steps;
+    // Start with a small delay to let the animation feel impactful
+    const startDelay = 300;
+    const duration = 800;
+    const steps = Math.min(xpEarned, 25); // More steps for larger XP
+    const stepDuration = duration / steps;
     let current = 0;
 
     // Play XP counting sounds (only once)
     if (!soundsPlayedRef.current) {
       soundsPlayedRef.current = true;
-      setTimeout(() => playXpCount(Math.min(xpEarned, 15)), 200);
     }
 
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= xpEarned) {
-        setDisplayXp(xpEarned);
-        clearInterval(timer);
+    // Initial delay before counting starts
+    const delayTimer = setTimeout(() => {
+      // Play sound ticks with the count
+      playXpCount(Math.min(xpEarned, 20));
 
-        if (leveledUp) {
-          setTimeout(() => {
-            setShowLevelUp(true);
-            playLevelUp();
-          }, 300);
-        }
+      const timer = setInterval(() => {
+        current += 1;
+        if (current >= xpEarned) {
+          setDisplayXp(xpEarned);
+          clearInterval(timer);
 
-        // Play streak sound for milestones (only if streak is actually increasing)
-        if (isFirstLessonToday) {
-          const streakMilestones = [7, 14, 30, 50, 100];
-          if (streakMilestones.includes(predictedStreak)) {
-            setTimeout(() => playStreak(), 600);
+          if (leveledUp) {
+            setTimeout(() => {
+              setShowLevelUp(true);
+              playLevelUp();
+              playCelebration();
+            }, 300);
           }
-        }
-      } else {
-        setDisplayXp(Math.floor(current));
-      }
-    }, duration / steps);
 
-    return () => clearInterval(timer);
-  }, [xpEarned, leveledUp, playLevelUp, playXpCount, playStreak, isFirstLessonToday, predictedStreak]);
+          // Play streak sound for milestones (only if streak is actually increasing)
+          if (isFirstLessonToday) {
+            const streakMilestones = [7, 14, 30, 50, 100];
+            if (streakMilestones.includes(predictedStreak)) {
+              setTimeout(() => playStreak(), 600);
+            }
+          }
+        } else {
+          setDisplayXp(current);
+        }
+      }, stepDuration);
+
+      return () => clearInterval(timer);
+    }, startDelay);
+
+    return () => clearTimeout(delayTimer);
+  }, [xpEarned, leveledUp, playLevelUp, playXpCount, playStreak, playCelebration, isFirstLessonToday, predictedStreak]);
 
   const xpProgress = getXpProgress(newTotalXp);
   const [showConfetti, setShowConfetti] = useState(true);
@@ -275,7 +285,15 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
       >
-        <Button size="lg" onClick={onComplete} className="w-full">
+        <Button
+          size="lg"
+          onClick={() => {
+            playTap();
+            playWhoosh();
+            onComplete();
+          }}
+          className="w-full"
+        >
           Continue to Mentor
         </Button>
       </motion.div>

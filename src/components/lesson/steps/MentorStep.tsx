@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui';
 import { SageAvatar, type SageMood } from '@/components/mentor';
+import { useSound } from '@/hooks/useSound';
 import { useStore } from '@/store/useStore';
 import { MENTOR, getRandomMentorResponse, MENTOR_RESPONSES, getStreakMilestoneMessage } from '@/content/mentor';
 import type { Lesson } from '@/types';
@@ -16,6 +17,7 @@ interface MentorStepProps {
 
 export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) {
   const { name, currentStreak } = useStore();
+  const { playTap, playSparkle, playCelebration } = useSound();
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
@@ -143,7 +145,15 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
       >
         <Button
           size="lg"
-          onClick={onComplete}
+          onClick={() => {
+            playTap();
+            if (sageMood === 'celebrating') {
+              playCelebration();
+            } else {
+              playSparkle();
+            }
+            onComplete();
+          }}
           disabled={isTyping}
           className="w-full"
         >

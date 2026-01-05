@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Quote } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useSound } from '@/hooks/useSound';
 import type { Lesson } from '@/types';
 
 interface WisdomStepProps {
@@ -11,6 +12,14 @@ interface WisdomStepProps {
 }
 
 export function WisdomStep({ lesson, onComplete }: WisdomStepProps) {
+  const { playTap, playWhoosh } = useSound();
+
+  const handleContinue = () => {
+    playTap();
+    playWhoosh();
+    onComplete();
+  };
+
   return (
     <div className="text-center">
       {/* Lesson number */}
@@ -72,7 +81,7 @@ export function WisdomStep({ lesson, onComplete }: WisdomStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <Button size="lg" onClick={onComplete} className="w-full">
+        <Button size="lg" onClick={handleContinue} className="w-full">
           I understand. What&apos;s the practice?
         </Button>
       </motion.div>
