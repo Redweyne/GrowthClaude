@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WisdomStep } from './steps/WisdomStep';
 import { ActionStep } from './steps/ActionStep';
@@ -9,6 +9,7 @@ import { RewardStep } from './steps/RewardStep';
 import { MentorStep } from './steps/MentorStep';
 import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
+import { useSound } from '@/hooks/useSound';
 
 interface LessonExperienceProps {
   lesson: Lesson;
@@ -22,16 +23,11 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const [reflection, setReflection] = useState('');
   const [actionCompleted, setActionCompleted] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
-  const { completeLesson, currentStreak, soundEnabled } = useStore();
-
-  // Play sound effect
-  const playSound = (type: 'complete' | 'xp' | 'levelup') => {
-    if (!soundEnabled) return;
-    // Sound implementation would go here
-    // For now, we'll use the Web Audio API or a library
-  };
+  const { completeLesson, currentStreak, lastLessonDate } = useStore();
+  const { playComplete, playReward, initAudio } = useSound();
 
   const handleWisdomComplete = () => {
+    initAudio(); // Initialize audio on first user interaction
     setStage('action');
   };
 
@@ -58,7 +54,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     xp = Math.round(xp * (1 + streakBonus));
 
     setXpEarned(xp);
-    playSound('complete');
+    playReward(); // Play sound on user action
     setStage('reward');
   };
 
@@ -69,6 +65,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const handleMentorComplete = () => {
     // Save lesson completion to store
     completeLesson(lesson.id, xpEarned);
+    playComplete(); // Play completion sound
     onComplete();
   };
 

@@ -6,7 +6,7 @@ import { Zap, Flame, TrendingUp } from 'lucide-react';
 import { Button, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
-import { getLevelFromXp, getXpProgress } from '@/types';
+import { getLevelFromXp, getXpProgress, LEVELS } from '@/types';
 import type { Lesson } from '@/types';
 
 interface RewardStepProps {
@@ -16,11 +16,11 @@ interface RewardStepProps {
 }
 
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
-  const { totalXp, currentStreak } = useStore();
-  const { playComplete, playLevelUp, playXpCount, playStreak } = useSound();
+  const { totalXp, currentStreak, lastLessonDate } = useStore();
+  const { playLevelUp, playXpCount, playStreak } = useSound();
   const [displayXp, setDisplayXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const soundPlayedRef = useRef(false);
+  const soundsPlayedRef = useRef(false);
 
   const previousXp = totalXp;
   const newTotalXp = totalXp + xpEarned;
@@ -28,22 +28,27 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const newLevel = getLevelFromXp(newTotalXp);
   const leveledUp = newLevel.level > previousLevel.level;
 
-  // Play initial sounds
-  useEffect(() => {
-    if (!soundPlayedRef.current) {
-      soundPlayedRef.current = true;
-      // Play completion sound and XP counting
-      playComplete();
-      setTimeout(() => playXpCount(Math.min(xpEarned, 15)), 200);
-    }
-  }, [playComplete, playXpCount, xpEarned]);
+  // Calculate what streak will be after this lesson
+  const today = new Date().toISOString().split('T')[0];
+  const isFirstLessonToday = lastLessonDate !== today;
+  const predictedStreak = isFirstLessonToday ? currentStreak + 1 : currentStreak;
 
-  // Animate XP count
+  // Check if max level
+  const nextLevel = LEVELS.find(l => l.level === newLevel.level + 1);
+  const isMaxLevel = !nextLevel;
+
+  // Animate XP count and play sounds
   useEffect(() => {
     const duration = 1000;
     const steps = 20;
     const increment = xpEarned / steps;
     let current = 0;
+
+    // Play XP counting sounds (only once)
+    if (!soundsPlayedRef.current) {
+      soundsPlayedRef.current = true;
+      setTimeout(() => playXpCount(Math.min(xpEarned, 15)), 200);
+    }
 
     const timer = setInterval(() => {
       current += increment;
@@ -57,21 +62,21 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             playLevelUp();
           }, 300);
         }
+
+        // Play streak sound for milestones (only if streak is actually increasing)
+        if (isFirstLessonToday) {
+          const streakMilestones = [7, 14, 30, 50, 100];
+          if (streakMilestones.includes(predictedStreak)) {
+            setTimeout(() => playStreak(), 600);
+          }
+        }
       } else {
         setDisplayXp(Math.floor(current));
       }
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, [xpEarned, leveledUp, playLevelUp]);
-
-  // Play streak sound if milestone
-  useEffect(() => {
-    const newStreak = currentStreak + 1;
-    if (newStreak === 7 || newStreak === 14 || newStreak === 30 || newStreak === 100) {
-      setTimeout(() => playStreak(), 1200);
-    }
-  }, [currentStreak, playStreak]);
+  }, [xpEarned, leveledUp, playLevelUp, playXpCount, playStreak, isFirstLessonToday, predictedStreak]);
 
   const xpProgress = getXpProgress(newTotalXp);
 
@@ -143,13 +148,18 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       >
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-zinc-400">{newLevel.title}</span>
-          <span className="text-sm text-zinc-400">
-            Level {newLevel.level + 1}
-          </span>
+          {!isMaxLevel && (
+            <span className="text-sm text-zinc-400">
+              {nextLevel?.title}
+            </span>
+          )}
         </div>
-        <ProgressBar progress={xpProgress.percentage} color="indigo" />
+        <ProgressBar progress={isMaxLevel ? 100 : xpProgress.percentage} color="indigo" />
         <p className="text-xs text-zinc-500 mt-2">
-          {xpProgress.current} / {xpProgress.needed === Infinity ? '∞' : xpProgress.needed} XP
+          {isMaxLevel
+            ? `${newTotalXp} XP total - Max level reached!`
+            : `${xpProgress.current} / ${xpProgress.needed} XP to next level`
+          }
         </p>
       </motion.div>
 
@@ -166,8 +176,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         >
           <Flame size={24} className="text-orange-500 fill-orange-500" />
         </motion.div>
-        <span className="text-xl font-bold text-white">{currentStreak + 1}</span>
-        <span className="text-zinc-400">day streak</span>
+        <span className="text-xl font-bold text-white">{predictedStreak}</span>
+        <span className="text-zinc-400">day streak{isFirstLessonToday && predictedStreak > currentStreak ? ' 🔥' : ''}</span>
       </motion.div>
 
       {/* Lesson title reminder */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 
 type SoundType =
@@ -65,28 +65,46 @@ const SOUND_CONFIGS: Record<SoundType, { frequencies: number[]; durations: numbe
   },
 };
 
+// Singleton AudioContext to persist across hook instances
+let globalAudioContext: AudioContext | null = null;
+let audioContextInitialized = false;
+
+function getGlobalAudioContext(): AudioContext {
+  if (!globalAudioContext) {
+    globalAudioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+  }
+  return globalAudioContext;
+}
+
 export function useSound() {
   const { soundEnabled } = useStore();
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const pendingSoundsRef = useRef<SoundType[]>([]);
 
-  // Initialize audio context on first interaction
-  const getAudioContext = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-    }
-    return audioContextRef.current;
-  }, []);
-
-  // Play a synthesized sound
-  const playSound = useCallback((type: SoundType) => {
-    if (!soundEnabled) return;
+  // Initialize audio context - must be called from user interaction
+  const initAudio = useCallback(() => {
+    if (audioContextInitialized) return;
 
     try {
-      const ctx = getAudioContext();
+      const ctx = getGlobalAudioContext();
       if (ctx.state === 'suspended') {
         ctx.resume();
       }
+      audioContextInitialized = true;
 
+      // Play any pending sounds
+      pendingSoundsRef.current.forEach(type => {
+        playSoundInternal(type);
+      });
+      pendingSoundsRef.current = [];
+    } catch (error) {
+      console.warn('Audio initialization failed:', error);
+    }
+  }, []);
+
+  // Internal play function
+  const playSoundInternal = useCallback((type: SoundType) => {
+    try {
+      const ctx = getGlobalAudioContext();
       const config = SOUND_CONFIGS[type];
       let startTime = ctx.currentTime;
 
@@ -113,7 +131,33 @@ export function useSound() {
     } catch (error) {
       console.warn('Sound playback failed:', error);
     }
-  }, [soundEnabled, getAudioContext]);
+  }, []);
+
+  // Play a synthesized sound
+  const playSound = useCallback((type: SoundType) => {
+    if (!soundEnabled) return;
+
+    // Initialize audio context on first sound attempt
+    if (!audioContextInitialized) {
+      initAudio();
+    }
+
+    try {
+      const ctx = getGlobalAudioContext();
+
+      // Resume if suspended (e.g., after tab switch)
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(() => {
+          playSoundInternal(type);
+        });
+        return;
+      }
+
+      playSoundInternal(type);
+    } catch (error) {
+      console.warn('Sound playback failed:', error);
+    }
+  }, [soundEnabled, initAudio, playSoundInternal]);
 
   // Play XP counting sound (multiple ticks)
   const playXpCount = useCallback((count: number) => {
@@ -127,18 +171,10 @@ export function useSound() {
     }
   }, [soundEnabled, playSound]);
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
-
   return {
     playSound,
     playXpCount,
+    initAudio, // Expose for initializing on user interaction
     playComplete: () => playSound('complete'),
     playStreak: () => playSound('streak'),
     playLevelUp: () => playSound('levelUp'),
