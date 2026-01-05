@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useStore } from '@/store/useStore';
 import { MENTOR, getRandomMentorResponse, MENTOR_RESPONSES, getStreakMilestoneMessage } from '@/content/mentor';
 import type { Lesson } from '@/types';
@@ -60,6 +60,19 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
     return () => clearInterval(timer);
   }, [personalizedMessage]);
 
+  // Determine Sage's mood based on context
+  const sageMood: SageMood = useMemo(() => {
+    if (isTyping) return 'thinking';
+    // Celebrating for streak milestones
+    if (currentStreak > 0 && [7, 14, 30, 50, 100].includes(currentStreak + 1)) {
+      return 'celebrating';
+    }
+    // Proud for good reflections
+    if (reflection.length > 100) return 'proud';
+    // Default encouraging
+    return 'encouraging';
+  }, [isTyping, currentStreak, reflection.length]);
+
   return (
     <div className="text-center">
       {/* Mentor avatar */}
@@ -67,9 +80,9 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
         initial={{ scale: 0, rotate: -10 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200 }}
-        className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-2xl shadow-indigo-500/30"
+        className="mx-auto mb-6"
       >
-        <Sparkles size={36} className="text-white" />
+        <SageAvatar mood={sageMood} size="lg" />
       </motion.div>
 
       {/* Mentor name */}
@@ -88,18 +101,18 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8 text-left relative"
+        className="bg-gradient-to-br from-stone-900 to-stone-950 border border-amber-900/20 rounded-2xl p-6 mb-8 text-left relative shadow-lg shadow-amber-900/5"
       >
         {/* Speech bubble pointer */}
-        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-zinc-900 border-l border-t border-zinc-800 rotate-45" />
+        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-stone-900 border-l border-t border-amber-900/20 rotate-45" />
 
-        <p className="text-zinc-300 leading-relaxed">
+        <p className="text-stone-200 leading-relaxed">
           {displayedText}
           {isTyping && (
             <motion.span
               animate={{ opacity: [0, 1, 0] }}
               transition={{ duration: 0.8, repeat: Infinity }}
-              className="inline-block w-2 h-5 bg-indigo-400 ml-1 align-middle"
+              className="inline-block w-2 h-5 bg-amber-400 ml-1 align-middle rounded-sm"
             />
           )}
         </p>
@@ -108,13 +121,13 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
       {/* Identity prompt (optional - appears after some lessons) */}
       {currentStreak > 0 && currentStreak % 5 === 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5 }}
-          className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-8"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 1.5, type: 'spring' }}
+          className="bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20 rounded-xl p-4 mb-8"
         >
-          <p className="text-sm text-indigo-300 mb-2">
-            Reflect on your identity:
+          <p className="text-sm text-amber-300 mb-2">
+            ✨ Reflect on your identity:
           </p>
           <p className="text-white font-medium italic">
             &ldquo;I am someone who shows up every day for my growth.&rdquo;
