@@ -23,6 +23,41 @@ interface SageResponse {
   isAI: boolean; // true if from AI, false if fallback
 }
 
+// Detect if a reflection is low-effort or nonsense
+function isLowEffortReflection(text: string): boolean {
+  const trimmed = text.trim().toLowerCase();
+
+  // Too short to be meaningful
+  if (trimmed.length < 10) return true;
+
+  // Common low-effort patterns
+  const lowEffortPatterns = [
+    /^[a-z]{1,5}$/,           // Single short word
+    /^(idk|ok|whatever|test|asdf|qwer|nothing|none|na|n\/a|\.+|no|yes|meh|lol|lmao)$/i,
+    /^[^a-zA-Z]*$/,           // No letters at all
+    /^(.)\1{3,}$/,            // Repeated single character
+    /^[a-z]+$/i,              // Single word with no spaces (unless it's long and meaningful)
+    /asdf|qwer|zxcv/i,        // Keyboard mashing
+    /^[0-9\s]+$/,             // Only numbers
+    /(.{1,3})\1{2,}/,         // Repeated short patterns like "aaaa" or "abcabcabc"
+  ];
+
+  // Check if less than 3 words
+  const words = trimmed.split(/\s+/).filter(w => w.length > 0);
+  if (words.length < 3 && trimmed.length < 30) return true;
+
+  return lowEffortPatterns.some(pattern => pattern.test(trimmed));
+}
+
+// Responses for when user gives low effort
+const LOW_EFFORT_RESPONSES = [
+  "Random keystrokes don't count as reflection. You showed up - that's something. But showing up without presence is just going through motions. What would you write if you meant it?",
+  "I can see you're here, but I don't see you engaging. The Stoics didn't practice half-measures. What's actually on your mind right now?",
+  "This practice only works if you bring yourself to it. A half-hearted reflection yields half-hearted growth. What's really going on today?",
+  "You typed something, but you didn't reflect. Try again - what did today's lesson actually stir in you?",
+  "I can't guide you if you won't meet me halfway. Seneca wrote that we suffer more in imagination than reality. What are you avoiding by not engaging?",
+];
+
 // Fallback responses when AI is unavailable
 // These are pattern-aware templates that can be customized
 const FALLBACK_RESPONSES = {
@@ -106,10 +141,24 @@ export async function getSageResponse(
   transformationGoal: string | null,
   currentStreak: number
 ): Promise<SageResponse> {
-  // Always try the AI first - even for first lessons
-  // The AI can provide personalized feedback based on just the current reflection
+  // FIRST: Check for low-effort/nonsense reflection
+  // This runs before even trying the API - no free passes for lazy input
+  if (isLowEffortReflection(currentReflection)) {
+    const lowEffortMessage = LOW_EFFORT_RESPONSES[Math.floor(Math.random() * LOW_EFFORT_RESPONSES.length)];
+    const personalizedMessage = userName
+      ? `${userName}, ${lowEffortMessage.charAt(0).toLowerCase()}${lowEffortMessage.slice(1)}`
+      : lowEffortMessage;
 
-  // Prepare request
+    return {
+      observation: '',
+      question: '',
+      direction: '',
+      fullMessage: personalizedMessage,
+      isAI: false, // Mark as not AI since it's a local check
+    };
+  }
+
+  // Prepare request for AI
   const request: SageRequest = {
     reflections: reflections.map(r => ({
       lessonTitle: r.lessonTitle,
