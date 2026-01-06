@@ -1,79 +1,113 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui';
 import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useSound } from '@/hooks/useSound';
 import { useStore } from '@/store/useStore';
-import { MENTOR, getRandomMentorResponse, MENTOR_RESPONSES, getStreakMilestoneMessage } from '@/content/mentor';
+import { MENTOR } from '@/content/mentor';
+import { getSageResponse, type SageResponse } from '@/services/sageService';
 import type { Lesson } from '@/types';
 
 interface MentorStepProps {
   lesson: Lesson;
   reflection: string;
+  actionCompleted: boolean;
   onComplete: () => void;
 }
 
-export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) {
-  const { name, currentStreak } = useStore();
+export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: MentorStepProps) {
+  const { name, transformationGoal, currentStreak, reflections } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
+
+  const [sageResponse, setSageResponse] = useState<SageResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
 
-  // Memoize the mentor message so it doesn't change on re-renders
-  const personalizedMessage = useMemo(() => {
-    let message: string;
-
-    // Check for streak milestone first
-    const streakMessage = getStreakMilestoneMessage(currentStreak + 1);
-    if (streakMessage) {
-      message = streakMessage;
-    } else if (lesson.mentorResponses.length > 0) {
-      // Get a lesson-specific response
-      message = lesson.mentorResponses[Math.floor(Math.random() * lesson.mentorResponses.length)];
-    } else if (reflection.length > 100) {
-      // Fall back to generic responses
-      message = getRandomMentorResponse(MENTOR_RESPONSES.reflectionWritten);
-    } else {
-      message = getRandomMentorResponse(MENTOR_RESPONSES.lessonComplete);
+  // Fetch AI response on mount
+  const fetchSageResponse = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await getSageResponse(
+        reflections,
+        lesson.title,
+        reflection,
+        name,
+        transformationGoal,
+        currentStreak
+      );
+      setSageResponse(response);
+    } catch (error) {
+      console.error('Failed to fetch Sage response:', error);
+      // Fallback is handled in the service
+      setSageResponse({
+        observation: '',
+        question: '',
+        direction: '',
+        fullMessage: name
+          ? `${name}, you've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.`
+          : "You've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.",
+        isAI: false,
+      });
+    } finally {
+      setIsLoading(false);
     }
+  }, [reflections, lesson.title, reflection, name, transformationGoal, currentStreak]);
 
-    // Personalize with name
-    return name ? `${name}, ${message.charAt(0).toLowerCase()}${message.slice(1)}` : message;
-  }, [lesson.id]); // Only recalculate if lesson changes
-
-  // Typewriter effect
   useEffect(() => {
+    fetchSageResponse();
+  }, [fetchSageResponse]);
+
+  // Typewriter effect - starts when response is loaded
+  useEffect(() => {
+    if (!sageResponse || isLoading) return;
+
+    const message = sageResponse.fullMessage;
     let index = 0;
     setDisplayedText('');
     setIsTyping(true);
 
+    // Slightly slower typing for AI responses to feel more thoughtful
+    const typingSpeed = sageResponse.isAI ? 25 : 30;
+
     const timer = setInterval(() => {
-      if (index < personalizedMessage.length) {
-        setDisplayedText(personalizedMessage.slice(0, index + 1));
+      if (index < message.length) {
+        setDisplayedText(message.slice(0, index + 1));
         index++;
       } else {
         setIsTyping(false);
         clearInterval(timer);
       }
-    }, 30);
+    }, typingSpeed);
 
     return () => clearInterval(timer);
-  }, [personalizedMessage]);
+  }, [sageResponse, isLoading]);
 
   // Determine Sage's mood based on context
   const sageMood: SageMood = useMemo(() => {
+    if (isLoading) return 'thinking';
     if (isTyping) return 'thinking';
+
     // Celebrating for streak milestones
-    if (currentStreak > 0 && [7, 14, 30, 50, 100].includes(currentStreak + 1)) {
+    const streakMilestones = [7, 14, 30, 50, 100];
+    if (currentStreak > 0 && streakMilestones.includes(currentStreak + 1)) {
       return 'celebrating';
     }
+
+    // If AI gave a response, show proud (it means patterns were detected)
+    if (sageResponse?.isAI) return 'proud';
+
     // Proud for good reflections
     if (reflection.length > 100) return 'proud';
+
     // Default encouraging
     return 'encouraging';
-  }, [isTyping, currentStreak, reflection.length]);
+  }, [isLoading, isTyping, currentStreak, sageResponse?.isAI, reflection.length]);
+
+  // Subtle indicator that this is AI-powered (only show for AI responses)
+  const showAIIndicator = sageResponse?.isAI && !isLoading && !isTyping;
 
   return (
     <div className="text-center">
@@ -108,16 +142,68 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
         {/* Speech bubble pointer */}
         <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-stone-900 border-l border-t border-amber-900/20 rotate-45" />
 
-        <p className="text-stone-200 leading-relaxed">
-          {displayedText}
-          {isTyping && (
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-4">
+            <motion.div
+              className="flex gap-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-amber-400"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 0.8,
+                    repeat: Infinity,
+                    delay: i * 0.15,
+                  }}
+                />
+              ))}
+            </motion.div>
+            <span className="ml-3 text-stone-400 text-sm">Sage is reflecting...</span>
+          </div>
+        )}
+
+        {/* Message content */}
+        {!isLoading && (
+          <p className="text-stone-200 leading-relaxed whitespace-pre-line">
+            {displayedText}
+            {isTyping && (
+              <motion.span
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+                className="inline-block w-2 h-5 bg-amber-400 ml-1 align-middle rounded-sm"
+              />
+            )}
+          </p>
+        )}
+
+        {/* AI indicator - subtle sparkle */}
+        {showAIIndicator && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-4 pt-3 border-t border-stone-800/50 flex items-center gap-2"
+          >
             <motion.span
-              animate={{ opacity: [0, 1, 0] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
-              className="inline-block w-2 h-5 bg-amber-400 ml-1 align-middle rounded-sm"
-            />
-          )}
-        </p>
+              animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              className="text-amber-400/60"
+            >
+              ✦
+            </motion.span>
+            <span className="text-xs text-stone-500">
+              Personalized based on your journey
+            </span>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* Identity prompt (optional - appears after some lessons) */}
@@ -154,10 +240,10 @@ export function MentorStep({ lesson, reflection, onComplete }: MentorStepProps) 
             }
             onComplete();
           }}
-          disabled={isTyping}
+          disabled={isLoading || isTyping}
           className="w-full"
         >
-          {isTyping ? 'Sage is speaking...' : 'Complete Lesson'}
+          {isLoading ? 'Sage is reflecting...' : isTyping ? 'Sage is speaking...' : 'Complete Lesson'}
         </Button>
       </motion.div>
     </div>

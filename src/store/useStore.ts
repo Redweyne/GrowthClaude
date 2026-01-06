@@ -16,6 +16,17 @@ interface WeeklyCheckinData {
   xpEarned: number;
 }
 
+// Reflection data for pattern analysis
+export interface ReflectionEntry {
+  id: string;
+  lessonId: string;
+  lessonTitle: string;
+  coreConceptTag: string;
+  reflection: string;
+  actionCompleted: boolean;
+  date: string;
+}
+
 interface UserState {
   // User identity
   userId: string | null;
@@ -46,6 +57,9 @@ interface UserState {
   weeklyCheckins: WeeklyCheckinData[];
   lastCheckinDate: string | null;
 
+  // Reflections for pattern analysis (last 14)
+  reflections: ReflectionEntry[];
+
   // Settings
   soundEnabled: boolean;
   hapticEnabled: boolean;
@@ -75,6 +89,10 @@ interface UserActions {
   isCheckinDue: () => boolean;
   getWeekNumber: () => number;
 
+  // Reflections
+  saveReflection: (entry: Omit<ReflectionEntry, 'id' | 'date'>) => void;
+  getRecentReflections: (count?: number) => ReflectionEntry[];
+
   // Settings
   toggleSound: () => void;
   toggleHaptic: () => void;
@@ -101,6 +119,7 @@ const initialState: UserState = {
   completedLessons: {},
   weeklyCheckins: [],
   lastCheckinDate: null,
+  reflections: [],
   soundEnabled: true,
   hapticEnabled: true,
 };
@@ -241,6 +260,28 @@ export const useStore = create<UserState & UserActions>()(
           lastCheckinDate: today,
           totalXp: state.totalXp + xpEarned,
         });
+      },
+
+      // Reflection storage for pattern analysis
+      saveReflection: (entry) => {
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+
+        const newReflection: ReflectionEntry = {
+          ...entry,
+          id: crypto.randomUUID(),
+          date: today,
+        };
+
+        // Keep only the last 14 reflections for pattern analysis
+        const updatedReflections = [...state.reflections, newReflection].slice(-14);
+
+        set({ reflections: updatedReflections });
+      },
+
+      getRecentReflections: (count = 14) => {
+        const state = get();
+        return state.reflections.slice(-count);
       },
 
       // Settings

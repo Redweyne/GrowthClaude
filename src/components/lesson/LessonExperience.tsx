@@ -23,7 +23,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const [reflection, setReflection] = useState('');
   const [actionCompleted, setActionCompleted] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
-  const { completeLesson, currentStreak, lastLessonDate } = useStore();
+  const { completeLesson, currentStreak, lastLessonDate, saveReflection } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
 
   const handleWisdomComplete = () => {
@@ -38,6 +38,15 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
   const handleReflectionComplete = (text: string) => {
     setReflection(text);
+
+    // Save reflection for pattern analysis
+    saveReflection({
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      coreConceptTag: lesson.coreConceptTag,
+      reflection: text,
+      actionCompleted: actionCompleted,
+    });
 
     // Calculate XP
     let xp = lesson.xpReward;
@@ -136,6 +145,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
               <MentorStep
                 lesson={lesson}
                 reflection={reflection}
+                actionCompleted={actionCompleted}
                 onComplete={handleMentorComplete}
               />
             )}
