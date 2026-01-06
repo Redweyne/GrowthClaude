@@ -21,7 +21,6 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { playLevelUp, playXpCount, playStreak, playCelebration, playTap, playWhoosh } = useSound();
   const [displayXp, setDisplayXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const soundsPlayedRef = useRef(false);
 
   const previousXp = totalXp;
   const newTotalXp = totalXp + xpEarned;
@@ -39,29 +38,33 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const isMaxLevel = !nextLevel;
 
   // Animate XP count and play sounds
+  // Use refs to properly track and cleanup timers
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasAnimatedRef = useRef(false);
+
   useEffect(() => {
-    // Start with a small delay to let the animation feel impactful
+    // Prevent re-running animation if already done
+    if (hasAnimatedRef.current) return;
+    hasAnimatedRef.current = true;
+
     const startDelay = 300;
     const duration = 800;
-    const steps = Math.min(xpEarned, 25); // More steps for larger XP
+    const steps = Math.min(xpEarned, 25);
     const stepDuration = duration / steps;
     let current = 0;
 
-    // Play XP counting sounds (only once)
-    if (!soundsPlayedRef.current) {
-      soundsPlayedRef.current = true;
-    }
-
-    // Initial delay before counting starts
     const delayTimer = setTimeout(() => {
       // Play sound ticks with the count
       playXpCount(Math.min(xpEarned, 20));
 
-      const timer = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         current += 1;
         if (current >= xpEarned) {
           setDisplayXp(xpEarned);
-          clearInterval(timer);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
 
           if (leveledUp) {
             setTimeout(() => {
@@ -71,7 +74,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             }, 300);
           }
 
-          // Play streak sound for milestones (only if streak is actually increasing)
+          // Play streak sound for milestones
           if (isFirstLessonToday) {
             const streakMilestones = [7, 14, 30, 50, 100];
             if (streakMilestones.includes(predictedStreak)) {
@@ -82,12 +85,18 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
           setDisplayXp(current);
         }
       }, stepDuration);
-
-      return () => clearInterval(timer);
     }, startDelay);
 
-    return () => clearTimeout(delayTimer);
-  }, [xpEarned, leveledUp, playLevelUp, playXpCount, playStreak, playCelebration, isFirstLessonToday, predictedStreak]);
+    return () => {
+      clearTimeout(delayTimer);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+    // Run only once on mount - dependencies intentionally excluded
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const xpProgress = getXpProgress(newTotalXp);
   const [showConfetti, setShowConfetti] = useState(true);

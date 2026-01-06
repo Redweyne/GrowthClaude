@@ -142,31 +142,43 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
         {/* Speech bubble pointer */}
         <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-stone-900 border-l border-t border-amber-900/20 rotate-45" />
 
-        {/* Loading state */}
+        {/* Loading state - prominent AI indicator */}
         {isLoading && (
-          <div className="flex items-center justify-center py-4">
-            <motion.div
-              className="flex gap-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              {[0, 1, 2].map((i) => (
+          <div className="py-6">
+            <div className="flex flex-col items-center gap-4">
+              {/* Animated thinking orb */}
+              <motion.div
+                className="relative w-16 h-16"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+              >
                 <motion.div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-amber-400"
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: 0.8,
-                    repeat: Infinity,
-                    delay: i * 0.15,
-                  }}
+                  className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/30 to-purple-500/30 blur-lg"
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 />
-              ))}
-            </motion.div>
-            <span className="ml-3 text-stone-400 text-sm">Sage is reflecting...</span>
+                <div className="absolute inset-2 rounded-full bg-gradient-to-br from-amber-500/20 to-purple-500/20 flex items-center justify-center">
+                  <motion.span
+                    className="text-2xl"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    ✦
+                  </motion.span>
+                </div>
+              </motion.div>
+
+              <div className="text-center">
+                <motion.p
+                  className="text-amber-300 font-medium mb-1"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  Sage is reading your reflection...
+                </motion.p>
+                <p className="text-stone-500 text-xs">Analyzing your journey</p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -184,24 +196,28 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
           </p>
         )}
 
-        {/* AI indicator - subtle sparkle */}
+        {/* AI indicator - show that this is personalized */}
         {showAIIndicator && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-4 pt-3 border-t border-stone-800/50 flex items-center gap-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, type: 'spring' }}
+            className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-center gap-2"
           >
-            <motion.span
-              animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              className="text-amber-400/60"
+            <motion.div
+              className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-500/10 to-purple-500/10 rounded-full"
             >
-              ✦
-            </motion.span>
-            <span className="text-xs text-stone-500">
-              Personalized based on your journey
-            </span>
+              <motion.span
+                animate={{ rotate: [0, 180, 360], scale: [1, 1.2, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="text-amber-400"
+              >
+                ✦
+              </motion.span>
+              <span className="text-xs text-amber-300/80 font-medium">
+                Personalized response based on your reflections
+              </span>
+            </motion.div>
           </motion.div>
         )}
       </motion.div>

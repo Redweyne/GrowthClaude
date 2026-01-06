@@ -106,13 +106,41 @@ export async function POST(request: NextRequest) {
 Action completed: ${r.actionCompleted ? 'Yes' : 'No'}
 Reflection: "${r.reflection}"`
         ).join('\n\n')
-      : 'No previous reflections yet.';
+      : null;
 
-    // Build the user prompt
-    const userPrompt = `## STUDENT CONTEXT
+    // Build the user prompt - different for first lesson vs returning student
+    const isFirstLesson = reflections.length === 0;
+
+    const userPrompt = isFirstLesson
+      ? `## STUDENT CONTEXT
+Name: ${userName || 'Student'}
+Transformation Goal: ${transformationGoal || 'Personal growth'}
+This is their FIRST lesson ever.
+
+## TODAY'S LESSON
+Lesson: "${currentLessonTitle}"
+Their Reflection: "${currentReflection}"
+
+---
+
+This student just completed their first lesson. Based on what they wrote in their reflection:
+1. Acknowledge something specific they said (not generic praise)
+2. Connect it to the Stoic path they're beginning
+3. Give them something concrete to carry forward
+
+Be warm but not effusive. Be direct. Reference what they actually wrote.
+
+Respond in this exact JSON format:
+{
+  "observation": "Your 1-2 sentence observation about what they wrote - be specific",
+  "question": "A reflective question that invites deeper thinking",
+  "direction": "A forward-facing suggestion or Stoic principle to carry into tomorrow"
+}`
+      : `## STUDENT CONTEXT
 Name: ${userName || 'Student'}
 Transformation Goal: ${transformationGoal || 'Personal growth'}
 Current Streak: ${currentStreak} days
+Total lessons completed: ${reflections.length}
 
 ## RECENT REFLECTIONS (Last ${reflections.length} lessons)
 ${reflectionContext}
@@ -123,16 +151,17 @@ Today's Reflection: "${currentReflection}"
 
 ---
 
-Based on the patterns you observe in their reflections, generate a brief mentor response. Remember:
-- Notice patterns across their reflections, not just today's
-- Be specific to what they wrote
+Based on the patterns you observe across their reflections, generate a brief mentor response. Remember:
+- Look for RECURRING THEMES across multiple reflections (control, avoidance, judgment, comparison, etc.)
+- Notice what concepts keep appearing in their writing
+- Be specific to what they wrote - quote or reference their actual words
 - No therapy language
 - Be warm but direct
 - Keep it concise
 
 Respond in this exact JSON format:
 {
-  "observation": "Your 1-2 sentence observation about a pattern you notice",
+  "observation": "Your 1-2 sentence observation about a PATTERN you notice across their reflections",
   "question": "Your single reflective question",
   "direction": "Your 1-2 sentence forward-facing suggestion"
 }`;

@@ -106,6 +106,9 @@ export async function getSageResponse(
   transformationGoal: string | null,
   currentStreak: number
 ): Promise<SageResponse> {
+  // Always try the AI first - even for first lessons
+  // The AI can provide personalized feedback based on just the current reflection
+
   // Prepare request
   const request: SageRequest = {
     reflections: reflections.map(r => ({
