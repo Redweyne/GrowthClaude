@@ -39,6 +39,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
   // Animate XP count and play sounds
   useEffect(() => {
+    console.log('RewardStep received xpEarned:', xpEarned);
+
     // Handle edge case of 0 XP
     if (xpEarned <= 0) {
       setDisplayXp(0);

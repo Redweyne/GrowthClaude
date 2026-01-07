@@ -80,14 +80,15 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
       actionCompleted: actionCompleted,
     });
 
-    // Calculate XP
-    let xp = lesson.xpReward;
+    // Calculate XP - default to 25 if lesson.xpReward is missing
+    let xp = lesson.xpReward ?? 25;
     if (actionCompleted) xp += 5;
     if (text.length > 50) xp += 5;
     if (text.length > 150) xp += 5;
     const streakBonus = Math.min(currentStreak * 0.02, 0.5);
     xp = Math.round(xp * (1 + streakBonus));
 
+    console.log('XP calculated:', xp, 'lesson.xpReward:', lesson.xpReward);
     setXpEarned(xp);
     playReward();
     setStage('reward');
