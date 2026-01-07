@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Flame, TrendingUp } from 'lucide-react';
 import { Button, ProgressBar } from '@/components/ui';
@@ -21,6 +21,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { playLevelUp, playXpCount, playStreak, playCelebration, playTap, playWhoosh } = useSound();
   const [displayXp, setDisplayXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const hasAnimatedRef = useRef(false);
 
   const previousXp = totalXp;
   const newTotalXp = totalXp + xpEarned;
@@ -37,15 +38,24 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const nextLevel = LEVELS.find(l => l.level === newLevel.level + 1);
   const isMaxLevel = !nextLevel;
 
-  // Animate XP count and play sounds
+  // Animate XP count and play sounds - ONLY ONCE
   useEffect(() => {
+    // Prevent multiple runs
+    if (hasAnimatedRef.current) {
+      return;
+    }
+
     console.log('RewardStep received xpEarned:', xpEarned);
 
     // Handle edge case of 0 XP
     if (xpEarned <= 0) {
       setDisplayXp(0);
+      hasAnimatedRef.current = true;
       return;
     }
+
+    // Mark as animated immediately to prevent re-runs
+    hasAnimatedRef.current = true;
 
     let intervalId: NodeJS.Timeout | null = null;
     let current = 0;
@@ -90,7 +100,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       clearTimeout(delayTimer);
       if (intervalId) clearInterval(intervalId);
     };
-  }, [xpEarned, leveledUp, playXpCount, playLevelUp, playCelebration, playStreak, isFirstLessonToday, predictedStreak]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [xpEarned]); // Only depend on xpEarned - animation runs once per mount
 
   const xpProgress = getXpProgress(newTotalXp);
   const [showConfetti, setShowConfetti] = useState(true);

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Hardcode the API key
 const GEMINI_API_KEY = 'AIzaSyAp4ZazQNgbLxKX4AfLjaAWyfTzY9riOyU';
-// Use gemini-pro which is definitely supported
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+// Use gemini-1.5-flash-latest for FREE tier API
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
 
 interface ReflectionData {
   lessonTitle: string;
