@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useSound } from '@/hooks/useSound';
@@ -15,9 +16,10 @@ interface MentorStepProps {
   reflection: string;
   actionCompleted: boolean;
   onComplete: () => void;
+  onRetry: () => void; // Go back to reflection
 }
 
-export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: MentorStepProps) {
+export function MentorStep({ lesson, reflection, actionCompleted, onComplete, onRetry }: MentorStepProps) {
   const { name, transformationGoal, currentStreak, reflections } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
 
@@ -41,7 +43,6 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
       setSageResponse(response);
     } catch (error) {
       console.error('Failed to fetch Sage response:', error);
-      // Fallback is handled in the service
       setSageResponse({
         observation: '',
         question: '',
@@ -50,6 +51,7 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
           ? `${name}, you've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.`
           : "You've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.",
         isAI: false,
+        isLowEffort: false,
       });
     } finally {
       setIsLoading(false);
@@ -69,8 +71,8 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
     setDisplayedText('');
     setIsTyping(true);
 
-    // Slightly slower typing for AI responses to feel more thoughtful
-    const typingSpeed = sageResponse.isAI ? 25 : 30;
+    // Faster typing for low-effort callouts
+    const typingSpeed = sageResponse.isLowEffort ? 20 : sageResponse.isAI ? 25 : 30;
 
     const timer = setInterval(() => {
       if (index < message.length) {
@@ -90,6 +92,9 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
     if (isLoading) return 'thinking';
     if (isTyping) return 'thinking';
 
+    // Disappointed for low-effort
+    if (sageResponse?.isLowEffort) return 'thinking'; // Stern look
+
     // Celebrating for streak milestones
     const streakMilestones = [7, 14, 30, 50, 100];
     if (currentStreak > 0 && streakMilestones.includes(currentStreak + 1)) {
@@ -104,10 +109,13 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
 
     // Default encouraging
     return 'encouraging';
-  }, [isLoading, isTyping, currentStreak, sageResponse?.isAI, reflection.length]);
+  }, [isLoading, isTyping, currentStreak, sageResponse?.isAI, sageResponse?.isLowEffort, reflection.length]);
 
-  // Subtle indicator that this is AI-powered (only show for AI responses)
-  const showAIIndicator = sageResponse?.isAI && !isLoading && !isTyping;
+  // Subtle indicator that this is AI-powered (only show for AI responses, not low-effort)
+  const showAIIndicator = sageResponse?.isAI && !sageResponse?.isLowEffort && !isLoading && !isTyping;
+
+  // Is this a failed attempt due to low effort?
+  const isFailedAttempt = sageResponse?.isLowEffort && !isLoading && !isTyping;
 
   return (
     <div className="text-center">
@@ -137,10 +145,18 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-gradient-to-br from-stone-900 to-stone-950 border border-amber-900/20 rounded-2xl p-6 mb-8 text-left relative shadow-lg shadow-amber-900/5"
+        className={`rounded-2xl p-6 mb-8 text-left relative shadow-lg ${
+          isFailedAttempt
+            ? 'bg-gradient-to-br from-red-950/50 to-stone-950 border border-red-900/30 shadow-red-900/10'
+            : 'bg-gradient-to-br from-stone-900 to-stone-950 border border-amber-900/20 shadow-amber-900/5'
+        }`}
       >
         {/* Speech bubble pointer */}
-        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-stone-900 border-l border-t border-amber-900/20 rotate-45" />
+        <div className={`absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 ${
+          isFailedAttempt
+            ? 'bg-red-950/50 border-l border-t border-red-900/30'
+            : 'bg-stone-900 border-l border-t border-amber-900/20'
+        }`} />
 
         {/* Loading state - prominent AI indicator */}
         {isLoading && (
@@ -184,13 +200,17 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
 
         {/* Message content */}
         {!isLoading && (
-          <p className="text-stone-200 leading-relaxed whitespace-pre-line">
+          <p className={`leading-relaxed whitespace-pre-line ${
+            isFailedAttempt ? 'text-red-200' : 'text-stone-200'
+          }`}>
             {displayedText}
             {isTyping && (
               <motion.span
                 animate={{ opacity: [0, 1, 0] }}
                 transition={{ duration: 0.8, repeat: Infinity }}
-                className="inline-block w-2 h-5 bg-amber-400 ml-1 align-middle rounded-sm"
+                className={`inline-block w-2 h-5 ml-1 align-middle rounded-sm ${
+                  isFailedAttempt ? 'bg-red-400' : 'bg-amber-400'
+                }`}
               />
             )}
           </p>
@@ -220,10 +240,24 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
             </motion.div>
           </motion.div>
         )}
+
+        {/* Low effort indicator */}
+        {isFailedAttempt && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, type: 'spring' }}
+            className="mt-4 pt-3 border-t border-red-900/30 flex items-center justify-center gap-2"
+          >
+            <span className="text-xs text-red-400/80 font-medium">
+              Your reflection didn&apos;t meet the minimum effort required
+            </span>
+          </motion.div>
+        )}
       </motion.div>
 
-      {/* Identity prompt (optional - appears after some lessons) */}
-      {currentStreak > 0 && currentStreak % 5 === 0 && (
+      {/* Identity prompt (optional - appears after some lessons, NOT for failed attempts) */}
+      {!isFailedAttempt && currentStreak > 0 && currentStreak % 5 === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -239,28 +273,45 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete }: 
         </motion.div>
       )}
 
-      {/* Complete button */}
+      {/* Buttons */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
+        className="space-y-3"
       >
-        <Button
-          size="lg"
-          onClick={() => {
-            playTap();
-            if (sageMood === 'celebrating') {
-              playCelebration();
-            } else {
-              playSparkle();
-            }
-            onComplete();
-          }}
-          disabled={isLoading || isTyping}
-          className="w-full"
-        >
-          {isLoading ? 'Sage is reflecting...' : isTyping ? 'Sage is speaking...' : 'Complete Lesson'}
-        </Button>
+        {isFailedAttempt ? (
+          // FAILED - Show Try Again button
+          <Button
+            size="lg"
+            onClick={() => {
+              playTap();
+              onRetry();
+            }}
+            className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500"
+          >
+            <RotateCcw size={18} className="mr-2" />
+            Try Again - Write a Real Reflection
+          </Button>
+        ) : (
+          // SUCCESS - Show Complete button
+          <Button
+            size="lg"
+            onClick={() => {
+              playTap();
+              if (sageMood === 'celebrating') {
+                playCelebration();
+              } else {
+                playSparkle();
+              }
+              onComplete();
+            }}
+            disabled={isLoading || isTyping}
+            className="w-full"
+          >
+            {isLoading ? 'Sage is reflecting...' : isTyping ? 'Sage is speaking...' : 'Complete Lesson'}
+          </Button>
+        )}
       </motion.div>
     </div>
   );

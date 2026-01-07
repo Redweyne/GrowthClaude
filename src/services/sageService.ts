@@ -21,6 +21,7 @@ interface SageResponse {
   direction: string;
   fullMessage: string;
   isAI: boolean; // true if from AI, false if fallback
+  isLowEffort: boolean; // true if user gave garbage - lesson should FAIL
 }
 
 // Detect if a reflection is low-effort or nonsense
@@ -129,6 +130,7 @@ function getFallbackResponse(
     direction: '',
     fullMessage: message,
     isAI: false,
+    isLowEffort: false,
   };
 }
 
@@ -154,7 +156,8 @@ export async function getSageResponse(
       question: '',
       direction: '',
       fullMessage: personalizedMessage,
-      isAI: false, // Mark as not AI since it's a local check
+      isAI: false,
+      isLowEffort: true, // FAIL THE LESSON
     };
   }
 
@@ -215,6 +218,7 @@ export async function getSageResponse(
       direction: direction || '',
       fullMessage,
       isAI: true,
+      isLowEffort: false,
     };
 
   } catch (error) {

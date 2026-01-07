@@ -11,6 +11,25 @@ import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 
+// Check if reflection is low-effort (must match sageService logic)
+function isLowEffortReflection(text: string): boolean {
+  const trimmed = text.trim().toLowerCase();
+  if (trimmed.length < 10) return true;
+  const lowEffortPatterns = [
+    /^[a-z]{1,5}$/,
+    /^(idk|ok|whatever|test|asdf|qwer|nothing|none|na|n\/a|\.+|no|yes|meh|lol|lmao)$/i,
+    /^[^a-zA-Z]*$/,
+    /^(.)\1{3,}$/,
+    /^[a-z]+$/i,
+    /asdf|qwer|zxcv/i,
+    /^[0-9\s]+$/,
+    /(.{1,3})\1{2,}/,
+  ];
+  const words = trimmed.split(/\s+/).filter(w => w.length > 0);
+  if (words.length < 3 && trimmed.length < 30) return true;
+  return lowEffortPatterns.some(pattern => pattern.test(trimmed));
+}
+
 interface LessonExperienceProps {
   lesson: Lesson;
   onComplete: () => void;
@@ -23,11 +42,12 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const [reflection, setReflection] = useState('');
   const [actionCompleted, setActionCompleted] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+  const [isLowEffort, setIsLowEffort] = useState(false);
   const { completeLesson, currentStreak, lastLessonDate, saveReflection } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
 
   const handleWisdomComplete = () => {
-    initAudio(); // Initialize audio on first user interaction
+    initAudio();
     setStage('action');
   };
 
@@ -39,7 +59,19 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const handleReflectionComplete = (text: string) => {
     setReflection(text);
 
-    // Save reflection for pattern analysis
+    // Check for low-effort BEFORE proceeding
+    const lowEffort = isLowEffortReflection(text);
+    setIsLowEffort(lowEffort);
+
+    if (lowEffort) {
+      // Skip reward, go straight to mentor for the callout
+      // Do NOT save reflection, do NOT award XP
+      setXpEarned(0);
+      setStage('mentor');
+      return;
+    }
+
+    // Good reflection - save it and calculate XP
     saveReflection({
       lessonId: lesson.id,
       lessonTitle: lesson.title,
@@ -50,20 +82,14 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
     // Calculate XP
     let xp = lesson.xpReward;
-
-    // Bonus for completing action honestly
     if (actionCompleted) xp += 5;
-
-    // Bonus for writing reflection
     if (text.length > 50) xp += 5;
     if (text.length > 150) xp += 5;
-
-    // Streak bonus (cap at 50% bonus)
     const streakBonus = Math.min(currentStreak * 0.02, 0.5);
     xp = Math.round(xp * (1 + streakBonus));
 
     setXpEarned(xp);
-    playReward(); // Play sound on user action
+    playReward();
     setStage('reward');
   };
 
@@ -72,10 +98,17 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   };
 
   const handleMentorComplete = () => {
-    // Save lesson completion to store
+    // Save lesson completion to store (only for successful lessons)
     completeLesson(lesson.id, xpEarned);
-    playComplete(); // Play completion sound
+    playComplete();
     onComplete();
+  };
+
+  const handleRetry = () => {
+    // Go back to reflection step
+    setReflection('');
+    setIsLowEffort(false);
+    setStage('reflection');
   };
 
   const stageVariants = {
@@ -84,27 +117,32 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     exit: { opacity: 0, y: -20 },
   };
 
+  // Calculate progress percentage
+  const getProgress = () => {
+    if (isLowEffort && stage === 'mentor') return 60; // Failed at reflection
+    switch (stage) {
+      case 'wisdom': return 20;
+      case 'action': return 40;
+      case 'reflection': return 60;
+      case 'reward': return 80;
+      case 'mentor': return 100;
+      default: return 0;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50">
         <div className="h-1 bg-zinc-800">
           <motion.div
-            className="h-full bg-gradient-to-r from-indigo-600 to-purple-600"
+            className={`h-full ${
+              isLowEffort && stage === 'mentor'
+                ? 'bg-gradient-to-r from-red-600 to-orange-600'
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600'
+            }`}
             initial={{ width: 0 }}
-            animate={{
-              width: `${
-                stage === 'wisdom'
-                  ? 20
-                  : stage === 'action'
-                  ? 40
-                  : stage === 'reflection'
-                  ? 60
-                  : stage === 'reward'
-                  ? 80
-                  : 100
-              }%`,
-            }}
+            animate={{ width: `${getProgress()}%` }}
             transition={{ duration: 0.3 }}
           />
         </div>
@@ -114,7 +152,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
       <div className="flex-1 flex items-center justify-center p-6 pt-12">
         <AnimatePresence mode="wait">
           <motion.div
-            key={stage}
+            key={stage + (isLowEffort ? '-loweffort' : '')}
             variants={stageVariants}
             initial="enter"
             animate="center"
@@ -147,6 +185,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
                 reflection={reflection}
                 actionCompleted={actionCompleted}
                 onComplete={handleMentorComplete}
+                onRetry={handleRetry}
               />
             )}
           </motion.div>

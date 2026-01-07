@@ -47,9 +47,15 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     if (hasAnimatedRef.current) return;
     hasAnimatedRef.current = true;
 
+    // Handle edge case of 0 XP
+    if (xpEarned <= 0) {
+      setDisplayXp(0);
+      return;
+    }
+
     const startDelay = 300;
     const duration = 800;
-    const steps = Math.min(xpEarned, 25);
+    const steps = Math.max(Math.min(xpEarned, 25), 1); // Ensure at least 1 step
     const stepDuration = duration / steps;
     let current = 0;
 
