@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Flame, TrendingUp } from 'lucide-react';
 import { Button, ProgressBar } from '@/components/ui';
@@ -38,39 +38,30 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const isMaxLevel = !nextLevel;
 
   // Animate XP count and play sounds
-  // Use refs to properly track and cleanup timers
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const hasAnimatedRef = useRef(false);
-
   useEffect(() => {
-    // Prevent re-running animation if already done
-    if (hasAnimatedRef.current) return;
-    hasAnimatedRef.current = true;
-
     // Handle edge case of 0 XP
     if (xpEarned <= 0) {
       setDisplayXp(0);
       return;
     }
 
+    let intervalId: NodeJS.Timeout | null = null;
+    let current = 0;
+
     const startDelay = 300;
     const duration = 800;
-    const steps = Math.max(Math.min(xpEarned, 25), 1); // Ensure at least 1 step
+    const steps = Math.max(Math.min(xpEarned, 25), 1);
     const stepDuration = duration / steps;
-    let current = 0;
 
     const delayTimer = setTimeout(() => {
       // Play sound ticks with the count
       playXpCount(Math.min(xpEarned, 20));
 
-      intervalRef.current = setInterval(() => {
+      intervalId = setInterval(() => {
         current += 1;
         if (current >= xpEarned) {
           setDisplayXp(xpEarned);
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
+          if (intervalId) clearInterval(intervalId);
 
           if (leveledUp) {
             setTimeout(() => {
@@ -95,14 +86,9 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
     return () => {
       clearTimeout(delayTimer);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      if (intervalId) clearInterval(intervalId);
     };
-    // Run only once on mount - dependencies intentionally excluded
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [xpEarned, leveledUp, playXpCount, playLevelUp, playCelebration, playStreak, isFirstLessonToday, predictedStreak]);
 
   const xpProgress = getXpProgress(newTotalXp);
   const [showConfetti, setShowConfetti] = useState(true);
