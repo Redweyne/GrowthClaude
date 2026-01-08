@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-export type SageMood = 'neutral' | 'happy' | 'proud' | 'thinking' | 'encouraging' | 'celebrating';
+export type SageMood = 'neutral' | 'happy' | 'proud' | 'thinking' | 'encouraging' | 'celebrating' | 'disappointed';
 
 interface SageAvatarProps {
   mood?: SageMood;
@@ -12,134 +12,225 @@ interface SageAvatarProps {
 }
 
 const sizeMap = {
-  sm: 64,
-  md: 96,
-  lg: 140,
-  xl: 180,
+  sm: 80,
+  md: 120,
+  lg: 160,
+  xl: 200,
 };
 
 export function SageAvatar({ mood = 'neutral', size = 'md', animate = true, className = '' }: SageAvatarProps) {
   const pixelSize = sizeMap[size];
 
-  // Dynamic expressions based on mood
-  const getExpression = () => {
+  // Get eye shapes based on mood
+  const getEyeStyle = () => {
     switch (mood) {
       case 'happy':
-        return {
-          leftEye: { cy: 42, rx: 4, ry: 2, type: 'happy' }, // Curved happy eyes
-          rightEye: { cy: 42, rx: 4, ry: 2, type: 'happy' },
-          mouth: 'M40 58 Q50 68 60 58', // Big smile
-          eyebrows: { left: 'M32 34 Q38 30 44 34', right: 'M56 34 Q62 30 68 34' }, // Raised happy
-          blush: true,
-        };
+      case 'celebrating':
+        return 'happy'; // Curved happy arcs
+      case 'proud':
+        return 'closed'; // Confident closed
+      case 'thinking':
+        return 'looking-up';
+      case 'disappointed':
+        return 'sad';
+      default:
+        return 'open';
+    }
+  };
+
+  // Get mouth path based on mood
+  const getMouthPath = () => {
+    switch (mood) {
+      case 'happy':
+        return 'M 35 62 Q 50 74 65 62';
+      case 'celebrating':
+        return 'M 32 60 Q 50 80 68 60';
+      case 'proud':
+        return 'M 38 62 Q 50 70 62 62';
+      case 'thinking':
+        return 'M 42 64 Q 50 62 58 64';
+      case 'encouraging':
+        return 'M 36 62 Q 50 72 64 62';
+      case 'disappointed':
+        return 'M 38 68 Q 50 60 62 68';
+      default:
+        return 'M 40 62 Q 50 68 60 62';
+    }
+  };
+
+  const eyeStyle = getEyeStyle();
+
+  // Render eyes based on style
+  const renderLeftEye = () => {
+    const baseX = 38;
+    const baseY = 45;
+
+    switch (eyeStyle) {
+      case 'happy':
+        return (
+          <motion.path
+            d={`M ${baseX - 7} ${baseY} Q ${baseX} ${baseY - 8} ${baseX + 7} ${baseY}`}
+            stroke="#2d1b4e"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+          />
+        );
+      case 'closed':
+        return (
+          <motion.path
+            d={`M ${baseX - 6} ${baseY} L ${baseX + 6} ${baseY}`}
+            stroke="#2d1b4e"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+        );
+      case 'looking-up':
+        return (
+          <g>
+            <ellipse cx={baseX} cy={baseY} rx="9" ry="10" fill="white" />
+            <ellipse cx={baseX} cy={baseY - 3} rx="6" ry="7" fill="#2d1b4e" />
+            <circle cx={baseX - 2} cy={baseY - 5} r="2.5" fill="white" />
+            <circle cx={baseX + 2} cy={baseY - 2} r="1.2" fill="white" opacity="0.6" />
+          </g>
+        );
+      case 'sad':
+        return (
+          <g>
+            <ellipse cx={baseX} cy={baseY} rx="8" ry="9" fill="white" />
+            <ellipse cx={baseX} cy={baseY + 1} rx="5" ry="6" fill="#2d1b4e" />
+            <circle cx={baseX - 1.5} cy={baseY - 1} r="2" fill="white" />
+          </g>
+        );
+      default: // open
+        return (
+          <g>
+            {/* Eye white with subtle shadow */}
+            <ellipse cx={baseX} cy={baseY} rx="9" ry="10" fill="white" />
+            <ellipse cx={baseX} cy={baseY - 1} rx="9" ry="8" fill="white" />
+            {/* Iris */}
+            <ellipse cx={baseX} cy={baseY} rx="6" ry="7" fill="#2d1b4e" />
+            {/* Pupil highlight - main */}
+            <circle cx={baseX - 2} cy={baseY - 2} r="2.5" fill="white" />
+            {/* Secondary highlight */}
+            <circle cx={baseX + 2} cy={baseY + 2} r="1.2" fill="white" opacity="0.5" />
+          </g>
+        );
+    }
+  };
+
+  const renderRightEye = () => {
+    const baseX = 62;
+    const baseY = 45;
+
+    switch (eyeStyle) {
+      case 'happy':
+        return (
+          <motion.path
+            d={`M ${baseX - 7} ${baseY} Q ${baseX} ${baseY - 8} ${baseX + 7} ${baseY}`}
+            stroke="#2d1b4e"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+          />
+        );
+      case 'closed':
+        return (
+          <motion.path
+            d={`M ${baseX - 6} ${baseY} L ${baseX + 6} ${baseY}`}
+            stroke="#2d1b4e"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+        );
+      case 'looking-up':
+        return (
+          <g>
+            <ellipse cx={baseX} cy={baseY} rx="9" ry="10" fill="white" />
+            <ellipse cx={baseX} cy={baseY - 3} rx="6" ry="7" fill="#2d1b4e" />
+            <circle cx={baseX - 2} cy={baseY - 5} r="2.5" fill="white" />
+            <circle cx={baseX + 2} cy={baseY - 2} r="1.2" fill="white" opacity="0.6" />
+          </g>
+        );
+      case 'sad':
+        return (
+          <g>
+            <ellipse cx={baseX} cy={baseY} rx="8" ry="9" fill="white" />
+            <ellipse cx={baseX} cy={baseY + 1} rx="5" ry="6" fill="#2d1b4e" />
+            <circle cx={baseX - 1.5} cy={baseY - 1} r="2" fill="white" />
+          </g>
+        );
+      default:
+        return (
+          <g>
+            <ellipse cx={baseX} cy={baseY} rx="9" ry="10" fill="white" />
+            <ellipse cx={baseX} cy={baseY - 1} rx="9" ry="8" fill="white" />
+            <ellipse cx={baseX} cy={baseY} rx="6" ry="7" fill="#2d1b4e" />
+            <circle cx={baseX - 2} cy={baseY - 2} r="2.5" fill="white" />
+            <circle cx={baseX + 2} cy={baseY + 2} r="1.2" fill="white" opacity="0.5" />
+          </g>
+        );
+    }
+  };
+
+  // Eyebrow positions based on mood
+  const getEyebrows = () => {
+    switch (mood) {
+      case 'happy':
       case 'celebrating':
         return {
-          leftEye: { cy: 42, rx: 4, ry: 1.5, type: 'celebrating' }, // Super happy squint
-          rightEye: { cy: 42, rx: 4, ry: 1.5, type: 'celebrating' },
-          mouth: 'M38 56 Q50 72 62 56', // Huge open smile
-          eyebrows: { left: 'M30 32 Q38 26 46 32', right: 'M54 32 Q62 26 70 32' }, // Very raised
-          blush: true,
-          sparkles: true,
-        };
-      case 'proud':
-        return {
-          leftEye: { cy: 42, rx: 3, ry: 3, type: 'closed' }, // Confident closed eyes
-          rightEye: { cy: 42, rx: 3, ry: 3, type: 'closed' },
-          mouth: 'M42 56 Q50 62 58 56', // Satisfied smile
-          eyebrows: { left: 'M32 34 Q38 32 44 34', right: 'M56 34 Q62 32 68 34' }, // Relaxed
-          blush: false,
+          left: 'M 28 34 Q 38 28 48 34',
+          right: 'M 52 34 Q 62 28 72 34',
         };
       case 'thinking':
         return {
-          leftEye: { cy: 42, rx: 3.5, ry: 4, type: 'open' },
-          rightEye: { cy: 40, rx: 3.5, ry: 4, type: 'open' }, // One eye slightly higher
-          mouth: 'M44 58 Q50 56 56 58', // Slight ponder
-          eyebrows: { left: 'M32 34 Q38 32 44 35', right: 'M54 32 Q62 28 70 34' }, // One raised
-          blush: false,
-          thoughtBubbles: true,
+          left: 'M 28 36 Q 38 32 48 36',
+          right: 'M 52 32 Q 62 26 72 34',
+        };
+      case 'disappointed':
+        return {
+          left: 'M 30 32 Q 38 36 46 34',
+          right: 'M 54 34 Q 62 36 70 32',
         };
       case 'encouraging':
         return {
-          leftEye: { cy: 42, rx: 3.5, ry: 4, type: 'kind' },
-          rightEye: { cy: 42, rx: 3.5, ry: 4, type: 'kind' },
-          mouth: 'M40 56 Q50 64 60 56', // Warm smile
-          eyebrows: { left: 'M32 34 Q38 31 44 34', right: 'M56 34 Q62 31 68 34' }, // Gentle lift
-          blush: true,
+          left: 'M 28 34 Q 38 30 48 35',
+          right: 'M 52 35 Q 62 30 72 34',
         };
-      default: // neutral
+      default:
         return {
-          leftEye: { cy: 42, rx: 3.5, ry: 4, type: 'open' },
-          rightEye: { cy: 42, rx: 3.5, ry: 4, type: 'open' },
-          mouth: 'M44 56 Q50 60 56 56', // Slight smile
-          eyebrows: { left: 'M32 35 Q38 33 44 35', right: 'M56 35 Q62 33 68 35' },
-          blush: false,
+          left: 'M 28 35 Q 38 31 48 35',
+          right: 'M 52 35 Q 62 31 72 35',
         };
     }
   };
 
-  const expr = getExpression();
-
-  // Eye rendering based on type
-  const renderEye = (cx: number, eye: typeof expr.leftEye, delay: number = 0) => {
-    if (eye.type === 'happy' || eye.type === 'celebrating') {
-      // Arc-shaped happy eyes
-      return (
-        <motion.path
-          d={`M${cx - 5} ${eye.cy} Q${cx} ${eye.cy - 6} ${cx + 5} ${eye.cy}`}
-          stroke="#1e1b4b"
-          strokeWidth="3"
-          strokeLinecap="round"
-          fill="none"
-          animate={mood === 'celebrating' ? { scale: [1, 1.1, 1] } : {}}
-          transition={{ duration: 0.4, repeat: mood === 'celebrating' ? Infinity : 0, delay }}
-        />
-      );
-    }
-    if (eye.type === 'closed') {
-      return (
-        <motion.path
-          d={`M${cx - 5} ${eye.cy} L${cx + 5} ${eye.cy}`}
-          stroke="#1e1b4b"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-      );
-    }
-    // Regular open eyes with shine
-    return (
-      <g>
-        {/* Eye white */}
-        <ellipse cx={cx} cy={eye.cy} rx={eye.rx + 2} ry={eye.ry + 2} fill="white" />
-        {/* Iris */}
-        <ellipse cx={cx} cy={eye.cy + 0.5} rx={eye.rx} ry={eye.ry} fill="#1e1b4b" />
-        {/* Pupil shine */}
-        <circle cx={cx - 1} cy={eye.cy - 1} r={1.5} fill="white" opacity={0.9} />
-        {/* Bottom shine */}
-        <ellipse cx={cx + 1} cy={eye.cy + 2} rx={1} ry={0.5} fill="white" opacity={0.4} />
-      </g>
-    );
-  };
+  const eyebrows = getEyebrows();
+  const showBlush = mood === 'happy' || mood === 'celebrating' || mood === 'encouraging';
+  const showSparkles = mood === 'celebrating';
+  const showThoughtBubbles = mood === 'thinking';
 
   return (
     <motion.div
-      className={`relative ${className}`}
-      animate={animate ? { y: [0, -6, 0] } : undefined}
+      className={`relative inline-block ${className}`}
+      style={{ width: pixelSize, height: pixelSize }}
+      animate={animate ? { y: [0, -4, 0] } : undefined}
       transition={{
-        duration: 2.5,
+        duration: 3,
         repeat: Infinity,
         ease: 'easeInOut',
       }}
     >
-      {/* Outer glow for celebrating */}
+      {/* Celebration glow */}
       {mood === 'celebrating' && (
         <motion.div
           className="absolute inset-0 rounded-full"
           style={{
-            background: 'radial-gradient(circle, rgba(251,191,36,0.4) 0%, transparent 70%)',
-            transform: 'scale(1.3)',
+            background: 'radial-gradient(circle, rgba(251,191,36,0.5) 0%, transparent 60%)',
+            transform: 'scale(1.4)',
           }}
-          animate={{ opacity: [0.4, 0.7, 0.4], scale: [1.3, 1.4, 1.3] }}
-          transition={{ duration: 1, repeat: Infinity }}
+          animate={{ opacity: [0.5, 0.8, 0.5], scale: [1.4, 1.5, 1.4] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
         />
       )}
 
@@ -151,246 +242,326 @@ export function SageAvatar({ mood = 'neutral', size = 'md', animate = true, clas
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Gradients for depth */}
-          <radialGradient id="faceGradient" cx="40%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#fff4e6" />
-            <stop offset="60%" stopColor="#ffe8cc" />
-            <stop offset="100%" stopColor="#ffd9b3" />
+          {/* Main face gradient - warm, professional */}
+          <radialGradient id="sageHead" cx="40%" cy="30%" r="65%">
+            <stop offset="0%" stopColor="#FFF5E6" />
+            <stop offset="50%" stopColor="#FFE4C4" />
+            <stop offset="100%" stopColor="#DEB887" />
           </radialGradient>
 
-          <linearGradient id="robeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8b5cf6" />
-            <stop offset="50%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#6d28d9" />
+          {/* Robe gradient - rich purple */}
+          <linearGradient id="sageRobe" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#9333EA" />
+            <stop offset="50%" stopColor="#7C3AED" />
+            <stop offset="100%" stopColor="#5B21B6" />
           </linearGradient>
 
-          <linearGradient id="robeShineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="white" stopOpacity="0.3" />
-            <stop offset="50%" stopColor="white" stopOpacity="0" />
+          {/* Robe highlight */}
+          <linearGradient id="robeHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
           </linearGradient>
 
-          <linearGradient id="beardGradient" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%" stopColor="#f5f5f5" />
-            <stop offset="100%" stopColor="#e5e5e5" />
+          {/* Beard gradient - silvery white */}
+          <linearGradient id="sageBeard" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stopColor="#FAFAFA" />
+            <stop offset="50%" stopColor="#F0F0F0" />
+            <stop offset="100%" stopColor="#E0E0E0" />
           </linearGradient>
 
-          <linearGradient id="hairGradient" x1="50%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%" stopColor="#e8e8e8" />
-            <stop offset="100%" stopColor="#d4d4d4" />
+          {/* Hair gradient */}
+          <linearGradient id="sageHair" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stopColor="#F5F5F5" />
+            <stop offset="100%" stopColor="#E0E0E0" />
           </linearGradient>
 
-          {/* Drop shadow filter */}
-          <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15"/>
+          {/* Gold accent gradient */}
+          <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FCD34D" />
+            <stop offset="50%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#F59E0B" />
+          </linearGradient>
+
+          {/* Soft shadow */}
+          <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#000000" floodOpacity="0.2"/>
+          </filter>
+
+          {/* Inner shadow for depth */}
+          <filter id="innerGlow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+            <feOffset in="blur" dx="0" dy="1" result="offsetBlur"/>
+            <feComposite in="SourceGraphic" in2="offsetBlur" operator="over"/>
           </filter>
         </defs>
 
-        {/* Body/Robe */}
+        {/* === BODY/ROBE === */}
         <motion.path
-          d="M20 100 Q20 72 32 62 C38 58 44 56 50 56 C56 56 62 58 68 62 Q80 72 80 100"
-          fill="url(#robeGradient)"
-          filter="url(#dropShadow)"
+          d="M 15 100
+             Q 15 78 28 68
+             C 35 62 42 58 50 58
+             C 58 58 65 62 72 68
+             Q 85 78 85 100
+             Z"
+          fill="url(#sageRobe)"
+          filter="url(#softShadow)"
         />
-        {/* Robe shine */}
+
+        {/* Robe shine/highlight */}
         <path
-          d="M32 65 Q40 60 50 58 L50 80 L35 85 Z"
-          fill="url(#robeShineGradient)"
+          d="M 28 70 Q 38 62 50 60 L 48 90 L 30 95 Z"
+          fill="url(#robeHighlight)"
         />
-        {/* Robe collar */}
+
+        {/* Collar V-shape */}
         <path
-          d="M38 62 L50 68 L62 62"
-          stroke="#5b21b6"
-          strokeWidth="2.5"
+          d="M 36 66 L 50 76 L 64 66"
+          stroke="#4C1D95"
+          strokeWidth="3"
           strokeLinecap="round"
+          strokeLinejoin="round"
           fill="none"
         />
-        {/* Collar gem */}
+
+        {/* Golden clasp/brooch */}
         <motion.circle
           cx="50"
-          cy="66"
-          r="3"
-          fill="#fbbf24"
-          animate={mood === 'celebrating' ? { scale: [1, 1.3, 1], opacity: [1, 0.8, 1] } : {}}
-          transition={{ duration: 0.5, repeat: mood === 'celebrating' ? Infinity : 0 }}
+          cy="72"
+          r="5"
+          fill="url(#goldAccent)"
+          filter="url(#softShadow)"
+          animate={showSparkles ? { scale: [1, 1.15, 1] } : {}}
+          transition={{ duration: 0.8, repeat: showSparkles ? Infinity : 0 }}
         />
-        <circle cx="49" cy="65" r="1" fill="white" opacity="0.7" />
+        <circle cx="48" cy="70" r="1.8" fill="white" opacity="0.8" />
+        <circle cx="52" cy="74" r="0.8" fill="white" opacity="0.5" />
 
-        {/* Hair/back of head */}
-        <ellipse cx="50" cy="35" rx="26" ry="24" fill="url(#hairGradient)" />
+        {/* === HAIR (behind head) === */}
+        <ellipse cx="50" cy="32" rx="30" ry="26" fill="url(#sageHair)" />
 
-        {/* Face */}
-        <ellipse cx="50" cy="40" rx="23" ry="22" fill="url(#faceGradient)" filter="url(#dropShadow)" />
+        {/* === HEAD/FACE === */}
+        <ellipse
+          cx="50"
+          cy="38"
+          rx="27"
+          ry="26"
+          fill="url(#sageHead)"
+          filter="url(#softShadow)"
+        />
 
-        {/* Ears */}
-        <ellipse cx="27" cy="42" rx="4" ry="5" fill="#ffe8cc" />
-        <ellipse cx="73" cy="42" rx="4" ry="5" fill="#ffe8cc" />
-        <ellipse cx="27" cy="42" rx="2" ry="3" fill="#ffd9b3" />
-        <ellipse cx="73" cy="42" rx="2" ry="3" fill="#ffd9b3" />
+        {/* Face highlight */}
+        <ellipse cx="42" cy="32" rx="12" ry="10" fill="white" opacity="0.15" />
 
-        {/* Eyebrows */}
+        {/* === EARS === */}
+        <ellipse cx="23" cy="42" rx="5" ry="7" fill="#FFE4C4" />
+        <ellipse cx="23" cy="42" rx="3" ry="4" fill="#DEB887" opacity="0.5" />
+        <ellipse cx="77" cy="42" rx="5" ry="7" fill="#FFE4C4" />
+        <ellipse cx="77" cy="42" rx="3" ry="4" fill="#DEB887" opacity="0.5" />
+
+        {/* === EYEBROWS === */}
         <motion.path
-          d={expr.eyebrows.left}
-          stroke="#9ca3af"
-          strokeWidth="2.5"
+          d={eyebrows.left}
+          stroke="#9CA3AF"
+          strokeWidth="3.5"
           strokeLinecap="round"
           fill="none"
-          animate={mood === 'celebrating' ? { y: [-1, 1, -1] } : {}}
-          transition={{ duration: 0.3, repeat: mood === 'celebrating' ? Infinity : 0 }}
+          animate={showSparkles ? { y: [-2, 0, -2] } : {}}
+          transition={{ duration: 0.4, repeat: showSparkles ? Infinity : 0 }}
         />
         <motion.path
-          d={expr.eyebrows.right}
-          stroke="#9ca3af"
-          strokeWidth="2.5"
+          d={eyebrows.right}
+          stroke="#9CA3AF"
+          strokeWidth="3.5"
           strokeLinecap="round"
           fill="none"
-          animate={mood === 'celebrating' ? { y: [-1, 1, -1] } : {}}
-          transition={{ duration: 0.3, repeat: mood === 'celebrating' ? Infinity : 0, delay: 0.1 }}
+          animate={showSparkles ? { y: [-2, 0, -2] } : {}}
+          transition={{ duration: 0.4, repeat: showSparkles ? Infinity : 0, delay: 0.1 }}
         />
 
-        {/* Eyes */}
-        {renderEye(38, expr.leftEye, 0)}
-        {renderEye(62, expr.rightEye, 0.1)}
+        {/* === EYES === */}
+        {renderLeftEye()}
+        {renderRightEye()}
 
-        {/* Blush */}
-        {expr.blush && (
+        {/* === BLUSH === */}
+        {showBlush && (
           <>
             <motion.ellipse
-              cx="30"
-              cy="50"
-              rx="5"
-              ry="3"
-              fill="#fca5a5"
-              opacity={0.5}
-              animate={{ opacity: [0.4, 0.6, 0.4] }}
+              cx="28"
+              cy="52"
+              rx="6"
+              ry="3.5"
+              fill="#FDA4AF"
+              opacity="0.6"
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
             <motion.ellipse
-              cx="70"
-              cy="50"
-              rx="5"
-              ry="3"
-              fill="#fca5a5"
-              opacity={0.5}
-              animate={{ opacity: [0.4, 0.6, 0.4] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+              cx="72"
+              cy="52"
+              rx="6"
+              ry="3.5"
+              fill="#FDA4AF"
+              opacity="0.6"
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
             />
           </>
         )}
 
-        {/* Nose */}
+        {/* === NOSE === */}
         <path
-          d="M48 48 Q50 52 52 48"
-          stroke="#e5a87a"
-          strokeWidth="2"
+          d="M 47 50 Q 50 56 53 50"
+          stroke="#D4A574"
+          strokeWidth="2.5"
           strokeLinecap="round"
           fill="none"
         />
 
-        {/* Mouth */}
+        {/* === MOUTH === */}
         <motion.path
-          d={expr.mouth}
-          stroke="#92400e"
-          strokeWidth="2.5"
+          d={getMouthPath()}
+          stroke="#92400E"
+          strokeWidth="3"
           strokeLinecap="round"
-          fill={mood === 'celebrating' ? '#fcd34d' : 'none'}
-          animate={mood === 'celebrating' ? { scale: [1, 1.05, 1] } : {}}
-          transition={{ duration: 0.3, repeat: mood === 'celebrating' ? Infinity : 0 }}
+          fill={mood === 'celebrating' ? '#FDE68A' : 'none'}
+          animate={showSparkles ? { scale: [1, 1.02, 1] } : {}}
+          transition={{ duration: 0.5, repeat: showSparkles ? Infinity : 0 }}
         />
-        {/* Tongue for celebrating */}
+
+        {/* Open mouth interior for celebrating */}
         {mood === 'celebrating' && (
-          <ellipse cx="50" cy="64" rx="4" ry="3" fill="#f87171" />
+          <>
+            <ellipse cx="50" cy="68" rx="8" ry="5" fill="#7C2D12" />
+            <ellipse cx="50" cy="71" rx="5" ry="3" fill="#F87171" />
+          </>
         )}
 
-        {/* Beard */}
+        {/* === BEARD === */}
         <path
-          d="M28 50 Q26 68 38 78 Q44 82 50 83 Q56 82 62 78 Q74 68 72 50 Q68 55 50 58 Q32 55 28 50"
-          fill="url(#beardGradient)"
-          filter="url(#dropShadow)"
-        />
-        {/* Beard texture lines */}
-        <path d="M35 60 Q38 68 42 75" stroke="#d4d4d4" strokeWidth="1" fill="none" opacity="0.5" />
-        <path d="M50 60 Q50 70 50 80" stroke="#d4d4d4" strokeWidth="1" fill="none" opacity="0.5" />
-        <path d="M65 60 Q62 68 58 75" stroke="#d4d4d4" strokeWidth="1" fill="none" opacity="0.5" />
-
-        {/* Mustache */}
-        <path
-          d="M38 54 Q44 58 50 54 Q56 58 62 54"
-          fill="#e5e5e5"
-          stroke="#d4d4d4"
-          strokeWidth="0.5"
+          d="M 24 52
+             Q 20 70 32 82
+             Q 42 90 50 92
+             Q 58 90 68 82
+             Q 80 70 76 52
+             Q 68 58 50 62
+             Q 32 58 24 52
+             Z"
+          fill="url(#sageBeard)"
+          filter="url(#softShadow)"
         />
 
-        {/* Wisdom sparkles for celebrating */}
-        {expr.sparkles && (
+        {/* Beard texture/flow lines */}
+        <path d="M 32 62 Q 36 74 40 84" stroke="#D4D4D4" strokeWidth="1.5" fill="none" opacity="0.4" />
+        <path d="M 50 64 Q 50 76 50 88" stroke="#D4D4D4" strokeWidth="1.5" fill="none" opacity="0.4" />
+        <path d="M 68 62 Q 64 74 60 84" stroke="#D4D4D4" strokeWidth="1.5" fill="none" opacity="0.4" />
+
+        {/* Beard highlight */}
+        <path
+          d="M 30 55 Q 40 58 50 60 L 45 70 L 28 65 Z"
+          fill="white"
+          opacity="0.15"
+        />
+
+        {/* === MUSTACHE === */}
+        <path
+          d="M 35 56 Q 42 62 50 58 Q 58 62 65 56"
+          fill="#F5F5F5"
+          stroke="#E5E5E5"
+          strokeWidth="1"
+        />
+
+        {/* === CELEBRATION SPARKLES === */}
+        {showSparkles && (
           <>
+            {/* Orbiting sparkles */}
             <motion.g
               animate={{ rotate: 360 }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
               style={{ transformOrigin: '50px 50px' }}
             >
-              {[0, 72, 144, 216, 288].map((angle, i) => (
+              {[0, 60, 120, 180, 240, 300].map((angle, i) => (
                 <motion.circle
                   key={angle}
-                  cx={50 + 42 * Math.cos((angle * Math.PI) / 180)}
-                  cy={50 + 42 * Math.sin((angle * Math.PI) / 180)}
-                  r="3"
-                  fill="#fbbf24"
+                  cx={50 + 44 * Math.cos((angle * Math.PI) / 180)}
+                  cy={50 + 44 * Math.sin((angle * Math.PI) / 180)}
+                  r="3.5"
+                  fill="#FBBF24"
                   animate={{
-                    opacity: [0, 1, 0],
-                    scale: [0.5, 1.2, 0.5],
+                    opacity: [0.3, 1, 0.3],
+                    scale: [0.6, 1.3, 0.6],
                   }}
                   transition={{
-                    duration: 1.5,
+                    duration: 1.2,
                     repeat: Infinity,
-                    delay: i * 0.2,
+                    delay: i * 0.15,
                   }}
                 />
               ))}
             </motion.g>
-            {/* Extra twinkles */}
+
+            {/* Star sparkles */}
             <motion.path
-              d="M15 25 L17 30 L22 30 L18 33 L20 38 L15 35 L10 38 L12 33 L8 30 L13 30 Z"
-              fill="#fbbf24"
-              animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
-              transition={{ duration: 1, repeat: Infinity }}
+              d="M 12 22 L 14 28 L 20 28 L 15 32 L 17 38 L 12 34 L 7 38 L 9 32 L 4 28 L 10 28 Z"
+              fill="#FCD34D"
+              animate={{ opacity: [0, 1, 0], scale: [0.7, 1.1, 0.7], rotate: [0, 15, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+              style={{ transformOrigin: '12px 30px' }}
             />
             <motion.path
-              d="M85 20 L86 23 L89 23 L87 25 L88 28 L85 26 L82 28 L83 25 L81 23 L84 23 Z"
-              fill="#f59e0b"
-              animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.8] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+              d="M 88 18 L 90 22 L 94 22 L 91 25 L 92 29 L 88 26 L 84 29 L 85 25 L 82 22 L 86 22 Z"
+              fill="#F59E0B"
+              animate={{ opacity: [0, 1, 0], scale: [0.7, 1.1, 0.7], rotate: [0, -15, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
+              style={{ transformOrigin: '88px 23px' }}
+            />
+            <motion.path
+              d="M 78 8 L 79 11 L 82 11 L 80 13 L 81 16 L 78 14 L 75 16 L 76 13 L 74 11 L 77 11 Z"
+              fill="#FBBF24"
+              animate={{ opacity: [0, 1, 0], scale: [0.7, 1.1, 0.7] }}
+              transition={{ duration: 1, repeat: Infinity, delay: 0.8 }}
             />
           </>
         )}
 
-        {/* Thought bubbles for thinking */}
-        {expr.thoughtBubbles && (
+        {/* === THOUGHT BUBBLES === */}
+        {showThoughtBubbles && (
           <>
             <motion.circle
-              cx="82"
-              cy="28"
-              r="4"
-              fill="#c7d2fe"
-              animate={{ opacity: [0.5, 1, 0.5], y: [0, -3, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              cx="84"
+              cy="26"
+              r="5"
+              fill="#C7D2FE"
+              filter="url(#softShadow)"
+              animate={{ y: [0, -3, 0], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
             />
             <motion.circle
-              cx="88"
-              cy="18"
-              r="3"
-              fill="#c7d2fe"
-              animate={{ opacity: [0.4, 0.9, 0.4], y: [0, -3, 0] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+              cx="90"
+              cy="14"
+              r="3.5"
+              fill="#DDD6FE"
+              animate={{ y: [0, -4, 0], opacity: [0.5, 0.9, 0.5] }}
+              transition={{ duration: 2.5, repeat: Infinity, delay: 0.3 }}
             />
             <motion.circle
-              cx="92"
-              cy="10"
-              r="2"
-              fill="#c7d2fe"
-              animate={{ opacity: [0.3, 0.7, 0.3], y: [0, -3, 0] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+              cx="94"
+              cy="6"
+              r="2.5"
+              fill="#E9D5FF"
+              animate={{ y: [0, -3, 0], opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity, delay: 0.6 }}
             />
           </>
+        )}
+
+        {/* === DISAPPOINTED SWEAT DROP === */}
+        {mood === 'disappointed' && (
+          <motion.path
+            d="M 78 35 Q 80 40 78 45 Q 76 40 78 35"
+            fill="#60A5FA"
+            animate={{ y: [0, 3, 0], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
         )}
       </svg>
     </motion.div>
