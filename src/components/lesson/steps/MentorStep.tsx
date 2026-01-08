@@ -45,7 +45,7 @@ export function MentorStep({ lesson, reflection, actionCompleted, onComplete, on
       console.error('Failed to fetch Sage response:', error);
       setSageResponse({
         observation: '',
-        question: '',
+        insight: '',
         direction: '',
         fullMessage: name
           ? `${name}, you've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.`

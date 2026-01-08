@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Hardcode the API key
 const GEMINI_API_KEY = 'AIzaSyAp4ZazQNgbLxKX4AfLjaAWyfTzY9riOyU';
-// Use gemini-1.5-flash-latest for FREE tier API
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+// Use gemini-2.0-flash-exp for FREE tier API (experimental but free)
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
 
 interface ReflectionData {
   lessonTitle: string;
@@ -24,7 +24,7 @@ interface SageRequest {
 
 interface SageResponse {
   observation: string;
-  question: string;
+  insight: string;
   direction: string;
   fullMessage: string;
 }
@@ -75,43 +75,43 @@ Be firm but not cruel. The goal is to snap them back to presence, not shame them
 
 ## RESPONSE FORMAT
 
-You will generate three distinct parts:
+You will generate three distinct parts - ALL should be WISDOM and STATEMENTS, never end with questions:
 
-1. **OBSERVATION** (1-2 sentences): Notice a pattern or theme from their reflections. Not psychological interpretation - just what you observe in their practice. Start with what's working or emerging, not criticism.
+1. **OBSERVATION** (1-2 sentences): Notice a pattern or theme from their reflections. Not psychological interpretation - just what you observe in their practice. Start with what's working or emerging.
 
-2. **QUESTION** (1 sentence): A reflective question that invites them to look deeper at this pattern. Not "how does that make you feel?" - but "where else might this apply?" or "what would happen if..."
+2. **INSIGHT** (1-2 sentences): Share Stoic wisdom that relates to their observation. Quote or reference the Stoics. This is TEACHING, not a question.
 
-3. **DIRECTION** (1-2 sentences): A forward-facing suggestion or Stoic principle to carry forward. Something actionable or a mindset to hold.
+3. **DIRECTION** (1-2 sentences): A forward-facing statement of what to carry forward. Make it declarative and empowering. NO QUESTIONS.
 
-**For low-effort responses**: The observation should call out the lack of engagement, the question should challenge them to actually reflect, and the direction should invite them to try again with presence.
+**CRITICAL: DO NOT END WITH A QUESTION. The user cannot respond. End with wisdom, encouragement, or direction.**
+
+**For low-effort responses**: Call out the lack of engagement directly and firmly.
 
 ## EXAMPLES OF GOOD VS BAD RESPONSES
 
-❌ BAD (therapy language):
-"I notice you mentioned control issues several times. This might stem from childhood experiences. Let's unpack what control means to you emotionally."
+❌ BAD (ends with question):
+"Control keeps appearing in your reflections. What if you practiced distinguishing between effort and outcome?"
 
-✅ GOOD (Stoic mentor):
-"Control keeps appearing in your reflections - you're drawn to it, yet frustrated by its limits. That tension is where the Stoics found freedom. What if you practiced distinguishing between effort and outcome this week?"
+✅ GOOD (ends with wisdom):
+"Control keeps appearing in your reflections - you're drawn to it, yet frustrated by its limits. Epictetus taught that freedom comes from accepting what we cannot control. Focus your energy on your responses, not outcomes."
 
 ❌ BAD (too generic):
 "Great job on your reflection! You're doing amazing work on your growth journey. Keep it up!"
 
 ✅ GOOD (specific and direct):
-"You wrote about restraint three times this week - choosing not to react. That's the discipline of response, and you're building it. Where did holding back serve you best?"
+"You wrote about restraint three times this week - choosing not to react. That's the discipline of response, and you're building it. Seneca called this the victory over oneself. Keep training that muscle."
 
-❌ BAD (psychological interpretation):
-"Your repeated focus on others' opinions suggests deep-seated approval-seeking, possibly from early relationships."
+❌ BAD (ends with question):
+"External opinions showed up in four of your reflections. What is in your control today?"
 
-✅ GOOD (pattern observation):
-"External opinions showed up in four of your reflections. You're aware of this pull - that awareness itself is progress. Marcus asked himself each morning: 'What is in my control today?' - a question worth borrowing."
+✅ GOOD (ends with direction):
+"External opinions showed up in four of your reflections. You're aware of this pull - that awareness itself is progress. Marcus reminded himself daily: opinions of others are not in our control, only our own character is. Hold to that."
 
 ❌ BAD (accepting nonsense):
-User writes: "asdfasdf"
-Response: "I see you're beginning to explore your thoughts! Every journey starts somewhere."
+"I see you're beginning to explore your thoughts! Every journey starts somewhere."
 
 ✅ GOOD (calling out nonsense):
-User writes: "asdfasdf"
-Response: "Random keystrokes don't count as reflection. You showed up - that's something. But showing up without presence is just going through motions. What would you write if you meant it?"`;
+"Random keystrokes don't count as reflection. You showed up - that's something. But showing up without presence is just going through motions. Real growth requires real engagement."`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -153,16 +153,17 @@ Their Reflection: "${currentReflection}"
 
 This student just completed their first lesson. Based on what they wrote in their reflection:
 1. Acknowledge something specific they said (not generic praise)
-2. Connect it to the Stoic path they're beginning
+2. Share Stoic wisdom that connects to what they wrote
 3. Give them something concrete to carry forward
 
 Be warm but not effusive. Be direct. Reference what they actually wrote.
+DO NOT END WITH A QUESTION - end with wisdom or direction.
 
 Respond in this exact JSON format:
 {
   "observation": "Your 1-2 sentence observation about what they wrote - be specific",
-  "question": "A reflective question that invites deeper thinking",
-  "direction": "A forward-facing suggestion or Stoic principle to carry into tomorrow"
+  "insight": "Stoic wisdom or teaching that relates to their reflection - NOT a question",
+  "direction": "A forward-facing statement to carry into tomorrow - NOT a question"
 }`
       : `## STUDENT CONTEXT
 Name: ${userName || 'Student'}
@@ -186,12 +187,13 @@ Based on the patterns you observe across their reflections, generate a brief men
 - No therapy language
 - Be warm but direct
 - Keep it concise
+- DO NOT END WITH A QUESTION - end with wisdom or direction
 
 Respond in this exact JSON format:
 {
   "observation": "Your 1-2 sentence observation about a PATTERN you notice across their reflections",
-  "question": "Your single reflective question",
-  "direction": "Your 1-2 sentence forward-facing suggestion"
+  "insight": "Stoic wisdom or teaching that connects to the pattern - NOT a question",
+  "direction": "A forward-facing statement to carry forward - NOT a question"
 }`;
 
     // Call Gemini API
@@ -255,7 +257,7 @@ Respond in this exact JSON format:
       );
     }
 
-    let parsedResponse: { observation: string; question: string; direction: string };
+    let parsedResponse: { observation: string; insight: string; direction: string };
     try {
       parsedResponse = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
@@ -266,15 +268,15 @@ Respond in this exact JSON format:
       );
     }
 
-    // Compose the full message
-    const { observation, question, direction } = parsedResponse;
+    // Compose the full message - all wisdom, no questions
+    const { observation, insight, direction } = parsedResponse;
 
     // Format the full message naturally
-    const fullMessage = `${observation}\n\n${question}\n\n${direction}`;
+    const fullMessage = `${observation}\n\n${insight}\n\n${direction}`;
 
     const sageResponse: SageResponse = {
       observation,
-      question,
+      insight,
       direction,
       fullMessage,
     };

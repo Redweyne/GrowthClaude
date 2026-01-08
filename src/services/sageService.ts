@@ -17,7 +17,7 @@ interface SageRequest {
 
 interface SageResponse {
   observation: string;
-  question: string;
+  insight: string;
   direction: string;
   fullMessage: string;
   isAI: boolean; // true if from AI, false if fallback
@@ -60,34 +60,34 @@ const LOW_EFFORT_RESPONSES = [
 ];
 
 // Fallback responses when AI is unavailable
-// These are pattern-aware templates that can be customized
+// These give WISDOM and DIRECTION - NOT questions
 const FALLBACK_RESPONSES = {
   firstLesson: [
-    "You've taken your first step on this path. The Stoics believed that the beginning is half of every action. Where do you want this journey to take you?",
-    "Welcome to the practice. Seneca wrote that we learn not for school, but for life. What drew you to begin this exploration today?",
-    "You've begun. That single act puts you ahead of countless others who only think about starting. What will you carry forward from today's lesson?",
+    "You've taken your first step on this path. The Stoics believed that the beginning is half of every action. The hardest part is now behind you.",
+    "Welcome to the practice. Seneca wrote that we learn not for school, but for life. Today, you chose to learn for life.",
+    "You've begun. That single act puts you ahead of countless others who only think about starting. Carry this momentum forward.",
   ],
   earlyJourney: [
-    "You're building a foundation. Each reflection is a brick in the fortress of your mind. What pattern do you notice in your practice so far?",
-    "Three lessons in and you're still here. Consistency is the mother of mastery. What concept has resonated most deeply with you?",
-    "The early days require the most discipline. You're proving something to yourself. What have you discovered about your own thinking?",
+    "You're building a foundation. Each reflection is a brick in the fortress of your mind. Keep laying bricks.",
+    "Three lessons in and you're still here. Consistency is the mother of mastery. You're proving that to yourself right now.",
+    "The early days require the most discipline. You're showing up when it matters most. That's the mark of character.",
   ],
   midJourney: [
-    "You're developing a practice now, not just doing exercises. I notice you return each day with intention. What's keeping you committed?",
-    "Halfway through a journey is where most quit. You're still here. What has this practice revealed about your relationship with challenge?",
-    "The Stoics practiced daily. So do you now. What wisdom is becoming second nature to you?",
+    "You're developing a practice now, not just doing exercises. The Stoics would be proud of your consistency.",
+    "Halfway through a journey is where most quit. You're still here. That says everything about who you're becoming.",
+    "The Stoics practiced daily. So do you now. This wisdom is becoming part of who you are.",
   ],
   deepPractice: [
-    "Your reflections have depth now. You're not just completing lessons - you're integrating them. What principle guides your days most often?",
-    "Marcus Aurelius journaled for himself alone, never expecting others to read his words. You're doing the same. What truth have you discovered in the writing?",
-    "The practice has become part of you. What would you tell someone just beginning this journey?",
+    "Your reflections have depth now. You're not just completing lessons - you're integrating them into your life.",
+    "Marcus Aurelius journaled for himself alone, never expecting others to read his words. Like him, you write for your own transformation.",
+    "The practice has become part of you. You carry ancient wisdom into modern challenges. That is the way.",
   ],
   streakMilestones: {
-    7: "A week of practice. The habit is forming. What's different about how you see challenges now?",
-    14: "Two weeks of daily presence. You're building something real. What pattern in your thinking has shifted?",
-    30: "A month. You're no longer trying Stoicism - you're practicing it. What wisdom do you carry that you didn't have before?",
-    60: "Two months of daily practice. This is no longer an experiment - it's who you are becoming. What mastery have you noticed?",
-    90: "Ninety days. You've proven your commitment to yourself. The ancient philosophers would recognize you as a fellow practitioner. What have you become?",
+    7: "A week of practice. The habit is forming. You're rewiring how you respond to the world.",
+    14: "Two weeks of daily presence. You're building something real. The compound effect of wisdom is beginning.",
+    30: "A month of practice. You're no longer trying Stoicism - you're living it. This is who you are now.",
+    60: "Two months of daily practice. This is no longer an experiment - it's your philosophy. You've earned this.",
+    90: "Ninety days. You've proven your commitment to yourself. The ancient philosophers would recognize you as a fellow practitioner.",
   },
 };
 
@@ -126,7 +126,7 @@ function getFallbackResponse(
 
   return {
     observation: '',
-    question: '',
+    insight: '',
     direction: '',
     fullMessage: message,
     isAI: false,
@@ -153,7 +153,7 @@ export async function getSageResponse(
 
     return {
       observation: '',
-      question: '',
+      insight: '',
       direction: '',
       fullMessage: personalizedMessage,
       isAI: false,
@@ -200,11 +200,11 @@ export async function getSageResponse(
     }
 
     // Format the full message with proper structure
-    const { observation, question, direction } = data;
+    const { observation, insight, direction } = data;
     let fullMessage = '';
 
     if (observation) fullMessage += observation;
-    if (question) fullMessage += (fullMessage ? '\n\n' : '') + question;
+    if (insight) fullMessage += (fullMessage ? '\n\n' : '') + insight;
     if (direction) fullMessage += (fullMessage ? '\n\n' : '') + direction;
 
     // Personalize with name if not already included
@@ -214,7 +214,7 @@ export async function getSageResponse(
 
     return {
       observation: observation || '',
-      question: question || '',
+      insight: insight || '',
       direction: direction || '',
       fullMessage,
       isAI: true,
