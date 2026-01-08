@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Hardcode the API key
-const GEMINI_API_KEY = 'AIzaSyAp4ZazQNgbLxKX4AfLjaAWyfTzY9riOyU';
-// Use gemini-2.0-flash-exp for FREE tier API (experimental but free)
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+const GEMINI_API_KEY = 'AIzaSyAewd3OvIsdFCuTGROMEYwFLshpfwlEEsc';
+// Use gemini-1.5-flash for FREE tier API
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 interface ReflectionData {
   lessonTitle: string;
