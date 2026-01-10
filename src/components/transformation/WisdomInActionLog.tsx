@@ -16,7 +16,7 @@ import {
   Clock
 } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
-import { useStore, type WisdomInAction } from '@/store/useStore';
+import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 
 // Stoic principles to choose from
@@ -70,7 +70,7 @@ interface WisdomInActionLogProps {
 }
 
 export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
-  const { saveWisdomInAction, getWisdomInActionLogs, wisdomInActionLogs } = useStore();
+  const { saveWisdomInAction, getWisdomInActionLogs } = useStore();
   const { playSparkle, playCelebration } = useSound();
 
   const [isAdding, setIsAdding] = useState(false);

@@ -14,12 +14,11 @@ import type { Lesson } from '@/types';
 interface MentorStepProps {
   lesson: Lesson;
   reflection: string;
-  actionCompleted: boolean;
   onComplete: () => void;
   onRetry: () => void; // Go back to reflection
 }
 
-export function MentorStep({ lesson, reflection, actionCompleted, onComplete, onRetry }: MentorStepProps) {
+export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
   const { name, transformationGoal, currentStreak, reflections } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
 

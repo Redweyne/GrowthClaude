@@ -24,7 +24,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const [actionCompleted, setActionCompleted] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
   const xpEarnedRef = useRef(0);
-  const { completeLesson, currentStreak, lastLessonDate, saveReflection } = useStore();
+  const { completeLesson, currentStreak, saveReflection } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
 
   const handleWisdomComplete = () => {
@@ -161,7 +161,6 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
               <MentorStep
                 lesson={lesson}
                 reflection={reflection}
-                actionCompleted={actionCompleted}
                 onComplete={handleMentorComplete}
                 onRetry={handleRetry}
               />

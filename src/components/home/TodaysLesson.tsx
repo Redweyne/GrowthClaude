@@ -41,7 +41,6 @@ export function TodaysLesson({
   // Calculate world progress
   const allLessons = world.chapters.flatMap((ch) => ch.lessons);
   const completedCount = allLessons.filter((l) => completedLessons[l.id]).length;
-  const worldProgress = (completedCount / allLessons.length) * 100;
 
   const greeting = () => {
     const hour = new Date().getHours();
