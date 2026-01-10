@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Lock, CheckCircle, Star, Flame, ChevronLeft } from 'lucide-react';
+import { Lock, CheckCircle, Star, Flame } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import type { World, Lesson } from '@/types';
+import type { World } from '@/types';
 
 interface WorldMapProps {
   world: World;

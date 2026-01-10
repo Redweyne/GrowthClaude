@@ -6,6 +6,7 @@ import { Feather } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useSound } from '@/hooks/useSound';
 import type { Lesson } from '@/types';
+import { MIN_REFLECTION_LENGTH } from '@/lib/reflection';
 
 interface ReflectionStepProps {
   lesson: Lesson;
@@ -15,7 +16,7 @@ interface ReflectionStepProps {
 export function ReflectionStep({ lesson, onComplete }: ReflectionStepProps) {
   const [reflection, setReflection] = useState('');
   const { playTap, playSuccess, playWhoosh } = useSound();
-  const minCharacters = 20;
+  const minCharacters = MIN_REFLECTION_LENGTH;
 
   const handleSubmit = () => {
     playTap();

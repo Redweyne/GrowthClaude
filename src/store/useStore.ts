@@ -156,7 +156,7 @@ interface UserActions {
   saveMonthlyAssessment: (assessment: Omit<MonthlyAssessment, 'id' | 'date' | 'month' | 'xpEarned'>) => void;
   isAssessmentDue: () => boolean;
   getAssessmentHistory: () => MonthlyAssessment[];
-  getAssessmentComparison: (months?: number) => { current: MonthlyAssessment | null; previous: MonthlyAssessment | null };
+  getAssessmentComparison: () => { current: MonthlyAssessment | null; previous: MonthlyAssessment | null };
 
   // Wisdom in Action
   saveWisdomInAction: (entry: Omit<WisdomInAction, 'id' | 'date'>) => void;
@@ -424,9 +424,8 @@ export const useStore = create<UserState & UserActions>()(
         );
       },
 
-      getAssessmentComparison: (months = 2) => {
-        const state = get();
-        const sorted = [...state.monthlyAssessments].sort((a, b) =>
+      getAssessmentComparison: () => {
+        const sorted = [...get().monthlyAssessments].sort((a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         return {
@@ -510,7 +509,6 @@ export const useStore = create<UserState & UserActions>()(
       },
 
       getPatternTrends: () => {
-        const state = get();
         const now = new Date();
         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 

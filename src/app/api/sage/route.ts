@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     // Build the context from recent reflections
     const reflectionContext = reflections.length > 0
-      ? reflections.map((r, i) =>
+      ? reflections.map((r) =>
           `[${r.date}] Lesson: "${r.lessonTitle}" (${r.coreConceptTag})
 Action completed: ${r.actionCompleted ? 'Yes' : 'No'}
 Reflection: "${r.reflection}"`
@@ -248,7 +248,7 @@ Respond in this exact JSON format:
 
     // Parse the JSON response from Gemini
     // Try to extract JSON from the response (it might be wrapped in markdown code blocks)
-    let jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+    const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.error('Could not parse JSON from response:', generatedText);
       return NextResponse.json(

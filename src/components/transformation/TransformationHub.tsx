@@ -12,7 +12,7 @@ import {
   Calendar,
   Zap
 } from 'lucide-react';
-import { Button, Card } from '@/components/ui';
+import { Card } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { PatternAnalysis } from './PatternAnalysis';
 import { TransformationRadar } from './TransformationRadar';

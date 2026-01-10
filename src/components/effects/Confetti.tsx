@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Particle {
@@ -35,6 +35,11 @@ const DEFAULT_COLORS = [
   '#06b6d4', // cyan
 ];
 
+const pseudoRandom = (seed: number) => {
+  const value = Math.sin(seed) * 10000;
+  return value - Math.floor(value);
+};
+
 export function Confetti({
   active,
   duration = 3000,
@@ -43,44 +48,44 @@ export function Confetti({
   spread = 180,
   onComplete,
 }: ConfettiProps) {
-  const [particles, setParticles] = useState<Particle[]>([]);
-
-  const createParticles = useCallback(() => {
+  const particles = useMemo(() => {
+    if (!active) return [];
     const newParticles: Particle[] = [];
     const shapes: Array<'circle' | 'square' | 'star'> = ['circle', 'square', 'star'];
 
     for (let i = 0; i < particleCount; i++) {
-      const angle = (Math.random() * spread - spread / 2) * (Math.PI / 180);
-      const velocity = 8 + Math.random() * 12;
+      const angleSeed = pseudoRandom(i + particleCount);
+      const velocitySeed = pseudoRandom(i + spread);
+      const colorSeed = pseudoRandom(i + colors.length);
+      const sizeSeed = pseudoRandom(i + 42);
+      const rotationSeed = pseudoRandom(i + 99);
+      const shapeSeed = pseudoRandom(i + 7);
+      const angle = (angleSeed * spread - spread / 2) * (Math.PI / 180);
+      const velocity = 8 + velocitySeed * 12;
 
       newParticles.push({
         id: i,
         x: 50, // Start from center
         y: 50,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        size: 6 + Math.random() * 8,
-        rotation: Math.random() * 360,
+        color: colors[Math.floor(colorSeed * colors.length)],
+        size: 6 + sizeSeed * 8,
+        rotation: rotationSeed * 360,
         velocityX: Math.sin(angle) * velocity,
         velocityY: -Math.cos(angle) * velocity - 5,
-        shape: shapes[Math.floor(Math.random() * shapes.length)],
+        shape: shapes[Math.floor(shapeSeed * shapes.length)],
       });
     }
 
-    setParticles(newParticles);
-  }, [particleCount, colors, spread]);
+    return newParticles;
+  }, [active, particleCount, colors, spread]);
 
   useEffect(() => {
-    if (active) {
-      createParticles();
-      const timer = setTimeout(() => {
-        setParticles([]);
-        onComplete?.();
-      }, duration);
-      return () => clearTimeout(timer);
-    } else {
-      setParticles([]);
-    }
-  }, [active, createParticles, duration, onComplete]);
+    if (!active) return;
+    const timer = setTimeout(() => {
+      onComplete?.();
+    }, duration);
+    return () => clearTimeout(timer);
+  }, [active, duration, onComplete]);
 
   const renderShape = (particle: Particle) => {
     switch (particle.shape) {
@@ -159,15 +164,16 @@ interface XPOrbProps {
 }
 
 export function XPOrbs({ count, onCollect }: XPOrbProps) {
-  const [orbs, setOrbs] = useState<Array<{ id: number; delay: number }>>([]);
-
-  useEffect(() => {
-    const newOrbs = Array.from({ length: Math.min(count, 15) }, (_, i) => ({
+  const orbs = useMemo(() => (
+    Array.from({ length: Math.min(count, 15) }, (_, i) => ({
       id: i,
       delay: i * 0.05,
-    }));
-    setOrbs(newOrbs);
+      offsetX: (pseudoRandom(i + count) - 0.5) * 200,
+      offsetY: (pseudoRandom(i + count + 12) - 0.5) * 200,
+    }))
+  ), [count]);
 
+  useEffect(() => {
     const timer = setTimeout(() => {
       onCollect?.();
     }, 1500);
@@ -182,8 +188,8 @@ export function XPOrbs({ count, onCollect }: XPOrbProps) {
           key={orb.id}
           className="absolute left-1/2 top-1/2"
           initial={{
-            x: (Math.random() - 0.5) * 200,
-            y: (Math.random() - 0.5) * 200,
+            x: orb.offsetX,
+            y: orb.offsetY,
             scale: 0,
             opacity: 0,
           }}
