@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TodaysLesson } from '@/components/home/TodaysLesson';
@@ -18,12 +18,6 @@ export default function Home() {
   const { onboardingComplete, completedLessons, isCheckinDue, isAssessmentDue } = useStore();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Handle hydration mismatch
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   // Get current world (for MVP, just Stoicism)
   const currentWorld = stoicismWorld;
@@ -74,15 +68,6 @@ export default function Home() {
     setSelectedLessonId(null);
     setCurrentView('home');
   };
-
-  // Loading state for hydration
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-zinc-800 border-t-indigo-500 animate-spin" />
-      </div>
-    );
-  }
 
   // Onboarding flow
   if (!onboardingComplete) {

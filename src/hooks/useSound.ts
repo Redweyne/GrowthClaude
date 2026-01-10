@@ -245,7 +245,7 @@ export function useSound() {
 
           oscillator.start(ctx.currentTime);
           oscillator.stop(ctx.currentTime + 0.05);
-        } catch (e) {
+        } catch {
           // Ignore errors during rapid sound playback
         }
       }, i * interval);

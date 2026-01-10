@@ -6,7 +6,7 @@ import { Brain, ChevronRight, X, Sparkles, Zap } from 'lucide-react';
 import { Button, Card, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
-import { getPracticeScenarios, type PracticeScenario } from '@/content/practiceScenarios';
+import { getPracticeScenarios } from '@/content/practiceScenarios';
 import { MENTOR, getRandomMentorResponse, MENTOR_RESPONSES } from '@/content/mentor';
 
 interface PracticeModeProps {
@@ -17,7 +17,7 @@ interface PracticeModeProps {
 type PracticeStage = 'intro' | 'scenario' | 'response' | 'reflection' | 'complete';
 
 export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
-  const { completedLessons, totalXp, completeLesson } = useStore();
+  const { completedLessons, completeLesson } = useStore();
   const { playComplete, playSuccess, playReward } = useSound();
 
   const [stage, setStage] = useState<PracticeStage>('intro');

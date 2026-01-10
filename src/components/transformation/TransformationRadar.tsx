@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Target, Eye, Brain, TrendingUp, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { Card } from '@/components/ui';
-import { useStore, type MonthlyAssessment } from '@/store/useStore';
+import { useStore } from '@/store/useStore';
 
 // Dimension configuration
 const DIMENSIONS = [
@@ -173,9 +173,9 @@ function RadarChart({
 }
 
 export function TransformationRadar({ compact = false }: TransformationRadarProps) {
-  const { getAssessmentComparison, getAssessmentHistory, monthlyAssessments } = useStore();
+  const { getAssessmentComparison } = useStore();
 
-  const { current, previous } = useMemo(() => getAssessmentComparison(), [getAssessmentComparison, monthlyAssessments]);
+  const { current, previous } = useMemo(() => getAssessmentComparison(), [getAssessmentComparison]);
 
   // Calculate changes between current and previous
   const changes = useMemo(() => {

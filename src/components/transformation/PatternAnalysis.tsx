@@ -31,15 +31,15 @@ interface PatternAnalysisProps {
 }
 
 export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
-  const { analyzePatterns, getPatternTrends, allReflections } = useStore();
+  const { analyzePatterns, getPatternTrends } = useStore();
 
-  const currentPatterns = useMemo(() => analyzePatterns(), [analyzePatterns, allReflections]);
-  const trends = useMemo(() => getPatternTrends(), [getPatternTrends, allReflections]);
+  const currentPatterns = useMemo(() => analyzePatterns(), [analyzePatterns]);
+  const trends = useMemo(() => getPatternTrends(), [getPatternTrends]);
 
   // Sort themes by frequency
   const sortedThemes = useMemo(() => {
     const entries = Object.entries(currentPatterns.themes) as [PatternTheme, number][];
-    return entries.sort((a, b) => b[1] - a[1]).filter(([_, count]) => count > 0);
+    return entries.sort((a, b) => b[1] - a[1]).filter(([, count]) => count > 0);
   }, [currentPatterns.themes]);
 
   // Get top patterns for growth and challenges
