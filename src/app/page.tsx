@@ -8,12 +8,14 @@ import { WorldMap } from '@/components/world/WorldMap';
 import { LessonExperience } from '@/components/lesson/LessonExperience';
 import { PracticeMode } from '@/components/practice';
 import { WeeklyCheckin } from '@/components/checkin';
+import { MonthlyAssessment } from '@/components/assessment';
+import { TransformationHub } from '@/components/transformation';
 import stoicismWorld from '@/content/stoicism';
 
-type AppView = 'home' | 'map' | 'lesson' | 'practice' | 'checkin' | 'settings';
+type AppView = 'home' | 'map' | 'lesson' | 'practice' | 'checkin' | 'assessment' | 'transformation' | 'settings';
 
 export default function Home() {
-  const { onboardingComplete, completedLessons, isCheckinDue } = useStore();
+  const { onboardingComplete, completedLessons, isCheckinDue, isAssessmentDue } = useStore();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -117,6 +119,26 @@ export default function Home() {
     );
   }
 
+  // Monthly assessment
+  if (currentView === 'assessment') {
+    return (
+      <MonthlyAssessment
+        onComplete={() => setCurrentView('home')}
+        onSkip={() => setCurrentView('home')}
+      />
+    );
+  }
+
+  // Transformation Hub
+  if (currentView === 'transformation') {
+    return (
+      <TransformationHub
+        onBack={() => setCurrentView('home')}
+        onOpenAssessment={() => setCurrentView('assessment')}
+      />
+    );
+  }
+
   // World map
   if (currentView === 'map') {
     return (
@@ -158,7 +180,10 @@ export default function Home() {
       onOpenSettings={() => setCurrentView('settings')}
       onOpenPractice={() => setCurrentView('practice')}
       onOpenCheckin={() => setCurrentView('checkin')}
+      onOpenAssessment={() => setCurrentView('assessment')}
+      onOpenTransformation={() => setCurrentView('transformation')}
       isCheckinDue={isCheckinDue()}
+      isAssessmentDue={isAssessmentDue()}
     />
   );
 }

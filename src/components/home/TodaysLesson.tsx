@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Play, Flame, Zap, Map, Settings, Brain, Calendar } from 'lucide-react';
+import { Play, Flame, Zap, Map, Settings, Brain, Calendar, TrendingUp } from 'lucide-react';
 import { Button, Card, StreakBadge, XPBadge, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp, getXpProgress } from '@/types';
@@ -15,7 +15,10 @@ interface TodaysLessonProps {
   onOpenSettings: () => void;
   onOpenPractice: () => void;
   onOpenCheckin: () => void;
+  onOpenAssessment: () => void;
+  onOpenTransformation: () => void;
   isCheckinDue: boolean;
+  isAssessmentDue: boolean;
 }
 
 export function TodaysLesson({
@@ -26,7 +29,10 @@ export function TodaysLesson({
   onOpenSettings,
   onOpenPractice,
   onOpenCheckin,
+  onOpenAssessment,
+  onOpenTransformation,
   isCheckinDue,
+  isAssessmentDue,
 }: TodaysLessonProps) {
   const { name, totalXp, currentStreak, completedLessons } = useStore();
   const level = getLevelFromXp(totalXp);
@@ -119,6 +125,31 @@ export function TodaysLesson({
           <div className="flex items-center gap-1 text-amber-400">
             <Zap size={14} />
             <span className="text-sm font-medium">+50 XP</span>
+          </div>
+        </motion.button>
+      )}
+
+      {/* Monthly assessment banner */}
+      {isAssessmentDue && (
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          onClick={onOpenAssessment}
+          className="w-full mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30 flex items-center justify-between hover:from-purple-500/30 hover:to-indigo-500/30 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+              <TrendingUp size={20} className="text-purple-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-white font-medium">Monthly Assessment</p>
+              <p className="text-xs text-zinc-400">Measure your transformation</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 text-amber-400">
+            <Zap size={14} />
+            <span className="text-sm font-medium">+100 XP</span>
           </div>
         </motion.button>
       )}
@@ -227,7 +258,7 @@ export function TodaysLesson({
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 onClick={onOpenPractice}
-                className="w-full p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between hover:bg-indigo-500/20 transition-colors"
+                className="w-full p-4 mb-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between hover:bg-indigo-500/20 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
@@ -239,6 +270,30 @@ export function TodaysLesson({
                   </div>
                 </div>
                 <Zap size={16} className="text-amber-400" />
+              </motion.button>
+            )}
+
+            {/* Transformation Hub button - show after completing some lessons */}
+            {completedCount >= 3 && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                onClick={onOpenTransformation}
+                className="w-full p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-purple-500/10 border border-emerald-500/20 flex items-center justify-between hover:from-emerald-500/20 hover:to-purple-500/20 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-purple-500/20 flex items-center justify-center">
+                    <TrendingUp size={20} className="text-emerald-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-medium">Transformation Hub</p>
+                    <p className="text-xs text-zinc-500">See your growth journey</p>
+                  </div>
+                </div>
+                <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <span className="text-xs text-emerald-400">→</span>
+                </div>
               </motion.button>
             )}
           </motion.div>

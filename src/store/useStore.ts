@@ -27,6 +27,59 @@ export interface ReflectionEntry {
   date: string;
 }
 
+// ============================================
+// PHASE 2: PROOF OF TRANSFORMATION
+// ============================================
+
+// Monthly Self-Assessment - 5 dimensions measured 1-10
+export interface MonthlyAssessment {
+  id: string;
+  date: string; // ISO date string
+  month: string; // "2025-01" format for easy grouping
+  scores: {
+    emotionalMastery: number;  // 1-10: Managing difficult emotions
+    discipline: number;        // 1-10: Consistency with commitments
+    perspective: number;       // 1-10: Maintaining wisdom in challenges
+    selfAwareness: number;     // 1-10: Noticing thought patterns
+    growth: number;            // 1-10: Learning and improving
+  };
+  reflection: string; // Open-ended reflection on the month
+  xpEarned: number;
+}
+
+// Wisdom in Action - Real-world application log
+export interface WisdomInAction {
+  id: string;
+  date: string;
+  situation: string;      // What happened
+  stoicPrinciple: string; // Which principle was applied
+  application: string;    // How the principle was applied
+  outcome: string;        // What was the result
+  tags: string[];         // e.g., ["dichotomy-of-control", "patience"]
+}
+
+// Pattern themes to track in reflections
+export type PatternTheme =
+  | 'control'
+  | 'acceptance'
+  | 'patience'
+  | 'courage'
+  | 'discipline'
+  | 'gratitude'
+  | 'perspective'
+  | 'judgment'
+  | 'anger'
+  | 'fear'
+  | 'comparison'
+  | 'procrastination';
+
+// Monthly pattern frequency
+export interface MonthlyPatternData {
+  month: string; // "2025-01" format
+  themes: Record<PatternTheme, number>; // count of each theme
+  totalReflections: number;
+}
+
 interface UserState {
   // User identity
   userId: string | null;
@@ -57,8 +110,14 @@ interface UserState {
   weeklyCheckins: WeeklyCheckinData[];
   lastCheckinDate: string | null;
 
-  // Reflections for pattern analysis (last 14)
+  // Reflections for pattern analysis (last 14 for AI, all for historical)
   reflections: ReflectionEntry[];
+  allReflections: ReflectionEntry[]; // Keep ALL reflections for pattern tracking
+
+  // Phase 2: Proof of Transformation
+  monthlyAssessments: MonthlyAssessment[];
+  wisdomInActionLogs: WisdomInAction[];
+  lastAssessmentMonth: string | null; // "2025-01" format
 
   // Settings
   soundEnabled: boolean;
@@ -93,6 +152,20 @@ interface UserActions {
   saveReflection: (entry: Omit<ReflectionEntry, 'id' | 'date'>) => void;
   getRecentReflections: (count?: number) => ReflectionEntry[];
 
+  // Phase 2: Proof of Transformation
+  saveMonthlyAssessment: (assessment: Omit<MonthlyAssessment, 'id' | 'date' | 'month' | 'xpEarned'>) => void;
+  isAssessmentDue: () => boolean;
+  getAssessmentHistory: () => MonthlyAssessment[];
+  getAssessmentComparison: (months?: number) => { current: MonthlyAssessment | null; previous: MonthlyAssessment | null };
+
+  // Wisdom in Action
+  saveWisdomInAction: (entry: Omit<WisdomInAction, 'id' | 'date'>) => void;
+  getWisdomInActionLogs: (limit?: number) => WisdomInAction[];
+
+  // Pattern Analysis
+  analyzePatterns: (month?: string) => MonthlyPatternData;
+  getPatternTrends: () => { theme: PatternTheme; trend: 'up' | 'down' | 'stable'; change: number }[];
+
   // Settings
   toggleSound: () => void;
   toggleHaptic: () => void;
@@ -120,8 +193,28 @@ const initialState: UserState = {
   weeklyCheckins: [],
   lastCheckinDate: null,
   reflections: [],
+  allReflections: [],
+  monthlyAssessments: [],
+  wisdomInActionLogs: [],
+  lastAssessmentMonth: null,
   soundEnabled: true,
   hapticEnabled: true,
+};
+
+// Pattern keywords to detect in reflections
+const PATTERN_KEYWORDS: Record<PatternTheme, string[]> = {
+  control: ['control', 'controlling', 'controllable', 'uncontrollable', 'grip', 'hold on', 'let go', 'release'],
+  acceptance: ['accept', 'acceptance', 'accepting', 'resist', 'resistance', 'embrace', 'surrender'],
+  patience: ['patient', 'patience', 'impatient', 'wait', 'waiting', 'rush', 'rushing', 'hurry'],
+  courage: ['courage', 'courageous', 'brave', 'fear', 'afraid', 'scared', 'bold'],
+  discipline: ['discipline', 'disciplined', 'consistent', 'consistency', 'habit', 'routine', 'commitment'],
+  gratitude: ['grateful', 'gratitude', 'thankful', 'appreciate', 'appreciation', 'blessed'],
+  perspective: ['perspective', 'view', 'viewpoint', 'reframe', 'see differently', 'bigger picture'],
+  judgment: ['judge', 'judgment', 'judging', 'critical', 'criticism', 'opinion', 'opinions'],
+  anger: ['anger', 'angry', 'frustrated', 'frustration', 'irritated', 'annoyed', 'rage'],
+  fear: ['fear', 'fears', 'afraid', 'anxious', 'anxiety', 'worry', 'worried', 'scared'],
+  comparison: ['compare', 'comparison', 'comparing', 'envy', 'jealous', 'jealousy', 'others have'],
+  procrastination: ['procrastinate', 'procrastination', 'delay', 'delayed', 'put off', 'avoid', 'avoiding'],
 };
 
 export const useStore = create<UserState & UserActions>()(
@@ -273,15 +366,176 @@ export const useStore = create<UserState & UserActions>()(
           date: today,
         };
 
-        // Keep only the last 14 reflections for pattern analysis
+        // Keep only the last 14 reflections for AI analysis
         const updatedReflections = [...state.reflections, newReflection].slice(-14);
+        // Keep ALL reflections for historical pattern tracking
+        const updatedAllReflections = [...state.allReflections, newReflection];
 
-        set({ reflections: updatedReflections });
+        set({
+          reflections: updatedReflections,
+          allReflections: updatedAllReflections,
+        });
       },
 
       getRecentReflections: (count = 14) => {
         const state = get();
         return state.reflections.slice(-count);
+      },
+
+      // ============================================
+      // PHASE 2: Monthly Self-Assessment
+      // ============================================
+      saveMonthlyAssessment: (assessment) => {
+        const state = get();
+        const now = new Date();
+        const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const xpEarned = 100; // Bonus XP for completing assessment
+
+        const newAssessment: MonthlyAssessment = {
+          ...assessment,
+          id: crypto.randomUUID(),
+          date: now.toISOString(),
+          month,
+          xpEarned,
+        };
+
+        set({
+          monthlyAssessments: [...state.monthlyAssessments, newAssessment],
+          lastAssessmentMonth: month,
+          totalXp: state.totalXp + xpEarned,
+        });
+      },
+
+      isAssessmentDue: () => {
+        const state = get();
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        // Assessment is due if we haven't done one this month
+        // AND we have at least 5 completed lessons
+        const completedCount = Object.keys(state.completedLessons).length;
+        return state.lastAssessmentMonth !== currentMonth && completedCount >= 5;
+      },
+
+      getAssessmentHistory: () => {
+        const state = get();
+        return [...state.monthlyAssessments].sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+      },
+
+      getAssessmentComparison: (months = 2) => {
+        const state = get();
+        const sorted = [...state.monthlyAssessments].sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        return {
+          current: sorted[0] || null,
+          previous: sorted[1] || null,
+        };
+      },
+
+      // ============================================
+      // PHASE 2: Wisdom in Action Log
+      // ============================================
+      saveWisdomInAction: (entry) => {
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+
+        const newEntry: WisdomInAction = {
+          ...entry,
+          id: crypto.randomUUID(),
+          date: today,
+        };
+
+        // Award bonus XP for logging wisdom in action
+        const xpBonus = 15;
+
+        set({
+          wisdomInActionLogs: [...state.wisdomInActionLogs, newEntry],
+          totalXp: state.totalXp + xpBonus,
+        });
+      },
+
+      getWisdomInActionLogs: (limit = 50) => {
+        const state = get();
+        return [...state.wisdomInActionLogs]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(0, limit);
+      },
+
+      // ============================================
+      // PHASE 2: Pattern Analysis
+      // ============================================
+      analyzePatterns: (month) => {
+        const state = get();
+        const targetMonth = month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+
+        // Filter reflections for the target month
+        const monthReflections = state.allReflections.filter(r => r.date.startsWith(targetMonth));
+
+        // Count theme occurrences
+        const themes: Record<PatternTheme, number> = {
+          control: 0,
+          acceptance: 0,
+          patience: 0,
+          courage: 0,
+          discipline: 0,
+          gratitude: 0,
+          perspective: 0,
+          judgment: 0,
+          anger: 0,
+          fear: 0,
+          comparison: 0,
+          procrastination: 0,
+        };
+
+        monthReflections.forEach(r => {
+          const text = r.reflection.toLowerCase();
+          (Object.keys(PATTERN_KEYWORDS) as PatternTheme[]).forEach(theme => {
+            const keywords = PATTERN_KEYWORDS[theme];
+            keywords.forEach(keyword => {
+              if (text.includes(keyword)) {
+                themes[theme]++;
+              }
+            });
+          });
+        });
+
+        return {
+          month: targetMonth,
+          themes,
+          totalReflections: monthReflections.length,
+        };
+      },
+
+      getPatternTrends: () => {
+        const state = get();
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        // Get previous month
+        const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+
+        const currentPatterns = get().analyzePatterns(currentMonth);
+        const prevPatterns = get().analyzePatterns(prevMonth);
+
+        const trends: { theme: PatternTheme; trend: 'up' | 'down' | 'stable'; change: number }[] = [];
+
+        (Object.keys(currentPatterns.themes) as PatternTheme[]).forEach(theme => {
+          const current = currentPatterns.themes[theme];
+          const prev = prevPatterns.themes[theme];
+          const change = current - prev;
+
+          let trend: 'up' | 'down' | 'stable' = 'stable';
+          if (change > 0) trend = 'up';
+          if (change < 0) trend = 'down';
+
+          trends.push({ theme, trend, change });
+        });
+
+        return trends;
       },
 
       // Settings
