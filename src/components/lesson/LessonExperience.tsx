@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WisdomStep } from './steps/WisdomStep';
 import { ActionStep } from './steps/ActionStep';
@@ -42,6 +42,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const [reflection, setReflection] = useState('');
   const [actionCompleted, setActionCompleted] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+  const xpEarnedRef = useRef(0);
   const [isLowEffort, setIsLowEffort] = useState(false);
   const { completeLesson, currentStreak, lastLessonDate, saveReflection } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
@@ -67,6 +68,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
       // Skip reward, go straight to mentor for the callout
       // Do NOT save reflection, do NOT award XP
       setXpEarned(0);
+      xpEarnedRef.current = 0;
       setStage('mentor');
       return;
     }
@@ -96,11 +98,14 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     const streakBonus = Math.min(currentStreak * 0.02, 0.5);
     xp = Math.round(xp * (1 + streakBonus));
 
-    // ENSURE XP is never 0 for a valid reflection
-    if (xp <= 0) xp = 15;
+    // ENSURE XP is always valid and never 0 for a valid reflection
+    if (!Number.isFinite(xp) || xp <= 0) {
+      xp = Math.max(lesson.xpReward ?? 0, 15);
+    }
 
     console.log('[XP DEBUG] baseXp:', baseXp, 'finalXp:', xp, 'lesson.xpReward:', lesson.xpReward, 'actionCompleted:', actionCompleted, 'textLength:', text.length);
     setXpEarned(xp);
+    xpEarnedRef.current = xp;
     playReward();
     setStage('reward');
   };
@@ -111,7 +116,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
   const handleMentorComplete = () => {
     // Save lesson completion to store (only for successful lessons)
-    completeLesson(lesson.id, xpEarned);
+    completeLesson(lesson.id, xpEarnedRef.current);
     playComplete();
     onComplete();
   };
