@@ -273,8 +273,8 @@ export function TodaysLesson({
               </motion.button>
             )}
 
-            {/* Transformation Hub button - show after completing some lessons */}
-            {completedCount >= 3 && (
+            {/* Transformation Hub button - show after completing at least 1 lesson */}
+            {completedCount >= 1 && (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

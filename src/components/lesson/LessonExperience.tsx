@@ -80,14 +80,24 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
       actionCompleted: actionCompleted,
     });
 
-    // Calculate XP - default to 25 if lesson.xpReward is missing
-    const baseXp = lesson.xpReward ?? 25;
+    // Calculate XP - ALWAYS award at least 15 XP for completing a lesson
+    // Use lesson.xpReward if available, otherwise default to 15
+    const baseXp = (lesson.xpReward && lesson.xpReward > 0) ? lesson.xpReward : 15;
     let xp = baseXp;
+
+    // Bonus XP for completing the action
     if (actionCompleted) xp += 5;
+
+    // Bonus XP for thoughtful reflections
     if (text.length > 50) xp += 5;
     if (text.length > 150) xp += 5;
+
+    // Streak bonus (up to 50% extra)
     const streakBonus = Math.min(currentStreak * 0.02, 0.5);
     xp = Math.round(xp * (1 + streakBonus));
+
+    // ENSURE XP is never 0 for a valid reflection
+    if (xp <= 0) xp = 15;
 
     console.log('[XP DEBUG] baseXp:', baseXp, 'finalXp:', xp, 'lesson.xpReward:', lesson.xpReward, 'actionCompleted:', actionCompleted, 'textLength:', text.length);
     setXpEarned(xp);

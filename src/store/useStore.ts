@@ -412,9 +412,9 @@ export const useStore = create<UserState & UserActions>()(
         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
         // Assessment is due if we haven't done one this month
-        // AND we have at least 5 completed lessons
+        // AND we have at least 1 completed lesson
         const completedCount = Object.keys(state.completedLessons).length;
-        return state.lastAssessmentMonth !== currentMonth && completedCount >= 5;
+        return state.lastAssessmentMonth !== currentMonth && completedCount >= 1;
       },
 
       getAssessmentHistory: () => {
