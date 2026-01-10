@@ -10,7 +10,6 @@ import { MentorStep } from './steps/MentorStep';
 import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
-import { isLowEffortReflection } from '@/lib/reflection';
 
 interface LessonExperienceProps {
   lesson: Lesson;
@@ -25,7 +24,6 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const [actionCompleted, setActionCompleted] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
   const xpEarnedRef = useRef(0);
-  const [isLowEffort, setIsLowEffort] = useState(false);
   const { completeLesson, currentStreak, lastLessonDate, saveReflection } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
 
@@ -41,19 +39,6 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
   const handleReflectionComplete = (text: string) => {
     setReflection(text);
-
-    // Check for low-effort BEFORE proceeding
-    const lowEffort = isLowEffortReflection(text);
-    setIsLowEffort(lowEffort);
-
-    if (lowEffort) {
-      // Skip reward, go straight to mentor for the callout
-      // Do NOT save reflection, do NOT award XP
-      setXpEarned(0);
-      xpEarnedRef.current = 0;
-      setStage('mentor');
-      return;
-    }
 
     // Good reflection - save it and calculate XP
     saveReflection({
@@ -106,7 +91,6 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const handleRetry = () => {
     // Go back to reflection step
     setReflection('');
-    setIsLowEffort(false);
     setStage('reflection');
   };
 
@@ -118,7 +102,6 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
   // Calculate progress percentage
   const getProgress = () => {
-    if (isLowEffort && stage === 'mentor') return 60; // Failed at reflection
     switch (stage) {
       case 'wisdom': return 20;
       case 'action': return 40;
@@ -135,11 +118,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
       <div className="fixed top-0 left-0 right-0 z-50">
         <div className="h-1 bg-zinc-800">
           <motion.div
-            className={`h-full ${
-              isLowEffort && stage === 'mentor'
-                ? 'bg-gradient-to-r from-red-600 to-orange-600'
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600'
-            }`}
+            className="h-full bg-gradient-to-r from-indigo-600 to-purple-600"
             initial={{ width: 0 }}
             animate={{ width: `${getProgress()}%` }}
             transition={{ duration: 0.3 }}
@@ -151,7 +130,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
       <div className="flex-1 flex items-center justify-center p-6 pt-12">
         <AnimatePresence mode="wait">
           <motion.div
-            key={stage + (isLowEffort ? '-loweffort' : '')}
+            key={stage}
             variants={stageVariants}
             initial="enter"
             animate="center"

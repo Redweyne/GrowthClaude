@@ -23,8 +23,9 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const hasAnimatedRef = useRef(false);
 
+  const safeXpEarned = xpEarned > 0 ? xpEarned : Math.max(lesson.xpReward ?? 0, 15);
   const previousXp = totalXp;
-  const newTotalXp = totalXp + xpEarned;
+  const newTotalXp = totalXp + safeXpEarned;
   const previousLevel = getLevelFromXp(previousXp);
   const newLevel = getLevelFromXp(newTotalXp);
   const leveledUp = newLevel.level > previousLevel.level;
@@ -48,9 +49,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     console.log('RewardStep received xpEarned:', xpEarned);
 
     // Handle edge case of 0 XP
-    if (xpEarned <= 0) {
+    if (safeXpEarned <= 0) {
       setDisplayXp(0);
-      hasAnimatedRef.current = true;
       return;
     }
 
@@ -62,17 +62,17 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
     const startDelay = 300;
     const duration = 800;
-    const steps = Math.max(Math.min(xpEarned, 25), 1);
+    const steps = Math.max(Math.min(safeXpEarned, 25), 1);
     const stepDuration = duration / steps;
 
     const delayTimer = setTimeout(() => {
       // Play sound ticks with the count
-      playXpCount(Math.min(xpEarned, 20));
+      playXpCount(Math.min(safeXpEarned, 20));
 
       intervalId = setInterval(() => {
         current += 1;
-        if (current >= xpEarned) {
-          setDisplayXp(xpEarned);
+        if (current >= safeXpEarned) {
+          setDisplayXp(safeXpEarned);
           if (intervalId) clearInterval(intervalId);
 
           if (leveledUp) {
@@ -101,7 +101,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       if (intervalId) clearInterval(intervalId);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [xpEarned]); // Only depend on xpEarned - animation runs once per mount
+  }, [xpEarned, safeXpEarned]); // Only depend on xpEarned - animation runs once per mount
 
   const xpProgress = getXpProgress(newTotalXp);
   const [showConfetti, setShowConfetti] = useState(true);
@@ -120,7 +120,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       {/* XP Orbs floating up */}
       {showXPOrbs && (
         <XPOrbs
-          count={Math.min(Math.floor(xpEarned / 5), 15)}
+          count={Math.min(Math.floor(safeXpEarned / 5), 15)}
           onCollect={() => setShowXPOrbs(false)}
         />
       )}
