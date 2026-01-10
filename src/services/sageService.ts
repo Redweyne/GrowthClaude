@@ -1,4 +1,5 @@
 import type { ReflectionEntry } from '@/store/useStore';
+import { isLowEffortReflection } from '@/lib/reflection';
 
 interface SageRequest {
   reflections: {
@@ -22,32 +23,6 @@ interface SageResponse {
   fullMessage: string;
   isAI: boolean; // true if from AI, false if fallback
   isLowEffort: boolean; // true if user gave garbage - lesson should FAIL
-}
-
-// Detect if a reflection is low-effort or nonsense
-function isLowEffortReflection(text: string): boolean {
-  const trimmed = text.trim().toLowerCase();
-
-  // Too short to be meaningful
-  if (trimmed.length < 10) return true;
-
-  // Common low-effort patterns
-  const lowEffortPatterns = [
-    /^[a-z]{1,5}$/,           // Single short word
-    /^(idk|ok|whatever|test|asdf|qwer|nothing|none|na|n\/a|\.+|no|yes|meh|lol|lmao)$/i,
-    /^[^a-zA-Z]*$/,           // No letters at all
-    /^(.)\1{3,}$/,            // Repeated single character
-    /^[a-z]+$/i,              // Single word with no spaces (unless it's long and meaningful)
-    /asdf|qwer|zxcv/i,        // Keyboard mashing
-    /^[0-9\s]+$/,             // Only numbers
-    /(.{1,3})\1{2,}/,         // Repeated short patterns like "aaaa" or "abcabcabc"
-  ];
-
-  // Check if less than 3 words
-  const words = trimmed.split(/\s+/).filter(w => w.length > 0);
-  if (words.length < 3 && trimmed.length < 30) return true;
-
-  return lowEffortPatterns.some(pattern => pattern.test(trimmed));
 }
 
 // Responses for when user gives low effort
