@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Flame, TrendingUp } from 'lucide-react';
 import { Button, ProgressBar } from '@/components/ui';
@@ -21,7 +21,6 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { playLevelUp, playXpCount, playStreak, playCelebration, playTap, playWhoosh } = useSound();
   const [displayXp, setDisplayXp] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const hasAnimatedRef = useRef(false);
 
   const safeXpEarned = xpEarned > 0 ? xpEarned : Math.max(lesson.xpReward ?? 0, 15);
   const previousXp = totalXp;
@@ -41,11 +40,6 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
   // Animate XP count and play sounds - ONLY ONCE
   useEffect(() => {
-    // Prevent multiple runs
-    if (hasAnimatedRef.current) {
-      return;
-    }
-
     console.log('RewardStep received xpEarned:', xpEarned);
 
     // Handle edge case of 0 XP
@@ -53,9 +47,6 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       setDisplayXp(0);
       return;
     }
-
-    // Mark as animated immediately to prevent re-runs
-    hasAnimatedRef.current = true;
 
     let intervalId: NodeJS.Timeout | null = null;
     let current = 0;
