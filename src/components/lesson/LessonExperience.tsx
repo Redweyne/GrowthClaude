@@ -10,25 +10,7 @@ import { MentorStep } from './steps/MentorStep';
 import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
-
-// Check if reflection is low-effort (must match sageService logic)
-function isLowEffortReflection(text: string): boolean {
-  const trimmed = text.trim().toLowerCase();
-  if (trimmed.length < 10) return true;
-  const lowEffortPatterns = [
-    /^[a-z]{1,5}$/,
-    /^(idk|ok|whatever|test|asdf|qwer|nothing|none|na|n\/a|\.+|no|yes|meh|lol|lmao)$/i,
-    /^[^a-zA-Z]*$/,
-    /^(.)\1{3,}$/,
-    /^[a-z]+$/i,
-    /asdf|qwer|zxcv/i,
-    /^[0-9\s]+$/,
-    /(.{1,3})\1{2,}/,
-  ];
-  const words = trimmed.split(/\s+/).filter(w => w.length > 0);
-  if (words.length < 3 && trimmed.length < 30) return true;
-  return lowEffortPatterns.some(pattern => pattern.test(trimmed));
-}
+import { isLowEffortReflection } from '@/lib/reflection';
 
 interface LessonExperienceProps {
   lesson: Lesson;
