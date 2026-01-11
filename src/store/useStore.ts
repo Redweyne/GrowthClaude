@@ -240,56 +240,63 @@ export const useStore = create<UserState & UserActions>()(
 
       // Lesson actions
       completeLesson: (lessonId, xpEarned) => {
-        const today = new Date().toISOString().split('T')[0];
         const state = get();
+        const today = new Date().toISOString().split('T')[0];
+        const previousLastLessonDate = state.lastLessonDate;
 
+        console.log('[STORE] completeLesson:', { lessonId, xpEarned, previousLastLessonDate, currentStreak: state.currentStreak });
+
+        // Calculate new streak BEFORE updating lastLessonDate
+        let newStreak = state.currentStreak;
+        let newLongestStreak = state.longestStreak;
+
+        if (!previousLastLessonDate) {
+          // First lesson ever - start streak at 1
+          newStreak = 1;
+          newLongestStreak = Math.max(1, state.longestStreak);
+        } else if (previousLastLessonDate === today) {
+          // Already did a lesson today - streak stays same but must be at least 1
+          newStreak = Math.max(state.currentStreak, 1);
+        } else {
+          // Check days since last lesson
+          const lastDate = new Date(previousLastLessonDate);
+          const todayDate = new Date(today);
+          const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 1) {
+            // Consecutive day - increment streak
+            newStreak = state.currentStreak + 1;
+            newLongestStreak = Math.max(newStreak, state.longestStreak);
+          } else if (diffDays > 1) {
+            // Missed days - reset streak to 1
+            newStreak = 1;
+          }
+        }
+
+        // Ensure streak is never 0
+        if (newStreak < 1) newStreak = 1;
+
+        console.log('[STORE] New values:', { newStreak, newLongestStreak, totalXp: state.totalXp + xpEarned });
+
+        // Update everything in one call
         set({
           completedLessons: { ...state.completedLessons, [lessonId]: true },
           totalXp: state.totalXp + xpEarned,
           lastLessonDate: today,
+          currentStreak: newStreak,
+          longestStreak: newLongestStreak,
         });
-
-        // Update streak after completing lesson
-        get().updateStreak();
       },
 
       setCurrentLesson: (lessonId) => set({ currentLessonId: lessonId }),
 
       setCurrentWorld: (worldSlug) => set({ currentWorldSlug: worldSlug }),
 
-      // Streak management
+      // Streak management - kept for edge cases
       updateStreak: () => {
         const state = get();
-        const today = new Date().toISOString().split('T')[0];
-        const lastLesson = state.lastLessonDate;
-
-        if (!lastLesson) {
-          // First lesson ever
-          set({ currentStreak: 1, longestStreak: Math.max(1, state.longestStreak) });
-          return;
-        }
-
-        const lastDate = new Date(lastLesson);
-        const todayDate = new Date(today);
-        const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) {
-          // Same day, streak unchanged
-          return;
-        } else if (diffDays === 1) {
-          // Next day, streak continues
-          const newStreak = state.currentStreak + 1;
-          set({
-            currentStreak: newStreak,
-            longestStreak: Math.max(newStreak, state.longestStreak)
-          });
-
-          // Earn grace day every 7 days
-          if (newStreak % 7 === 0) {
-            get().earnGraceDay();
-          }
-        } else if (diffDays > 1) {
-          // Streak broken - will need grace day or reset
+        // Ensure streak is at least 1 if user has completed lessons
+        if (state.currentStreak < 1 && Object.keys(state.completedLessons).length > 0) {
           set({ currentStreak: 1 });
         }
       },
