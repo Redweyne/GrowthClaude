@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -8,74 +8,116 @@ import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useSound } from '@/hooks/useSound';
 import { useStore } from '@/store/useStore';
 import { MENTOR } from '@/content/mentor';
-import { getSageResponse, type SageResponse } from '@/services/sageService';
+import { isLowEffortReflection } from '@/lib/reflection';
 import type { Lesson } from '@/types';
 
 interface MentorStepProps {
   lesson: Lesson;
   reflection: string;
   onComplete: () => void;
-  onRetry: () => void; // Go back to reflection
+  onRetry: () => void;
+}
+
+// Static responses for low effort reflections
+const LOW_EFFORT_RESPONSES = [
+  "Random keystrokes don't count as reflection. You showed up - that's something. But showing up without presence is just going through motions. What would you write if you meant it?",
+  "I can see you're here, but I don't see you engaging. The Stoics didn't practice half-measures. What's actually on your mind right now?",
+  "This practice only works if you bring yourself to it. A half-hearted reflection yields half-hearted growth. What's really going on today?",
+  "You typed something, but you didn't reflect. Try again - what did today's lesson actually stir in you?",
+  "I can't guide you if you won't meet me halfway. Seneca wrote that we suffer more in imagination than reality. What are you avoiding by not engaging?",
+];
+
+// Static responses based on progress
+const MENTOR_MESSAGES = {
+  firstLesson: [
+    "You've taken your first step on this path. The Stoics believed that the beginning is half of every action. The hardest part is now behind you.",
+    "Welcome to the practice. Seneca wrote that we learn not for school, but for life. Today, you chose to learn for life.",
+    "You've begun. That single act puts you ahead of countless others who only think about starting. Carry this momentum forward.",
+  ],
+  earlyJourney: [
+    "You're building a foundation. Each reflection is a brick in the fortress of your mind. Keep laying bricks.",
+    "Three lessons in and you're still here. Consistency is the mother of mastery. You're proving that to yourself right now.",
+    "The early days require the most discipline. You're showing up when it matters most. That's the mark of character.",
+  ],
+  midJourney: [
+    "You're developing a practice now, not just doing exercises. The Stoics would be proud of your consistency.",
+    "Halfway through a journey is where most quit. You're still here. That says everything about who you're becoming.",
+    "The Stoics practiced daily. So do you now. This wisdom is becoming part of who you are.",
+  ],
+  deepPractice: [
+    "Your reflections have depth now. You're not just completing lessons - you're integrating them into your life.",
+    "Marcus Aurelius journaled for himself alone, never expecting others to read his words. Like him, you write for your own transformation.",
+    "The practice has become part of you. You carry ancient wisdom into modern challenges. That is the way.",
+  ],
+  streakMilestones: {
+    7: "A week of practice. The habit is forming. You're rewiring how you respond to the world.",
+    14: "Two weeks of daily presence. You're building something real. The compound effect of wisdom is beginning.",
+    30: "A month of practice. You're no longer trying Stoicism - you're living it. This is who you are now.",
+    60: "Two months of daily practice. This is no longer an experiment - it's your philosophy. You've earned this.",
+    90: "Ninety days. You've proven your commitment to yourself. The ancient philosophers would recognize you as a fellow practitioner.",
+  } as Record<number, string>,
+};
+
+function getMentorMessage(
+  reflectionCount: number,
+  currentStreak: number,
+  userName: string | null
+): string {
+  let message: string;
+
+  // Check for streak milestones first
+  const milestones = [7, 14, 30, 60, 90];
+  const milestone = milestones.find(m => currentStreak === m);
+  if (milestone && MENTOR_MESSAGES.streakMilestones[milestone]) {
+    message = MENTOR_MESSAGES.streakMilestones[milestone];
+  } else if (reflectionCount === 0) {
+    message = MENTOR_MESSAGES.firstLesson[Math.floor(Math.random() * MENTOR_MESSAGES.firstLesson.length)];
+  } else if (reflectionCount < 5) {
+    message = MENTOR_MESSAGES.earlyJourney[Math.floor(Math.random() * MENTOR_MESSAGES.earlyJourney.length)];
+  } else if (reflectionCount < 10) {
+    message = MENTOR_MESSAGES.midJourney[Math.floor(Math.random() * MENTOR_MESSAGES.midJourney.length)];
+  } else {
+    message = MENTOR_MESSAGES.deepPractice[Math.floor(Math.random() * MENTOR_MESSAGES.deepPractice.length)];
+  }
+
+  // Personalize with name if available
+  if (userName) {
+    message = `${userName}, ${message.charAt(0).toLowerCase()}${message.slice(1)}`;
+  }
+
+  return message;
 }
 
 export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
-  const { name, transformationGoal, currentStreak, reflections } = useStore();
+  const { name, currentStreak, reflections } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
 
-  const [sageResponse, setSageResponse] = useState<SageResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [displayedText, setDisplayedText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(true);
 
-  // Fetch AI response on mount
-  const fetchSageResponse = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await getSageResponse(
-        reflections,
-        lesson.title,
-        reflection,
-        name,
-        transformationGoal,
-        currentStreak
-      );
-      setSageResponse(response);
-    } catch (error) {
-      console.error('Failed to fetch Sage response:', error);
-      setSageResponse({
-        observation: '',
-        insight: '',
-        direction: '',
-        fullMessage: name
-          ? `${name}, you've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.`
-          : "You've completed today's practice. Each lesson is a step on your path. Return tomorrow to continue your journey.",
-        isAI: false,
-        isLowEffort: false,
-      });
-    } finally {
-      setIsLoading(false);
+  // Check if reflection is low effort
+  const isLowEffort = useMemo(() => isLowEffortReflection(reflection), [reflection]);
+
+  // Generate the mentor message
+  const mentorMessage = useMemo(() => {
+    if (isLowEffort) {
+      const msg = LOW_EFFORT_RESPONSES[Math.floor(Math.random() * LOW_EFFORT_RESPONSES.length)];
+      return name ? `${name}, ${msg.charAt(0).toLowerCase()}${msg.slice(1)}` : msg;
     }
-  }, [reflections, lesson.title, reflection, name, transformationGoal, currentStreak]);
+    return getMentorMessage(reflections.length, currentStreak, name);
+  }, [isLowEffort, reflections.length, currentStreak, name]);
 
+  // Typewriter effect
   useEffect(() => {
-    fetchSageResponse();
-  }, [fetchSageResponse]);
-
-  // Typewriter effect - starts when response is loaded
-  useEffect(() => {
-    if (!sageResponse || isLoading) return;
-
-    const message = sageResponse.fullMessage;
     let index = 0;
     setDisplayedText('');
     setIsTyping(true);
 
-    // Faster typing for low-effort callouts
-    const typingSpeed = sageResponse.isLowEffort ? 20 : sageResponse.isAI ? 25 : 30;
+    const typingSpeed = isLowEffort ? 20 : 30;
 
     const timer = setInterval(() => {
-      if (index < message.length) {
-        setDisplayedText(message.slice(0, index + 1));
+      if (index < mentorMessage.length) {
+        setDisplayedText(mentorMessage.slice(0, index + 1));
         index++;
       } else {
         setIsTyping(false);
@@ -84,15 +126,12 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     }, typingSpeed);
 
     return () => clearInterval(timer);
-  }, [sageResponse, isLoading]);
+  }, [mentorMessage, isLowEffort]);
 
   // Determine Sage's mood based on context
   const sageMood: SageMood = useMemo(() => {
-    if (isLoading) return 'thinking';
     if (isTyping) return 'thinking';
-
-    // Disappointed for low-effort
-    if (sageResponse?.isLowEffort) return 'thinking'; // Stern look
+    if (isLowEffort) return 'disappointed';
 
     // Celebrating for streak milestones
     const streakMilestones = [7, 14, 30, 50, 100];
@@ -100,21 +139,12 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
       return 'celebrating';
     }
 
-    // If AI gave a response, show proud (it means patterns were detected)
-    if (sageResponse?.isAI) return 'proud';
-
     // Proud for good reflections
     if (reflection.length > 100) return 'proud';
 
     // Default encouraging
     return 'encouraging';
-  }, [isLoading, isTyping, currentStreak, sageResponse?.isAI, sageResponse?.isLowEffort, reflection.length]);
-
-  // Subtle indicator that this is AI-powered (only show for AI responses, not low-effort)
-  const showAIIndicator = sageResponse?.isAI && !sageResponse?.isLowEffort && !isLoading && !isTyping;
-
-  // Is this a failed attempt due to low effort?
-  const isFailedAttempt = sageResponse?.isLowEffort && !isLoading && !isTyping;
+  }, [isTyping, isLowEffort, currentStreak, reflection.length]);
 
   return (
     <div className="text-center">
@@ -145,103 +175,36 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className={`rounded-2xl p-6 mb-8 text-left relative shadow-lg ${
-          isFailedAttempt
+          isLowEffort
             ? 'bg-gradient-to-br from-red-950/50 to-stone-950 border border-red-900/30 shadow-red-900/10'
             : 'bg-gradient-to-br from-stone-900 to-stone-950 border border-amber-900/20 shadow-amber-900/5'
         }`}
       >
         {/* Speech bubble pointer */}
         <div className={`absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 ${
-          isFailedAttempt
+          isLowEffort
             ? 'bg-red-950/50 border-l border-t border-red-900/30'
             : 'bg-stone-900 border-l border-t border-amber-900/20'
         }`} />
 
-        {/* Loading state - prominent AI indicator */}
-        {isLoading && (
-          <div className="py-6">
-            <div className="flex flex-col items-center gap-4">
-              {/* Animated thinking orb */}
-              <motion.div
-                className="relative w-16 h-16"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-              >
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/30 to-purple-500/30 blur-lg"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <div className="absolute inset-2 rounded-full bg-gradient-to-br from-amber-500/20 to-purple-500/20 flex items-center justify-center">
-                  <motion.span
-                    className="text-2xl"
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    ✦
-                  </motion.span>
-                </div>
-              </motion.div>
-
-              <div className="text-center">
-                <motion.p
-                  className="text-amber-300 font-medium mb-1"
-                  animate={{ opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  Sage is reading your reflection...
-                </motion.p>
-                <p className="text-stone-500 text-xs">Analyzing your journey</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Message content */}
-        {!isLoading && (
-          <p className={`leading-relaxed whitespace-pre-line ${
-            isFailedAttempt ? 'text-red-200' : 'text-stone-200'
-          }`}>
-            {displayedText}
-            {isTyping && (
-              <motion.span
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 0.8, repeat: Infinity }}
-                className={`inline-block w-2 h-5 ml-1 align-middle rounded-sm ${
-                  isFailedAttempt ? 'bg-red-400' : 'bg-amber-400'
-                }`}
-              />
-            )}
-          </p>
-        )}
-
-        {/* AI indicator - show that this is personalized */}
-        {showAIIndicator && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, type: 'spring' }}
-            className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-center gap-2"
-          >
-            <motion.div
-              className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-500/10 to-purple-500/10 rounded-full"
-            >
-              <motion.span
-                animate={{ rotate: [0, 180, 360], scale: [1, 1.2, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="text-amber-400"
-              >
-                ✦
-              </motion.span>
-              <span className="text-xs text-amber-300/80 font-medium">
-                Personalized response based on your reflections
-              </span>
-            </motion.div>
-          </motion.div>
-        )}
+        <p className={`leading-relaxed whitespace-pre-line ${
+          isLowEffort ? 'text-red-200' : 'text-stone-200'
+        }`}>
+          {displayedText}
+          {isTyping && (
+            <motion.span
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+              className={`inline-block w-2 h-5 ml-1 align-middle rounded-sm ${
+                isLowEffort ? 'bg-red-400' : 'bg-amber-400'
+              }`}
+            />
+          )}
+        </p>
 
         {/* Low effort indicator */}
-        {isFailedAttempt && (
+        {isLowEffort && !isTyping && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -256,7 +219,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
       </motion.div>
 
       {/* Identity prompt (optional - appears after some lessons, NOT for failed attempts) */}
-      {!isFailedAttempt && currentStreak > 0 && currentStreak % 5 === 0 && (
+      {!isLowEffort && currentStreak > 0 && currentStreak % 5 === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -264,7 +227,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           className="bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20 rounded-xl p-4 mb-8"
         >
           <p className="text-sm text-amber-300 mb-2">
-            ✨ Reflect on your identity:
+            Reflect on your identity:
           </p>
           <p className="text-white font-medium italic">
             &ldquo;I am someone who shows up every day for my growth.&rdquo;
@@ -279,7 +242,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
         transition={{ delay: 0.8 }}
         className="space-y-3"
       >
-        {isFailedAttempt ? (
+        {isLowEffort ? (
           // FAILED - Show Try Again button
           <Button
             size="lg"
@@ -305,10 +268,10 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               }
               onComplete();
             }}
-            disabled={isLoading || isTyping}
+            disabled={isTyping}
             className="w-full"
           >
-            {isLoading ? 'Sage is reflecting...' : isTyping ? 'Sage is speaking...' : 'Complete Lesson'}
+            {isTyping ? 'Sage is speaking...' : 'Complete Lesson'}
           </Button>
         )}
       </motion.div>
