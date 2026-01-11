@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Play, Flame, Zap, Map, Settings, Brain, Calendar, TrendingUp } from 'lucide-react';
+import { Play, Flame, Zap, Map, Settings, Brain, Calendar, TrendingUp, Trophy, BarChart3, Sparkles } from 'lucide-react';
 import { Button, Card, StreakBadge, XPBadge, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp, getXpProgress } from '@/types';
@@ -17,6 +17,9 @@ interface TodaysLessonProps {
   onOpenCheckin: () => void;
   onOpenAssessment: () => void;
   onOpenTransformation: () => void;
+  onOpenProgress: () => void;
+  onOpenAchievements: () => void;
+  onOpenIdentity: () => void;
   isCheckinDue: boolean;
   isAssessmentDue: boolean;
 }
@@ -31,6 +34,9 @@ export function TodaysLesson({
   onOpenCheckin,
   onOpenAssessment,
   onOpenTransformation,
+  onOpenProgress,
+  onOpenAchievements,
+  onOpenIdentity,
   isCheckinDue,
   isAssessmentDue,
 }: TodaysLessonProps) {
@@ -299,14 +305,43 @@ export function TodaysLesson({
         )}
       </div>
 
-      {/* Bottom nav hint */}
+      {/* Bottom navigation */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="text-center mt-8"
+        className="mt-8 pt-4 border-t border-zinc-800/50"
       >
-        <p className="text-xs text-zinc-600">
+        <div className="grid grid-cols-3 gap-3">
+          <button
+            onClick={onOpenProgress}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+              <BarChart3 size={20} className="text-blue-400" />
+            </div>
+            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">Progress</span>
+          </button>
+          <button
+            onClick={onOpenAchievements}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+              <Trophy size={20} className="text-amber-400" />
+            </div>
+            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">Achievements</span>
+          </button>
+          <button
+            onClick={onOpenIdentity}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+              <Sparkles size={20} className="text-purple-400" />
+            </div>
+            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">Identity</span>
+          </button>
+        </div>
+        <p className="text-xs text-zinc-600 text-center mt-4">
           {currentStreak > 0
             ? `${currentStreak} day streak - keep it going!`
             : 'Start your streak today'}

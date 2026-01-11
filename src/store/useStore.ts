@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { TransformationGoal } from '@/types';
+import type { AchievementUnlock } from '@/types/achievements';
+import type { IdentityStatement, IdentityContext } from '@/types/identity';
+import { ACHIEVEMENTS } from '@/types/achievements';
 
 interface CheckinResponseData {
   promptId: string;
@@ -37,13 +40,13 @@ export interface MonthlyAssessment {
   date: string; // ISO date string
   month: string; // "2025-01" format for easy grouping
   scores: {
-    emotionalMastery: number;  // 1-10: Managing difficult emotions
-    discipline: number;        // 1-10: Consistency with commitments
-    perspective: number;       // 1-10: Maintaining wisdom in challenges
-    selfAwareness: number;     // 1-10: Noticing thought patterns
-    growth: number;            // 1-10: Learning and improving
+    emotionalMastery: number;
+    discipline: number;
+    perspective: number;
+    selfAwareness: number;
+    growth: number;
   };
-  reflection: string; // Open-ended reflection on the month
+  reflection: string;
   xpEarned: number;
 }
 
@@ -51,11 +54,11 @@ export interface MonthlyAssessment {
 export interface WisdomInAction {
   id: string;
   date: string;
-  situation: string;      // What happened
-  stoicPrinciple: string; // Which principle was applied
-  application: string;    // How the principle was applied
-  outcome: string;        // What was the result
-  tags: string[];         // e.g., ["dichotomy-of-control", "patience"]
+  situation: string;
+  stoicPrinciple: string;
+  application: string;
+  outcome: string;
+  tags: string[];
 }
 
 // Pattern themes to track in reflections
@@ -75,9 +78,20 @@ export type PatternTheme =
 
 // Monthly pattern frequency
 export interface MonthlyPatternData {
-  month: string; // "2025-01" format
-  themes: Record<PatternTheme, number>; // count of each theme
+  month: string;
+  themes: Record<PatternTheme, number>;
   totalReflections: number;
+}
+
+// ============================================
+// PHASE 3: ACTIVITY TRACKING
+// ============================================
+
+export interface ActivityDay {
+  date: string; // "YYYY-MM-DD"
+  lessonsCompleted: number;
+  xpEarned: number;
+  reflectionsWritten: number;
 }
 
 interface UserState {
@@ -110,14 +124,20 @@ interface UserState {
   weeklyCheckins: WeeklyCheckinData[];
   lastCheckinDate: string | null;
 
-  // Reflections for pattern analysis (last 14 for AI, all for historical)
+  // Reflections for pattern analysis
   reflections: ReflectionEntry[];
-  allReflections: ReflectionEntry[]; // Keep ALL reflections for pattern tracking
+  allReflections: ReflectionEntry[];
 
   // Phase 2: Proof of Transformation
   monthlyAssessments: MonthlyAssessment[];
   wisdomInActionLogs: WisdomInAction[];
-  lastAssessmentMonth: string | null; // "2025-01" format
+  lastAssessmentMonth: string | null;
+
+  // Phase 3: Identity & Achievements
+  identityStatements: IdentityStatement[];
+  unlockedAchievements: AchievementUnlock[];
+  activityLog: ActivityDay[];
+  pendingAchievementCelebration: string | null; // Achievement ID to celebrate
 
   // Settings
   soundEnabled: boolean;
@@ -166,6 +186,33 @@ interface UserActions {
   analyzePatterns: (month?: string) => MonthlyPatternData;
   getPatternTrends: () => { theme: PatternTheme; trend: 'up' | 'down' | 'stable'; change: number }[];
 
+  // Phase 3: Identity Statements
+  saveIdentityStatement: (statement: string, context: IdentityContext, tags?: string[]) => void;
+  getIdentityStatements: () => IdentityStatement[];
+
+  // Phase 3: Achievements
+  checkAndUnlockAchievements: () => string[]; // Returns newly unlocked achievement IDs
+  isAchievementUnlocked: (achievementId: string) => boolean;
+  getUnlockedAchievements: () => AchievementUnlock[];
+  markAchievementCelebrated: (achievementId: string) => void;
+  getPendingCelebration: () => string | null;
+  clearPendingCelebration: () => void;
+
+  // Phase 3: Activity Log
+  getActivityLog: (days?: number) => ActivityDay[];
+  getStreakCalendarData: (months?: number) => ActivityDay[];
+
+  // Phase 3: Stats
+  getProgressStats: () => {
+    totalLessons: number;
+    totalReflections: number;
+    totalWords: number;
+    totalIdentityStatements: number;
+    totalAchievements: number;
+    daysSinceStart: number;
+    averageReflectionLength: number;
+  };
+
   // Settings
   toggleSound: () => void;
   toggleHaptic: () => void;
@@ -197,6 +244,12 @@ const initialState: UserState = {
   monthlyAssessments: [],
   wisdomInActionLogs: [],
   lastAssessmentMonth: null,
+  // Phase 3
+  identityStatements: [],
+  unlockedAchievements: [],
+  activityLog: [],
+  pendingAchievementCelebration: null,
+  // Settings
   soundEnabled: true,
   hapticEnabled: true,
 };
@@ -222,80 +275,91 @@ export const useStore = create<UserState & UserActions>()(
     (set, get) => ({
       ...initialState,
 
-      // Onboarding actions
+      // ============================================
+      // ONBOARDING ACTIONS
+      // ============================================
       setOnboardingStep: (step) => set({ onboardingStep: step }),
-
       setTransformationGoal: (goal) => set({ transformationGoal: goal }),
-
       setWhyStatement: (statement) => set({ whyStatement: statement }),
-
       setDailyCommitment: (minutes) => set({ dailyCommitmentMinutes: minutes }),
-
       setName: (name) => set({ name }),
-
       completeOnboarding: () => set({
         onboardingComplete: true,
         userId: crypto.randomUUID(),
       }),
 
-      // Lesson actions
+      // ============================================
+      // LESSON ACTIONS
+      // ============================================
       completeLesson: (lessonId, xpEarned) => {
         const state = get();
         const today = new Date().toISOString().split('T')[0];
         const previousLastLessonDate = state.lastLessonDate;
 
-        console.log('[STORE] completeLesson:', { lessonId, xpEarned, previousLastLessonDate, currentStreak: state.currentStreak });
-
-        // Calculate new streak BEFORE updating lastLessonDate
+        // Calculate new streak
         let newStreak = state.currentStreak;
         let newLongestStreak = state.longestStreak;
 
         if (!previousLastLessonDate) {
-          // First lesson ever - start streak at 1
           newStreak = 1;
           newLongestStreak = Math.max(1, state.longestStreak);
         } else if (previousLastLessonDate === today) {
-          // Already did a lesson today - streak stays same but must be at least 1
           newStreak = Math.max(state.currentStreak, 1);
         } else {
-          // Check days since last lesson
           const lastDate = new Date(previousLastLessonDate);
           const todayDate = new Date(today);
           const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
 
           if (diffDays === 1) {
-            // Consecutive day - increment streak
             newStreak = state.currentStreak + 1;
             newLongestStreak = Math.max(newStreak, state.longestStreak);
           } else if (diffDays > 1) {
-            // Missed days - reset streak to 1
             newStreak = 1;
           }
         }
 
-        // Ensure streak is never 0
         if (newStreak < 1) newStreak = 1;
 
-        console.log('[STORE] New values:', { newStreak, newLongestStreak, totalXp: state.totalXp + xpEarned });
+        // Update activity log
+        const existingActivity = state.activityLog.find(a => a.date === today);
+        let newActivityLog: ActivityDay[];
 
-        // Update everything in one call
+        if (existingActivity) {
+          newActivityLog = state.activityLog.map(a =>
+            a.date === today
+              ? { ...a, lessonsCompleted: a.lessonsCompleted + 1, xpEarned: a.xpEarned + xpEarned }
+              : a
+          );
+        } else {
+          newActivityLog = [...state.activityLog, {
+            date: today,
+            lessonsCompleted: 1,
+            xpEarned: xpEarned,
+            reflectionsWritten: 0,
+          }];
+        }
+
         set({
           completedLessons: { ...state.completedLessons, [lessonId]: true },
           totalXp: state.totalXp + xpEarned,
           lastLessonDate: today,
           currentStreak: newStreak,
           longestStreak: newLongestStreak,
+          activityLog: newActivityLog,
         });
+
+        // Check for new achievements after lesson completion
+        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       setCurrentLesson: (lessonId) => set({ currentLessonId: lessonId }),
-
       setCurrentWorld: (worldSlug) => set({ currentWorldSlug: worldSlug }),
 
-      // Streak management - kept for edge cases
+      // ============================================
+      // STREAK MANAGEMENT
+      // ============================================
       updateStreak: () => {
         const state = get();
-        // Ensure streak is at least 1 if user has completed lessons
         if (state.currentStreak < 1 && Object.keys(state.completedLessons).length > 0) {
           set({ currentStreak: 1 });
         }
@@ -312,10 +376,12 @@ export const useStore = create<UserState & UserActions>()(
 
       earnGraceDay: () => {
         const state = get();
-        set({ graceDays: Math.min(state.graceDays + 1, 5) }); // Max 5 grace days
+        set({ graceDays: Math.min(state.graceDays + 1, 5) });
       },
 
-      // Weekly check-in actions
+      // ============================================
+      // WEEKLY CHECK-INS
+      // ============================================
       getWeekNumber: () => {
         const state = get();
         const onboardingDate = state.userId ? new Date() : new Date();
@@ -329,13 +395,11 @@ export const useStore = create<UserState & UserActions>()(
         const state = get();
         const lastCheckin = state.lastCheckinDate;
 
-        // If never done a check-in and completed at least 3 lessons, it's due
         if (!lastCheckin) {
           const completedCount = Object.keys(state.completedLessons).length;
           return completedCount >= 3;
         }
 
-        // Check if it's been at least 7 days since last check-in
         const lastDate = new Date(lastCheckin);
         const now = new Date();
         const diffDays = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -345,7 +409,7 @@ export const useStore = create<UserState & UserActions>()(
       completeWeeklyCheckin: (responses) => {
         const state = get();
         const today = new Date().toISOString().split('T')[0];
-        const xpEarned = 50; // Bonus XP for completing check-in
+        const xpEarned = 50;
 
         const newCheckin: WeeklyCheckinData = {
           id: crypto.randomUUID(),
@@ -360,9 +424,14 @@ export const useStore = create<UserState & UserActions>()(
           lastCheckinDate: today,
           totalXp: state.totalXp + xpEarned,
         });
+
+        // Check for first-checkin achievement
+        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
-      // Reflection storage for pattern analysis
+      // ============================================
+      // REFLECTIONS
+      // ============================================
       saveReflection: (entry) => {
         const state = get();
         const today = new Date().toISOString().split('T')[0];
@@ -373,15 +442,36 @@ export const useStore = create<UserState & UserActions>()(
           date: today,
         };
 
-        // Keep only the last 14 reflections for AI analysis
         const updatedReflections = [...state.reflections, newReflection].slice(-14);
-        // Keep ALL reflections for historical pattern tracking
         const updatedAllReflections = [...state.allReflections, newReflection];
+
+        // Update activity log
+        const existingActivity = state.activityLog.find(a => a.date === today);
+        let newActivityLog: ActivityDay[];
+
+        if (existingActivity) {
+          newActivityLog = state.activityLog.map(a =>
+            a.date === today
+              ? { ...a, reflectionsWritten: a.reflectionsWritten + 1 }
+              : a
+          );
+        } else {
+          newActivityLog = [...state.activityLog, {
+            date: today,
+            lessonsCompleted: 0,
+            xpEarned: 0,
+            reflectionsWritten: 1,
+          }];
+        }
 
         set({
           reflections: updatedReflections,
           allReflections: updatedAllReflections,
+          activityLog: newActivityLog,
         });
+
+        // Check for reflection achievements
+        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       getRecentReflections: (count = 14) => {
@@ -390,13 +480,13 @@ export const useStore = create<UserState & UserActions>()(
       },
 
       // ============================================
-      // PHASE 2: Monthly Self-Assessment
+      // PHASE 2: MONTHLY ASSESSMENT
       // ============================================
       saveMonthlyAssessment: (assessment) => {
         const state = get();
         const now = new Date();
         const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const xpEarned = 100; // Bonus XP for completing assessment
+        const xpEarned = 100;
 
         const newAssessment: MonthlyAssessment = {
           ...assessment,
@@ -411,15 +501,15 @@ export const useStore = create<UserState & UserActions>()(
           lastAssessmentMonth: month,
           totalXp: state.totalXp + xpEarned,
         });
+
+        // Check for first-assessment achievement
+        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       isAssessmentDue: () => {
         const state = get();
         const now = new Date();
         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-        // Assessment is due if we haven't done one this month
-        // AND we have at least 1 completed lesson
         const completedCount = Object.keys(state.completedLessons).length;
         return state.lastAssessmentMonth !== currentMonth && completedCount >= 1;
       },
@@ -442,7 +532,7 @@ export const useStore = create<UserState & UserActions>()(
       },
 
       // ============================================
-      // PHASE 2: Wisdom in Action Log
+      // WISDOM IN ACTION
       // ============================================
       saveWisdomInAction: (entry) => {
         const state = get();
@@ -454,13 +544,15 @@ export const useStore = create<UserState & UserActions>()(
           date: today,
         };
 
-        // Award bonus XP for logging wisdom in action
         const xpBonus = 15;
 
         set({
           wisdomInActionLogs: [...state.wisdomInActionLogs, newEntry],
           totalXp: state.totalXp + xpBonus,
         });
+
+        // Check for wisdom-action achievement
+        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       getWisdomInActionLogs: (limit = 50) => {
@@ -471,84 +563,262 @@ export const useStore = create<UserState & UserActions>()(
       },
 
       // ============================================
-      // PHASE 2: Pattern Analysis
+      // PATTERN ANALYSIS
       // ============================================
       analyzePatterns: (month) => {
         const state = get();
         const targetMonth = month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-
-        // Filter reflections for the target month
         const monthReflections = state.allReflections.filter(r => r.date.startsWith(targetMonth));
 
-        // Count theme occurrences
         const themes: Record<PatternTheme, number> = {
-          control: 0,
-          acceptance: 0,
-          patience: 0,
-          courage: 0,
-          discipline: 0,
-          gratitude: 0,
-          perspective: 0,
-          judgment: 0,
-          anger: 0,
-          fear: 0,
-          comparison: 0,
-          procrastination: 0,
+          control: 0, acceptance: 0, patience: 0, courage: 0, discipline: 0, gratitude: 0,
+          perspective: 0, judgment: 0, anger: 0, fear: 0, comparison: 0, procrastination: 0,
         };
 
         monthReflections.forEach(r => {
           const text = r.reflection.toLowerCase();
           (Object.keys(PATTERN_KEYWORDS) as PatternTheme[]).forEach(theme => {
-            const keywords = PATTERN_KEYWORDS[theme];
-            keywords.forEach(keyword => {
-              if (text.includes(keyword)) {
-                themes[theme]++;
-              }
+            PATTERN_KEYWORDS[theme].forEach(keyword => {
+              if (text.includes(keyword)) themes[theme]++;
             });
           });
         });
 
-        return {
-          month: targetMonth,
-          themes,
-          totalReflections: monthReflections.length,
-        };
+        return { month: targetMonth, themes, totalReflections: monthReflections.length };
       },
 
       getPatternTrends: () => {
         const now = new Date();
         const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-        // Get previous month
         const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const prevMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
 
         const currentPatterns = get().analyzePatterns(currentMonth);
         const prevPatterns = get().analyzePatterns(prevMonth);
 
-        const trends: { theme: PatternTheme; trend: 'up' | 'down' | 'stable'; change: number }[] = [];
-
-        (Object.keys(currentPatterns.themes) as PatternTheme[]).forEach(theme => {
-          const current = currentPatterns.themes[theme];
-          const prev = prevPatterns.themes[theme];
-          const change = current - prev;
-
-          let trend: 'up' | 'down' | 'stable' = 'stable';
-          if (change > 0) trend = 'up';
-          if (change < 0) trend = 'down';
-
-          trends.push({ theme, trend, change });
+        return (Object.keys(currentPatterns.themes) as PatternTheme[]).map(theme => {
+          const change = currentPatterns.themes[theme] - prevPatterns.themes[theme];
+          return {
+            theme,
+            trend: change > 0 ? 'up' : change < 0 ? 'down' : 'stable',
+            change,
+          };
         });
-
-        return trends;
       },
 
-      // Settings
-      toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
+      // ============================================
+      // PHASE 3: IDENTITY STATEMENTS
+      // ============================================
+      saveIdentityStatement: (statement, context, tags = []) => {
+        const state = get();
+        const now = new Date().toISOString();
 
+        const newStatement: IdentityStatement = {
+          id: crypto.randomUUID(),
+          statement,
+          createdAt: now,
+          context,
+          tags,
+        };
+
+        // Award XP for identity statement
+        const xpBonus = 25;
+
+        set({
+          identityStatements: [...state.identityStatements, newStatement],
+          totalXp: state.totalXp + xpBonus,
+        });
+
+        // Check for identity achievements
+        setTimeout(() => get().checkAndUnlockAchievements(), 100);
+      },
+
+      getIdentityStatements: () => {
+        const state = get();
+        return [...state.identityStatements].sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      },
+
+      // ============================================
+      // PHASE 3: ACHIEVEMENTS
+      // ============================================
+      checkAndUnlockAchievements: () => {
+        const state = get();
+        const newlyUnlocked: string[] = [];
+        const alreadyUnlocked = state.unlockedAchievements.map(a => a.achievementId);
+
+        const lessonCount = Object.keys(state.completedLessons).length;
+        const reflectionCount = state.allReflections.length;
+        const identityCount = state.identityStatements.length;
+        const currentXp = state.totalXp;
+        const streak = state.currentStreak;
+
+        for (const achievement of ACHIEVEMENTS) {
+          if (alreadyUnlocked.includes(achievement.id)) continue;
+
+          let shouldUnlock = false;
+          const { type, value, specialCondition } = achievement.requirement;
+
+          switch (type) {
+            case 'streak':
+              shouldUnlock = streak >= value;
+              break;
+            case 'lessons':
+              shouldUnlock = lessonCount >= value;
+              break;
+            case 'reflections':
+              shouldUnlock = reflectionCount >= value;
+              break;
+            case 'identity':
+              shouldUnlock = identityCount >= value;
+              break;
+            case 'xp':
+              shouldUnlock = currentXp >= value;
+              break;
+            case 'special':
+              switch (specialCondition) {
+                case 'first-practice':
+                  // Check if any practice lessons completed
+                  shouldUnlock = Object.keys(state.completedLessons).some(id => id.startsWith('practice-'));
+                  break;
+                case 'first-checkin':
+                  shouldUnlock = state.weeklyCheckins.length >= 1;
+                  break;
+                case 'first-assessment':
+                  shouldUnlock = state.monthlyAssessments.length >= 1;
+                  break;
+                case 'first-wisdom-action':
+                  shouldUnlock = state.wisdomInActionLogs.length >= 1;
+                  break;
+              }
+              break;
+          }
+
+          if (shouldUnlock) {
+            newlyUnlocked.push(achievement.id);
+          }
+        }
+
+        if (newlyUnlocked.length > 0) {
+          const now = new Date().toISOString();
+          const newUnlocks: AchievementUnlock[] = newlyUnlocked.map(id => ({
+            achievementId: id,
+            unlockedAt: now,
+            celebrated: false,
+          }));
+
+          // Calculate bonus XP from achievements
+          const bonusXp = newlyUnlocked.reduce((sum, id) => {
+            const achievement = ACHIEVEMENTS.find(a => a.id === id);
+            return sum + (achievement?.xpBonus || 0);
+          }, 0);
+
+          set({
+            unlockedAchievements: [...state.unlockedAchievements, ...newUnlocks],
+            totalXp: state.totalXp + bonusXp,
+            pendingAchievementCelebration: newlyUnlocked[0], // Queue first one for celebration
+          });
+        }
+
+        return newlyUnlocked;
+      },
+
+      isAchievementUnlocked: (achievementId) => {
+        const state = get();
+        return state.unlockedAchievements.some(a => a.achievementId === achievementId);
+      },
+
+      getUnlockedAchievements: () => {
+        const state = get();
+        return [...state.unlockedAchievements].sort((a, b) =>
+          new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()
+        );
+      },
+
+      markAchievementCelebrated: (achievementId) => {
+        const state = get();
+        set({
+          unlockedAchievements: state.unlockedAchievements.map(a =>
+            a.achievementId === achievementId ? { ...a, celebrated: true } : a
+          ),
+        });
+      },
+
+      getPendingCelebration: () => {
+        const state = get();
+        return state.pendingAchievementCelebration;
+      },
+
+      clearPendingCelebration: () => {
+        set({ pendingAchievementCelebration: null });
+      },
+
+      // ============================================
+      // PHASE 3: ACTIVITY LOG & STATS
+      // ============================================
+      getActivityLog: (days = 30) => {
+        const state = get();
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+        const cutoffStr = cutoff.toISOString().split('T')[0];
+
+        return state.activityLog
+          .filter(a => a.date >= cutoffStr)
+          .sort((a, b) => a.date.localeCompare(b.date));
+      },
+
+      getStreakCalendarData: (months = 3) => {
+        const state = get();
+        const cutoff = new Date();
+        cutoff.setMonth(cutoff.getMonth() - months);
+        const cutoffStr = cutoff.toISOString().split('T')[0];
+
+        return state.activityLog
+          .filter(a => a.date >= cutoffStr)
+          .sort((a, b) => a.date.localeCompare(b.date));
+      },
+
+      getProgressStats: () => {
+        const state = get();
+        const totalLessons = Object.keys(state.completedLessons).length;
+        const totalReflections = state.allReflections.length;
+        const totalWords = state.allReflections.reduce(
+          (sum, r) => sum + r.reflection.split(/\s+/).length, 0
+        );
+        const totalIdentityStatements = state.identityStatements.length;
+        const totalAchievements = state.unlockedAchievements.length;
+
+        // Calculate days since start
+        const firstActivity = state.activityLog[0];
+        const daysSinceStart = firstActivity
+          ? Math.floor((Date.now() - new Date(firstActivity.date).getTime()) / (1000 * 60 * 60 * 24)) + 1
+          : 0;
+
+        const averageReflectionLength = totalReflections > 0
+          ? Math.round(totalWords / totalReflections)
+          : 0;
+
+        return {
+          totalLessons,
+          totalReflections,
+          totalWords,
+          totalIdentityStatements,
+          totalAchievements,
+          daysSinceStart,
+          averageReflectionLength,
+        };
+      },
+
+      // ============================================
+      // SETTINGS
+      // ============================================
+      toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
       toggleHaptic: () => set((state) => ({ hapticEnabled: !state.hapticEnabled })),
 
-      // Reset
+      // ============================================
+      // RESET
+      // ============================================
       resetUser: () => set(initialState),
     }),
     {

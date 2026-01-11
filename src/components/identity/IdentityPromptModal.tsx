@@ -1,0 +1,241 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Sparkles, Send } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { useStore } from '@/store/useStore';
+import { useSound } from '@/hooks/useSound';
+import type { IdentityContext } from '@/types/identity';
+import { IDENTITY_PROMPTS, getRandomIdentityPrompt } from '@/types/identity';
+
+interface IdentityPromptModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  context: IdentityContext;
+  suggestedPrompt?: string;
+  milestoneMessage?: string;
+}
+
+export function IdentityPromptModal({
+  isOpen,
+  onClose,
+  context,
+  suggestedPrompt,
+  milestoneMessage,
+}: IdentityPromptModalProps) {
+  const { saveIdentityStatement, name } = useStore();
+  const { playTap, playSparkle } = useSound();
+
+  const [statement, setStatement] = useState('');
+  const [selectedPrompt, setSelectedPrompt] = useState(getRandomIdentityPrompt());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleSubmit = () => {
+    if (statement.trim().length < 10) return;
+
+    setIsSubmitting(true);
+    playTap();
+
+    // Extract tags from the statement
+    const tags: string[] = [];
+    const keywords = ['discipline', 'calm', 'patient', 'courage', 'growth', 'consistent', 'grateful'];
+    keywords.forEach(keyword => {
+      if (statement.toLowerCase().includes(keyword)) {
+        tags.push(keyword);
+      }
+    });
+
+    // Save the identity statement
+    saveIdentityStatement(statement, context, tags);
+
+    // Show success animation
+    setTimeout(() => {
+      setShowSuccess(true);
+      playSparkle();
+
+      setTimeout(() => {
+        onClose();
+        setStatement('');
+        setShowSuccess(false);
+        setIsSubmitting(false);
+      }, 1500);
+    }, 500);
+  };
+
+  const cyclePrompt = () => {
+    playTap();
+    setSelectedPrompt(getRandomIdentityPrompt());
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          transition={{ type: 'spring', damping: 25 }}
+          className="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+        >
+          {/* Header */}
+          <div className="relative px-6 pt-6 pb-4">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', delay: 0.1 }}
+              className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-500/20 to-purple-500/20 flex items-center justify-center"
+            >
+              <Sparkles className="w-8 h-8 text-amber-400" />
+            </motion.div>
+
+            <h2 className="text-xl font-bold text-white text-center mb-2">
+              Define Who You Are
+            </h2>
+
+            {milestoneMessage && (
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm text-amber-400/80 text-center mb-2"
+              >
+                {milestoneMessage}
+              </motion.p>
+            )}
+
+            <p className="text-zinc-400 text-center text-sm">
+              {name ? `${name}, complete` : 'Complete'} this statement to claim your identity.
+            </p>
+          </div>
+
+          {/* Content */}
+          <div className="px-6 pb-6">
+            {/* Prompt suggestion */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mb-4"
+            >
+              <button
+                onClick={cyclePrompt}
+                className="w-full text-left p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 hover:border-amber-500/30 transition-colors group"
+              >
+                <p className="text-xs text-zinc-500 mb-1 flex items-center justify-between">
+                  <span>Prompt inspiration</span>
+                  <span className="text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs">
+                    tap for another
+                  </span>
+                </p>
+                <p className="text-sm text-zinc-300 italic">
+                  &ldquo;{selectedPrompt.prompt}&rdquo;
+                </p>
+              </button>
+            </motion.div>
+
+            {/* Input area */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mb-4"
+            >
+              <label className="block text-sm text-zinc-400 mb-2">
+                Your identity statement
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-4 text-amber-400 font-medium">
+                  I am someone who
+                </span>
+                <textarea
+                  value={statement}
+                  onChange={(e) => setStatement(e.target.value)}
+                  placeholder="shows up every day..."
+                  className="w-full h-32 bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 pt-12 pb-4 text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 resize-none"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <p className="text-xs text-zinc-500 mt-2">
+                Example: &ldquo;{suggestedPrompt || selectedPrompt.example}&rdquo;
+              </p>
+            </motion.div>
+
+            {/* Success state */}
+            <AnimatePresence>
+              {showSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="absolute inset-0 bg-zinc-900/95 flex items-center justify-center rounded-2xl"
+                >
+                  <div className="text-center">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: [0, 1.2, 1] }}
+                      transition={{ duration: 0.5 }}
+                      className="text-6xl mb-4"
+                    >
+                      🦋
+                    </motion.div>
+                    <p className="text-xl font-bold text-white">Identity Claimed</p>
+                    <p className="text-amber-400 text-sm mt-1">+25 XP</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Submit button */}
+            <Button
+              onClick={handleSubmit}
+              disabled={statement.trim().length < 10 || isSubmitting}
+              className="w-full"
+              size="lg"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                  />
+                  Claiming...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Send size={18} />
+                  Claim This Identity
+                </span>
+              )}
+            </Button>
+
+            {statement.trim().length > 0 && statement.trim().length < 10 && (
+              <p className="text-xs text-red-400 text-center mt-2">
+                Please write at least 10 characters
+              </p>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+export default IdentityPromptModal;

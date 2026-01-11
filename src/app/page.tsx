@@ -10,9 +10,23 @@ import { PracticeMode } from '@/components/practice';
 import { WeeklyCheckin } from '@/components/checkin';
 import { MonthlyAssessment } from '@/components/assessment';
 import { TransformationHub } from '@/components/transformation';
+import { ProgressDashboard } from '@/components/progress';
+import { AchievementGallery, AchievementCelebration } from '@/components/achievements';
+import { IdentityScreen } from '@/components/identity';
 import stoicismWorld from '@/content/stoicism';
 
-type AppView = 'home' | 'map' | 'lesson' | 'practice' | 'checkin' | 'assessment' | 'transformation' | 'settings';
+type AppView =
+  | 'home'
+  | 'map'
+  | 'lesson'
+  | 'practice'
+  | 'checkin'
+  | 'assessment'
+  | 'transformation'
+  | 'progress'
+  | 'achievements'
+  | 'identity'
+  | 'settings';
 
 export default function Home() {
   const { onboardingComplete, completedLessons, isCheckinDue, isAssessmentDue } = useStore();
@@ -77,65 +91,117 @@ export default function Home() {
   // Lesson experience
   if (currentView === 'lesson' && selectedLesson) {
     return (
-      <LessonExperience
-        lesson={selectedLesson}
-        onComplete={handleLessonComplete}
-      />
+      <>
+        <AchievementCelebration />
+        <LessonExperience
+          lesson={selectedLesson}
+          onComplete={handleLessonComplete}
+        />
+      </>
     );
   }
 
   // Practice mode
   if (currentView === 'practice') {
     return (
-      <PracticeMode
-        onComplete={() => setCurrentView('home')}
-        onExit={() => setCurrentView('home')}
-      />
+      <>
+        <AchievementCelebration />
+        <PracticeMode
+          onComplete={() => setCurrentView('home')}
+          onExit={() => setCurrentView('home')}
+        />
+      </>
     );
   }
 
   // Weekly check-in
   if (currentView === 'checkin') {
     return (
-      <WeeklyCheckin
-        onComplete={() => setCurrentView('home')}
-        onSkip={() => setCurrentView('home')}
-      />
+      <>
+        <AchievementCelebration />
+        <WeeklyCheckin
+          onComplete={() => setCurrentView('home')}
+          onSkip={() => setCurrentView('home')}
+        />
+      </>
     );
   }
 
   // Monthly assessment
   if (currentView === 'assessment') {
     return (
-      <MonthlyAssessment
-        onComplete={() => setCurrentView('home')}
-        onSkip={() => setCurrentView('home')}
-      />
+      <>
+        <AchievementCelebration />
+        <MonthlyAssessment
+          onComplete={() => setCurrentView('home')}
+          onSkip={() => setCurrentView('home')}
+        />
+      </>
     );
   }
 
   // Transformation Hub
   if (currentView === 'transformation') {
     return (
-      <TransformationHub
-        onBack={() => setCurrentView('home')}
-        onOpenAssessment={() => setCurrentView('assessment')}
-      />
+      <>
+        <AchievementCelebration />
+        <TransformationHub
+          onBack={() => setCurrentView('home')}
+          onOpenAssessment={() => setCurrentView('assessment')}
+        />
+      </>
+    );
+  }
+
+  // Progress Dashboard (Phase 3)
+  if (currentView === 'progress') {
+    return (
+      <>
+        <AchievementCelebration />
+        <ProgressDashboard
+          onBack={() => setCurrentView('home')}
+          onOpenAchievements={() => setCurrentView('achievements')}
+          onOpenIdentity={() => setCurrentView('identity')}
+        />
+      </>
+    );
+  }
+
+  // Achievement Gallery (Phase 3)
+  if (currentView === 'achievements') {
+    return (
+      <>
+        <AchievementCelebration />
+        <AchievementGallery onBack={() => setCurrentView('home')} />
+      </>
+    );
+  }
+
+  // Identity Journey (Phase 3)
+  if (currentView === 'identity') {
+    return (
+      <>
+        <AchievementCelebration />
+        <IdentityScreen onBack={() => setCurrentView('home')} />
+      </>
     );
   }
 
   // World map
   if (currentView === 'map') {
     return (
-      <div>
-        <button
-          onClick={() => setCurrentView('home')}
-          className="fixed top-4 left-4 z-50 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors text-sm"
-        >
-          ← Back
-        </button>
-        <WorldMap world={currentWorld} onSelectLesson={handleSelectLesson} />
-      </div>
+      <>
+        <AchievementCelebration />
+        <div>
+          <button
+            onClick={() => setCurrentView('home')}
+            className="fixed top-4 left-4 z-50 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors text-sm"
+          >
+            ← Back
+          </button>
+          <WorldMap world={currentWorld} onSelectLesson={handleSelectLesson} />
+        </div>
+      </>
     );
   }
 
@@ -157,18 +223,24 @@ export default function Home() {
 
   // Home - Today's Lesson
   return (
-    <TodaysLesson
-      lesson={nextLesson}
-      world={currentWorld}
-      onStartLesson={handleStartLesson}
-      onOpenMap={() => setCurrentView('map')}
-      onOpenSettings={() => setCurrentView('settings')}
-      onOpenPractice={() => setCurrentView('practice')}
-      onOpenCheckin={() => setCurrentView('checkin')}
-      onOpenAssessment={() => setCurrentView('assessment')}
-      onOpenTransformation={() => setCurrentView('transformation')}
-      isCheckinDue={isCheckinDue()}
-      isAssessmentDue={isAssessmentDue()}
-    />
+    <>
+      <AchievementCelebration />
+      <TodaysLesson
+        lesson={nextLesson}
+        world={currentWorld}
+        onStartLesson={handleStartLesson}
+        onOpenMap={() => setCurrentView('map')}
+        onOpenSettings={() => setCurrentView('settings')}
+        onOpenPractice={() => setCurrentView('practice')}
+        onOpenCheckin={() => setCurrentView('checkin')}
+        onOpenAssessment={() => setCurrentView('assessment')}
+        onOpenTransformation={() => setCurrentView('transformation')}
+        onOpenProgress={() => setCurrentView('progress')}
+        onOpenAchievements={() => setCurrentView('achievements')}
+        onOpenIdentity={() => setCurrentView('identity')}
+        isCheckinDue={isCheckinDue()}
+        isAssessmentDue={isAssessmentDue()}
+      />
+    </>
   );
 }
