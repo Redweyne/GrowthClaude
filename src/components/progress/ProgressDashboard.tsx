@@ -14,18 +14,22 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { StreakCalendar } from './StreakCalendar';
+import { StoryTrigger } from '@/components/story';
 import { getLevelFromXp, getXpProgress } from '@/types';
+import { useTransformationStory } from '@/hooks';
 
 interface ProgressDashboardProps {
   onBack: () => void;
   onOpenAchievements: () => void;
   onOpenIdentity: () => void;
+  onOpenStory: () => void;
 }
 
 export function ProgressDashboard({
   onBack,
   onOpenAchievements,
   onOpenIdentity,
+  onOpenStory,
 }: ProgressDashboardProps) {
   const {
     getProgressStats,
@@ -34,6 +38,8 @@ export function ProgressDashboard({
     longestStreak,
     name,
   } = useStore();
+
+  const { canGenerateStory, storyReadiness } = useTransformationStory();
 
   const stats = getProgressStats();
   const level = getLevelFromXp(totalXp);
@@ -174,6 +180,25 @@ export function ProgressDashboard({
             <div className="text-sm text-zinc-500">Longest Streak</div>
             <div className="text-xs text-zinc-600 mt-1">days</div>
           </div>
+        </motion.div>
+
+        {/* Transformation Story Trigger */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <StoryTrigger
+            variant="card"
+            onClick={onOpenStory}
+            label="View Your Transformation Story"
+            subtitle={
+              canGenerateStory
+                ? `${storyReadiness.reflectionCount} reflections • ${storyReadiness.richness} story richness`
+                : `${storyReadiness.minimumRequired.current}/${storyReadiness.minimumRequired.reflections} reflections needed`
+            }
+            disabled={!canGenerateStory}
+          />
         </motion.div>
 
         {/* Main Stats Grid */}

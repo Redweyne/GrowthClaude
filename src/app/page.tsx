@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TodaysLesson } from '@/components/home/TodaysLesson';
@@ -13,6 +14,9 @@ import { TransformationHub } from '@/components/transformation';
 import { ProgressDashboard } from '@/components/progress';
 import { AchievementGallery, AchievementCelebration } from '@/components/achievements';
 import { IdentityScreen } from '@/components/identity';
+import { TransformationStory, ShareableStoryCard } from '@/components/story';
+import { useTransformationStory } from '@/hooks';
+import { TransformationStory as TransformationStoryType } from '@/types/story';
 import stoicismWorld from '@/content/stoicism';
 
 type AppView =
@@ -32,6 +36,36 @@ export default function Home() {
   const { onboardingComplete, completedLessons, isCheckinDue, isAssessmentDue } = useStore();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+
+  // Story state
+  const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
+  const [showShareCard, setShowShareCard] = useState(false);
+  const { generateStory, canGenerateStory } = useTransformationStory();
+
+  // Handle opening the story
+  const handleOpenStory = useCallback(() => {
+    if (!canGenerateStory) return;
+    const story = generateStory('on_demand');
+    if (story) {
+      setActiveStory(story);
+    }
+  }, [canGenerateStory, generateStory]);
+
+  // Handle closing the story
+  const handleCloseStory = useCallback(() => {
+    setActiveStory(null);
+    setShowShareCard(false);
+  }, []);
+
+  // Handle sharing the story
+  const handleShareStory = useCallback(() => {
+    setShowShareCard(true);
+  }, []);
+
+  // Handle story completion
+  const handleStoryComplete = useCallback(() => {
+    // Could track completion here
+  }, []);
 
   // Get current world (for MVP, just Stoicism)
   const currentWorld = stoicismWorld;
@@ -162,7 +196,25 @@ export default function Home() {
           onBack={() => setCurrentView('home')}
           onOpenAchievements={() => setCurrentView('achievements')}
           onOpenIdentity={() => setCurrentView('identity')}
+          onOpenStory={handleOpenStory}
         />
+        {/* Story Modal */}
+        <AnimatePresence>
+          {activeStory && !showShareCard && (
+            <TransformationStory
+              story={activeStory}
+              onClose={handleCloseStory}
+              onShare={handleShareStory}
+              onComplete={handleStoryComplete}
+            />
+          )}
+          {activeStory && showShareCard && (
+            <ShareableStoryCard
+              card={activeStory.shareCard}
+              onClose={handleCloseStory}
+            />
+          )}
+        </AnimatePresence>
       </>
     );
   }
