@@ -180,11 +180,18 @@ export function useTransformationStory() {
     return buildTransformationStory(context, type);
   }, [buildContext]);
 
+  // Seed demo data for users to experience the story feature
+  const seedDemoData = useCallback(() => {
+    store.seedDemoData();
+    return true;
+  }, [store]);
+
   return {
     canGenerateStory,
     storyReadiness,
     generateStory,
-    buildContext
+    buildContext,
+    seedDemoData
   };
 }
 

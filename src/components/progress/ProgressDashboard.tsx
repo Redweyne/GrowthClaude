@@ -39,7 +39,7 @@ export function ProgressDashboard({
     name,
   } = useStore();
 
-  const { canGenerateStory, storyReadiness } = useTransformationStory();
+  const { canGenerateStory, storyReadiness, seedDemoData } = useTransformationStory();
 
   const stats = getProgressStats();
   const level = getLevelFromXp(totalXp);
@@ -198,6 +198,8 @@ export function ProgressDashboard({
                 : `${storyReadiness.minimumRequired.current}/${storyReadiness.minimumRequired.reflections} reflections needed`
             }
             disabled={!canGenerateStory}
+            showDemoOption={true}
+            onSeedDemo={seedDemoData}
           />
         </motion.div>
 

@@ -46,66 +46,66 @@ import { generateInsights, determineStoryMood } from './insightGenerator';
 
 const OPENING_HEADLINES = {
   triumphant: [
-    'Look What You\'ve Built',
-    'Your Transformation Story',
-    'A Journey Worth Celebrating'
+    'This Is Who You\'ve Become',
+    'Look How Far You\'ve Risen',
+    'The Fire Inside You Won'
   ],
   reflective: [
-    'A Moment of Reflection',
-    'Your Growth Story',
-    'Looking Back, Moving Forward'
+    'The Quiet Work You\'ve Done',
+    'When You Look Back...',
+    'This Is Your Story'
   ],
   resilient: [
-    'The Power of Showing Up',
-    'Consistency Creates Change',
-    'Day by Day, You Rose'
+    'You Never Gave Up',
+    'Through It All, You Kept Going',
+    'The Strength Was Always There'
   ],
   awakening: [
-    'The Beginning of Something',
-    'Your Journey Has Begun',
-    'Seeds of Transformation'
+    'Something In You Shifted',
+    'The First Step Matters Most',
+    'A New Chapter Began'
   ],
   transformative: [
-    'You\'re Not Who You Were',
-    'The Transformation is Real',
-    'Before → After: Your Story'
+    'Read This Slowly...',
+    'You Are Not The Same Person',
+    'This Is What Growth Looks Like'
   ]
 };
 
 const CLOSING_MESSAGES = {
   triumphant: [
-    'This is just the beginning of who you\'re becoming.',
-    'Your transformation is inspiring. Keep going.',
-    'What you\'ve built here is remarkable. Own it.'
+    'You didn\'t just change. You became.',
+    'This version of you — it\'s beautiful.',
+    'The fire you\'ve built will light your path forever.'
   ],
   reflective: [
-    'Every reflection is a step toward wisdom.',
-    'You\'re doing the inner work. It matters.',
-    'Growth is a journey, not a destination.'
+    'The deepest growth happens in silence.',
+    'You\'ve been doing the work. It shows.',
+    'Some transformations can only be felt.'
   ],
   resilient: [
-    'Consistency beats intensity. You understand this now.',
-    'You showed up. Again and again. That\'s who you are.',
-    'The discipline you\'ve built is yours forever.'
+    'They said it couldn\'t be done. You did it anyway.',
+    'Every single day, you chose yourself.',
+    'This consistency — it\'s who you are now.'
   ],
   awakening: [
-    'The seeds you\'ve planted will grow.',
-    'This is how transformation begins.',
-    'You\'ve started something powerful.'
+    'The journey of a thousand miles has begun.',
+    'Something powerful is taking root inside you.',
+    'Trust the process. Trust yourself.'
   ],
   transformative: [
-    'The person who started this journey is not the person reading this.',
-    'You didn\'t just learn — you transformed.',
-    'This is proof that change is possible.'
+    'The person reading this is not the person who started.',
+    'You are proof that change is possible.',
+    'What you\'ve done here — it\'s remarkable.'
   ]
 };
 
 const PERSONAL_NOTES = {
-  triumphant: 'You\'ve earned every bit of this progress. The work you\'ve done — the honest reflections, the daily showing up — it all adds up to this.',
-  reflective: 'Growth isn\'t always loud. Sometimes it\'s in the quiet moments of reflection where the deepest changes happen.',
-  resilient: 'There were days when it wasn\'t easy. But you showed up anyway. That discipline is now part of who you are.',
-  awakening: 'Every master was once a beginner. What matters is that you started, and you kept going.',
-  transformative: 'Read your early reflections. Then read your recent ones. That\'s not just progress — that\'s transformation.'
+  triumphant: 'Every word you wrote in reflection, every lesson you completed, every day you showed up — it wasn\'t for nothing. This is the evidence. This is who you\'ve become.',
+  reflective: 'Growth isn\'t always fireworks and celebrations. Sometimes it\'s the quiet 2am reflections. The small shifts in perspective. The moments when you chose differently. That\'s where the real magic happened.',
+  resilient: 'There were mornings when you didn\'t want to start. Nights when you felt like stopping. But something in you refused to quit. That something — that\'s your power.',
+  awakening: 'A single spark can start a fire. You\'ve lit that spark. The path ahead isn\'t always clear, but now you know — you have what it takes to walk it.',
+  transformative: 'If someone showed you where you\'d be when you started, you might not have believed them. But here you are. Different. Stronger. More yourself than ever before.'
 };
 
 // ----------------------------------------------------------------------------
@@ -309,7 +309,7 @@ function buildOpeningSlide(context: StoryGenerationContext, mood: StoryMood, ord
     id: uuidv4(),
     type: 'opening',
     order,
-    duration: 4000,
+    duration: 5500, // Let the opening breathe
     background: BACKGROUNDS.opening,
     animation: ANIMATIONS.blurIn,
     headline: headlines[Math.floor(Math.random() * headlines.length)],
@@ -331,7 +331,7 @@ function buildJourneyStartSlide(context: StoryGenerationContext, order: number):
     id: uuidv4(),
     type: 'journey_start',
     order,
-    duration: 5000,
+    duration: 6000, // The origin story deserves time
     background: BACKGROUNDS.warmGlow,
     animation: ANIMATIONS.slideUp,
     daysSinceStart: context.metrics.daysSinceStart,
@@ -342,8 +342,8 @@ function buildJourneyStartSlide(context: StoryGenerationContext, order: number):
     }),
     firstLessonTitle: firstReflection?.lessonTitle || 'Your first lesson',
     openingMessage: context.metrics.daysSinceStart === 0
-      ? 'Today, you began.'
-      : `${context.metrics.daysSinceStart} days ago, you made a choice.`
+      ? 'Today, something changed inside you.'
+      : `${context.metrics.daysSinceStart} days ago, you made the decision that changed everything.`
   };
 }
 
@@ -393,7 +393,7 @@ function buildStatRevealSlide(context: StoryGenerationContext, order: number): S
     background: BACKGROUNDS.deepPurple,
     animation: ANIMATIONS.scaleIn,
     stats: statItems,
-    headline: 'By the Numbers'
+    headline: 'What Your Commitment Built'
   };
 }
 
@@ -415,7 +415,7 @@ function buildContrastSlide(
     id: uuidv4(),
     type: 'contrast',
     order,
-    duration: 8000,
+    duration: 10000, // The transformation moment - let it sink in
     background: BACKGROUNDS.growthGreen,
     animation: ANIMATIONS.slideUp,
     before: {
@@ -476,19 +476,19 @@ function buildStreakHighlightSlide(context: StoryGenerationContext, order: numbe
   let emoji: string;
 
   if (currentStreak >= 30) {
-    message = 'A month of showing up. This is who you are now.';
+    message = 'A month of relentless dedication. This isn\'t discipline anymore — it\'s who you are.';
     emoji = '🔥';
   } else if (currentStreak >= 14) {
-    message = 'Two weeks of consistency. You\'re building something real.';
+    message = 'Two weeks of choosing yourself, every single day. That takes something special.';
     emoji = '💪';
   } else if (currentStreak >= 7) {
-    message = 'A full week strong. The foundation is set.';
+    message = 'Seven days of showing up. The habit is taking root. Feel it.';
     emoji = '⭐';
   } else if (longestStreak >= 7) {
-    message = `Your best: ${longestStreak} days. You know what you're capable of.`;
+    message = `Your personal best: ${longestStreak} days. You proved you can do this. Now do it again.`;
     emoji = '🎯';
   } else {
-    message = 'Every day you show up matters.';
+    message = 'Every day you choose growth is a victory. Never forget that.';
     emoji = '✨';
   }
 
@@ -515,7 +515,7 @@ function buildIdentityMomentSlide(context: StoryGenerationContext, order: number
     id: uuidv4(),
     type: 'identity_moment',
     order,
-    duration: 6000,
+    duration: 8000, // Who you're becoming - pause and feel it
     background: BACKGROUNDS.deepPurple,
     animation: ANIMATIONS.blurIn,
     statement: {
@@ -526,7 +526,7 @@ function buildIdentityMomentSlide(context: StoryGenerationContext, order: number
       }),
       context: latest.context
     },
-    message: 'You\'re defining who you\'re becoming.',
+    message: 'Words shape reality. You\'re writing yourself into existence.',
     totalStatements: context.identityStatements.length
   };
 }
@@ -548,8 +548,8 @@ function buildAchievementSlide(context: StoryGenerationContext, order: number): 
     totalUnlocked: context.achievements.length,
     totalAvailable: 30, // Approximate total achievements
     message: context.achievements.length >= 10
-      ? 'Your collection grows.'
-      : 'Every achievement tells a story.'
+      ? 'Each badge represents a moment you transcended your limits.'
+      : 'These aren\'t just badges. They\'re proof of who you\'re becoming.'
   };
 }
 
@@ -631,7 +631,7 @@ function buildWordCloudSlide(context: StoryGenerationContext, order: number): Wo
     animation: ANIMATIONS.fadeIn,
     words: words.slice(0, 20),
     totalWordsWritten: stats.totalWords,
-    message: 'The words you\'ve used most on this journey.'
+    message: 'The vocabulary of your transformation'
   };
 }
 
@@ -648,13 +648,13 @@ function buildClosingSlide(
     id: uuidv4(),
     type: 'closing',
     order,
-    duration: 7000,
+    duration: 9000, // The emotional crescendo
     background: BACKGROUNDS.closing,
     animation: ANIMATIONS.blurIn,
-    headline: context.userName ? `${context.userName},` : 'Remember this:',
+    headline: context.userName ? `${context.userName},` : 'Remember this moment.',
     message,
     personalNote,
-    signOff: 'Your transformation continues.'
+    signOff: 'The best is yet to come.'
   };
 }
 
@@ -675,8 +675,8 @@ function buildCallToActionSlide(mood: StoryMood, order: number): CallToActionSli
       action: 'continue'
     },
     encouragement: mood === 'triumphant'
-      ? 'Your story could inspire someone else.'
-      : 'Every step forward matters.'
+      ? 'Your story has the power to change someone else\'s life. Share it.'
+      : 'This moment matters. Your journey matters. You matter.'
   };
 }
 

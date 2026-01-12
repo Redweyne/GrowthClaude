@@ -216,9 +216,13 @@ interface UserActions {
   // Settings
   toggleSound: () => void;
   toggleHaptic: () => void;
+  setSoundEnabled: (enabled: boolean) => void;
 
   // Reset
   resetUser: () => void;
+
+  // Demo data for testing story feature
+  seedDemoData: () => void;
 }
 
 const initialState: UserState = {
@@ -815,11 +819,127 @@ export const useStore = create<UserState & UserActions>()(
       // ============================================
       toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
       toggleHaptic: () => set((state) => ({ hapticEnabled: !state.hapticEnabled })),
+      setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
 
       // ============================================
       // RESET
       // ============================================
       resetUser: () => set(initialState),
+
+      // ============================================
+      // DEMO DATA FOR STORY FEATURE
+      // ============================================
+      seedDemoData: () => {
+        const demoReflections: ReflectionEntry[] = [
+          {
+            id: 'demo-1',
+            lessonId: 'intro-stoicism',
+            lessonTitle: 'Introduction to Stoicism',
+            coreConceptTag: 'acceptance',
+            reflection: 'I keep trying to control everything around me and it\'s exhausting. My boss made a decision I disagree with and I spent the whole night stressed about it. I realize now that I waste so much energy fighting battles I can\'t win.',
+            actionCompleted: true,
+            date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'demo-2',
+            lessonId: 'dichotomy-control',
+            lessonTitle: 'The Dichotomy of Control',
+            coreConceptTag: 'control',
+            reflection: 'Today I caught myself getting angry about traffic. But then I remembered - this is outside my control. For the first time, I actually felt my shoulders drop. I can\'t control traffic, but I can control my reaction. This is harder than it sounds.',
+            actionCompleted: true,
+            date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'demo-3',
+            lessonId: 'morning-routine',
+            lessonTitle: 'The Stoic Morning',
+            coreConceptTag: 'discipline',
+            reflection: 'Started my morning with 10 minutes of silent reflection before checking my phone. It felt strange at first - almost uncomfortable. But by the end I noticed my mind was clearer than usual. Small win, but it felt meaningful.',
+            actionCompleted: true,
+            date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'demo-4',
+            lessonId: 'negative-visualization',
+            lessonTitle: 'Negative Visualization',
+            coreConceptTag: 'gratitude',
+            reflection: 'I imagined losing everything - my job, my relationships, my health. Instead of feeling depressed, I felt this wave of appreciation for what I have. My problems suddenly seemed smaller. I called my mom just to tell her I love her.',
+            actionCompleted: true,
+            date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'demo-5',
+            lessonId: 'obstacle-is-way',
+            lessonTitle: 'The Obstacle Is The Way',
+            coreConceptTag: 'perspective',
+            reflection: 'Got rejected from a job I really wanted. Old me would have spiraled. But I asked myself: what can this teach me? I realized the interview revealed gaps in my skills I didn\'t know existed. The rejection wasn\'t the end - it was information.',
+            actionCompleted: true,
+            date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          {
+            id: 'demo-6',
+            lessonId: 'present-moment',
+            lessonTitle: 'Living in the Present',
+            coreConceptTag: 'acceptance',
+            reflection: 'I\'m starting to notice a real shift in myself. When my colleague criticized my work today, I didn\'t react defensively like I used to. I listened, took what was useful, and let go of the rest. It felt... powerful. Like I\'m finally becoming the person I\'ve always wanted to be.',
+            actionCompleted: true,
+            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          }
+        ];
+
+        const demoIdentityStatements: IdentityStatement[] = [
+          {
+            id: 'identity-1',
+            statement: 'I am someone who responds rather than reacts.',
+            createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+            tags: ['self-control', 'mindfulness'],
+            context: {
+              type: 'reflection',
+              trigger: 'demo-lesson-3',
+              description: 'After practicing the pause'
+            }
+          },
+          {
+            id: 'identity-2',
+            statement: 'I embrace obstacles as opportunities for growth.',
+            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            tags: ['resilience', 'perspective'],
+            context: {
+              type: 'lesson',
+              trigger: 'demo-lesson-5',
+              description: 'After the job rejection'
+            }
+          }
+        ];
+
+        const demoAchievements: AchievementUnlock[] = [
+          { achievementId: 'first-lesson', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true },
+          { achievementId: 'first-reflection', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true },
+          { achievementId: 'week-streak', unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true },
+          { achievementId: 'deep-thinker', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true }
+        ];
+
+        const completedLessons: Record<string, boolean> = {};
+        demoReflections.forEach(r => {
+          completedLessons[r.lessonId] = true;
+        });
+
+        set({
+          name: 'Seeker',
+          transformationGoal: 'calmer',
+          whyStatement: 'I want to find calm in the chaos and become the best version of myself.',
+          onboardingComplete: true,
+          allReflections: demoReflections,
+          reflections: demoReflections.slice(-5),
+          identityStatements: demoIdentityStatements,
+          unlockedAchievements: demoAchievements,
+          completedLessons,
+          totalXp: 350,
+          currentStreak: 7,
+          longestStreak: 12,
+          lastLessonDate: new Date().toISOString().split('T')[0],
+        });
+      },
     }),
     {
       name: 'transformation-hub-storage',
