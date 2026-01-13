@@ -183,10 +183,35 @@ export function useLessonAmbience() {
     osc.stop(now + 2);
   }, [soundEnabled, initAudio]);
 
-  // Keystroke sound - DISABLED (was annoying)
+  // Keystroke sound - soft, satisfying click
   const playKeystroke = useCallback(() => {
-    // Intentionally empty - keystroke sounds were distracting
-  }, []);
+    if (!soundEnabled) return;
+
+    initAudio();
+    const ctx = audioContextRef.current;
+    if (!ctx) return;
+
+    // Soft click sound - like a quality mechanical keyboard
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'sine';
+    osc.frequency.value = 1200 + Math.random() * 200; // Slight variation
+
+    filter.type = 'highpass';
+    filter.frequency.value = 800;
+
+    // Quick, soft click
+    gain.gain.setValueAtTime(0.03, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.03);
+  }, [soundEnabled, initAudio]);
 
   // Completion chime - simpler, quieter
   const playCompletionChime = useCallback(() => {

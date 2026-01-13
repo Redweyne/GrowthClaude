@@ -35,10 +35,9 @@ const DEPTH_PROMPTS = [
 
 // Word count milestones with encouragement
 const MILESTONES = [
-  { words: 20, message: "You're finding your voice..." },
-  { words: 50, message: "Keep going. This is where the gold is." },
-  { words: 100, message: "Beautiful. You're going deep." },
-  { words: 150, message: "This reflection has real substance." },
+  { words: 15, message: "You're finding your voice..." },
+  { words: 30, message: "Keep going. This is where the gold is." },
+  { words: 50, message: "Beautiful. You're going deep." },
 ];
 
 export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionStepProps) {
@@ -56,9 +55,9 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   // Word count
   const wordCount = reflection.trim().split(/\s+/).filter(Boolean).length;
 
-  // Calculate readiness - not a hard minimum, but a sense of completeness
-  const isSubstantial = wordCount >= 15;
-  const isReady = wordCount >= 25;
+  // Calculate readiness - low bar, we trust the user
+  const isSubstantial = wordCount >= 5;
+  const isReady = wordCount >= 15;
 
   // Timer for idle prompts
   useEffect(() => {
@@ -136,7 +135,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   }, [isSubstantial, handleSubmit]);
 
   return (
-    <div className="min-h-[85vh] flex flex-col">
+    <div className="flex flex-col">
       <AnimatePresence mode="wait">
         {/* Entering phase */}
         {phase === 'entering' && (
@@ -223,7 +222,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 onBlur={() => setIsFocused(false)}
                 placeholder="Begin writing..."
                 className="
-                  w-full h-full min-h-[300px] p-6
+                  w-full h-full min-h-[160px] p-5
                   bg-transparent text-lg text-zinc-200
                   placeholder-zinc-600 leading-relaxed
                   focus:outline-none resize-none
@@ -261,14 +260,14 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
 
                   {/* Progress dots */}
                   <div className="flex gap-1">
-                    {[15, 25, 50, 100].map((threshold, i) => (
+                    {[5, 15, 30, 50].map((threshold, i) => (
                       <motion.div
                         key={threshold}
                         className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
                           wordCount >= threshold ? 'bg-indigo-400' : 'bg-zinc-700'
                         }`}
                         animate={{
-                          scale: wordCount >= threshold && wordCount < threshold + 10 ? [1, 1.3, 1] : 1
+                          scale: wordCount >= threshold && wordCount < threshold + 5 ? [1, 1.3, 1] : 1
                         }}
                         transition={{ duration: 0.3 }}
                       />
