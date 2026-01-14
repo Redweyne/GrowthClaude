@@ -1,47 +1,86 @@
 'use client';
 
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+// ============================================================================
+// STREAK CALENDAR - YOUR COMMITMENT MADE VISIBLE
+// Not just a GitHub-style grid. A visual story of every day you chose growth.
+// ============================================================================
+
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Flame, Trophy, Calendar, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 interface StreakCalendarProps {
   months?: number;
 }
 
+interface DayData {
+  date: string;
+  level: number;
+  lessonsCompleted: number;
+  reflectionsWritten: number;
+  xpEarned: number;
+  isToday: boolean;
+  isFuture: boolean;
+}
+
 export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
   const { getStreakCalendarData, currentStreak, longestStreak } = useStore();
+  const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
 
-  const calendarData = useMemo(() => {
+  const today = new Date().toISOString().split('T')[0];
+
+  const { weeks, stats } = useMemo(() => {
     const data = getStreakCalendarData(months);
     const activityMap = new Map(data.map(d => [d.date, d]));
 
-    // Generate all dates for the past N months
-    const today = new Date();
-    const startDate = new Date(today);
+    const todayDate = new Date();
+    const startDate = new Date(todayDate);
     startDate.setMonth(startDate.getMonth() - months);
-    startDate.setDate(1); // Start from first of month
+    startDate.setDate(1);
 
-    // Adjust to start from Sunday
     const dayOfWeek = startDate.getDay();
     startDate.setDate(startDate.getDate() - dayOfWeek);
 
-    const weeks: Array<Array<{ date: string; level: number; lessonsCompleted: number }>> = [];
-    let currentWeek: Array<{ date: string; level: number; lessonsCompleted: number }> = [];
+    const weeks: DayData[][] = [];
+    let currentWeek: DayData[] = [];
     const currentDate = new Date(startDate);
 
-    while (currentDate <= today) {
+    let activeDays = 0;
+    let totalLessons = 0;
+    let totalXp = 0;
+
+    while (currentDate <= todayDate || currentWeek.length > 0) {
       const dateStr = currentDate.toISOString().split('T')[0];
       const activity = activityMap.get(dateStr);
       const lessonsCompleted = activity?.lessonsCompleted || 0;
+      const reflectionsWritten = activity?.reflectionsWritten || 0;
+      const xpEarned = activity?.xpEarned || 0;
 
-      // Calculate intensity level (0-4)
       let level = 0;
       if (lessonsCompleted >= 3) level = 4;
       else if (lessonsCompleted >= 2) level = 3;
       else if (lessonsCompleted >= 1) level = 2;
       else if (activity) level = 1;
 
-      currentWeek.push({ date: dateStr, level, lessonsCompleted });
+      const isToday = dateStr === today;
+      const isFuture = currentDate > todayDate;
+
+      if (!isFuture && lessonsCompleted > 0) {
+        activeDays++;
+        totalLessons += lessonsCompleted;
+        totalXp += xpEarned;
+      }
+
+      currentWeek.push({
+        date: dateStr,
+        level: isFuture ? -1 : level,
+        lessonsCompleted,
+        reflectionsWritten,
+        xpEarned,
+        isToday,
+        isFuture
+      });
 
       if (currentWeek.length === 7) {
         weeks.push(currentWeek);
@@ -49,23 +88,42 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       }
 
       currentDate.setDate(currentDate.getDate() + 1);
+
+      if (isFuture && currentWeek.length === 0) break;
     }
 
-    // Push remaining days
     if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        const futureDate = new Date(currentDate);
+        currentWeek.push({
+          date: futureDate.toISOString().split('T')[0],
+          level: -1,
+          lessonsCompleted: 0,
+          reflectionsWritten: 0,
+          xpEarned: 0,
+          isToday: false,
+          isFuture: true
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
       weeks.push(currentWeek);
     }
 
-    return weeks;
-  }, [getStreakCalendarData, months]);
+    return {
+      weeks,
+      stats: { activeDays, totalLessons, totalXp }
+    };
+  }, [getStreakCalendarData, months, today]);
 
-  const getLevelColor = (level: number) => {
+  const getLevelColor = (level: number, isToday: boolean) => {
+    if (level === -1) return 'bg-zinc-900/30';
+    if (isToday && level === 0) return 'bg-zinc-800 ring-2 ring-amber-500/50';
     switch (level) {
       case 0: return 'bg-zinc-800/50';
-      case 1: return 'bg-emerald-900/50';
+      case 1: return 'bg-emerald-900/60';
       case 2: return 'bg-emerald-700/70';
       case 3: return 'bg-emerald-500/80';
-      case 4: return 'bg-emerald-400';
+      case 4: return 'bg-emerald-400 shadow-lg shadow-emerald-500/20';
       default: return 'bg-zinc-800/50';
     }
   };
@@ -74,13 +132,15 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
     const labels: Array<{ month: string; index: number }> = [];
     let lastMonth = '';
 
-    calendarData.forEach((week, weekIndex) => {
-      const firstDayOfWeek = new Date(week[0].date);
-      const monthStr = firstDayOfWeek.toLocaleDateString('en-US', { month: 'short' });
+    weeks.forEach((week, weekIndex) => {
+      if (week[0]) {
+        const firstDayOfWeek = new Date(week[0].date);
+        const monthStr = firstDayOfWeek.toLocaleDateString('en-US', { month: 'short' });
 
-      if (monthStr !== lastMonth) {
-        labels.push({ month: monthStr, index: weekIndex });
-        lastMonth = monthStr;
+        if (monthStr !== lastMonth) {
+          labels.push({ month: monthStr, index: weekIndex });
+          lastMonth = monthStr;
+        }
       }
     });
 
@@ -89,35 +149,79 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
 
   const monthLabels = getMonthLabels();
 
+  // Calculate consistency percentage
+  const totalDays = Math.min(months * 30, weeks.length * 7);
+  const consistencyPercent = totalDays > 0 ? Math.round((stats.activeDays / totalDays) * 100) : 0;
+
   return (
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-2xl p-6">
+      {/* Header with meaning */}
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white">Activity Calendar</h3>
-          <p className="text-sm text-zinc-500">Your practice consistency</p>
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Calendar size={20} className="text-zinc-500" />
+            Your Commitment
+          </h3>
+          <p className="text-sm text-zinc-500 mt-1">
+            {stats.activeDays} days of practice in {months} months
+          </p>
         </div>
-        <div className="flex gap-4 text-right">
-          <div>
-            <div className="text-2xl font-bold text-emerald-400">{currentStreak}</div>
-            <div className="text-xs text-zinc-500">Current streak</div>
+
+        {/* Streak badges */}
+        <div className="flex gap-3">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-emerald-400">
+              <Flame size={18} />
+              <span className="text-xl font-bold">{currentStreak}</span>
+            </div>
+            <div className="text-xs text-zinc-500">Current</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-amber-400">{longestStreak}</div>
-            <div className="text-xs text-zinc-500">Longest streak</div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-amber-400">
+              <Trophy size={18} />
+              <span className="text-xl font-bold">{longestStreak}</span>
+            </div>
+            <div className="text-xs text-zinc-500">Best</div>
           </div>
         </div>
       </div>
 
+      {/* Consistency bar */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="text-zinc-400">Consistency</span>
+          <span className="text-white font-medium">{consistencyPercent}%</span>
+        </div>
+        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${consistencyPercent}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          />
+        </div>
+        <p className="text-xs text-zinc-600 mt-2">
+          {consistencyPercent >= 80
+            ? "Exceptional consistency. You're building something lasting."
+            : consistencyPercent >= 50
+            ? "Good consistency. Keep pushing to make this a daily habit."
+            : consistencyPercent >= 20
+            ? "Building momentum. Every day you show up matters."
+            : "Start your streak today. One day at a time."}
+        </p>
+      </div>
+
       {/* Month labels */}
       <div className="flex mb-2 text-xs text-zinc-500">
-        <div className="w-8" /> {/* Spacer for day labels */}
+        <div className="w-6" />
         <div className="flex-1 flex">
-          {monthLabels.map(({ month, index }) => (
+          {monthLabels.map(({ month, index }, i) => (
             <div
               key={`${month}-${index}`}
-              style={{ marginLeft: index === 0 ? 0 : `${(index - (monthLabels[monthLabels.indexOf({ month, index }) - 1]?.index || 0)) * 14}px` }}
               className="text-xs"
+              style={{
+                marginLeft: i === 0 ? 0 : `${(index - (monthLabels[i - 1]?.index || 0)) * 14 - 20}px`
+              }}
             >
               {month}
             </div>
@@ -126,30 +230,34 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       </div>
 
       {/* Calendar grid */}
-      <div className="flex gap-1">
+      <div className="flex gap-[3px]">
         {/* Day labels */}
-        <div className="flex flex-col gap-1 text-xs text-zinc-500 pr-2">
-          <div className="h-3" /> {/* Mon */}
-          <div className="h-3">Tue</div>
-          <div className="h-3" /> {/* Wed */}
-          <div className="h-3">Thu</div>
-          <div className="h-3" /> {/* Fri */}
-          <div className="h-3">Sat</div>
-          <div className="h-3" /> {/* Sun */}
+        <div className="flex flex-col gap-[3px] text-[10px] text-zinc-600 pr-1">
+          <div className="h-[14px]" />
+          <div className="h-[14px] flex items-center">M</div>
+          <div className="h-[14px]" />
+          <div className="h-[14px] flex items-center">W</div>
+          <div className="h-[14px]" />
+          <div className="h-[14px] flex items-center">F</div>
+          <div className="h-[14px]" />
         </div>
 
         {/* Weeks */}
-        <div className="flex gap-1 flex-1 overflow-x-auto pb-2">
-          {calendarData.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-1">
+        <div className="flex gap-[3px] flex-1 overflow-x-auto pb-2">
+          {weeks.map((week, weekIndex) => (
+            <div key={weekIndex} className="flex flex-col gap-[3px]">
               {week.map((day, dayIndex) => (
-                <motion.div
+                <motion.button
                   key={day.date}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: (weekIndex * 7 + dayIndex) * 0.002 }}
-                  className={`w-3 h-3 rounded-sm ${getLevelColor(day.level)} cursor-pointer transition-all hover:ring-2 hover:ring-white/30`}
-                  title={`${day.date}: ${day.lessonsCompleted} lesson${day.lessonsCompleted === 1 ? '' : 's'}`}
+                  transition={{ delay: (weekIndex * 7 + dayIndex) * 0.001 }}
+                  onClick={() => !day.isFuture && setSelectedDay(day)}
+                  disabled={day.isFuture}
+                  className={`w-[14px] h-[14px] rounded-sm transition-all ${getLevelColor(day.level, day.isToday)} ${
+                    !day.isFuture ? 'hover:ring-2 hover:ring-white/30 cursor-pointer' : 'cursor-default'
+                  }`}
+                  title={day.isFuture ? '' : `${day.date}: ${day.lessonsCompleted} lessons`}
                 />
               ))}
             </div>
@@ -158,16 +266,111 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-end gap-2 mt-4 text-xs text-zinc-500">
-        <span>Less</span>
-        {[0, 1, 2, 3, 4].map((level) => (
-          <div
-            key={level}
-            className={`w-3 h-3 rounded-sm ${getLevelColor(level)}`}
-          />
-        ))}
-        <span>More</span>
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-xs text-zinc-600">
+          {currentStreak > 0
+            ? `${currentStreak === 1 ? "1 day" : `${currentStreak} days`} and counting...`
+            : "Start your streak today"}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <span>Less</span>
+          {[0, 1, 2, 3, 4].map((level) => (
+            <div
+              key={level}
+              className={`w-[12px] h-[12px] rounded-sm ${getLevelColor(level, false)}`}
+            />
+          ))}
+          <span>More</span>
+        </div>
       </div>
+
+      {/* Day detail modal */}
+      <AnimatePresence>
+        {selectedDay && !selectedDay.isFuture && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+            onClick={() => setSelectedDay(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-white">
+                  {new Date(selectedDay.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </h4>
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="p-1 text-zinc-500 hover:text-white transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {selectedDay.lessonsCompleted > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                      <div className="text-2xl font-bold text-emerald-400">
+                        {selectedDay.lessonsCompleted}
+                      </div>
+                      <div className="text-xs text-zinc-500">
+                        {selectedDay.lessonsCompleted === 1 ? 'Lesson' : 'Lessons'}
+                      </div>
+                    </div>
+                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                      <div className="text-2xl font-bold text-amber-400">
+                        +{selectedDay.xpEarned}
+                      </div>
+                      <div className="text-xs text-zinc-500">XP Earned</div>
+                    </div>
+                  </div>
+
+                  {selectedDay.reflectionsWritten > 0 && (
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3">
+                      <div className="text-sm text-purple-300">
+                        {selectedDay.reflectionsWritten} reflection{selectedDay.reflectionsWritten !== 1 ? 's' : ''} written
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-sm text-zinc-400 text-center">
+                    {selectedDay.isToday
+                      ? "Great work today! Keep the momentum going."
+                      : "You showed up. That's what matters."}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
+                    <Calendar size={24} className="text-zinc-600" />
+                  </div>
+                  <p className="text-zinc-400">
+                    {selectedDay.isToday
+                      ? "No lessons yet today. Time to change that?"
+                      : "No practice this day."}
+                  </p>
+                  {!selectedDay.isToday && (
+                    <p className="text-xs text-zinc-600 mt-2">
+                      Every day is a new opportunity.
+                    </p>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
