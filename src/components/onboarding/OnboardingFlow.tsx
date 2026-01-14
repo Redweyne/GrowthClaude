@@ -1,13 +1,20 @@
 'use client';
 
+// ============================================================================
+// ONBOARDING FLOW - THE INITIATION
+// This is not a setup wizard. This is the beginning of transformation.
+// Each step builds on the last. Each question goes deeper.
+// Order: Welcome → Name → Goal → Why → Commitment → Ready
+// ============================================================================
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { WelcomeStep } from './steps/WelcomeStep';
+import { NameStep } from './steps/NameStep';
 import { GoalStep } from './steps/GoalStep';
 import { WhyStep } from './steps/WhyStep';
 import { CommitmentStep } from './steps/CommitmentStep';
-import { NameStep } from './steps/NameStep';
 import { ReadyStep } from './steps/ReadyStep';
 
 const TOTAL_STEPS = 6;
@@ -33,32 +40,36 @@ export function OnboardingFlow() {
   };
 
   const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 300 : -300,
+    enter: (dir: number) => ({
+      x: dir > 0 ? 200 : -200,
       opacity: 0,
+      scale: 0.98,
     }),
     center: {
       x: 0,
       opacity: 1,
+      scale: 1,
     },
-    exit: (direction: number) => ({
-      x: direction < 0 ? 300 : -300,
+    exit: (dir: number) => ({
+      x: dir < 0 ? 200 : -200,
       opacity: 0,
+      scale: 0.98,
     }),
   };
 
+  // New order: Welcome → Name → Goal → Why → Commitment → Ready
   const renderStep = () => {
     switch (onboardingStep) {
       case 0:
         return <WelcomeStep onNext={nextStep} />;
       case 1:
-        return <GoalStep onNext={nextStep} onBack={prevStep} />;
-      case 2:
-        return <WhyStep onNext={nextStep} onBack={prevStep} />;
-      case 3:
-        return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
-      case 4:
         return <NameStep onNext={nextStep} onBack={prevStep} />;
+      case 2:
+        return <GoalStep onNext={nextStep} onBack={prevStep} />;
+      case 3:
+        return <WhyStep onNext={nextStep} onBack={prevStep} />;
+      case 4:
+        return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
       case 5:
         return <ReadyStep onNext={nextStep} onBack={prevStep} />;
       default:
@@ -67,17 +78,23 @@ export function OnboardingFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
-      {/* Progress indicator */}
-      {onboardingStep > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-1 bg-zinc-800">
-            <motion.div
-              className="h-full bg-gradient-to-r from-indigo-600 to-purple-600"
-              initial={{ width: 0 }}
-              animate={{ width: `${((onboardingStep) / (TOTAL_STEPS - 1)) * 100}%` }}
-              transition={{ duration: 0.3 }}
-            />
+    <div className="min-h-screen bg-zinc-950 flex flex-col overflow-hidden">
+      {/* Progress indicator - subtle dots instead of bar */}
+      {onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((step) => (
+              <motion.div
+                key={step}
+                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                  onboardingStep >= step ? 'bg-indigo-500' : 'bg-zinc-700'
+                }`}
+                animate={{
+                  scale: onboardingStep === step ? [1, 1.3, 1] : 1,
+                }}
+                transition={{ duration: 0.3 }}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -92,7 +109,7 @@ export function OnboardingFlow() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="w-full max-w-md"
           >
             {renderStep()}

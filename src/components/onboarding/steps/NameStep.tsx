@@ -1,9 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+// ============================================================================
+// NAME STEP - THE FIRST MEETING
+// This is not a form field. This is the moment we learn who we're speaking with.
+// No skip option. Your name matters. You matter.
+// ============================================================================
+
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, User } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { ChevronLeft } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 
 interface NameStepProps {
@@ -14,83 +19,131 @@ interface NameStepProps {
 export function NameStep({ onNext, onBack }: NameStepProps) {
   const { name, setName } = useStore();
   const [localName, setLocalName] = useState(name || '');
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus input after animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleContinue = () => {
     if (localName.trim()) {
       setName(localName.trim());
+      onNext();
     }
-    onNext();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && localName.trim()) {
+      handleContinue();
+    }
+  };
+
+  const isValid = localName.trim().length >= 1;
+
   return (
-    <div>
+    <div className="min-h-[60vh] flex flex-col">
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-8"
+        className="flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-8 self-start"
       >
         <ChevronLeft size={20} />
         <span className="text-sm">Back</span>
       </button>
 
-      {/* Icon */}
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200 }}
-        className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-zinc-800 flex items-center justify-center"
-      >
-        <User size={32} className="text-zinc-400" />
-      </motion.div>
+      <div className="flex-1 flex flex-col justify-center">
+        {/* The question - intimate, direct */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <p className="text-2xl sm:text-3xl text-white font-light mb-3">
+            Before we begin...
+          </p>
+          <p className="text-xl text-zinc-400">
+            What's your name?
+          </p>
+        </motion.div>
 
-      {/* Title */}
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-2xl font-bold text-white mb-2 text-center"
-      >
-        What should we call you?
-      </motion.h2>
+        {/* Name input - prominent, centered */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mb-8"
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={localName}
+            onChange={(e) => {
+              setLocalName(e.target.value);
+              setHasInteracted(true);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="Your first name"
+            className="
+              w-full p-5 bg-zinc-900/50 border-2 rounded-xl
+              text-white text-center text-xl placeholder-zinc-600
+              focus:outline-none transition-all duration-300
+              border-zinc-800 focus:border-indigo-500 focus:bg-zinc-900
+            "
+            maxLength={30}
+            autoComplete="given-name"
+          />
+        </motion.div>
 
+        {/* Response - appears after typing */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isValid ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center mb-8"
+        >
+          <p className="text-zinc-400">
+            Nice to meet you, <span className="text-indigo-400">{localName || '...'}</span>
+          </p>
+        </motion.div>
+
+        {/* Continue button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+        >
+          <motion.button
+            onClick={handleContinue}
+            disabled={!isValid}
+            className={`
+              w-full py-4 rounded-xl font-medium text-lg transition-all duration-300
+              ${isValid
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90'
+                : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}
+            `}
+            whileHover={isValid ? { scale: 1.02 } : {}}
+            whileTap={isValid ? { scale: 0.98 } : {}}
+          >
+            {isValid ? 'Continue' : 'Enter your name'}
+          </motion.button>
+        </motion.div>
+      </div>
+
+      {/* Subtle note */}
       <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="text-zinc-400 mb-8 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="text-center text-xs text-zinc-600 mt-4"
       >
-        Your mentor will use this name to guide you
+        This stays private. It's just between us.
       </motion.p>
-
-      {/* Name input */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-8"
-      >
-        <input
-          type="text"
-          value={localName}
-          onChange={(e) => setLocalName(e.target.value)}
-          placeholder="Your first name"
-          className="w-full p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white text-center text-lg placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition-colors"
-          maxLength={50}
-          autoFocus
-        />
-      </motion.div>
-
-      {/* Continue button */}
-      <Button size="lg" onClick={handleContinue} className="w-full">
-        Continue
-      </Button>
-
-      {/* Skip option */}
-      <button
-        onClick={onNext}
-        className="w-full mt-4 text-zinc-500 hover:text-zinc-400 text-sm transition-colors"
-      >
-        Skip for now
-      </button>
     </div>
   );
 }
