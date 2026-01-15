@@ -1,287 +1,616 @@
 'use client';
 
+// ============================================================================
+// USE SOUND - EMOTIONAL AUDIO THAT EVOKES, NOT NOTIFIES
+// ============================================================================
+//
+// Every sound is a moment of feeling. We don't beep at users.
+// We create tiny emotional experiences.
+//
+// - Sounds breathe and have space
+// - Haptic feedback accompanies key moments
+// - Silence is used intentionally
+// - Warmth over brightness
+// ============================================================================
+
 import { useCallback, useRef } from 'react';
 import { useStore } from '@/store/useStore';
+import {
+  NOTES,
+  CHORDS,
+  HAPTICS,
+  VOLUMES,
+  createReverb,
+  createWarmthFilter,
+  playHaptic,
+} from '@/lib/soundscape';
 
-type SoundType =
-  | 'complete'      // Lesson complete
-  | 'xp'            // XP earned tick
-  | 'streak'        // Streak milestone
-  | 'levelUp'       // Level up fanfare
-  | 'tap'           // Button tap/click (subtle)
-  | 'success'       // Action success
-  | 'transition'    // Screen transition (whoosh)
-  | 'reward'        // Reward reveal
-  | 'pop'           // Bubble pop / selection
-  | 'ding'          // Notification ding
-  | 'whoosh'        // Slide/swipe sound
-  | 'sparkle'       // Magic sparkle
-  | 'correct'       // Correct answer chime
-  | 'celebrate'     // Big celebration
-  | 'heartbeat';    // Pulse sound
+// Singleton AudioContext
+let globalCtx: AudioContext | null = null;
+let globalReverb: ConvolverNode | null = null;
+let isInitialized = false;
 
-// Sound configurations using Web Audio API synthesis
-const SOUND_CONFIGS: Record<SoundType, { frequencies: number[]; durations: number[]; type: OscillatorType; gain: number; detune?: number[] }> = {
-  complete: {
-    frequencies: [523.25, 659.25, 783.99, 1046.50], // C5, E5, G5, C6 (triumphant)
-    durations: [0.1, 0.1, 0.1, 0.25],
-    type: 'sine',
-    gain: 0.25,
-  },
-  xp: {
-    frequencies: [880, 988], // A5, B5
-    durations: [0.03, 0.03],
-    type: 'sine',
-    gain: 0.12,
-  },
-  streak: {
-    frequencies: [523.25, 659.25, 783.99, 1046.50, 1318.51], // C5 to E6
-    durations: [0.08, 0.08, 0.08, 0.08, 0.3],
-    type: 'sine',
-    gain: 0.25,
-  },
-  levelUp: {
-    frequencies: [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50],
-    durations: [0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.4],
-    type: 'sine',
-    gain: 0.3,
-  },
-  tap: {
-    frequencies: [800, 1000],
-    durations: [0.02, 0.02],
-    type: 'sine',
-    gain: 0.08,
-  },
-  success: {
-    frequencies: [523.25, 659.25, 783.99], // C5, E5, G5 major chord
-    durations: [0.08, 0.08, 0.15],
-    type: 'sine',
-    gain: 0.2,
-  },
-  transition: {
-    frequencies: [400, 600, 800],
-    durations: [0.03, 0.03, 0.03],
-    type: 'sine',
-    gain: 0.1,
-    detune: [0, 5, 10],
-  },
-  reward: {
-    frequencies: [392, 493.88, 587.33, 783.99], // G4, B4, D5, G5 (magical)
-    durations: [0.12, 0.12, 0.12, 0.3],
-    type: 'triangle',
-    gain: 0.25,
-  },
-  pop: {
-    frequencies: [600, 900],
-    durations: [0.02, 0.03],
-    type: 'sine',
-    gain: 0.15,
-  },
-  ding: {
-    frequencies: [1200, 1800],
-    durations: [0.05, 0.1],
-    type: 'sine',
-    gain: 0.15,
-  },
-  whoosh: {
-    frequencies: [200, 400, 300],
-    durations: [0.04, 0.04, 0.04],
-    type: 'sine',
-    gain: 0.08,
-    detune: [-50, 0, 50],
-  },
-  sparkle: {
-    frequencies: [1500, 2000, 1800, 2200],
-    durations: [0.04, 0.04, 0.04, 0.08],
-    type: 'sine',
-    gain: 0.1,
-  },
-  correct: {
-    frequencies: [659.25, 783.99], // E5, G5 (happy interval)
-    durations: [0.1, 0.15],
-    type: 'sine',
-    gain: 0.2,
-  },
-  celebrate: {
-    frequencies: [523.25, 587.33, 659.25, 783.99, 880, 1046.50, 1174.66, 1318.51],
-    durations: [0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.35],
-    type: 'sine',
-    gain: 0.25,
-  },
-  heartbeat: {
-    frequencies: [80, 60],
-    durations: [0.1, 0.15],
-    type: 'sine',
-    gain: 0.2,
-  },
-};
-
-// Singleton AudioContext to persist across hook instances
-let globalAudioContext: AudioContext | null = null;
-let audioContextInitialized = false;
-
-function getGlobalAudioContext(): AudioContext {
-  if (!globalAudioContext) {
-    globalAudioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+function getAudioContext(): AudioContext {
+  if (!globalCtx) {
+    globalCtx = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   }
-  return globalAudioContext;
+  return globalCtx;
+}
+
+function getReverb(): ConvolverNode {
+  if (!globalReverb && globalCtx) {
+    globalReverb = createReverb(globalCtx, 1.5);
+  }
+  return globalReverb!;
 }
 
 export function useSound() {
-  const { soundEnabled } = useStore();
-  const lastSoundTimeRef = useRef<Record<SoundType, number>>({} as Record<SoundType, number>);
+  const { soundEnabled, hapticEnabled } = useStore();
+  const lastPlayRef = useRef<Record<string, number>>({});
 
-  // Initialize audio context - must be called from user interaction
+  // Initialize audio (call on first user interaction)
   const initAudio = useCallback(() => {
-    if (audioContextInitialized) return;
-
+    if (isInitialized) return;
     try {
-      const ctx = getGlobalAudioContext();
+      const ctx = getAudioContext();
       if (ctx.state === 'suspended') {
         ctx.resume();
       }
-      audioContextInitialized = true;
-    } catch (error) {
-      console.warn('Audio initialization failed:', error);
+      getReverb();
+      isInitialized = true;
+    } catch (e) {
+      console.warn('Audio init failed:', e);
     }
   }, []);
 
-  // Internal play function with debouncing
-  const playSoundInternal = useCallback((type: SoundType) => {
-    try {
-      // Debounce rapid sounds (minimum 30ms apart for same sound)
-      const now = Date.now();
-      const lastTime = lastSoundTimeRef.current[type] || 0;
-      if (now - lastTime < 30) return;
-      lastSoundTimeRef.current[type] = now;
-
-      const ctx = getGlobalAudioContext();
-      const config = SOUND_CONFIGS[type];
-      let startTime = ctx.currentTime;
-
-      config.frequencies.forEach((freq, i) => {
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-
-        oscillator.type = config.type;
-        oscillator.frequency.setValueAtTime(freq, startTime);
-
-        // Apply detune if specified
-        if (config.detune && config.detune[i]) {
-          oscillator.detune.setValueAtTime(config.detune[i], startTime);
-        }
-
-        // Smooth envelope for better sound
-        gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(config.gain, startTime + 0.005);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + config.durations[i]);
-
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        oscillator.start(startTime);
-        oscillator.stop(startTime + config.durations[i] + 0.01);
-
-        startTime += config.durations[i] * 0.7; // Overlap for smoother sound
-      });
-    } catch (error) {
-      console.warn('Sound playback failed:', error);
-    }
+  // Debounce helper
+  const canPlay = useCallback((key: string, minGap: number = 50): boolean => {
+    const now = Date.now();
+    const last = lastPlayRef.current[key] || 0;
+    if (now - last < minGap) return false;
+    lastPlayRef.current[key] = now;
+    return true;
   }, []);
 
-  // Play a synthesized sound
-  const playSound = useCallback((type: SoundType) => {
+  // Core: Play a chord with emotion
+  const playChord = useCallback((
+    notes: number[],
+    options: {
+      volume?: number;
+      attack?: number;
+      decay?: number;
+      sustain?: number;
+      release?: number;
+      spread?: number; // Stagger notes
+      reverb?: number; // 0-1 wet/dry mix
+      type?: OscillatorType;
+    } = {}
+  ) => {
+    if (!soundEnabled) return;
+    if (!canPlay('chord', 100)) return;
+
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+      return;
+    }
+
+    const {
+      volume = VOLUMES.present,
+      attack = 0.08,
+      decay = 0.1,
+      sustain = 0.6,
+      release = 0.8,
+      spread = 0.02,
+      reverb = 0.3,
+      type = 'sine'
+    } = options;
+
+    const now = ctx.currentTime;
+    const masterGain = ctx.createGain();
+    const warmth = createWarmthFilter(ctx, 3000);
+    const reverbNode = getReverb();
+
+    // Dry/wet mix for reverb
+    const dryGain = ctx.createGain();
+    const wetGain = ctx.createGain();
+    dryGain.gain.value = 1 - reverb;
+    wetGain.gain.value = reverb;
+
+    masterGain.connect(warmth);
+    warmth.connect(dryGain);
+    warmth.connect(reverbNode);
+    reverbNode.connect(wetGain);
+    dryGain.connect(ctx.destination);
+    wetGain.connect(ctx.destination);
+
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.value = freq;
+
+      // ADSR envelope
+      const noteStart = now + i * spread;
+      const noteVolume = volume / Math.sqrt(notes.length); // Balance chord
+
+      gain.gain.setValueAtTime(0, noteStart);
+      gain.gain.linearRampToValueAtTime(noteVolume, noteStart + attack);
+      gain.gain.linearRampToValueAtTime(noteVolume * sustain, noteStart + attack + decay);
+      gain.gain.setValueAtTime(noteVolume * sustain, noteStart + attack + decay + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001, noteStart + attack + decay + release);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(noteStart);
+      osc.stop(noteStart + attack + decay + release + 0.1);
+    });
+  }, [soundEnabled, canPlay]);
+
+  // Play a single tone with breath
+  const playTone = useCallback((
+    frequency: number,
+    options: {
+      volume?: number;
+      duration?: number;
+      type?: OscillatorType;
+      reverb?: number;
+    } = {}
+  ) => {
     if (!soundEnabled) return;
 
-    // Initialize audio context on first sound attempt
-    if (!audioContextInitialized) {
-      initAudio();
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    const {
+      volume = VOLUMES.subtle,
+      duration = 0.5,
+      type = 'sine',
+      reverb = 0.2
+    } = options;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const warmth = createWarmthFilter(ctx, 2500);
+
+    // Optional reverb
+    if (reverb > 0) {
+      const reverbNode = getReverb();
+      const wet = ctx.createGain();
+      wet.gain.value = reverb;
+      warmth.connect(reverbNode);
+      reverbNode.connect(wet);
+      wet.connect(ctx.destination);
     }
 
-    try {
-      const ctx = getGlobalAudioContext();
+    const dry = ctx.createGain();
+    dry.gain.value = 1 - reverb;
+    warmth.connect(dry);
+    dry.connect(ctx.destination);
 
-      // Resume if suspended (e.g., after tab switch)
-      if (ctx.state === 'suspended') {
-        ctx.resume().then(() => {
-          playSoundInternal(type);
-        });
-        return;
-      }
+    osc.type = type;
+    osc.frequency.value = frequency;
 
-      playSoundInternal(type);
-    } catch (error) {
-      console.warn('Sound playback failed:', error);
+    // Soft envelope
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(volume, now + duration * 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(warmth);
+
+    osc.start(now);
+    osc.stop(now + duration + 0.1);
+  }, [soundEnabled]);
+
+  // =========================================================================
+  // EMOTIONAL MOMENTS
+  // =========================================================================
+
+  // Tap - soft, warm acknowledgment
+  const playTap = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('tap', 30)) return;
+
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    // Soft wood-like tap
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = createWarmthFilter(ctx, 1500);
+
+    osc.type = 'triangle';
+    osc.frequency.value = 400 + Math.random() * 50;
+
+    gain.gain.setValueAtTime(VOLUMES.subtle, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+
+    osc.connect(gain);
+    gain.connect(filter);
+    filter.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.06);
+
+    // Haptic
+    if (hapticEnabled) playHaptic(HAPTICS.tap);
+  }, [soundEnabled, hapticEnabled, canPlay]);
+
+  // Sparkle - moment of insight or magic
+  const playSparkle = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('sparkle', 200)) return;
+
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    // High, twinkling notes
+    const notes = [NOTES.E5, NOTES.G5, NOTES.B5, NOTES.E6];
+    const now = ctx.currentTime;
+
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const start = now + i * 0.05;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(VOLUMES.subtle, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.35);
+    });
+
+    if (hapticEnabled) playHaptic(HAPTICS.pulse);
+  }, [soundEnabled, hapticEnabled, canPlay]);
+
+  // Complete - warm resolution
+  const playComplete = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('complete', 500)) return;
+
+    playChord(CHORDS.peace, {
+      volume: VOLUMES.moment,
+      attack: 0.15,
+      release: 1.2,
+      spread: 0.04,
+      reverb: 0.4
+    });
+
+    if (hapticEnabled) playHaptic(HAPTICS.embrace);
+  }, [soundEnabled, hapticEnabled, playChord, canPlay]);
+
+  // Success - gentle affirmation
+  const playSuccess = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('success', 300)) return;
+
+    // Rising two-note interval (perfect fifth)
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    [NOTES.C4, NOTES.G4].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const start = ctx.currentTime + i * 0.1;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(VOLUMES.present, start + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.55);
+    });
+
+    if (hapticEnabled) playHaptic(HAPTICS.pulse);
+  }, [soundEnabled, hapticEnabled, canPlay]);
+
+  // Reward - warm, ascending hope
+  const playReward = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('reward', 500)) return;
+
+    playChord(CHORDS.hope, {
+      volume: VOLUMES.moment,
+      attack: 0.1,
+      release: 1.0,
+      spread: 0.06,
+      reverb: 0.35
+    });
+
+    if (hapticEnabled) playHaptic(HAPTICS.rise);
+  }, [soundEnabled, hapticEnabled, playChord, canPlay]);
+
+  // Streak - building momentum
+  const playStreak = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('streak', 500)) return;
+
+    // Ascending arpeggio
+    const notes = [NOTES.G3, NOTES.B3, NOTES.D4, NOTES.G4, NOTES.B4];
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const start = ctx.currentTime + i * 0.08;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(VOLUMES.present, start + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.6);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.65);
+    });
+
+    if (hapticEnabled) playHaptic(HAPTICS.rise);
+  }, [soundEnabled, hapticEnabled, canPlay]);
+
+  // Level Up - triumphant but warm
+  const playLevelUp = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('levelUp', 1000)) return;
+
+    playChord(CHORDS.triumph, {
+      volume: VOLUMES.celebration,
+      attack: 0.12,
+      release: 1.5,
+      spread: 0.05,
+      reverb: 0.5
+    });
+
+    // Add shimmer on top
+    setTimeout(() => {
+      playTone(NOTES.D6, { volume: VOLUMES.subtle, duration: 0.8, reverb: 0.6 });
+    }, 200);
+
+    if (hapticEnabled) playHaptic(HAPTICS.celebrate);
+  }, [soundEnabled, hapticEnabled, playChord, playTone, canPlay]);
+
+  // Celebration - full emotional moment
+  const playCelebration = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('celebration', 1000)) return;
+
+    // Build up
+    playChord(CHORDS.triumph, {
+      volume: VOLUMES.celebration,
+      attack: 0.15,
+      release: 2.0,
+      spread: 0.04,
+      reverb: 0.5
+    });
+
+    // Sparkle accents
+    setTimeout(() => playSparkle(), 300);
+    setTimeout(() => playSparkle(), 600);
+
+    if (hapticEnabled) playHaptic(HAPTICS.celebrate);
+  }, [soundEnabled, hapticEnabled, playChord, playSparkle, canPlay]);
+
+  // Transition - soft movement
+  const playTransition = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('transition', 200)) return;
+
+    // Soft whoosh with tone
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = createWarmthFilter(ctx, 1000);
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.15);
+
+    gain.gain.setValueAtTime(VOLUMES.subtle, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+    osc.connect(gain);
+    gain.connect(filter);
+    filter.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+
+    if (hapticEnabled) playHaptic(HAPTICS.transition);
+  }, [soundEnabled, hapticEnabled, canPlay]);
+
+  // Whoosh - quick movement
+  const playWhoosh = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('whoosh', 100)) return;
+
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    // Noise-based whoosh
+    const bufferSize = ctx.sampleRate * 0.12;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+      // Fade in and out
+      const envelope = Math.sin((i / bufferSize) * Math.PI);
+      data[i] = (Math.random() * 2 - 1) * envelope * 0.3;
     }
-  }, [soundEnabled, initAudio, playSoundInternal]);
 
-  // Play XP counting sound (multiple ticks with rising pitch)
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 800;
+    filter.Q.value = 1;
+
+    const gain = ctx.createGain();
+    gain.gain.value = VOLUMES.subtle;
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    source.start();
+  }, [soundEnabled, canPlay]);
+
+  // XP Count - ticking with warmth
   const playXpCount = useCallback((count: number) => {
     if (!soundEnabled) return;
 
-    const ticks = Math.min(count, 25);
-    const interval = 35; // ms between ticks
+    const ticks = Math.min(count, 20);
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
 
     for (let i = 0; i < ticks; i++) {
       setTimeout(() => {
-        try {
-          const ctx = getGlobalAudioContext();
-          if (ctx.state === 'suspended') return;
+        if (ctx.state === 'suspended') return;
 
-          const oscillator = ctx.createOscillator();
-          const gainNode = ctx.createGain();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-          // Rising pitch as count increases
-          const baseFreq = 800 + (i / ticks) * 400;
-          oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+        // Rising pitch with warmth
+        const progress = i / ticks;
+        const freq = 600 + progress * 400;
 
-          gainNode.gain.setValueAtTime(0, ctx.currentTime);
-          gainNode.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.005);
-          gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
 
-          oscillator.connect(gainNode);
-          gainNode.connect(ctx.destination);
+        gain.gain.setValueAtTime(VOLUMES.subtle * 0.8, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
 
-          oscillator.start(ctx.currentTime);
-          oscillator.stop(ctx.currentTime + 0.05);
-        } catch {
-          // Ignore errors during rapid sound playback
-        }
-      }, i * interval);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.06);
+      }, i * 40);
     }
 
-    // Play a final "ding" at the end
-    setTimeout(() => playSound('ding'), ticks * interval + 50);
-  }, [soundEnabled, playSound]);
+    // Final ding
+    setTimeout(() => playSuccess(), ticks * 40 + 50);
 
-  // Play celebration sequence
-  const playCelebration = useCallback(() => {
+    if (hapticEnabled) {
+      // Light haptic pattern during counting
+      setTimeout(() => playHaptic(HAPTICS.pulse), ticks * 40);
+    }
+  }, [soundEnabled, hapticEnabled, playSuccess]);
+
+  // Pop - selection/bubble
+  const playPop = useCallback(() => {
     if (!soundEnabled) return;
-    playSound('celebrate');
-    // Add sparkles
-    setTimeout(() => playSound('sparkle'), 300);
-    setTimeout(() => playSound('sparkle'), 500);
-  }, [soundEnabled, playSound]);
+    if (!canPlay('pop', 50)) return;
+
+    playTone(800, { volume: VOLUMES.subtle, duration: 0.08 });
+
+    if (hapticEnabled) playHaptic(HAPTICS.tap);
+  }, [soundEnabled, hapticEnabled, playTone, canPlay]);
+
+  // Ding - notification (but warm)
+  const playDing = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('ding', 200)) return;
+
+    // Bell-like tone
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = NOTES.E5;
+
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(VOLUMES.present, ctx.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.85);
+  }, [soundEnabled, canPlay]);
+
+  // Correct - gentle affirmation
+  const playCorrect = useCallback(() => {
+    if (!soundEnabled) return;
+    if (!canPlay('correct', 200)) return;
+
+    // Major third interval - universally "correct" feeling
+    [NOTES.E4, NOTES.G4].forEach((freq, i) => {
+      playTone(freq, {
+        volume: VOLUMES.present,
+        duration: 0.4 + i * 0.1
+      });
+    });
+
+    if (hapticEnabled) playHaptic(HAPTICS.pulse);
+  }, [soundEnabled, hapticEnabled, playTone, canPlay]);
 
   return {
-    playSound,
-    playXpCount,
-    playCelebration,
     initAudio,
-    // Convenience methods
-    playComplete: () => playSound('complete'),
-    playStreak: () => playSound('streak'),
-    playLevelUp: () => playSound('levelUp'),
-    playTap: () => playSound('tap'),
-    playSuccess: () => playSound('success'),
-    playTransition: () => playSound('transition'),
-    playReward: () => playSound('reward'),
-    playPop: () => playSound('pop'),
-    playDing: () => playSound('ding'),
-    playWhoosh: () => playSound('whoosh'),
-    playSparkle: () => playSound('sparkle'),
-    playCorrect: () => playSound('correct'),
+    // Core
+    playChord,
+    playTone,
+    // Emotional moments
+    playTap,
+    playSparkle,
+    playComplete,
+    playSuccess,
+    playReward,
+    playStreak,
+    playLevelUp,
+    playCelebration,
+    playTransition,
+    playWhoosh,
+    playXpCount,
+    playPop,
+    playDing,
+    playCorrect,
+    // Aliases for compatibility
+    playSound: (type: string) => {
+      const sounds: Record<string, () => void> = {
+        tap: playTap,
+        sparkle: playSparkle,
+        complete: playComplete,
+        success: playSuccess,
+        reward: playReward,
+        streak: playStreak,
+        levelUp: playLevelUp,
+        celebrate: playCelebration,
+        transition: playTransition,
+        whoosh: playWhoosh,
+        pop: playPop,
+        ding: playDing,
+        correct: playCorrect,
+      };
+      sounds[type]?.();
+    }
   };
 }
 
