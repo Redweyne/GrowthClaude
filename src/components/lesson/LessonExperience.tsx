@@ -79,16 +79,16 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
     // Allow transition animation before changing stage
     setTimeout(() => {
-      transitionTo('action', lesson.actionType as 'write' | 'reflect' | 'observe' | 'breathe' | 'act');
+      transitionTo('action');
       setStage('action');
       setIsTransitioning(false);
     }, 500);
-  }, [transitionTo, lesson.actionType, playBell]);
+  }, [transitionTo, playBell]);
 
   // Start action ambience (called by ActionStep)
   const handleStartActionAmbience = useCallback(() => {
-    transitionTo('action', lesson.actionType as 'write' | 'reflect' | 'observe' | 'breathe' | 'act');
-  }, [transitionTo, lesson.actionType]);
+    transitionTo('action');
+  }, [transitionTo]);
 
   // Transition to reflection phase
   const handleActionComplete = useCallback((completed: boolean) => {

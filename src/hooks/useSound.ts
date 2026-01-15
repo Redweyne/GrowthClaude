@@ -1,616 +1,188 @@
 'use client';
 
 // ============================================================================
-// USE SOUND - EMOTIONAL AUDIO THAT EVOKES, NOT NOTIFIES
+// USE SOUND - Simple hook for playing real audio files
 // ============================================================================
 //
-// Every sound is a moment of feeling. We don't beep at users.
-// We create tiny emotional experiences.
+// This hook plays actual audio files, not generated oscillator nonsense.
+// Add your audio files to /public/audio/ui/ and /public/audio/ambient/
 //
-// - Sounds breathe and have space
-// - Haptic feedback accompanies key moments
-// - Silence is used intentionally
-// - Warmth over brightness
+// Get free sounds from:
+//   - pixabay.com/sound-effects
+//   - pixabay.com/music
+//   - chosic.com/free-music/relaxing
 // ============================================================================
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import {
-  NOTES,
-  CHORDS,
-  HAPTICS,
-  VOLUMES,
-  createReverb,
-  createWarmthFilter,
+  playSound as playSoundFile,
   playHaptic,
-} from '@/lib/soundscape';
-
-// Singleton AudioContext
-let globalCtx: AudioContext | null = null;
-let globalReverb: ConvolverNode | null = null;
-let isInitialized = false;
-
-function getAudioContext(): AudioContext {
-  if (!globalCtx) {
-    globalCtx = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-  }
-  return globalCtx;
-}
-
-function getReverb(): ConvolverNode {
-  if (!globalReverb && globalCtx) {
-    globalReverb = createReverb(globalCtx, 1.5);
-  }
-  return globalReverb!;
-}
+  preloadUISounds,
+  HAPTIC_PATTERNS,
+  type SoundName,
+} from '@/lib/audioManager';
 
 export function useSound() {
   const { soundEnabled, hapticEnabled } = useStore();
-  const lastPlayRef = useRef<Record<string, number>>({});
+  const initialized = useRef(false);
 
-  // Initialize audio (call on first user interaction)
+  // Preload common sounds on first user interaction
   const initAudio = useCallback(() => {
-    if (isInitialized) return;
-    try {
-      const ctx = getAudioContext();
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-      getReverb();
-      isInitialized = true;
-    } catch (e) {
-      console.warn('Audio init failed:', e);
-    }
+    if (initialized.current) return;
+    initialized.current = true;
+    preloadUISounds();
   }, []);
 
-  // Debounce helper
-  const canPlay = useCallback((key: string, minGap: number = 50): boolean => {
-    const now = Date.now();
-    const last = lastPlayRef.current[key] || 0;
-    if (now - last < minGap) return false;
-    lastPlayRef.current[key] = now;
-    return true;
-  }, []);
-
-  // Core: Play a chord with emotion
-  const playChord = useCallback((
-    notes: number[],
-    options: {
-      volume?: number;
-      attack?: number;
-      decay?: number;
-      sustain?: number;
-      release?: number;
-      spread?: number; // Stagger notes
-      reverb?: number; // 0-1 wet/dry mix
-      type?: OscillatorType;
-    } = {}
-  ) => {
+  // Generic sound player
+  const play = useCallback((name: SoundName, volume?: number) => {
     if (!soundEnabled) return;
-    if (!canPlay('chord', 100)) return;
-
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-      return;
-    }
-
-    const {
-      volume = VOLUMES.present,
-      attack = 0.08,
-      decay = 0.1,
-      sustain = 0.6,
-      release = 0.8,
-      spread = 0.02,
-      reverb = 0.3,
-      type = 'sine'
-    } = options;
-
-    const now = ctx.currentTime;
-    const masterGain = ctx.createGain();
-    const warmth = createWarmthFilter(ctx, 3000);
-    const reverbNode = getReverb();
-
-    // Dry/wet mix for reverb
-    const dryGain = ctx.createGain();
-    const wetGain = ctx.createGain();
-    dryGain.gain.value = 1 - reverb;
-    wetGain.gain.value = reverb;
-
-    masterGain.connect(warmth);
-    warmth.connect(dryGain);
-    warmth.connect(reverbNode);
-    reverbNode.connect(wetGain);
-    dryGain.connect(ctx.destination);
-    wetGain.connect(ctx.destination);
-
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.value = freq;
-
-      // ADSR envelope
-      const noteStart = now + i * spread;
-      const noteVolume = volume / Math.sqrt(notes.length); // Balance chord
-
-      gain.gain.setValueAtTime(0, noteStart);
-      gain.gain.linearRampToValueAtTime(noteVolume, noteStart + attack);
-      gain.gain.linearRampToValueAtTime(noteVolume * sustain, noteStart + attack + decay);
-      gain.gain.setValueAtTime(noteVolume * sustain, noteStart + attack + decay + 0.3);
-      gain.gain.exponentialRampToValueAtTime(0.001, noteStart + attack + decay + release);
-
-      osc.connect(gain);
-      gain.connect(masterGain);
-
-      osc.start(noteStart);
-      osc.stop(noteStart + attack + decay + release + 0.1);
-    });
-  }, [soundEnabled, canPlay]);
-
-  // Play a single tone with breath
-  const playTone = useCallback((
-    frequency: number,
-    options: {
-      volume?: number;
-      duration?: number;
-      type?: OscillatorType;
-      reverb?: number;
-    } = {}
-  ) => {
-    if (!soundEnabled) return;
-
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
-    const {
-      volume = VOLUMES.subtle,
-      duration = 0.5,
-      type = 'sine',
-      reverb = 0.2
-    } = options;
-
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const warmth = createWarmthFilter(ctx, 2500);
-
-    // Optional reverb
-    if (reverb > 0) {
-      const reverbNode = getReverb();
-      const wet = ctx.createGain();
-      wet.gain.value = reverb;
-      warmth.connect(reverbNode);
-      reverbNode.connect(wet);
-      wet.connect(ctx.destination);
-    }
-
-    const dry = ctx.createGain();
-    dry.gain.value = 1 - reverb;
-    warmth.connect(dry);
-    dry.connect(ctx.destination);
-
-    osc.type = type;
-    osc.frequency.value = frequency;
-
-    // Soft envelope
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(volume, now + duration * 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-
-    osc.connect(gain);
-    gain.connect(warmth);
-
-    osc.start(now);
-    osc.stop(now + duration + 0.1);
+    playSoundFile(name, volume);
   }, [soundEnabled]);
 
+  // Haptic helper
+  const vibrate = useCallback((pattern: number | number[] = HAPTIC_PATTERNS.tap) => {
+    if (!hapticEnabled) return;
+    playHaptic(pattern);
+  }, [hapticEnabled]);
+
   // =========================================================================
-  // EMOTIONAL MOMENTS
+  // CONVENIENCE METHODS
   // =========================================================================
 
-  // Tap - soft, warm acknowledgment
   const playTap = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('tap', 30)) return;
+    play('tap', 0.5);
+    vibrate(HAPTIC_PATTERNS.tap);
+  }, [play, vibrate]);
 
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
-    // Soft wood-like tap
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = createWarmthFilter(ctx, 1500);
-
-    osc.type = 'triangle';
-    osc.frequency.value = 400 + Math.random() * 50;
-
-    gain.gain.setValueAtTime(VOLUMES.subtle, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
-
-    osc.connect(gain);
-    gain.connect(filter);
-    filter.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.06);
-
-    // Haptic
-    if (hapticEnabled) playHaptic(HAPTICS.tap);
-  }, [soundEnabled, hapticEnabled, canPlay]);
-
-  // Sparkle - moment of insight or magic
-  const playSparkle = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('sparkle', 200)) return;
-
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
-    // High, twinkling notes
-    const notes = [NOTES.E5, NOTES.G5, NOTES.B5, NOTES.E6];
-    const now = ctx.currentTime;
-
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-
-      const start = now + i * 0.05;
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(VOLUMES.subtle, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(start);
-      osc.stop(start + 0.35);
-    });
-
-    if (hapticEnabled) playHaptic(HAPTICS.pulse);
-  }, [soundEnabled, hapticEnabled, canPlay]);
-
-  // Complete - warm resolution
-  const playComplete = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('complete', 500)) return;
-
-    playChord(CHORDS.peace, {
-      volume: VOLUMES.moment,
-      attack: 0.15,
-      release: 1.2,
-      spread: 0.04,
-      reverb: 0.4
-    });
-
-    if (hapticEnabled) playHaptic(HAPTICS.embrace);
-  }, [soundEnabled, hapticEnabled, playChord, canPlay]);
-
-  // Success - gentle affirmation
   const playSuccess = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('success', 300)) return;
+    play('success', 0.7);
+    vibrate(HAPTIC_PATTERNS.success);
+  }, [play, vibrate]);
 
-    // Rising two-note interval (perfect fifth)
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
+  const playComplete = useCallback(() => {
+    play('complete', 0.8);
+    vibrate(HAPTIC_PATTERNS.complete);
+  }, [play, vibrate]);
 
-    [NOTES.C4, NOTES.G4].forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-
-      const start = ctx.currentTime + i * 0.1;
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(VOLUMES.present, start + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(start);
-      osc.stop(start + 0.55);
-    });
-
-    if (hapticEnabled) playHaptic(HAPTICS.pulse);
-  }, [soundEnabled, hapticEnabled, canPlay]);
-
-  // Reward - warm, ascending hope
-  const playReward = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('reward', 500)) return;
-
-    playChord(CHORDS.hope, {
-      volume: VOLUMES.moment,
-      attack: 0.1,
-      release: 1.0,
-      spread: 0.06,
-      reverb: 0.35
-    });
-
-    if (hapticEnabled) playHaptic(HAPTICS.rise);
-  }, [soundEnabled, hapticEnabled, playChord, canPlay]);
-
-  // Streak - building momentum
-  const playStreak = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('streak', 500)) return;
-
-    // Ascending arpeggio
-    const notes = [NOTES.G3, NOTES.B3, NOTES.D4, NOTES.G4, NOTES.B4];
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-
-      const start = ctx.currentTime + i * 0.08;
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(VOLUMES.present, start + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.6);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(start);
-      osc.stop(start + 0.65);
-    });
-
-    if (hapticEnabled) playHaptic(HAPTICS.rise);
-  }, [soundEnabled, hapticEnabled, canPlay]);
-
-  // Level Up - triumphant but warm
   const playLevelUp = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('levelUp', 1000)) return;
+    play('levelUp', 0.9);
+    vibrate(HAPTIC_PATTERNS.celebrate);
+  }, [play, vibrate]);
 
-    playChord(CHORDS.triumph, {
-      volume: VOLUMES.celebration,
-      attack: 0.12,
-      release: 1.5,
-      spread: 0.05,
-      reverb: 0.5
-    });
+  const playStreak = useCallback(() => {
+    play('streak', 0.7);
+    vibrate(HAPTIC_PATTERNS.success);
+  }, [play, vibrate]);
 
-    // Add shimmer on top
-    setTimeout(() => {
-      playTone(NOTES.D6, { volume: VOLUMES.subtle, duration: 0.8, reverb: 0.6 });
-    }, 200);
-
-    if (hapticEnabled) playHaptic(HAPTICS.celebrate);
-  }, [soundEnabled, hapticEnabled, playChord, playTone, canPlay]);
-
-  // Celebration - full emotional moment
   const playCelebration = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('celebration', 1000)) return;
+    play('celebrate', 1.0);
+    vibrate(HAPTIC_PATTERNS.celebrate);
+  }, [play, vibrate]);
 
-    // Build up
-    playChord(CHORDS.triumph, {
-      volume: VOLUMES.celebration,
-      attack: 0.15,
-      release: 2.0,
-      spread: 0.04,
-      reverb: 0.5
-    });
+  const playBell = useCallback(() => {
+    play('bell', 0.6);
+    vibrate(HAPTIC_PATTERNS.tap);
+  }, [play, vibrate]);
 
-    // Sparkle accents
-    setTimeout(() => playSparkle(), 300);
-    setTimeout(() => playSparkle(), 600);
+  const playChime = useCallback(() => {
+    play('chime', 0.6);
+  }, [play]);
 
-    if (hapticEnabled) playHaptic(HAPTICS.celebrate);
-  }, [soundEnabled, hapticEnabled, playChord, playSparkle, canPlay]);
-
-  // Transition - soft movement
-  const playTransition = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('transition', 200)) return;
-
-    // Soft whoosh with tone
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = createWarmthFilter(ctx, 1000);
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.15);
-
-    gain.gain.setValueAtTime(VOLUMES.subtle, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-
-    osc.connect(gain);
-    gain.connect(filter);
-    filter.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.2);
-
-    if (hapticEnabled) playHaptic(HAPTICS.transition);
-  }, [soundEnabled, hapticEnabled, canPlay]);
-
-  // Whoosh - quick movement
   const playWhoosh = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('whoosh', 100)) return;
+    play('whoosh', 0.4);
+  }, [play]);
 
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
+  const playPop = useCallback(() => {
+    play('pop', 0.5);
+    vibrate(HAPTIC_PATTERNS.tap);
+  }, [play, vibrate]);
 
-    // Noise-based whoosh
-    const bufferSize = ctx.sampleRate * 0.12;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
+  const playKeystroke = useCallback(() => {
+    play('keystroke', 0.3);
+  }, [play]);
 
-    for (let i = 0; i < bufferSize; i++) {
-      // Fade in and out
-      const envelope = Math.sin((i / bufferSize) * Math.PI);
-      data[i] = (Math.random() * 2 - 1) * envelope * 0.3;
-    }
+  // Aliases for compatibility
+  const playSparkle = playChime;
+  const playReward = playSuccess;
+  const playTransition = playWhoosh;
+  const playDing = playBell;
+  const playCorrect = playSuccess;
 
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = 800;
-    filter.Q.value = 1;
-
-    const gain = ctx.createGain();
-    gain.gain.value = VOLUMES.subtle;
-
-    source.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    source.start();
-  }, [soundEnabled, canPlay]);
-
-  // XP Count - ticking with warmth
+  // XP counting sound
   const playXpCount = useCallback((count: number) => {
-    if (!soundEnabled) return;
-
-    const ticks = Math.min(count, 20);
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
+    const ticks = Math.min(count, 15);
     for (let i = 0; i < ticks; i++) {
       setTimeout(() => {
-        if (ctx.state === 'suspended') return;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        // Rising pitch with warmth
-        const progress = i / ticks;
-        const freq = 600 + progress * 400;
-
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        gain.gain.setValueAtTime(VOLUMES.subtle * 0.8, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 0.06);
-      }, i * 40);
+        play('pop', 0.3 + (i / ticks) * 0.3);
+      }, i * 50);
     }
+    setTimeout(() => playSuccess(), ticks * 50 + 100);
+  }, [play, playSuccess]);
 
-    // Final ding
-    setTimeout(() => playSuccess(), ticks * 40 + 50);
+  // Initialize on mount if user has interacted before
+  useEffect(() => {
+    const handleInteraction = () => {
+      initAudio();
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
 
-    if (hapticEnabled) {
-      // Light haptic pattern during counting
-      setTimeout(() => playHaptic(HAPTICS.pulse), ticks * 40);
-    }
-  }, [soundEnabled, hapticEnabled, playSuccess]);
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
 
-  // Pop - selection/bubble
-  const playPop = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('pop', 50)) return;
-
-    playTone(800, { volume: VOLUMES.subtle, duration: 0.08 });
-
-    if (hapticEnabled) playHaptic(HAPTICS.tap);
-  }, [soundEnabled, hapticEnabled, playTone, canPlay]);
-
-  // Ding - notification (but warm)
-  const playDing = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('ding', 200)) return;
-
-    // Bell-like tone
-    const ctx = getAudioContext();
-    if (ctx.state === 'suspended') return;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.value = NOTES.E5;
-
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(VOLUMES.present, ctx.currentTime + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime + 0.85);
-  }, [soundEnabled, canPlay]);
-
-  // Correct - gentle affirmation
-  const playCorrect = useCallback(() => {
-    if (!soundEnabled) return;
-    if (!canPlay('correct', 200)) return;
-
-    // Major third interval - universally "correct" feeling
-    [NOTES.E4, NOTES.G4].forEach((freq, i) => {
-      playTone(freq, {
-        volume: VOLUMES.present,
-        duration: 0.4 + i * 0.1
-      });
-    });
-
-    if (hapticEnabled) playHaptic(HAPTICS.pulse);
-  }, [soundEnabled, hapticEnabled, playTone, canPlay]);
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [initAudio]);
 
   return {
     initAudio,
-    // Core
-    playChord,
-    playTone,
-    // Emotional moments
+    // Direct play
+    play,
+    vibrate,
+    // Convenience methods
     playTap,
-    playSparkle,
-    playComplete,
     playSuccess,
-    playReward,
-    playStreak,
+    playComplete,
     playLevelUp,
+    playStreak,
     playCelebration,
-    playTransition,
+    playBell,
+    playChime,
     playWhoosh,
-    playXpCount,
     playPop,
+    playKeystroke,
+    playXpCount,
+    // Aliases
+    playSparkle,
+    playReward,
+    playTransition,
     playDing,
     playCorrect,
-    // Aliases for compatibility
+    // Generic for string-based calls
     playSound: (type: string) => {
-      const sounds: Record<string, () => void> = {
+      const soundMap: Record<string, () => void> = {
         tap: playTap,
-        sparkle: playSparkle,
-        complete: playComplete,
         success: playSuccess,
-        reward: playReward,
-        streak: playStreak,
+        complete: playComplete,
         levelUp: playLevelUp,
+        streak: playStreak,
         celebrate: playCelebration,
-        transition: playTransition,
+        bell: playBell,
+        chime: playChime,
         whoosh: playWhoosh,
         pop: playPop,
-        ding: playDing,
-        correct: playCorrect,
+        keystroke: playKeystroke,
+        sparkle: playChime,
+        reward: playSuccess,
+        transition: playWhoosh,
+        ding: playBell,
+        correct: playSuccess,
       };
-      sounds[type]?.();
-    }
+      soundMap[type]?.();
+    },
   };
 }
 
