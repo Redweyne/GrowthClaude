@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-export type SageMood = 'neutral' | 'happy' | 'proud' | 'thinking' | 'encouraging' | 'celebrating' | 'disappointed';
+export type SageMood = 'neutral' | 'happy' | 'proud' | 'thinking' | 'encouraging' | 'celebrating' | 'disappointed' | 'wise';
 
 interface SageAvatarProps {
   mood?: SageMood;
@@ -28,6 +28,7 @@ export function SageAvatar({ mood = 'neutral', size = 'md', animate = true, clas
       case 'celebrating':
         return 'happy';
       case 'proud':
+      case 'wise':  // Wise has half-closed, serene eyes
         return 'closed';
       case 'thinking':
         return 'looking';
@@ -47,6 +48,8 @@ export function SageAvatar({ mood = 'neutral', size = 'md', animate = true, clas
       case 'proud':
       case 'encouraging':
         return 'M 44 68 Q 50 73 56 68';
+      case 'wise':  // Wise has a subtle, knowing smile
+        return 'M 44 68 Q 50 72 56 68';
       case 'thinking':
         return 'M 46 69 Q 50 67 54 69';
       case 'disappointed':
