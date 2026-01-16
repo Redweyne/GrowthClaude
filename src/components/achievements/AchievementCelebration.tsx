@@ -1,63 +1,86 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+// ============================================================================
+// MILESTONE CELEBRATION - A Moment to Honor the Journey
+// ============================================================================
+//
+// When a milestone is reached, we don't just flash a notification.
+// We create a moment of genuine acknowledgment.
+//
+// This is the pause that says: "What you just did matters."
+// ============================================================================
+
+import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { Confetti } from '@/components/effects/Confetti';
-import { AchievementUnlockAnimation } from './AchievementBadge';
-import { getAchievementById } from '@/types/achievements';
+import { MilestoneUnlockAnimation } from './AchievementBadge';
+import { getMilestoneById, type Milestone } from '@/types/achievements';
 
-export function AchievementCelebration() {
+// ============================================================================
+// MILESTONE CELEBRATION COMPONENT
+// ============================================================================
+
+export function MilestoneCelebration() {
   const {
     getPendingCelebration,
     clearPendingCelebration,
     markAchievementCelebrated,
   } = useStore();
-  const { playCelebration } = useSound();
+  const { playCelebration, playLevelUp } = useSound();
 
   const [showCelebration, setShowCelebration] = useState(false);
-  const [currentAchievement, setCurrentAchievement] = useState<ReturnType<typeof getAchievementById>>(undefined);
+  const [currentMilestone, setCurrentMilestone] = useState<Milestone | undefined>(undefined);
   const [showConfetti, setShowConfetti] = useState(false);
 
   const pendingId = getPendingCelebration();
 
+  // When a milestone is ready to be celebrated
   useEffect(() => {
     if (pendingId) {
-      const achievement = getAchievementById(pendingId);
-      if (achievement) {
-        setCurrentAchievement(achievement);
+      const milestone = getMilestoneById(pendingId);
+      if (milestone) {
+        setCurrentMilestone(milestone);
         setShowCelebration(true);
-        setShowConfetti(true);
-        playCelebration();
+
+        // Confetti only for significant milestones (cornerstone and above)
+        const significantWeight = ['cornerstone', 'monument', 'legacy'];
+        if (significantWeight.includes(milestone.weight)) {
+          setShowConfetti(true);
+          playLevelUp();
+        } else {
+          playCelebration();
+        }
       }
     }
-  }, [pendingId, playCelebration]);
+  }, [pendingId, playCelebration, playLevelUp]);
 
-  const handleComplete = () => {
+  // Handle completion of the celebration
+  const handleComplete = useCallback(() => {
     if (pendingId) {
       markAchievementCelebrated(pendingId);
       clearPendingCelebration();
     }
     setShowCelebration(false);
-    setCurrentAchievement(undefined);
-  };
+    setCurrentMilestone(undefined);
+  }, [pendingId, markAchievementCelebrated, clearPendingCelebration]);
 
   return (
     <>
-      {/* Confetti effect */}
+      {/* Confetti for significant milestones */}
       <Confetti
         active={showConfetti}
-        duration={3000}
-        particleCount={100}
+        duration={4000}
+        particleCount={80}
         onComplete={() => setShowConfetti(false)}
       />
 
-      {/* Achievement unlock animation */}
+      {/* The milestone acknowledgment */}
       <AnimatePresence>
-        {showCelebration && currentAchievement && (
-          <AchievementUnlockAnimation
-            achievement={currentAchievement}
+        {showCelebration && currentMilestone && (
+          <MilestoneUnlockAnimation
+            milestone={currentMilestone}
             onComplete={handleComplete}
           />
         )}
@@ -66,4 +89,9 @@ export function AchievementCelebration() {
   );
 }
 
-export default AchievementCelebration;
+// Legacy alias
+export function AchievementCelebration() {
+  return <MilestoneCelebration />;
+}
+
+export default MilestoneCelebration;

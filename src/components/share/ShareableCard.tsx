@@ -6,14 +6,14 @@ import { Download, Share2, X, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp } from '@/types';
-import type { Achievement } from '@/types/achievements';
-import { getRarityColor } from '@/types/achievements';
+import type { Milestone } from '@/types/achievements';
+import { getRarityColor, getVirtueColor } from '@/types/achievements';
 
 type CardType = 'streak' | 'achievement' | 'level' | 'journey';
 
 interface ShareableCardProps {
   type: CardType;
-  achievement?: Achievement;
+  achievement?: Milestone;
   customMessage?: string;
   onClose: () => void;
 }
@@ -48,13 +48,13 @@ export function ShareableCard({
         };
       case 'achievement':
         return {
-          title: achievement?.name || 'Achievement Unlocked',
-          subtitle: achievement?.description || '',
-          emoji: achievement?.icon || '🏆',
-          message: achievement?.shareMessage || 'I unlocked a new achievement!',
-          gradient: achievement ? getRarityColor(achievement.rarity) : 'from-amber-500 to-orange-600',
+          title: achievement?.name || 'Milestone Reached',
+          subtitle: achievement?.meaning || '',
+          emoji: achievement?.symbol || '🏆',
+          message: achievement?.affirmation || 'I reached a new milestone on my journey!',
+          gradient: achievement ? getVirtueColor(achievement.virtue) : 'from-amber-500 to-orange-600',
           stats: [
-            { label: 'XP Bonus', value: `+${achievement?.xpBonus || 0}` },
+            { label: 'Virtue', value: achievement?.virtue || 'wisdom' },
             { label: 'Total XP', value: totalXp },
           ],
         };

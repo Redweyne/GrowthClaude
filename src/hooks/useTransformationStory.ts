@@ -100,7 +100,7 @@ export function useTransformationStory() {
       date: w.date
     }));
 
-    // Transform achievements
+    // Transform achievements (milestones)
     const unlockedIds = new Set((store.unlockedAchievements || []).map(a => a.achievementId));
     const achievements: AchievementForStory[] = ACHIEVEMENTS
       .filter(a => unlockedIds.has(a.id))
@@ -109,8 +109,8 @@ export function useTransformationStory() {
         return {
           id: a.id,
           name: a.name,
-          icon: a.icon,
-          rarity: a.rarity,
+          icon: a.icon || a.symbol, // Use symbol as fallback (new name)
+          rarity: a.rarity || a.weight, // Use weight as fallback (new name)
           unlockedAt: unlock?.unlockedAt || ''
         };
       });

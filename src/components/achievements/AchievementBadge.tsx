@@ -1,12 +1,26 @@
 'use client';
 
+// ============================================================================
+// MILESTONE BADGE - A Visual Token of the Journey
+// ============================================================================
+//
+// This is not a game badge. It's a marker of genuine human effort.
+// Each badge carries the weight of what it took to earn it.
+// ============================================================================
+
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
-import type { Achievement, AchievementRarity } from '@/types/achievements';
-import { getRarityColor, getRarityGlow, getRarityLabel } from '@/types/achievements';
+import type { Milestone, Virtue, MilestoneWeight } from '@/types/achievements';
+import {
+  getVirtueColor,
+  getVirtueGlow,
+  getVirtueLabel,
+  getVirtueGreek,
+  getWeightLabel,
+} from '@/types/achievements';
 
-interface AchievementBadgeProps {
-  achievement: Achievement;
+interface MilestoneBadgeProps {
+  milestone: Milestone;
   unlocked: boolean;
   unlockedAt?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -14,14 +28,19 @@ interface AchievementBadgeProps {
   showDetails?: boolean;
 }
 
-export function AchievementBadge({
-  achievement,
+// Legacy alias
+interface AchievementBadgeProps extends MilestoneBadgeProps {
+  achievement?: Milestone;
+}
+
+export function MilestoneBadge({
+  milestone,
   unlocked,
   unlockedAt,
   size = 'md',
   onClick,
   showDetails = false,
-}: AchievementBadgeProps) {
+}: MilestoneBadgeProps) {
   const sizeClasses = {
     sm: 'w-16 h-16',
     md: 'w-20 h-20',
@@ -43,6 +62,10 @@ export function AchievementBadge({
     });
   };
 
+  // Get the visual style based on virtue (not arbitrary rarity)
+  const virtueColor = getVirtueColor(milestone.virtue);
+  const virtueGlow = getVirtueGlow(milestone.virtue);
+
   return (
     <motion.button
       onClick={onClick}
@@ -51,55 +74,77 @@ export function AchievementBadge({
       whileTap={onClick ? { scale: 0.95 } : undefined}
       className={`relative group ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
     >
-      {/* Badge circle */}
+      {/* Badge circle - styled by virtue */}
       <div
         className={`
           ${sizeClasses[size]}
           rounded-full
           flex items-center justify-center
           transition-all duration-300
+          relative
           ${unlocked
-            ? `bg-gradient-to-br ${getRarityColor(achievement.rarity)} shadow-lg ${getRarityGlow(achievement.rarity)}`
+            ? `bg-gradient-to-br ${virtueColor} shadow-lg ${virtueGlow}`
             : 'bg-zinc-800/50 border-2 border-zinc-700/50'
           }
         `}
       >
         {unlocked ? (
-          <span className={iconSizes[size]}>{achievement.icon}</span>
+          <>
+            <span className={iconSizes[size]}>{milestone.symbol}</span>
+            {/* Inner glow for unlocked */}
+            <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse" />
+          </>
         ) : (
           <Lock className={`${size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'} text-zinc-600`} />
         )}
 
-        {/* Shine effect for unlocked */}
+        {/* Shine effect for unlocked on hover */}
         {unlocked && (
-          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <motion.div
+            className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+          />
         )}
       </div>
 
-      {/* Rarity indicator */}
+      {/* Virtue indicator (instead of rarity) */}
       {unlocked && (
-        <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${getRarityColor(achievement.rarity)} text-white shadow-sm`}>
-          {getRarityLabel(achievement.rarity)}
+        <div
+          className={`
+            absolute -bottom-1 left-1/2 -translate-x-1/2
+            px-2 py-0.5 rounded-full
+            text-[10px] font-medium
+            bg-gradient-to-r ${virtueColor}
+            text-white shadow-sm
+          `}
+        >
+          {getVirtueLabel(milestone.virtue)}
         </div>
       )}
 
-      {/* Details tooltip/card */}
+      {/* Details */}
       {showDetails && (
-        <div className="mt-3 text-center">
-          <h4 className={`font-semibold ${unlocked ? 'text-white' : 'text-zinc-500'} ${size === 'sm' ? 'text-xs' : 'text-sm'}`}>
-            {achievement.name}
+        <div className="mt-3 text-center max-w-[120px]">
+          <h4
+            className={`
+              font-semibold
+              ${unlocked ? 'text-white' : 'text-zinc-500'}
+              ${size === 'sm' ? 'text-xs' : 'text-sm'}
+            `}
+          >
+            {milestone.name}
           </h4>
-          <p className={`text-zinc-500 ${size === 'sm' ? 'text-[10px]' : 'text-xs'} mt-0.5`}>
-            {unlocked ? achievement.description : achievement.condition}
+          <p
+            className={`
+              text-zinc-400
+              ${size === 'sm' ? 'text-[10px]' : 'text-xs'}
+              mt-0.5 leading-tight
+            `}
+          >
+            {unlocked ? milestone.meaning : `Unlock: ${milestone.requirement.value}${getRequirementUnit(milestone.requirement.type)}`}
           </p>
           {unlocked && unlockedAt && (
             <p className="text-[10px] text-zinc-600 mt-1">
               {formatDate(unlockedAt)}
-            </p>
-          )}
-          {!unlocked && (
-            <p className="text-[10px] text-amber-400/70 mt-1">
-              +{achievement.xpBonus} XP
             </p>
           )}
         </div>
@@ -108,79 +153,181 @@ export function AchievementBadge({
   );
 }
 
-// Animated unlock version
-interface AchievementUnlockAnimationProps {
-  achievement: Achievement;
+// Helper function to get human-readable requirement units
+function getRequirementUnit(type: string): string {
+  switch (type) {
+    case 'streak': return ' days';
+    case 'lessons': return ' lessons';
+    case 'reflections': return ' reflections';
+    case 'identity': return ' statements';
+    case 'xp': return ' XP';
+    default: return '';
+  }
+}
+
+// Legacy component alias
+export function AchievementBadge(props: AchievementBadgeProps) {
+  const milestone = props.achievement || props.milestone;
+  return <MilestoneBadge {...props} milestone={milestone} />;
+}
+
+// ============================================================================
+// MILESTONE UNLOCK ANIMATION - A Moment of Acknowledgment
+// ============================================================================
+//
+// This is the moment where we honor what the user has accomplished.
+// Not with confetti and noise, but with meaning and wisdom.
+// ============================================================================
+
+interface MilestoneUnlockAnimationProps {
+  milestone: Milestone;
   onComplete: () => void;
 }
 
-export function AchievementUnlockAnimation({
-  achievement,
+// Legacy alias
+interface AchievementUnlockAnimationProps extends MilestoneUnlockAnimationProps {
+  achievement?: Milestone;
+}
+
+export function MilestoneUnlockAnimation({
+  milestone,
   onComplete,
-}: AchievementUnlockAnimationProps) {
+}: MilestoneUnlockAnimationProps) {
+  const virtueColor = getVirtueColor(milestone.virtue);
+  const virtueGlow = getVirtueGlow(milestone.virtue);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center"
+      className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center p-6"
       onClick={onComplete}
     >
       <motion.div
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.2 }}
-        className="text-center"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="text-center max-w-md"
       >
-        {/* Glow effect */}
+        {/* Ambient glow behind everything */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: [0, 2, 1.5], opacity: [0, 0.5, 0] }}
-          transition={{ duration: 1, delay: 0.3 }}
-          className={`absolute inset-0 rounded-full bg-gradient-to-br ${getRarityColor(achievement.rarity)} blur-3xl`}
+          animate={{ scale: [0, 2, 1.8], opacity: [0, 0.3, 0.15] }}
+          transition={{ duration: 1.5, delay: 0.3 }}
+          className={`absolute inset-0 rounded-full bg-gradient-to-br ${virtueColor} blur-3xl pointer-events-none`}
+          style={{ margin: 'auto', width: '300px', height: '300px' }}
         />
 
-        {/* Badge */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: [0, 1.2, 1] }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className={`w-32 h-32 rounded-full bg-gradient-to-br ${getRarityColor(achievement.rarity)} shadow-2xl ${getRarityGlow(achievement.rarity)} flex items-center justify-center mx-auto mb-6`}
-        >
-          <span className="text-6xl">{achievement.icon}</span>
-        </motion.div>
-
-        {/* Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+        {/* The virtue being honored */}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.4 }}
+          className="text-zinc-500 text-sm tracking-wider mb-6"
         >
-          <p className="text-amber-400 text-sm font-medium mb-2">Achievement Unlocked!</p>
-          <h2 className="text-3xl font-bold text-white mb-2">{achievement.name}</h2>
-          <p className="text-zinc-400 mb-4">{achievement.description}</p>
+          A milestone of {getVirtueLabel(milestone.virtue).toLowerCase()}
+        </motion.p>
 
+        {/* The symbol */}
+        <motion.div
+          initial={{ scale: 0, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', damping: 12, stiffness: 150, delay: 0.5 }}
+          className={`
+            w-28 h-28 rounded-full
+            bg-gradient-to-br ${virtueColor}
+            shadow-2xl ${virtueGlow}
+            flex items-center justify-center
+            mx-auto mb-8
+            relative
+          `}
+        >
+          <span className="text-6xl relative z-10">{milestone.symbol}</span>
+          {/* Inner light */}
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.8, type: 'spring' }}
-            className={`inline-block px-4 py-2 rounded-full bg-gradient-to-r ${getRarityColor(achievement.rarity)}`}
-          >
-            <span className="text-white font-semibold">+{achievement.xpBonus} XP</span>
-          </motion.div>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.5, 0.2] }}
+            transition={{ duration: 2, delay: 0.8 }}
+            className="absolute inset-0 rounded-full bg-white/20"
+          />
         </motion.div>
 
+        {/* The name */}
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="text-3xl font-bold text-white mb-2"
+        >
+          {milestone.name}
+        </motion.h2>
+
+        {/* The meaning */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="text-zinc-500 text-sm mt-8"
+          transition={{ delay: 0.85 }}
+          className="text-lg text-zinc-300 mb-6"
         >
-          Tap anywhere to continue
+          {milestone.meaning}
+        </motion.p>
+
+        {/* The personal message */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1 }}
+          className="bg-zinc-900/50 rounded-xl p-5 mb-6 border border-zinc-800/50"
+        >
+          <p className="text-zinc-300 text-sm leading-relaxed italic">
+            "{milestone.message}"
+          </p>
+        </motion.div>
+
+        {/* The wisdom */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="mb-8"
+        >
+          <p className="text-zinc-400 text-sm leading-relaxed">
+            "{milestone.wisdom.text}"
+          </p>
+          <p className="text-zinc-600 text-xs mt-2">
+            — {milestone.wisdom.author}
+          </p>
+        </motion.div>
+
+        {/* Greek virtue label - subtle touch */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
+          className="text-zinc-700 text-xs tracking-widest"
+        >
+          {getVirtueGreek(milestone.virtue)}
+        </motion.p>
+
+        {/* Continue prompt */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8 }}
+          className="text-zinc-600 text-sm mt-8"
+        >
+          Tap to continue
         </motion.p>
       </motion.div>
     </motion.div>
   );
 }
 
-export default AchievementBadge;
+// Legacy alias
+export function AchievementUnlockAnimation(props: AchievementUnlockAnimationProps) {
+  const milestone = props.achievement || props.milestone;
+  return <MilestoneUnlockAnimation {...props} milestone={milestone} />;
+}
+
+export default MilestoneBadge;
