@@ -210,78 +210,98 @@ export function getVolumes(): { global: number; ambient: number } {
 
 let currentAmbient: HTMLAudioElement | null = null;
 let ambientFadeInterval: ReturnType<typeof setInterval> | null = null;
+let currentAmbientPath: string | null = null;
 
 export function startAmbient(name: SoundName, fadeIn: number = 2000): void {
-  stopAmbient(500);
+  const path = SOUNDS[name];
 
-  setTimeout(() => {
-    const path = SOUNDS[name];
+  // Don't restart if already playing this track
+  if (currentAmbientPath === path && currentAmbient && !currentAmbient.paused) {
+    return;
+  }
 
-    // Don't try if we know it doesn't exist
-    if (fileExists.get(path) === false) return;
+  // Stop any existing ambient immediately
+  stopAmbient(0);
 
-    try {
-      currentAmbient = new Audio(path);
-      currentAmbient.loop = true;
-      currentAmbient.volume = 0;
+  // Don't try if we know it doesn't exist
+  if (fileExists.get(path) === false) return;
 
-      currentAmbient.play().catch(() => {
-        fileExists.set(path, false);
-        currentAmbient = null;
-      });
+  try {
+    currentAmbient = new Audio(path);
+    currentAmbient.loop = true;
+    currentAmbient.volume = 0;
+    currentAmbientPath = path;
 
-      currentAmbient.addEventListener('error', () => {
-        fileExists.set(path, false);
-        currentAmbient = null;
-      }, { once: true });
+    currentAmbient.play().catch(() => {
+      fileExists.set(path, false);
+      currentAmbient = null;
+      currentAmbientPath = null;
+    });
 
-      // Fade in
-      const steps = 20;
-      const stepTime = fadeIn / steps;
-      const volumeStep = ambientVolume / steps;
-      let currentStep = 0;
+    currentAmbient.addEventListener('error', () => {
+      fileExists.set(path, false);
+      currentAmbient = null;
+      currentAmbientPath = null;
+    }, { once: true });
 
-      ambientFadeInterval = setInterval(() => {
-        currentStep++;
-        if (currentAmbient) {
-          currentAmbient.volume = Math.min(volumeStep * currentStep, ambientVolume);
-        }
-        if (currentStep >= steps && ambientFadeInterval) {
-          clearInterval(ambientFadeInterval);
-        }
-      }, stepTime);
+    // Fade in
+    const steps = 20;
+    const stepTime = fadeIn / steps;
+    const volumeStep = ambientVolume / steps;
+    let currentStep = 0;
 
-    } catch {
-      // Audio not available
-    }
-  }, 500);
+    ambientFadeInterval = setInterval(() => {
+      currentStep++;
+      if (currentAmbient) {
+        currentAmbient.volume = Math.min(volumeStep * currentStep, ambientVolume);
+      }
+      if (currentStep >= steps && ambientFadeInterval) {
+        clearInterval(ambientFadeInterval);
+        ambientFadeInterval = null;
+      }
+    }, stepTime);
+
+  } catch {
+    // Audio not available
+  }
 }
 
 export function stopAmbient(fadeOut: number = 2000): void {
-  if (!currentAmbient) return;
-
+  // Clear any existing fade interval
   if (ambientFadeInterval) {
     clearInterval(ambientFadeInterval);
+    ambientFadeInterval = null;
   }
 
+  if (!currentAmbient) return;
+
   const audio = currentAmbient;
+  currentAmbient = null;
+  currentAmbientPath = null;
+
+  if (fadeOut <= 0) {
+    // Immediate stop
+    audio.pause();
+    audio.src = '';
+    return;
+  }
+
+  // Fade out
   const startVolume = audio.volume;
   const steps = 20;
   const stepTime = fadeOut / steps;
   const volumeStep = startVolume / steps;
   let currentStep = 0;
 
-  ambientFadeInterval = setInterval(() => {
+  const fadeInterval = setInterval(() => {
     currentStep++;
     audio.volume = Math.max(startVolume - volumeStep * currentStep, 0);
-    if (currentStep >= steps && ambientFadeInterval) {
-      clearInterval(ambientFadeInterval);
+    if (currentStep >= steps) {
+      clearInterval(fadeInterval);
       audio.pause();
       audio.src = '';
     }
   }, stepTime);
-
-  currentAmbient = null;
 }
 
 export function isAmbientPlaying(): boolean {
