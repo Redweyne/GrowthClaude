@@ -81,50 +81,10 @@ export function useStoryAudio() {
     return { oscillator, gain };
   }, []);
 
-  // Start the ambient soundscape
+  // Start the ambient soundscape - DISABLED (music is annoying when constant)
   const startAmbience = useCallback(() => {
-    if (!soundEnabled || isPlayingRef.current) return;
-
-    const ctx = initAudio();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-
-    isPlayingRef.current = true;
-
-    // Create layered ambient sound
-    // Deep bass drone (grounding)
-    const bass1 = createPad(ctx, 65.41, 0); // C2
-    const bass2 = createPad(ctx, 65.41, 7); // Slightly detuned for warmth
-
-    // Mid harmony (emotional core)
-    const mid1 = createPad(ctx, 130.81, 0); // C3
-    const mid2 = createPad(ctx, 164.81, 0); // E3
-    const mid3 = createPad(ctx, 196.00, 0); // G3
-
-    // High shimmer (ethereal)
-    const high1 = createShimmer(ctx, 523.25); // C5
-    const high2 = createShimmer(ctx, 659.25); // E5
-
-    const nodes = [bass1, bass2, mid1, mid2, mid3, high1, high2];
-    activeNodesRef.current = nodes;
-
-    // Start all oscillators
-    nodes.forEach(node => node.oscillator.start());
-
-    // Fade in master
-    masterGainRef.current?.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 3);
-
-    // Fade in individual layers with different timings
-    bass1.gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 2);
-    bass2.gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 2.5);
-    mid1.gain.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 3);
-    mid2.gain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 3.5);
-    mid3.gain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 4);
-    high1.gain.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 5);
-    high2.gain.gain.linearRampToValueAtTime(0.015, ctx.currentTime + 6);
-
-  }, [soundEnabled, initAudio, createPad, createShimmer]);
+    // Intentionally disabled - no constant background music
+  }, []);
 
   // Swell the music (for emotional moments)
   const swell = useCallback((intensity: 'gentle' | 'medium' | 'powerful' = 'medium') => {

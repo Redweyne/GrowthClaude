@@ -1,16 +1,13 @@
 'use client';
 
 // ============================================================================
-// LESSON AMBIENCE - Background music for different lesson phases
+// LESSON AMBIENCE - Background music ONLY during reflection
 // ============================================================================
 //
-// Plays actual music files for ambient background during lessons.
-// Add your ambient music to /public/audio/ambient/
+// Music only plays during the reflection/writing phase - the calm moment
+// when the user is thinking and writing. Not during the whole lesson.
 //
-// Get free calm music from:
-//   - pixabay.com/music/search/meditation
-//   - chosic.com/free-music/relaxing
-//   - fesliyanstudios.com
+// Keystroke sounds removed - silence is more calming than bad sounds.
 // ============================================================================
 
 import { useCallback, useRef, useEffect } from 'react';
@@ -22,75 +19,66 @@ import {
   playSound,
   playHaptic,
   HAPTIC_PATTERNS,
-  type SoundName,
 } from '@/lib/audioManager';
 
 type LessonPhase = 'entering' | 'wisdom' | 'action' | 'reflection' | 'completion';
-
-// Map phases to ambient tracks
-const PHASE_AMBIENT: Record<LessonPhase, SoundName> = {
-  entering: 'ambientCalm',
-  wisdom: 'ambientWisdom',
-  action: 'ambientFocus',
-  reflection: 'ambientReflection',
-  completion: 'ambientCalm',
-};
 
 export function useLessonAmbience() {
   const { soundEnabled, hapticEnabled } = useStore();
   const currentPhaseRef = useRef<LessonPhase>('entering');
   const isPlayingRef = useRef(false);
 
-  // Initialize (called on user interaction)
   const initAudio = useCallback(() => {
-    // Nothing special needed - audio manager handles it
+    // Nothing needed
   }, []);
 
-  // Start ambient for a phase
+  // Start ambient - ONLY plays during reflection
   const startAmbience = useCallback((phase: LessonPhase) => {
     if (!soundEnabled) return;
-
     currentPhaseRef.current = phase;
-    const ambientTrack = PHASE_AMBIENT[phase];
-    startAmbient(ambientTrack, 3000); // 3 second fade in
-    isPlayingRef.current = true;
+
+    // Only play ambient during reflection - the calm writing moment
+    if (phase === 'reflection') {
+      startAmbient('ambientReflection', 3000);
+      isPlayingRef.current = true;
+    }
   }, [soundEnabled]);
 
-  // Transition to a new phase
+  // Transition between phases
   const transitionTo = useCallback((newPhase: LessonPhase) => {
     if (!soundEnabled) return;
-
-    // Only change if it's a different ambient track
-    const oldTrack = PHASE_AMBIENT[currentPhaseRef.current];
-    const newTrack = PHASE_AMBIENT[newPhase];
-
     currentPhaseRef.current = newPhase;
 
-    if (oldTrack !== newTrack) {
-      startAmbient(newTrack, 2000);
+    if (newPhase === 'reflection') {
+      // Start ambient for reflection
+      startAmbient('ambientReflection', 2000);
+      isPlayingRef.current = true;
+    } else if (isPlayingRef.current) {
+      // Stop ambient when leaving reflection
+      stopAmbient(1500);
+      isPlayingRef.current = false;
     }
   }, [soundEnabled]);
 
   // Stop ambient
   const stopAmbience = useCallback(() => {
-    stopAmbient(2000); // 2 second fade out
+    stopAmbient(1500);
     isPlayingRef.current = false;
   }, []);
 
-  // Play a bell sound
+  // Bell sound
   const playBell = useCallback((type: 'soft' | 'bright' | 'deep' = 'soft') => {
     if (!soundEnabled) return;
     playSound('bell', type === 'deep' ? 0.8 : 0.6);
     if (hapticEnabled) playHaptic(HAPTIC_PATTERNS.tap);
   }, [soundEnabled, hapticEnabled]);
 
-  // Play keystroke sound (for typing in reflection)
+  // Keystroke - disabled (silence is better)
   const playKeystroke = useCallback(() => {
-    if (!soundEnabled) return;
-    playSound('keystroke', 0.25);
-  }, [soundEnabled]);
+    // Intentionally empty - silence during typing is more calming
+  }, []);
 
-  // Play completion chime
+  // Completion chime
   const playCompletionChime = useCallback(() => {
     if (!soundEnabled) return;
     playSound('complete', 0.8);
@@ -105,18 +93,13 @@ export function useLessonAmbience() {
   }, []);
 
   return {
-    // Core ambience
     startAmbience,
     transitionTo,
     stopAmbience,
     initAudio,
-
-    // Moment sounds
     playBell,
     playKeystroke,
     playCompletionChime,
-
-    // State
     isPlaying: isPlayingRef.current,
     currentPhase: currentPhaseRef.current,
     isAmbientPlaying,

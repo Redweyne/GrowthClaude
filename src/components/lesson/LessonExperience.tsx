@@ -65,30 +65,27 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     initAmbienceAudio();
   }, [initAudio, initAmbienceAudio]);
 
-  // Start wisdom ambience
+  // Start lesson (just bell, no ambient until reflection)
   const handleStartWisdomAmbience = useCallback(() => {
     handleInitializeAudio();
-    startAmbience('wisdom');
     playBell('deep');
-  }, [handleInitializeAudio, startAmbience, playBell]);
+  }, [handleInitializeAudio, playBell]);
 
   // Transition to action phase
   const handleWisdomComplete = useCallback(() => {
     setIsTransitioning(true);
     playBell('soft');
 
-    // Allow transition animation before changing stage
     setTimeout(() => {
-      transitionTo('action');
       setStage('action');
       setIsTransitioning(false);
     }, 500);
-  }, [transitionTo, playBell]);
+  }, [playBell]);
 
-  // Start action ambience (called by ActionStep)
+  // Start action phase (no ambient here)
   const handleStartActionAmbience = useCallback(() => {
-    transitionTo('action');
-  }, [transitionTo]);
+    // No ambient during action - only during reflection
+  }, []);
 
   // Transition to reflection phase
   const handleActionComplete = useCallback((completed: boolean) => {
