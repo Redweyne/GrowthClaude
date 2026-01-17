@@ -1,11 +1,24 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Play, Flame, Zap, Map, Settings, Brain, Calendar, TrendingUp, Trophy, BarChart3, Sparkles } from 'lucide-react';
-import { Button, Card, StreakBadge, XPBadge, ProgressBar } from '@/components/ui';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp, getXpProgress } from '@/types';
 import type { Lesson, World } from '@/types';
+
+// Import our breathtaking new components
+import { AmbientBackground } from '@/components/ambient';
+import { HeroGreeting } from './HeroGreeting';
+import { LevelDisplay } from './LevelDisplay';
+import { LessonCard } from './LessonCard';
+import { NavigationGrid } from './NavigationGrid';
+import { StatusBanner } from './StatusBanner';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TODAY'S LESSON - THE HOME EXPERIENCE
+// The heart of Transformation Hub - where users begin their daily journey
+// A carefully orchestrated symphony of components creating an immersive,
+// breathtaking experience that hooks users from the first moment
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface TodaysLessonProps {
   lesson: Lesson | null;
@@ -40,312 +53,93 @@ export function TodaysLesson({
   isCheckinDue,
   isAssessmentDue,
 }: TodaysLessonProps) {
+  // Get user state
   const { name, totalXp, currentStreak, completedLessons } = useStore();
+
+  // Calculate level and progress
   const level = getLevelFromXp(totalXp);
   const xpProgress = getXpProgress(totalXp);
 
   // Calculate world progress
   const allLessons = world.chapters.flatMap((ch) => ch.lessons);
   const completedCount = allLessons.filter((l) => completedLessons[l.id]).length;
+  const totalCount = allLessons.length;
 
-  const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const allComplete = !lesson;
+  // Feature availability
+  const hasPracticeAvailable = completedCount > 0;
+  const hasTransformationAvailable = completedCount >= 1;
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6 flex flex-col">
-      {/* Header */}
+    <div className="relative min-h-screen flex flex-col">
+      {/* Ambient background - time-aware atmospheric effects */}
+      <AmbientBackground intensity="normal" particleCount={15} orbCount={3} />
+
+      {/* Main content container */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-8"
+        className="relative z-10 flex-1 flex flex-col p-6 max-w-lg mx-auto w-full"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <div>
-          <p className="text-zinc-500 text-sm">{greeting()}</p>
-          <h1 className="text-2xl font-bold text-white">
-            {name || 'Seeker'}
-          </h1>
+        {/* Hero greeting section */}
+        <HeroGreeting
+          name={name || 'Seeker'}
+          streak={currentStreak}
+          onOpenSettings={onOpenSettings}
+        />
+
+        {/* Level and XP display */}
+        <div className="mb-8">
+          <LevelDisplay
+            level={level}
+            totalXp={totalXp}
+            xpProgress={xpProgress}
+          />
         </div>
-        <div className="flex items-center gap-3">
-          <StreakBadge streak={currentStreak} />
-          <button
-            onClick={onOpenSettings}
-            className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-zinc-700 transition-colors"
-          >
-            <Settings size={20} className="text-zinc-400" />
-          </button>
-        </div>
-      </motion.div>
 
-      {/* Level progress */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="mb-6"
-      >
-        <Card variant="glass" padding="md">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold">{level.level}</span>
-              </div>
-              <div>
-                <p className="text-white font-medium">{level.title}</p>
-                <p className="text-xs text-zinc-500">Level {level.level}</p>
-              </div>
-            </div>
-            <XPBadge xp={totalXp} />
-          </div>
-          <ProgressBar progress={xpProgress.percentage} size="sm" />
-          <p className="text-xs text-zinc-500 mt-2">
-            {xpProgress.current} / {xpProgress.needed === Infinity ? '∞' : xpProgress.needed} XP to next level
-          </p>
-        </Card>
-      </motion.div>
-
-      {/* Weekly check-in banner */}
-      {isCheckinDue && (
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          onClick={onOpenCheckin}
-          className="w-full mb-6 p-4 rounded-xl bg-gradient-to-r from-rose-500/20 to-pink-500/20 border border-rose-500/30 flex items-center justify-between hover:from-rose-500/30 hover:to-pink-500/30 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center">
-              <Calendar size={20} className="text-rose-400" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-medium">Weekly Check-in</p>
-              <p className="text-xs text-zinc-400">Reflect on your progress</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 text-amber-400">
-            <Zap size={14} />
-            <span className="text-sm font-medium">+50 XP</span>
-          </div>
-        </motion.button>
-      )}
-
-      {/* Monthly assessment banner */}
-      {isAssessmentDue && (
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
-          onClick={onOpenAssessment}
-          className="w-full mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-500/30 flex items-center justify-between hover:from-purple-500/30 hover:to-indigo-500/30 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <TrendingUp size={20} className="text-purple-400" />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-medium">Monthly Assessment</p>
-              <p className="text-xs text-zinc-400">Measure your transformation</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 text-amber-400">
-            <Zap size={14} />
-            <span className="text-sm font-medium">+100 XP</span>
-          </div>
-        </motion.button>
-      )}
-
-      {/* Main content - Today's lesson */}
-      <div className="flex-1 flex flex-col justify-center">
-        {allComplete ? (
-          // All lessons complete
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center"
-          >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <span className="text-4xl">🎉</span>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
-              All caught up!
-            </h2>
-            <p className="text-zinc-400 mb-6">
-              You&apos;ve completed all available lessons in {world.name}.
-            </p>
-            <Button size="lg" onClick={onOpenPractice} className="w-full mb-3">
-              <Brain size={18} className="mr-2" />
-              Practice Mode
-            </Button>
-            {isCheckinDue && (
-              <Button size="lg" variant="secondary" onClick={onOpenCheckin} className="w-full mb-3">
-                <Calendar size={18} className="mr-2" />
-                Weekly Check-in
-              </Button>
-            )}
-            <Button variant="secondary" onClick={onOpenMap} className="w-full">
-              <Map size={18} className="mr-2" />
-              View Progress
-            </Button>
-          </motion.div>
-        ) : (
-          // Lesson available
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <p className="text-center text-zinc-500 text-sm mb-4">
-              TODAY&apos;S LESSON
-            </p>
-
-            <Card
-              variant="elevated"
-              padding="lg"
-              className="mb-6 border border-zinc-800"
+        {/* Status banners - Check-in and Assessment prompts */}
+        <AnimatePresence>
+          {(isCheckinDue || isAssessmentDue) && (
+            <motion.div
+              className="space-y-3 mb-8"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              {/* World indicator */}
-              <div className="flex items-center gap-2 mb-4">
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${world.color}20` }}
-                >
-                  <Flame size={14} style={{ color: world.color }} />
-                </div>
-                <span className="text-sm text-zinc-400">{world.name}</span>
-              </div>
+              {isCheckinDue && (
+                <StatusBanner variant="checkin" onClick={onOpenCheckin} />
+              )}
+              {isAssessmentDue && (
+                <StatusBanner variant="assessment" onClick={onOpenAssessment} />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              {/* Lesson title */}
-              <h2 className="text-xl font-bold text-white mb-2">
-                {lesson?.title}
-              </h2>
-
-              {/* Lesson meta */}
-              <div className="flex items-center gap-4 text-sm text-zinc-500 mb-6">
-                <span>
-                  ~{Math.ceil((lesson?.actionDurationSeconds || 120) / 60 + 2)} min
-                </span>
-                <span className="flex items-center gap-1">
-                  <Zap size={14} className="text-amber-500" />
-                  {lesson?.xpReward} XP
-                </span>
-              </div>
-
-              {/* Start button */}
-              <Button size="lg" onClick={onStartLesson} className="w-full">
-                <Play size={20} className="mr-2" />
-                Start Lesson
-              </Button>
-            </Card>
-
-            {/* World progress */}
-            <div className="flex items-center justify-between text-sm mb-4">
-              <button
-                onClick={onOpenMap}
-                className="flex items-center gap-2 text-zinc-400 hover:text-zinc-300 transition-colors"
-              >
-                <Map size={16} />
-                View all lessons
-              </button>
-              <span className="text-zinc-500">
-                {completedCount}/{allLessons.length} complete
-              </span>
-            </div>
-
-            {/* Practice mode button - only show if there are completed lessons */}
-            {completedCount > 0 && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                onClick={onOpenPractice}
-                className="w-full p-4 mb-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between hover:bg-indigo-500/20 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                    <Brain size={20} className="text-indigo-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-medium">Practice Mode</p>
-                    <p className="text-xs text-zinc-500">Reinforce what you&apos;ve learned</p>
-                  </div>
-                </div>
-                <Zap size={16} className="text-amber-400" />
-              </motion.button>
-            )}
-
-            {/* Transformation Hub button - show after completing at least 1 lesson */}
-            {completedCount >= 1 && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.35 }}
-                onClick={onOpenTransformation}
-                className="w-full p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-purple-500/10 border border-emerald-500/20 flex items-center justify-between hover:from-emerald-500/20 hover:to-purple-500/20 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-purple-500/20 flex items-center justify-center">
-                    <TrendingUp size={20} className="text-emerald-400" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-medium">Transformation Hub</p>
-                    <p className="text-xs text-zinc-500">See your growth journey</p>
-                  </div>
-                </div>
-                <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                  <span className="text-xs text-emerald-400">→</span>
-                </div>
-              </motion.button>
-            )}
-          </motion.div>
-        )}
-      </div>
-
-      {/* Bottom navigation */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-8 pt-4 border-t border-zinc-800/50"
-      >
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            onClick={onOpenProgress}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-              <BarChart3 size={20} className="text-blue-400" />
-            </div>
-            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">Progress</span>
-          </button>
-          <button
-            onClick={onOpenAchievements}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-              <Trophy size={20} className="text-amber-400" />
-            </div>
-            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">Achievements</span>
-          </button>
-          <button
-            onClick={onOpenIdentity}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-700 transition-colors group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-              <Sparkles size={20} className="text-purple-400" />
-            </div>
-            <span className="text-xs text-zinc-400 group-hover:text-zinc-300">Identity</span>
-          </button>
+        {/* Main lesson card - the centerpiece */}
+        <div className="flex-1 flex flex-col justify-center py-4">
+          <LessonCard
+            lesson={lesson}
+            world={world}
+            onStartLesson={onStartLesson}
+            completedCount={completedCount}
+            totalCount={totalCount}
+          />
         </div>
-        <p className="text-xs text-zinc-600 text-center mt-4">
-          {currentStreak > 0
-            ? `${currentStreak} day streak - keep it going!`
-            : 'Start your streak today'}
-        </p>
+
+        {/* Bottom navigation grid */}
+        <NavigationGrid
+          onOpenProgress={onOpenProgress}
+          onOpenAchievements={onOpenAchievements}
+          onOpenIdentity={onOpenIdentity}
+          onOpenPractice={onOpenPractice}
+          onOpenMap={onOpenMap}
+          onOpenTransformation={onOpenTransformation}
+          streak={currentStreak}
+          hasPracticeAvailable={hasPracticeAvailable}
+          hasTransformationAvailable={hasTransformationAvailable}
+        />
       </motion.div>
     </div>
   );
