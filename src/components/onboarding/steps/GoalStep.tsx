@@ -1,36 +1,76 @@
 'use client';
 
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════
 // GOAL STEP - THE VISION
+// ═══════════════════════════════════════════════════════════════════════════
+//
 // This is not a goal selector. This is seeing your future self.
-// Each choice is a path. Each path leads somewhere different.
+// Each choice represents a path of transformation.
+// The cards should feel sacred - each one holding a different destiny.
+//
+// When selected, the card blooms with light. The meaning deepens.
 // The question is: who do you want to become?
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Compass } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { TRANSFORMATION_GOALS, type TransformationGoal } from '@/types';
+import { Button } from '@/components/ui';
 
 interface GoalStepProps {
   onNext: () => void;
   onBack: () => void;
 }
 
-// Deeper descriptions for each goal - what it really means
-const GOAL_DEPTHS: Record<string, string> = {
-  calmer: "To respond instead of react. To find stillness in chaos. To be unshaken.",
-  disciplined: "To follow through on every commitment. To become someone you can trust.",
-  confident: "To stop second-guessing. To trust your own judgment. To act decisively.",
-  leader: "To take responsibility. To inspire through action. To serve others.",
-  focused: "To protect your attention. To do what matters. To finish what you start.",
-  resilient: "To bend without breaking. To grow stronger through adversity.",
+// Spring configurations
+const springs = {
+  gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
+  bouncy: { type: 'spring' as const, stiffness: 500, damping: 15 },
+};
+
+// Deeper descriptions and colors for each goal
+const GOAL_DEPTHS: Record<string, { description: string; color: string; glow: string }> = {
+  calmer: {
+    description: 'To respond instead of react. To find stillness in chaos. To be unshaken.',
+    color: '#22d3ee',
+    glow: 'rgba(34, 211, 238, 0.3)',
+  },
+  disciplined: {
+    description: 'To follow through on every commitment. To become someone you can trust.',
+    color: '#f97316',
+    glow: 'rgba(249, 115, 22, 0.3)',
+  },
+  confident: {
+    description: 'To stop second-guessing. To trust your own judgment. To act decisively.',
+    color: '#fbbf24',
+    glow: 'rgba(251, 191, 36, 0.3)',
+  },
+  leader: {
+    description: 'To take responsibility. To inspire through action. To serve others.',
+    color: '#a78bfa',
+    glow: 'rgba(167, 139, 250, 0.3)',
+  },
+  focused: {
+    description: 'To protect your attention. To do what matters. To finish what you start.',
+    color: '#3b82f6',
+    glow: 'rgba(59, 130, 246, 0.3)',
+  },
+  resilient: {
+    description: 'To bend without breaking. To grow stronger through every adversity.',
+    color: '#ef4444',
+    glow: 'rgba(239, 68, 68, 0.3)',
+  },
 };
 
 export function GoalStep({ onNext, onBack }: GoalStepProps) {
   const { name, transformationGoal, setTransformationGoal } = useStore();
-  const [hoveredGoal, setHoveredGoal] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSelectGoal = (goal: TransformationGoal) => {
     setTransformationGoal(goal);
@@ -42,18 +82,26 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
     }
   };
 
-  const selectedGoalData = TRANSFORMATION_GOALS.find(g => g.id === transformationGoal);
+  const selectedGoalData = TRANSFORMATION_GOALS.find((g) => g.id === transformationGoal);
+  const selectedDepth = transformationGoal ? GOAL_DEPTHS[transformationGoal] : null;
+
+  if (!mounted) {
+    return <div className="min-h-[70vh]" />;
+  }
 
   return (
     <div className="min-h-[70vh] flex flex-col">
       {/* Back button */}
-      <button
+      <motion.button
         onClick={onBack}
-        className="flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-6 self-start"
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 self-start group"
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
         <span className="text-sm">Back</span>
-      </button>
+      </motion.button>
 
       {/* The question - personalized */}
       <motion.div
@@ -62,76 +110,153 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
         transition={{ duration: 0.6 }}
         className="text-center mb-8"
       >
-        <p className="text-2xl sm:text-3xl text-white font-light mb-2">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, ...springs.gentle }}
+          className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-stone-900 border border-purple-500/20 flex items-center justify-center"
+        >
+          <Compass size={26} className="text-purple-400" />
+        </motion.div>
+
+        <p className="text-2xl sm:text-3xl text-amber-100 font-light mb-2">
           {name ? `${name}, who do you` : 'Who do you'} want to become?
         </p>
-        <p className="text-zinc-500">
-          Choose the transformation that matters most right now
-        </p>
+        <p className="text-stone-500">Choose the transformation that calls to you</p>
       </motion.div>
 
-      {/* Goal options - cards with depth */}
+      {/* Goal options - beautiful cards with depth */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        {TRANSFORMATION_GOALS.map((goal, index) => (
-          <motion.button
-            key={goal.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
-            onClick={() => handleSelectGoal(goal.id)}
-            onMouseEnter={() => setHoveredGoal(goal.id)}
-            onMouseLeave={() => setHoveredGoal(null)}
-            className={`
-              relative p-4 rounded-xl border-2 transition-all duration-300 text-left
-              ${transformationGoal === goal.id
-                ? 'border-indigo-500 bg-indigo-500/10 scale-[1.02]'
-                : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900'
-              }
-            `}
-          >
-            {/* Icon */}
-            <div className="text-3xl mb-2">{goal.icon}</div>
+        {TRANSFORMATION_GOALS.map((goal, index) => {
+          const depth = GOAL_DEPTHS[goal.id];
+          const isSelected = transformationGoal === goal.id;
 
-            {/* Title */}
-            <h3 className={`font-medium text-sm transition-colors ${
-              transformationGoal === goal.id ? 'text-white' : 'text-zinc-300'
-            }`}>
-              {goal.title}
-            </h3>
-
-            {/* Selected indicator */}
-            {transformationGoal === goal.id && (
+          return (
+            <motion.button
+              key={goal.id}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.1 + index * 0.05, ...springs.gentle }}
+              onClick={() => handleSelectGoal(goal.id)}
+              className="relative p-4 rounded-2xl text-left transition-all duration-300 overflow-hidden group"
+              style={{
+                background: isSelected
+                  ? `linear-gradient(135deg, ${depth.color}15 0%, rgba(12, 10, 9, 0.9) 100%)`
+                  : 'rgba(28, 25, 23, 0.6)',
+                border: isSelected
+                  ? `2px solid ${depth.color}50`
+                  : '2px solid rgba(68, 64, 60, 0.5)',
+                boxShadow: isSelected ? `0 0 30px ${depth.glow}` : 'none',
+              }}
+              whileHover={{
+                scale: 1.02,
+                borderColor: isSelected ? `${depth.color}70` : 'rgba(168, 162, 158, 0.3)',
+              }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {/* Background glow on hover */}
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center"
+                className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: `radial-gradient(circle at center, ${depth.glow} 0%, transparent 70%)`,
+                }}
+              />
+
+              {/* Icon */}
+              <motion.div
+                className="text-3xl mb-2 relative z-10"
+                animate={isSelected ? { scale: [1, 1.1, 1] } : {}}
+                transition={{ duration: 0.3 }}
               >
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+                {goal.icon}
               </motion.div>
-            )}
-          </motion.button>
-        ))}
+
+              {/* Title */}
+              <h3
+                className="font-medium text-sm relative z-10 transition-colors"
+                style={{
+                  color: isSelected ? depth.color : '#d6d3d1',
+                }}
+              >
+                {goal.title}
+              </h3>
+
+              {/* Selected indicator */}
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={springs.bouncy}
+                    className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: depth.color }}
+                  >
+                    <Check size={14} className="text-stone-950" strokeWidth={3} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Shimmer effect on selected */}
+              {isSelected && (
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  animate={{
+                    background: [
+                      `linear-gradient(90deg, transparent 0%, ${depth.color}10 50%, transparent 100%)`,
+                      `linear-gradient(90deg, transparent 0%, ${depth.color}10 50%, transparent 100%)`,
+                    ],
+                    backgroundPosition: ['-100% 0', '200% 0'],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                  style={{ backgroundSize: '50% 100%' }}
+                />
+              )}
+            </motion.button>
+          );
+        })}
       </div>
 
       {/* Depth reveal - shows deeper meaning when selected */}
       <AnimatePresence mode="wait">
-        {transformationGoal && (
+        {transformationGoal && selectedGoalData && selectedDepth && (
           <motion.div
             key={transformationGoal}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="text-center py-6 px-4 rounded-xl bg-zinc-900/50 border border-zinc-800 mb-6"
+            initial={{ opacity: 0, y: 10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-6 overflow-hidden"
           >
-            <p className="text-lg text-white font-light mb-2">
-              {selectedGoalData?.title}
-            </p>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              {GOAL_DEPTHS[transformationGoal]}
-            </p>
+            <div
+              className="text-center py-6 px-5 rounded-2xl border"
+              style={{
+                background: `linear-gradient(135deg, ${selectedDepth.color}08 0%, rgba(12, 10, 9, 0.8) 100%)`,
+                borderColor: `${selectedDepth.color}20`,
+              }}
+            >
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-lg font-light mb-2"
+                style={{ color: selectedDepth.color }}
+              >
+                {selectedGoalData.title}
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-stone-400 text-sm leading-relaxed italic"
+              >
+                &ldquo;{selectedDepth.description}&rdquo;
+              </motion.p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -145,20 +270,25 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <motion.button
+        <Button
+          size="lg"
           onClick={handleContinue}
           disabled={!transformationGoal}
-          className={`
-            w-full py-4 rounded-xl font-medium text-lg transition-all duration-300
-            ${transformationGoal
-              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90'
-              : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}
-          `}
-          whileHover={transformationGoal ? { scale: 1.02 } : {}}
-          whileTap={transformationGoal ? { scale: 0.98 } : {}}
+          glow={!!transformationGoal}
+          className="w-full group"
         >
-          {transformationGoal ? 'This is my path' : 'Choose your transformation'}
-        </motion.button>
+          {transformationGoal ? (
+            <>
+              This is my path
+              <ChevronRight
+                size={18}
+                className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+              />
+            </>
+          ) : (
+            'Choose your transformation'
+          )}
+        </Button>
       </motion.div>
     </div>
   );
