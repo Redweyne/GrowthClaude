@@ -65,6 +65,17 @@ const LOW_EFFORT_WISDOM = [
   "Half-hearted practice yields half-hearted results. Return and write what you actually think.",
 ];
 
+// Deterministic selection helper - uses string hash instead of Math.random()
+function getStableIndex(seed: string, length: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash) % length;
+}
+
 // Springs
 const springs = {
   gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
@@ -88,11 +99,15 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     return getStreakMilestoneMessage(nextStreak);
   }, [nextStreak, isLowEffort]);
 
-  // Get the mentor's WISDOM
+  // Get the mentor's WISDOM - using deterministic selection based on lesson and reflection
   const mentorWisdom = useMemo(() => {
+    // Create a stable seed from lesson ID and reflection content
+    const seed = `${lesson.id}-${reflection.slice(0, 50)}`;
+
     if (isLowEffort) {
+      const index = getStableIndex(seed + 'low', LOW_EFFORT_WISDOM.length);
       return {
-        text: LOW_EFFORT_WISDOM[Math.floor(Math.random() * LOW_EFFORT_WISDOM.length)],
+        text: LOW_EFFORT_WISDOM[index],
         isWisdom: false,
       };
     }
@@ -100,8 +115,11 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     // Use lesson's hand-crafted mentor responses
     const lessonResponses = lesson.mentorResponses;
     if (lessonResponses && lessonResponses.length > 0) {
-      const response = lessonResponses[Math.floor(Math.random() * lessonResponses.length)];
-      if (name && Math.random() > 0.7) {
+      const index = getStableIndex(seed + 'response', lessonResponses.length);
+      const response = lessonResponses[index];
+      // Use name personalization based on seed (deterministic)
+      const usePersonalization = getStableIndex(seed + 'personal', 10) > 6;
+      if (name && usePersonalization) {
         return {
           text: `${name}, ${response.charAt(0).toLowerCase()}${response.slice(1)}`,
           isWisdom: true,
@@ -111,8 +129,10 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     }
 
     // Fallback to philosophical wisdom
-    const fallback = FALLBACK_WISDOM[Math.floor(Math.random() * FALLBACK_WISDOM.length)];
-    if (name && Math.random() > 0.6) {
+    const fallbackIndex = getStableIndex(seed + 'fallback', FALLBACK_WISDOM.length);
+    const fallback = FALLBACK_WISDOM[fallbackIndex];
+    const usePersonalization = getStableIndex(seed + 'fallback-personal', 10) > 5;
+    if (name && usePersonalization) {
       return {
         text: `${name}, ${fallback.wisdom.charAt(0).toLowerCase()}${fallback.wisdom.slice(1)}`,
         isWisdom: true,
@@ -120,7 +140,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
       };
     }
     return { text: fallback.wisdom, isWisdom: true, context: fallback.context };
-  }, [lesson.mentorResponses, isLowEffort, name]);
+  }, [lesson.id, lesson.mentorResponses, isLowEffort, name, reflection]);
 
   // Determine Sage's mood
   const sageMood: SageMood = useMemo(() => {
@@ -133,12 +153,17 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
   // Typewriter effect - slower for wisdom
   useEffect(() => {
     let index = 0;
+    let mounted = true;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
     setDisplayedText('');
     setIsTyping(true);
 
     const baseSpeed = isLowEffort ? 22 : 32;
 
     const typeNextChar = () => {
+      if (!mounted) return;
+
       if (index < mentorWisdom.text.length) {
         setDisplayedText(mentorWisdom.text.slice(0, index + 1));
         index++;
@@ -153,22 +178,28 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
         } else if (char === '—' || char === ':' || char === ';') {
           delay = baseSpeed * 4;
         } else {
-          delay = baseSpeed + Math.random() * 15;
+          // Use deterministic variation instead of random
+          delay = baseSpeed + ((index * 7) % 15);
         }
 
-        setTimeout(typeNextChar, delay);
+        timerId = setTimeout(typeNextChar, delay);
       } else {
-        setIsTyping(false);
-        if (streakMilestone && !isLowEffort) {
-          setTimeout(() => setShowStreakBonus(true), 800);
+        if (mounted) {
+          setIsTyping(false);
+          if (streakMilestone && !isLowEffort) {
+            timerId = setTimeout(() => {
+              if (mounted) setShowStreakBonus(true);
+            }, 800);
+          }
         }
       }
     };
 
-    setTimeout(typeNextChar, 800);
+    timerId = setTimeout(typeNextChar, 800);
 
     return () => {
-      index = mentorWisdom.text.length;
+      mounted = false;
+      if (timerId) clearTimeout(timerId);
     };
   }, [mentorWisdom.text, isLowEffort, streakMilestone]);
 

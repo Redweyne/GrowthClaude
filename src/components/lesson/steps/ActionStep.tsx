@@ -78,6 +78,17 @@ const INTEGRATION_MESSAGES = [
   'The practice continues in daily life...',
 ];
 
+// Get deterministic integration message based on lesson
+function getIntegrationMessage(lessonId: string): string {
+  let hash = 0;
+  for (let i = 0; i < lessonId.length; i++) {
+    const char = lessonId.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return INTEGRATION_MESSAGES[Math.abs(hash) % INTEGRATION_MESSAGES.length];
+}
+
 // Springs
 const springs = {
   gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
@@ -138,29 +149,48 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
     if (phase !== 'practicing' || actionType !== 'breathe') return;
 
     let mounted = true;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const clearAllTimers = () => {
+      timers.forEach(t => clearTimeout(t));
+      timers.length = 0;
+    };
+
     const breathCycle = () => {
       if (!mounted) return;
       setBreathPhase('inhale');
-      setTimeout(() => {
+
+      const t1 = setTimeout(() => {
         if (!mounted) return;
         setBreathPhase('hold');
-        setTimeout(() => {
+
+        const t2 = setTimeout(() => {
           if (!mounted) return;
           setBreathPhase('exhale');
-          setTimeout(() => {
+
+          const t3 = setTimeout(() => {
             if (!mounted) return;
             setBreathPhase('rest');
             setBreathCount(prev => prev + 1);
-            setTimeout(() => {
-              if (mounted && phase === 'practicing') breathCycle();
+
+            const t4 = setTimeout(() => {
+              if (mounted) breathCycle();
             }, 800);
+            timers.push(t4);
           }, 6000); // Exhale
+          timers.push(t3);
         }, 4000); // Hold
+        timers.push(t2);
       }, 4000); // Inhale
+      timers.push(t1);
     };
 
     breathCycle();
-    return () => { mounted = false; };
+
+    return () => {
+      mounted = false;
+      clearAllTimers();
+    };
   }, [phase, actionType]);
 
   // Rotate guidance messages
@@ -180,13 +210,11 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
   // Integration phase
   useEffect(() => {
     if (phase === 'integrating') {
-      setIntegrationMessage(
-        INTEGRATION_MESSAGES[Math.floor(Math.random() * INTEGRATION_MESSAGES.length)]
-      );
+      setIntegrationMessage(getIntegrationMessage(lesson.id));
       const timer = setTimeout(() => setPhase('complete'), 4000);
       return () => clearTimeout(timer);
     }
-  }, [phase]);
+  }, [phase, lesson.id]);
 
   const handleComplete = useCallback((completed: boolean) => {
     onComplete(completed);

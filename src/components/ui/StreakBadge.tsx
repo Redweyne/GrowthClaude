@@ -24,6 +24,8 @@ interface Ember {
   size: number;
   duration: number;
   delay: number;
+  yOffset: number;  // Pre-calculated random offset for animation
+  xOffset: number;  // Pre-calculated random offset for animation
 }
 
 // Fire intensity levels based on streak
@@ -137,6 +139,8 @@ export function StreakBadge({
           size: 2 + Math.random() * 2,
           duration: 0.8 + Math.random() * 0.4,
           delay: Math.random() * 0.3,
+          yOffset: Math.random() * 15,
+          xOffset: (Math.random() - 0.5) * 10,
         });
       }
       setEmbers(newEmbers);
@@ -332,8 +336,8 @@ export function StreakBadge({
               scale: 1,
             }}
             animate={{
-              y: -30 - Math.random() * 15,
-              x: ember.x + (Math.random() - 0.5) * 10,
+              y: -30 - ember.yOffset,
+              x: ember.x + ember.xOffset,
               opacity: 0,
               scale: 0.3,
             }}

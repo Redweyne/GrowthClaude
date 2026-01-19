@@ -76,8 +76,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   );
 
   const wisdomQuote = useMemo(
-    () => getRandomQuote(leveledUp ? 'growth' : 'completion'),
-    [leveledUp]
+    () => getRandomQuote(leveledUp ? 'growth' : 'completion', lesson.id),
+    [leveledUp, lesson.id]
   );
 
   // Progress
@@ -418,7 +418,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               transition={{ delay: 0.2 }}
               className="text-8xl font-serif text-amber-500 mb-4 select-none"
             >
-              "
+              &ldquo;
             </motion.div>
 
             {/* The wisdom */}

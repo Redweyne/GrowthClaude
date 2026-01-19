@@ -100,8 +100,6 @@ export function useLessonAmbience() {
     playBell,
     playKeystroke,
     playCompletionChime,
-    isPlaying: isPlayingRef.current,
-    currentPhase: currentPhaseRef.current,
     isAmbientPlaying,
   };
 }

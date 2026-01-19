@@ -56,6 +56,17 @@ const springs = {
   gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
 };
 
+// Get deterministic prompt index based on reflection content
+function getPromptIndex(text: string, arrayLength: number): number {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash) % arrayLength;
+}
+
 export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionStepProps) {
   const [reflection, setReflection] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -100,29 +111,41 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   // Show encouragement prompts based on inactivity
   useEffect(() => {
     if (phase !== 'writing') return;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
     if (reflection.length > 0 && wordCount < 50) {
       const timeSinceKeystroke = Date.now() - lastKeystrokeRef.current;
       if (timeSinceKeystroke > 8000 && !showPrompt) {
         const prompts = reflection.length < 50 ? ENCOURAGEMENT_PROMPTS : DEPTH_PROMPTS;
         const unused = prompts.filter((_, i) => !promptShownRef.current.has(i));
         if (unused.length > 0) {
-          const index = prompts.indexOf(unused[Math.floor(Math.random() * unused.length)]);
+          // Use deterministic selection based on current reflection content
+          const selectedUnusedIndex = getPromptIndex(reflection + secondsElapsed, unused.length);
+          const index = prompts.indexOf(unused[selectedUnusedIndex]);
           promptShownRef.current.add(index);
           setCurrentPrompt(prompts[index]);
           setShowPrompt(true);
-          setTimeout(() => setShowPrompt(false), 6000);
+          timerId = setTimeout(() => setShowPrompt(false), 6000);
         }
       }
     }
-  }, [secondsElapsed, phase, reflection.length, wordCount, showPrompt]);
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [secondsElapsed, phase, reflection, wordCount, showPrompt]);
 
   // Track milestones
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     const reachedMilestone = MILESTONES.find(m => wordCount >= m.words && wordCount < m.words + 10);
     if (reachedMilestone && milestone !== reachedMilestone.message) {
       setMilestone(reachedMilestone.message);
-      setTimeout(() => setMilestone(null), 3000);
+      timerId = setTimeout(() => setMilestone(null), 3000);
     }
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
   }, [wordCount, milestone]);
 
   // Handle text change

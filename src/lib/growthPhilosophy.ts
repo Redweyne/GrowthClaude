@@ -180,6 +180,17 @@ export const GROWTH_LEVELS: GrowthLevel[] = [
 // ============================================================================
 // These acknowledge the person, not just the action
 
+// Deterministic hash helper
+function getStableIndex(seed: string, length: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash) % length;
+}
+
 export function getCompletionMessage(name: string | null, lessonTitle: string, streak: number): string {
   const messages = [
     `You showed up today${name ? `, ${name}` : ''}. That's what matters most.`,
@@ -198,7 +209,9 @@ export function getCompletionMessage(name: string | null, lessonTitle: string, s
     return `${name ? `${name}, ` : ''}A full week of showing up. The habit is taking root.`;
   }
 
-  return messages[Math.floor(Math.random() * messages.length)];
+  // Use deterministic selection based on lesson title
+  const index = getStableIndex(lessonTitle, messages.length);
+  return messages[index];
 }
 
 export function getStreakMessage(streak: number): { title: string; subtitle: string } {
@@ -295,12 +308,15 @@ export function getGrowthProgress(xp: number): { current: number; needed: number
 }
 
 // ============================================================================
-// RANDOM WISDOM PICKER
+// WISDOM PICKER (Deterministic based on seed)
 // ============================================================================
 
-export function getRandomQuote(category: keyof typeof WISDOM_QUOTES): { text: string; author: string } {
+export function getRandomQuote(category: keyof typeof WISDOM_QUOTES, seed?: string): { text: string; author: string } {
   const quotes = WISDOM_QUOTES[category];
-  return quotes[Math.floor(Math.random() * quotes.length)];
+  // Use deterministic selection if seed provided, otherwise use category + current date for daily variation
+  const effectiveSeed = seed || `${category}-${new Date().toISOString().split('T')[0]}`;
+  const index = getStableIndex(effectiveSeed, quotes.length);
+  return quotes[index];
 }
 
 // ============================================================================
