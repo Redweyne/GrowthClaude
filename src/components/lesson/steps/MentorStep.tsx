@@ -1,26 +1,23 @@
 'use client';
 
-// ============================================================================
-// MENTOR STEP - SAGE DELIVERS WISDOM
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════
+// MENTOR STEP - THE SAGE'S CHAMBER
+// ═══════════════════════════════════════════════════════════════════════════
 //
-// This is where the lesson's teaching lands. Sage doesn't just encourage -
-// Sage delivers the philosophical insight that makes this lesson matter.
-//
-// The mentor response should:
-// - Connect to the specific lesson concept
-// - Feel like genuine wisdom, not cheerleading
-// - Give the user something to carry with them
+// This is where Sage delivers the lesson's teaching.
+// Not cheerleading - genuine philosophical insight.
+// The atmosphere should feel like receiving wisdom from an ancient guide.
 //
 // Visual principles:
-// - Atmospheric and reverent
-// - Sage speaks from a place of knowing
-// - The message has weight and space to breathe
-// ============================================================================
+// - Mystical, ethereal presence around Sage
+// - Words that arrive with weight and gravity
+// - Atmosphere that shifts with Sage's mood
+// - Sacred space for integration
+// ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw, Flame } from 'lucide-react';
+import { RotateCcw, Flame, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useSound } from '@/hooks/useSound';
@@ -68,6 +65,11 @@ const LOW_EFFORT_WISDOM = [
   "Half-hearted practice yields half-hearted results. Return and write what you actually think.",
 ];
 
+// Springs
+const springs = {
+  gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
+};
+
 export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
   const { name, currentStreak } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
@@ -79,16 +81,15 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
   // Check if reflection is low effort
   const isLowEffort = useMemo(() => isLowEffortReflection(reflection), [reflection]);
 
-  // Check for streak milestone (this is shown as a bonus, not replacing wisdom)
+  // Check for streak milestone
   const nextStreak = currentStreak + 1;
   const streakMilestone = useMemo(() => {
     if (isLowEffort) return null;
     return getStreakMilestoneMessage(nextStreak);
   }, [nextStreak, isLowEffort]);
 
-  // Get the mentor's WISDOM - prioritize lesson-specific teaching
+  // Get the mentor's WISDOM
   const mentorWisdom = useMemo(() => {
-    // Low effort response
     if (isLowEffort) {
       return {
         text: LOW_EFFORT_WISDOM[Math.floor(Math.random() * LOW_EFFORT_WISDOM.length)],
@@ -96,13 +97,10 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
       };
     }
 
-    // Use the lesson's hand-crafted mentor responses
-    // These are specific philosophical insights, not encouragement
+    // Use lesson's hand-crafted mentor responses
     const lessonResponses = lesson.mentorResponses;
     if (lessonResponses && lessonResponses.length > 0) {
       const response = lessonResponses[Math.floor(Math.random() * lessonResponses.length)];
-
-      // Optionally personalize with name (but preserve the wisdom)
       if (name && Math.random() > 0.7) {
         return {
           text: `${name}, ${response.charAt(0).toLowerCase()}${response.slice(1)}`,
@@ -129,7 +127,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     if (isTyping) return 'thinking';
     if (isLowEffort) return 'disappointed';
     if (streakMilestone) return 'celebrating';
-    return 'wise'; // Changed from 'encouraging' to 'wise'
+    return 'wise';
   }, [isTyping, isLowEffort, streakMilestone]);
 
   // Typewriter effect - slower for wisdom
@@ -138,7 +136,6 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     setDisplayedText('');
     setIsTyping(true);
 
-    // Slower for wisdom to let it land
     const baseSpeed = isLowEffort ? 22 : 32;
 
     const typeNextChar = () => {
@@ -149,7 +146,6 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
         let delay = baseSpeed;
         const char = mentorWisdom.text[index - 1];
 
-        // Natural pauses - longer for wisdom
         if (char === '.' || char === '!' || char === '?') {
           delay = baseSpeed * 8;
         } else if (char === ',') {
@@ -163,14 +159,12 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
         setTimeout(typeNextChar, delay);
       } else {
         setIsTyping(false);
-        // Show streak bonus after wisdom is delivered
         if (streakMilestone && !isLowEffort) {
           setTimeout(() => setShowStreakBonus(true), 800);
         }
       }
     };
 
-    // Longer pause before Sage starts speaking - builds anticipation
     setTimeout(typeNextChar, 800);
 
     return () => {
@@ -195,77 +189,133 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     onRetry();
   }, [playTap, onRetry]);
 
+  // Get ambient color based on mood
+  const getAmbientColor = () => {
+    if (isLowEffort) return 'rgba(239, 68, 68, 0.08)';
+    if (streakMilestone) return 'rgba(251, 191, 36, 0.10)';
+    return 'rgba(167, 139, 250, 0.08)';
+  };
+
   return (
     <div className="relative">
       {/* Ambient glow based on mood */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
         <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] rounded-full"
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[500px] rounded-full"
           style={{
-            background: isLowEffort
-              ? 'radial-gradient(circle, rgba(239,68,68,0.05) 0%, transparent 70%)'
-              : streakMilestone
-              ? 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%)'
-              : 'radial-gradient(circle, rgba(161,161,170,0.04) 0%, transparent 70%)',
+            background: `radial-gradient(circle, ${getAmbientColor()} 0%, transparent 60%)`,
           }}
           animate={{
             opacity: [0.5, 0.8, 0.5],
+            scale: [1, 1.05, 1],
           }}
           transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
         />
+
+        {/* Floating particles for celebration */}
+        {sageMood === 'celebrating' && (
+          [...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1.5 h-1.5 rounded-full bg-amber-400/60"
+              style={{
+                left: `${20 + i * 12}%`,
+                top: '30%',
+              }}
+              animate={{
+                y: [0, -40, 0],
+                opacity: [0, 0.7, 0],
+                scale: [0, 1, 0],
+              }}
+              transition={{
+                duration: 3,
+                delay: i * 0.4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          ))
+        )}
       </div>
 
       <div className="text-center">
-        {/* Mentor avatar with subtle animation */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Sage Avatar - Mystical Presence
+        ───────────────────────────────────────────────────────────────── */}
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+          transition={{ ...springs.gentle, delay: 0.1 }}
           className="mx-auto mb-6 relative"
         >
-          {/* Glow ring for celebrating */}
-          {sageMood === 'celebrating' && (
-            <motion.div
-              className="absolute inset-0 -m-6 rounded-full"
-              style={{
-                background: 'radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)',
-              }}
-              animate={{
-                scale: [1, 1.15, 1],
-                opacity: [0.4, 0.7, 0.4],
-              }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
+          {/* Outer glow rings for wise/celebrating moods */}
+          {(sageMood === 'wise' || sageMood === 'celebrating') && (
+            <>
+              <motion.div
+                className="absolute -inset-6 rounded-full pointer-events-none"
+                style={{
+                  background: sageMood === 'celebrating'
+                    ? 'radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(167, 139, 250, 0.12) 0%, transparent 70%)',
+                }}
+                animate={{
+                  scale: [1, 1.15, 1],
+                  opacity: [0.4, 0.7, 0.4],
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              {sageMood === 'celebrating' && (
+                <motion.div
+                  className="absolute -inset-4 rounded-full pointer-events-none"
+                  style={{
+                    border: '1px solid rgba(251, 191, 36, 0.2)',
+                  }}
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.3, 0, 0.3],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              )}
+            </>
           )}
+
           <SageAvatar mood={sageMood} size="lg" />
         </motion.div>
 
-        {/* Mentor name - simpler */}
+        {/* Mentor name */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <h3 className="text-lg font-semibold text-white">{MENTOR.name}</h3>
-          <p className="text-sm text-zinc-600">{MENTOR.title}</p>
+          <h3 className="text-lg font-medium text-stone-100">{MENTOR.name}</h3>
+          <p className="text-sm text-stone-600">{MENTOR.title}</p>
         </motion.div>
 
-        {/* Message container - more atmospheric */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Message Container - Atmospheric
+        ───────────────────────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className={`relative rounded-2xl p-8 mb-6 text-left ${
             isLowEffort
-              ? 'bg-gradient-to-br from-red-950/30 to-zinc-950 border border-red-900/20'
-              : 'bg-gradient-to-br from-stone-900/80 to-zinc-950 border border-zinc-800/50'
+              ? 'bg-gradient-to-br from-red-950/30 to-stone-950 border border-red-900/30'
+              : 'bg-gradient-to-br from-stone-900/80 to-stone-950 border border-stone-800/50'
           }`}
+          style={{
+            boxShadow: isLowEffort
+              ? '0 0 40px rgba(239, 68, 68, 0.05)'
+              : '0 0 40px rgba(167, 139, 250, 0.05)',
+          }}
         >
-          {/* Subtle corner accent */}
+          {/* Corner accent glow */}
           {!isLowEffort && (
-            <div className="absolute top-0 left-0 w-16 h-16 overflow-hidden rounded-tl-2xl pointer-events-none">
-              <div className="absolute -top-8 -left-8 w-16 h-16 bg-amber-500/5 rounded-full blur-xl" />
+            <div className="absolute top-0 left-0 w-20 h-20 overflow-hidden rounded-tl-2xl pointer-events-none">
+              <div className="absolute -top-10 -left-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl" />
             </div>
           )}
 
@@ -273,20 +323,20 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           <div
             className={`absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 ${
               isLowEffort
-                ? 'bg-red-950/30 border-l border-t border-red-900/20'
-                : 'bg-stone-900/80 border-l border-t border-zinc-800/50'
+                ? 'bg-red-950/30 border-l border-t border-red-900/30'
+                : 'bg-stone-900/80 border-l border-t border-stone-800/50'
             }`}
           />
 
-          {/* Message text - larger, more readable */}
-          <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-zinc-200'}`}>
+          {/* Message text */}
+          <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-stone-200'}`}>
             {displayedText}
             {isTyping && (
               <motion.span
                 animate={{ opacity: [0, 1, 0] }}
                 transition={{ duration: 0.8, repeat: Infinity }}
                 className={`inline-block w-2 h-5 ml-1 align-middle rounded-sm ${
-                  isLowEffort ? 'bg-red-400' : 'bg-amber-400/80'
+                  isLowEffort ? 'bg-red-400' : 'bg-purple-400/80'
                 }`}
               />
             )}
@@ -298,7 +348,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="mt-5 pt-4 border-t border-red-900/20"
+              className="mt-5 pt-4 border-t border-red-900/30"
             >
               <p className="text-sm text-red-400/70 text-center">
                 Your reflection needs more depth
@@ -307,7 +357,9 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           )}
         </motion.div>
 
-        {/* Streak milestone bonus - shown AFTER wisdom */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Streak Milestone Bonus
+        ───────────────────────────────────────────────────────────────── */}
         <AnimatePresence>
           {showStreakBonus && streakMilestone && (
             <motion.div
@@ -316,15 +368,26 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               exit={{ opacity: 0, y: -10, height: 0 }}
               className="mb-6"
             >
-              <div className="bg-gradient-to-r from-amber-900/20 via-orange-900/20 to-amber-900/20 border border-amber-700/20 rounded-xl p-4">
-                <div className="flex items-center justify-center gap-3 mb-2">
+              <div
+                className="bg-gradient-to-r from-amber-900/20 via-orange-900/20 to-amber-900/20 border border-amber-700/30 rounded-xl p-5"
+                style={{
+                  boxShadow: '0 0 30px rgba(251, 191, 36, 0.1)',
+                }}
+              >
+                <motion.div
+                  className="flex items-center justify-center gap-3 mb-3"
+                  animate={{
+                    scale: [1, 1.02, 1],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
                   <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
-                  <span className="text-amber-400 font-medium">
+                  <span className="text-amber-400 font-medium text-lg">
                     {nextStreak} Day Streak
                   </span>
                   <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
-                </div>
-                <p className="text-zinc-400 text-sm text-center">
+                </motion.div>
+                <p className="text-stone-400 text-sm text-center">
                   {streakMilestone}
                 </p>
               </div>
@@ -332,7 +395,9 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           )}
         </AnimatePresence>
 
-        {/* Action buttons */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Action Buttons
+        ───────────────────────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -352,7 +417,8 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               size="lg"
               onClick={handleComplete}
               disabled={isTyping}
-              className={`w-full ${
+              glow={!isTyping}
+              className={`w-full group ${
                 sageMood === 'celebrating'
                   ? 'bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400'
                   : ''
@@ -366,19 +432,25 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
                   Sage is speaking...
                 </motion.span>
               ) : (
-                'Complete Lesson'
+                <>
+                  Complete Lesson
+                  <ChevronRight
+                    size={18}
+                    className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  />
+                </>
               )}
             </Button>
           )}
         </motion.div>
 
-        {/* Hint for new users - subtle */}
+        {/* Streak hint for new users */}
         {!isLowEffort && !isTyping && !showStreakBonus && currentStreak > 0 && currentStreak < 7 && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="text-xs text-zinc-700 mt-4"
+            className="text-xs text-stone-700 mt-5"
           >
             {7 - currentStreak} more {7 - currentStreak === 1 ? 'day' : 'days'} to your first week streak
           </motion.p>

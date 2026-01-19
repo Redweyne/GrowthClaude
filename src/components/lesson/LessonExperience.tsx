@@ -1,11 +1,19 @@
 'use client';
 
-// ============================================================================
-// LESSON EXPERIENCE - THE SACRED JOURNEY ORCHESTRATOR
-// This is not a step-by-step wizard. This is a pilgrimage.
-// Each transition is an invitation deeper into presence.
-// The ambient soundscape breathes life into every moment.
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════
+// LESSON EXPERIENCE - THE SACRED JOURNEY
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This is not a step-by-step wizard. This is a pilgrimage into wisdom.
+// Each transition is a threshold crossing into deeper presence.
+// The atmosphere breathes with you. The journey transforms you.
+//
+// Visual principles:
+// - Atmospheric depth that responds to each phase
+// - Floating particles that follow your progress
+// - Gradients that shift like consciousness deepening
+// - Sacred geometry underlying every transition
+// ═══════════════════════════════════════════════════════════════════════════
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +22,7 @@ import { ActionStep } from './steps/ActionStep';
 import { ReflectionStep } from './steps/ReflectionStep';
 import { RewardStep } from './steps/RewardStep';
 import { MentorStep } from './steps/MentorStep';
+import { AmbientBackground } from '@/components/ambient';
 import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
@@ -26,13 +35,52 @@ interface LessonExperienceProps {
 
 type LessonStage = 'wisdom' | 'action' | 'reflection' | 'reward' | 'mentor';
 
-// Map stages to ambience phases
-const STAGE_TO_AMBIENCE: Record<LessonStage, 'wisdom' | 'action' | 'reflection' | 'completion'> = {
-  wisdom: 'wisdom',
-  action: 'action',
-  reflection: 'reflection',
-  reward: 'completion',
-  mentor: 'completion',
+// Stage colors and atmospheres
+const STAGE_THEMES: Record<LessonStage, {
+  primary: string;
+  glow: string;
+  label: string;
+  intensity: 'subtle' | 'normal' | 'vivid';
+}> = {
+  wisdom: {
+    primary: 'from-purple-500 to-amber-500',
+    glow: 'rgba(167, 139, 250, 0.15)',
+    label: 'Receiving Wisdom',
+    intensity: 'normal',
+  },
+  action: {
+    primary: 'from-amber-500 to-orange-500',
+    glow: 'rgba(251, 191, 36, 0.12)',
+    label: 'Practicing',
+    intensity: 'subtle',
+  },
+  reflection: {
+    primary: 'from-cyan-500 to-purple-500',
+    glow: 'rgba(34, 211, 238, 0.10)',
+    label: 'Reflecting',
+    intensity: 'subtle',
+  },
+  reward: {
+    primary: 'from-amber-400 to-amber-600',
+    glow: 'rgba(251, 191, 36, 0.20)',
+    label: 'Celebrating',
+    intensity: 'vivid',
+  },
+  mentor: {
+    primary: 'from-purple-500 to-amber-500',
+    glow: 'rgba(167, 139, 250, 0.12)',
+    label: 'Integration',
+    intensity: 'normal',
+  },
+};
+
+// Stage icons for progress indicator
+const STAGE_ICONS: Record<LessonStage, string> = {
+  wisdom: '📜',
+  action: '⚡',
+  reflection: '✍️',
+  reward: '✨',
+  mentor: '🧙',
 };
 
 export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) {
@@ -56,16 +104,17 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     initAudio: initAmbienceAudio
   } = useLessonAmbience();
 
-  // Initialize on first user interaction (via wisdom step)
+  const currentTheme = STAGE_THEMES[stage];
+
+  // Initialize on first user interaction
   const handleInitializeAudio = useCallback(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
-
     initAudio();
     initAmbienceAudio();
   }, [initAudio, initAmbienceAudio]);
 
-  // Start lesson (just bell, no ambient until reflection)
+  // Start lesson
   const handleStartWisdomAmbience = useCallback(() => {
     handleInitializeAudio();
     playBell('deep');
@@ -75,16 +124,15 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const handleWisdomComplete = useCallback(() => {
     setIsTransitioning(true);
     playBell('soft');
-
     setTimeout(() => {
       setStage('action');
       setIsTransitioning(false);
-    }, 500);
+    }, 600);
   }, [playBell]);
 
-  // Start action phase (no ambient here)
+  // Start action phase
   const handleStartActionAmbience = useCallback(() => {
-    // No ambient during action - only during reflection
+    // Quiet during action - full presence
   }, []);
 
   // Transition to reflection phase
@@ -92,12 +140,11 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     setActionCompleted(completed);
     setIsTransitioning(true);
     playBell('soft');
-
     setTimeout(() => {
       transitionTo('reflection');
       setStage('reflection');
       setIsTransitioning(false);
-    }, 500);
+    }, 600);
   }, [transitionTo, playBell]);
 
   // Handle keystroke sounds during reflection
@@ -126,7 +173,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     // Bonus XP for completing the action
     if (actionCompleted) xp += 5;
 
-    // Bonus XP for thoughtful reflections (word-based, matching new ReflectionStep)
+    // Bonus XP for thoughtful reflections
     const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > 25) xp += 5;
     if (wordCount > 50) xp += 5;
@@ -144,7 +191,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     setXpEarned(xp);
     xpEarnedRef.current = xp;
 
-    // Transition with celebration
+    // Celebration transition
     playBell('bright');
     playCompletionChime();
 
@@ -162,23 +209,17 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   // Transition to mentor phase
   const handleRewardComplete = useCallback(() => {
     setIsTransitioning(true);
-
     setTimeout(() => {
       setStage('mentor');
       setIsTransitioning(false);
-    }, 300);
+    }, 400);
   }, []);
 
   // Complete the lesson
   const handleMentorComplete = useCallback(() => {
-    // Stop ambience gracefully
     stopAmbience();
-
-    // Save lesson completion
     completeLesson(lesson.id, xpEarnedRef.current);
     playComplete();
-
-    // Brief pause before closing
     setTimeout(() => {
       onComplete();
     }, 300);
@@ -198,7 +239,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     };
   }, [stopAmbience]);
 
-  // Calculate progress percentage with smooth transitions
+  // Calculate progress
   const getProgress = () => {
     switch (stage) {
       case 'wisdom': return 10;
@@ -210,13 +251,18 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     }
   };
 
-  // Stage transition variants
+  const getStageIndex = (s: LessonStage) => {
+    const stages: LessonStage[] = ['wisdom', 'action', 'reflection', 'reward', 'mentor'];
+    return stages.indexOf(s);
+  };
+
+  // Transition variants
   const stageVariants = {
     enter: {
       opacity: 0,
-      y: 30,
-      scale: 0.98,
-      filter: 'blur(4px)',
+      y: 40,
+      scale: 0.96,
+      filter: 'blur(8px)',
     },
     center: {
       opacity: 1,
@@ -226,65 +272,165 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     },
     exit: {
       opacity: 0,
-      y: -20,
-      scale: 0.98,
-      filter: 'blur(4px)',
+      y: -30,
+      scale: 0.96,
+      filter: 'blur(8px)',
     },
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col relative overflow-hidden">
-      {/* Ambient background glow - responds to stage */}
+    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+      {/* Ambient background - responds to stage */}
+      <AmbientBackground
+        intensity={currentTheme.intensity}
+        particleCount={stage === 'reward' ? 25 : 12}
+        orbCount={stage === 'reward' ? 4 : 2}
+      />
+
+      {/* Stage-specific atmospheric glow */}
       <div className="fixed inset-0 pointer-events-none">
+        {/* Primary glow - centered */}
         <motion.div
           className="absolute inset-0"
           animate={{
-            background: stage === 'wisdom'
-              ? 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.05) 0%, transparent 70%)'
-              : stage === 'action'
-              ? 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.05) 0%, transparent 70%)'
-              : stage === 'reflection'
-              ? 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.03) 0%, transparent 70%)'
-              : 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.08) 0%, transparent 70%)',
+            background: `radial-gradient(ellipse 80% 60% at 50% 30%, ${currentTheme.glow} 0%, transparent 60%)`,
           }}
-          transition={{ duration: 2 }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
         />
+
+        {/* Secondary glow - bottom accent */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-1/2"
+          animate={{
+            background: `radial-gradient(ellipse 100% 50% at 50% 100%, ${currentTheme.glow} 0%, transparent 50%)`,
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            background: { duration: 1.5, ease: 'easeInOut' },
+            opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
+          }}
+        />
+
+        {/* Floating stage particles */}
+        {stage === 'reward' && (
+          [...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 rounded-full bg-amber-400"
+              style={{
+                left: `${10 + (i * 11)}%`,
+                top: `${20 + Math.random() * 40}%`,
+              }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0, 0.6, 0],
+                scale: [0, 1, 0],
+              }}
+              transition={{
+                duration: 3,
+                delay: i * 0.3,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          ))
+        )}
       </div>
 
-      {/* Progress bar - elegant and minimal */}
+      {/* ─────────────────────────────────────────────────────────────────
+          Progress Indicator - Elegant Arc
+      ───────────────────────────────────────────────────────────────── */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="h-0.5 bg-zinc-900">
+        {/* Main progress bar */}
+        <div className="h-1 bg-stone-900/80 backdrop-blur-sm">
           <motion.div
-            className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500"
+            className={`h-full bg-gradient-to-r ${currentTheme.primary}`}
             initial={{ width: 0 }}
             animate={{ width: `${getProgress()}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{
+              boxShadow: `0 0 20px ${currentTheme.glow}`,
+            }}
           />
         </div>
 
-        {/* Stage indicators - subtle dots */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 flex gap-3">
-          {['wisdom', 'action', 'reflection', 'reward', 'mentor'].map((s, i) => (
+        {/* Stage indicators */}
+        <motion.div
+          className="absolute top-4 left-1/2 transform -translate-x-1/2"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex flex-col items-center gap-3">
+            {/* Current stage label */}
             <motion.div
-              key={s}
-              className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
-                stage === s
-                  ? 'bg-indigo-400'
-                  : getProgress() > [10, 35, 60, 85, 100][i]
-                  ? 'bg-indigo-400/50'
-                  : 'bg-zinc-700'
-              }`}
-              animate={{
-                scale: stage === s ? [1, 1.3, 1] : 1,
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          ))}
-        </div>
+              key={stage}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2"
+            >
+              <span className="text-lg">{STAGE_ICONS[stage]}</span>
+              <span className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium">
+                {currentTheme.label}
+              </span>
+            </motion.div>
+
+            {/* Stage dots */}
+            <div className="flex items-center gap-3">
+              {(['wisdom', 'action', 'reflection', 'reward', 'mentor'] as LessonStage[]).map((s, i) => {
+                const isCurrent = stage === s;
+                const isComplete = getStageIndex(stage) > i;
+
+                return (
+                  <motion.div
+                    key={s}
+                    className="relative"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.6 + i * 0.1 }}
+                  >
+                    {/* Active glow */}
+                    {isCurrent && (
+                      <motion.div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                          background: `radial-gradient(circle, ${currentTheme.glow} 0%, transparent 70%)`,
+                        }}
+                        animate={{
+                          scale: [1, 2, 1],
+                          opacity: [0.5, 0, 0.5],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                    )}
+
+                    {/* Dot */}
+                    <motion.div
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
+                        isComplete
+                          ? 'bg-amber-500'
+                          : isCurrent
+                          ? 'bg-amber-400 shadow-lg shadow-amber-500/50'
+                          : 'bg-stone-700'
+                      }`}
+                      animate={isCurrent ? {
+                        scale: [1, 1.3, 1],
+                      } : {}}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Content container */}
-      <div className="flex-1 flex items-center justify-center px-4 pt-16 pb-8">
+      {/* ─────────────────────────────────────────────────────────────────
+          Main Content Area
+      ───────────────────────────────────────────────────────────────── */}
+      <div className="flex-1 flex items-center justify-center px-4 pt-24 pb-12">
         <AnimatePresence mode="wait">
           {!isTransitioning && (
             <motion.div
@@ -294,7 +440,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
               animate="center"
               exit="exit"
               transition={{
-                duration: 0.5,
+                duration: 0.6,
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
               className="w-full max-w-xl"
@@ -344,21 +490,13 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
         </AnimatePresence>
       </div>
 
-      {/* Stage label - very subtle */}
-      <motion.div
-        className="fixed bottom-4 left-1/2 transform -translate-x-1/2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.3 }}
-        transition={{ delay: 1 }}
-      >
-        <p className="text-zinc-700 text-xs tracking-widest uppercase">
-          {stage === 'wisdom' && 'Receiving wisdom'}
-          {stage === 'action' && 'Practicing'}
-          {stage === 'reflection' && 'Reflecting'}
-          {stage === 'reward' && 'Celebrating'}
-          {stage === 'mentor' && 'Integration'}
-        </p>
-      </motion.div>
+      {/* Bottom gradient fade */}
+      <div
+        className="fixed bottom-0 left-0 right-0 h-24 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to top, rgba(12, 10, 9, 0.9), transparent)',
+        }}
+      />
     </div>
   );
 }

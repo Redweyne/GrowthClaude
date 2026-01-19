@@ -1,13 +1,24 @@
 'use client';
 
-// ============================================================================
-// REFLECTION STEP
-// This is the sanctuary. The sacred space where transformation happens.
-// Not a form to fill out. A place to meet yourself.
-// ============================================================================
+// ═══════════════════════════════════════════════════════════════════════════
+// REFLECTION STEP - THE SANCTUARY
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This is the sacred space where transformation crystallizes.
+// Not a form to fill out. A place to meet yourself in writing.
+// The atmosphere should feel safe, intimate, infinite.
+//
+// Visual principles:
+// - Sanctuary-like calm with subtle ambient glow
+// - Writing space that invites depth
+// - Progress that encourages without pressuring
+// - Atmospheric responses to your journey
+// ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, Feather } from 'lucide-react';
+import { Button } from '@/components/ui';
 import type { Lesson } from '@/types';
 
 interface ReflectionStepProps {
@@ -16,7 +27,7 @@ interface ReflectionStepProps {
   onKeystroke?: () => void;
 }
 
-// Adaptive prompts that appear based on time and content
+// Adaptive prompts based on inactivity and content
 const ENCOURAGEMENT_PROMPTS = [
   "What's present for you right now?",
   "There's no rush. Let the thoughts come.",
@@ -40,6 +51,11 @@ const MILESTONES = [
   { words: 50, message: "Beautiful. You're going deep." },
 ];
 
+// Springs
+const springs = {
+  gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
+};
+
 export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionStepProps) {
   const [reflection, setReflection] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -55,7 +71,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   // Word count
   const wordCount = reflection.trim().split(/\s+/).filter(Boolean).length;
 
-  // Calculate readiness - low bar, we trust the user
+  // Calculate readiness
   const isSubstantial = wordCount >= 5;
   const isReady = wordCount >= 15;
 
@@ -71,8 +87,8 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('writing');
-      textareaRef.current?.focus();
-    }, 2000);
+      setTimeout(() => textareaRef.current?.focus(), 100);
+    }, 2200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -82,7 +98,6 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     if (reflection.length > 0 && wordCount < 50) {
       const timeSinceKeystroke = Date.now() - lastKeystrokeRef.current;
       if (timeSinceKeystroke > 8000 && !showPrompt) {
-        // Show a prompt if user seems stuck
         const prompts = reflection.length < 50 ? ENCOURAGEMENT_PROMPTS : DEPTH_PROMPTS;
         const unused = prompts.filter((_, i) => !promptShownRef.current.has(i));
         if (unused.length > 0) {
@@ -135,47 +150,82 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   }, [isSubstantial, handleSubmit]);
 
   return (
-    <div className="flex flex-col">
+    <div className="min-h-[75vh] flex flex-col">
       <AnimatePresence mode="wait">
-        {/* Entering phase */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Entering Phase - The Transition
+        ───────────────────────────────────────────────────────────────── */}
         {phase === 'entering' && (
           <motion.div
             key="entering"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.8 }}
             className="flex-1 flex flex-col items-center justify-center text-center px-4"
           >
-            {/* Quill icon */}
+            {/* Quill icon with glow */}
             <motion.div
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-              className="text-5xl mb-6"
+              transition={{ delay: 0.3, ...springs.gentle }}
+              className="relative w-24 h-24 mb-8"
             >
-              ✍️
+              {/* Glow */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, transparent 70%)',
+                }}
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.5, 0.8, 0.5],
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+
+              {/* Icon container */}
+              <div className="relative w-full h-full rounded-full bg-gradient-to-br from-cyan-500/20 to-stone-900 border border-cyan-500/30 flex items-center justify-center">
+                <Feather size={36} className="text-cyan-400" />
+              </div>
             </motion.div>
 
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-xl text-zinc-400"
+              className="text-xl text-stone-300 font-light"
             >
               Now, reflect...
             </motion.p>
+
+            {/* Progress bar */}
+            <motion.div
+              className="w-32 h-1 bg-stone-800 rounded-full mx-auto mt-8 overflow-hidden"
+            >
+              <motion.div
+                className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 2.2, ease: 'linear' }}
+                style={{
+                  boxShadow: '0 0 15px rgba(34, 211, 238, 0.4)',
+                }}
+              />
+            </motion.div>
           </motion.div>
         )}
 
-        {/* Writing phase */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Writing Phase - The Sanctuary
+        ───────────────────────────────────────────────────────────────── */}
         {phase === 'writing' && (
           <motion.div
             key="writing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex-1 flex flex-col px-4 py-6"
+            className="flex-1 flex flex-col px-4 py-4"
           >
             {/* The prompt - sacred question */}
             <motion.div
@@ -184,10 +234,10 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               transition={{ delay: 0.2 }}
               className="text-center mb-8"
             >
-              <p className="text-xs font-medium text-indigo-400 mb-3 tracking-widest uppercase">
+              <p className="text-sm font-medium text-cyan-400 mb-4 tracking-[0.2em] uppercase">
                 Your Reflection
               </p>
-              <p className="text-xl sm:text-2xl text-white leading-relaxed max-w-lg mx-auto font-light">
+              <p className="text-xl sm:text-2xl text-stone-100 leading-relaxed max-w-lg mx-auto font-light">
                 {lesson.reflectionPrompt}
               </p>
             </motion.div>
@@ -197,104 +247,145 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className={`
-                flex-1 relative rounded-2xl transition-all duration-500
-                ${isFocused
-                  ? 'bg-zinc-900/80 ring-2 ring-indigo-500/30'
-                  : 'bg-zinc-900/50 ring-1 ring-zinc-800'}
-              `}
+              className="flex-1 relative"
             >
-              {/* Focus mode glow */}
-              {isFocused && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="absolute inset-0 rounded-2xl bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none"
+              {/* Container with dynamic glow */}
+              <motion.div
+                className={`
+                  h-full min-h-[180px] relative rounded-2xl transition-all duration-500
+                  ${isFocused
+                    ? 'bg-stone-900/80'
+                    : 'bg-stone-900/50'}
+                `}
+                animate={{
+                  boxShadow: isFocused
+                    ? '0 0 40px rgba(34, 211, 238, 0.1), inset 0 0 20px rgba(34, 211, 238, 0.02)'
+                    : '0 0 0 rgba(34, 211, 238, 0)',
+                  borderColor: isFocused
+                    ? 'rgba(34, 211, 238, 0.3)'
+                    : 'rgba(68, 64, 60, 0.5)',
+                }}
+                style={{
+                  border: '2px solid',
+                }}
+              >
+                {/* Focus mode gradient overlay */}
+                <AnimatePresence>
+                  {isFocused && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 rounded-2xl pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(180deg, rgba(34, 211, 238, 0.03) 0%, transparent 40%)',
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* Textarea */}
+                <textarea
+                  ref={textareaRef}
+                  value={reflection}
+                  onChange={handleChange}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder="Begin writing..."
+                  className="
+                    w-full h-full min-h-[180px] p-5
+                    bg-transparent text-lg text-stone-200
+                    placeholder-stone-600 leading-relaxed
+                    focus:outline-none resize-none
+                    font-light tracking-wide
+                  "
+                  style={{ caretColor: '#22d3ee' }}
                 />
-              )}
 
-              {/* Textarea */}
-              <textarea
-                ref={textareaRef}
-                value={reflection}
-                onChange={handleChange}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder="Begin writing..."
-                className="
-                  w-full h-full min-h-[160px] p-5
-                  bg-transparent text-lg text-zinc-200
-                  placeholder-zinc-600 leading-relaxed
-                  focus:outline-none resize-none
-                  font-light tracking-wide
-                "
-                style={{ caretColor: '#818cf8' }}
-              />
+                {/* Encouragement prompt overlay */}
+                <AnimatePresence>
+                  {showPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute bottom-20 left-6 right-6"
+                    >
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+                        <span className="text-cyan-300/80 text-sm italic">
+                          💭 {currentPrompt}
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-              {/* Encouragement prompt overlay */}
-              <AnimatePresence>
-                {showPrompt && (
+                {/* Word count and status */}
+                <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center">
+                  {/* Word count */}
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute bottom-20 left-6 right-6"
+                    className="flex items-center gap-3"
+                    animate={{ opacity: reflection.length > 0 ? 1 : 0.5 }}
                   >
-                    <p className="text-indigo-400/80 text-sm italic">
-                      💭 {currentPrompt}
-                    </p>
+                    <span className="text-stone-500 text-sm">
+                      {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                    </span>
+
+                    {/* Progress dots */}
+                    <div className="flex gap-1.5">
+                      {[5, 15, 30, 50].map((threshold) => (
+                        <motion.div
+                          key={threshold}
+                          className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                            wordCount >= threshold ? 'bg-cyan-400' : 'bg-stone-700'
+                          }`}
+                          animate={{
+                            scale: wordCount >= threshold && wordCount < threshold + 5 ? [1, 1.4, 1] : 1,
+                            boxShadow: wordCount >= threshold
+                              ? '0 0 8px rgba(34, 211, 238, 0.5)'
+                              : 'none',
+                          }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      ))}
+                    </div>
                   </motion.div>
-                )}
-              </AnimatePresence>
 
-              {/* Word count and status */}
-              <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center">
-                {/* Word count */}
-                <motion.div
-                  className="flex items-center gap-3"
-                  animate={{ opacity: reflection.length > 0 ? 1 : 0.5 }}
-                >
-                  <span className="text-zinc-500 text-sm">
-                    {wordCount} {wordCount === 1 ? 'word' : 'words'}
-                  </span>
-
-                  {/* Progress dots */}
-                  <div className="flex gap-1">
-                    {[5, 15, 30, 50].map((threshold, i) => (
-                      <motion.div
-                        key={threshold}
-                        className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
-                          wordCount >= threshold ? 'bg-indigo-400' : 'bg-zinc-700'
-                        }`}
-                        animate={{
-                          scale: wordCount >= threshold && wordCount < threshold + 5 ? [1, 1.3, 1] : 1
-                        }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* Readiness indicator */}
-                <span className={`text-sm transition-colors duration-300 ${
-                  isReady ? 'text-emerald-400' : isSubstantial ? 'text-amber-400/70' : 'text-zinc-600'
-                }`}>
-                  {isReady ? 'Ready to continue' : isSubstantial ? 'A bit more depth...' : 'Keep writing...'}
-                </span>
-              </div>
+                  {/* Readiness indicator */}
+                  <motion.span
+                    className={`text-sm transition-colors duration-300 ${
+                      isReady
+                        ? 'text-emerald-400'
+                        : isSubstantial
+                        ? 'text-amber-400/70'
+                        : 'text-stone-600'
+                    }`}
+                    animate={{
+                      opacity: reflection.length > 0 ? 1 : 0,
+                    }}
+                  >
+                    {isReady ? 'Ready to continue' : isSubstantial ? 'A bit more depth...' : 'Keep writing...'}
+                  </motion.span>
+                </div>
+              </motion.div>
             </motion.div>
 
             {/* Milestone toast */}
             <AnimatePresence>
               {milestone && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="fixed bottom-32 left-1/2 transform -translate-x-1/2"
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  className="fixed bottom-36 left-1/2 transform -translate-x-1/2 z-50"
                 >
-                  <div className="px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/30">
-                    <span className="text-indigo-300 text-sm">{milestone}</span>
+                  <div
+                    className="px-5 py-3 rounded-full bg-cyan-500/20 border border-cyan-500/30"
+                    style={{
+                      boxShadow: '0 0 30px rgba(34, 211, 238, 0.2)',
+                    }}
+                  >
+                    <span className="text-cyan-300 text-sm">{milestone}</span>
                   </div>
                 </motion.div>
               )}
@@ -309,43 +400,54 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
             >
               {/* Tip */}
               <div className="text-center">
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-stone-600">
                   Write honestly. This reflection is for your growth alone.
                 </p>
               </div>
 
               {/* Continue button */}
-              <motion.button
+              <Button
+                size="lg"
                 onClick={handleSubmit}
                 disabled={!isSubstantial}
-                className={`
-                  w-full py-4 rounded-xl font-medium text-lg
-                  transition-all duration-300
-                  ${isSubstantial
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90'
-                    : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}
-                `}
-                whileHover={isSubstantial ? { scale: 1.01 } : {}}
-                whileTap={isSubstantial ? { scale: 0.99 } : {}}
+                glow={isSubstantial}
+                className="w-full group"
               >
-                {isReady ? 'Complete Reflection' : isSubstantial ? 'Continue (or write more)' : 'Keep writing...'}
-              </motion.button>
+                {isReady ? (
+                  <>
+                    Complete Reflection
+                    <ChevronRight
+                      size={18}
+                      className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                    />
+                  </>
+                ) : isSubstantial ? (
+                  'Continue (or write more)'
+                ) : (
+                  'Keep writing...'
+                )}
+              </Button>
 
               {/* Keyboard hint */}
-              {isSubstantial && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center text-xs text-zinc-600"
-                >
-                  Press ⌘+Enter to continue
-                </motion.p>
-              )}
+              <AnimatePresence>
+                {isSubstantial && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center text-xs text-stone-600"
+                  >
+                    Press ⌘+Enter to continue
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         )}
 
-        {/* Complete phase - brief acknowledgment */}
+        {/* ─────────────────────────────────────────────────────────────────
+            Complete Phase - Brief Acknowledgment
+        ───────────────────────────────────────────────────────────────── */}
         {phase === 'complete' && (
           <motion.div
             key="complete"
@@ -358,12 +460,36 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300 }}
-                className="text-5xl mb-4"
+                transition={{ ...springs.gentle }}
+                className="relative w-20 h-20 mx-auto mb-6"
               >
-                ✨
+                {/* Glow */}
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, transparent 70%)',
+                  }}
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                />
+
+                {/* Icon */}
+                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-cyan-500/20 to-stone-900 border border-cyan-500/30 flex items-center justify-center">
+                  <span className="text-4xl">✨</span>
+                </div>
               </motion.div>
-              <p className="text-zinc-400">Reflection complete</p>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-stone-400 text-lg"
+              >
+                Reflection complete
+              </motion.p>
             </div>
           </motion.div>
         )}
