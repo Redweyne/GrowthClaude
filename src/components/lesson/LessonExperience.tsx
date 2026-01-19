@@ -95,7 +95,6 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const { completeLesson, currentStreak, saveReflection } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
   const {
-    startAmbience,
     transitionTo,
     stopAmbience,
     playBell,
@@ -319,7 +318,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
               className="absolute w-2 h-2 rounded-full bg-amber-400"
               style={{
                 left: `${10 + (i * 11)}%`,
-                top: `${20 + Math.random() * 40}%`,
+                top: `${20 + (i * 5)}%`,
               }}
               initial={{ opacity: 0, scale: 0 }}
               animate={{

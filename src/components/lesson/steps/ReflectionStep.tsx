@@ -65,8 +65,13 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [phase, setPhase] = useState<'entering' | 'writing' | 'complete'>('entering');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const lastKeystrokeRef = useRef<number>(Date.now());
+  const lastKeystrokeRef = useRef<number>(0);
   const promptShownRef = useRef<Set<number>>(new Set());
+
+  // Initialize keystroke timestamp on mount
+  useEffect(() => {
+    lastKeystrokeRef.current = Date.now();
+  }, []);
 
   // Word count
   const wordCount = reflection.trim().split(/\s+/).filter(Boolean).length;

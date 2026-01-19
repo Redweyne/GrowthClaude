@@ -342,7 +342,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                 transition={{ delay: 0.2 }}
                 className="absolute -top-6 -left-2 text-6xl text-purple-400/30 font-serif"
               >
-                "
+                &ldquo;
               </motion.span>
 
               {/* The wisdom text - word by word reveal */}
@@ -376,7 +376,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                 transition={{ duration: 0.5 }}
                 className="absolute -bottom-6 -right-2 text-6xl text-purple-400/30 font-serif"
               >
-                "
+                &rdquo;
               </motion.span>
             </motion.div>
 
