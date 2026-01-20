@@ -255,87 +255,41 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     return stages.indexOf(s);
   };
 
-  // Transition variants
+  // Transition variants - simplified for performance
   const stageVariants = {
     enter: {
       opacity: 0,
-      y: 40,
-      scale: 0.96,
-      filter: 'blur(8px)',
+      y: 20,
+      scale: 0.98,
     },
     center: {
       opacity: 1,
       y: 0,
       scale: 1,
-      filter: 'blur(0px)',
     },
     exit: {
       opacity: 0,
-      y: -30,
-      scale: 0.96,
-      filter: 'blur(8px)',
+      y: -15,
+      scale: 0.98,
     },
   };
 
   return (
     <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
-      {/* Ambient background - responds to stage */}
+      {/* Ambient background - minimal for performance */}
       <AmbientBackground
-        intensity={currentTheme.intensity}
-        particleCount={stage === 'reward' ? 25 : 12}
-        orbCount={stage === 'reward' ? 4 : 2}
+        intensity="subtle"
+        particleCount={stage === 'reward' ? 8 : 4}
+        orbCount={1}
       />
 
-      {/* Stage-specific atmospheric glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* Primary glow - centered */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            background: `radial-gradient(ellipse 80% 60% at 50% 30%, ${currentTheme.glow} 0%, transparent 60%)`,
-          }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
-        />
-
-        {/* Secondary glow - bottom accent */}
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 h-1/2"
-          animate={{
-            background: `radial-gradient(ellipse 100% 50% at 50% 100%, ${currentTheme.glow} 0%, transparent 50%)`,
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            background: { duration: 1.5, ease: 'easeInOut' },
-            opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
-          }}
-        />
-
-        {/* Floating stage particles */}
-        {stage === 'reward' && (
-          [...Array(8)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 rounded-full bg-amber-400"
-              style={{
-                left: `${10 + (i * 11)}%`,
-                top: `${20 + (i * 5)}%`,
-              }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                y: [0, -30, 0],
-                opacity: [0, 0.6, 0],
-                scale: [0, 1, 0],
-              }}
-              transition={{
-                duration: 3,
-                delay: i * 0.3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          ))
-        )}
-      </div>
+      {/* Stage-specific atmospheric glow - static for performance */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 80% 60% at 50% 30%, ${currentTheme.glow} 0%, transparent 60%)`,
+        }}
+      />
 
       {/* ─────────────────────────────────────────────────────────────────
           Progress Indicator - Elegant Arc
@@ -375,50 +329,23 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
               </span>
             </motion.div>
 
-            {/* Stage dots */}
+            {/* Stage dots - simplified for performance */}
             <div className="flex items-center gap-3">
               {(['wisdom', 'action', 'reflection', 'reward', 'mentor'] as LessonStage[]).map((s, i) => {
                 const isCurrent = stage === s;
                 const isComplete = getStageIndex(stage) > i;
 
                 return (
-                  <motion.div
+                  <div
                     key={s}
-                    className="relative"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.6 + i * 0.1 }}
-                  >
-                    {/* Active glow */}
-                    {isCurrent && (
-                      <motion.div
-                        className="absolute inset-0 rounded-full"
-                        style={{
-                          background: `radial-gradient(circle, ${currentTheme.glow} 0%, transparent 70%)`,
-                        }}
-                        animate={{
-                          scale: [1, 2, 1],
-                          opacity: [0.5, 0, 0.5],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                    )}
-
-                    {/* Dot */}
-                    <motion.div
-                      className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
-                        isComplete
-                          ? 'bg-amber-500'
-                          : isCurrent
-                          ? 'bg-amber-400 shadow-lg shadow-amber-500/50'
-                          : 'bg-stone-700'
-                      }`}
-                      animate={isCurrent ? {
-                        scale: [1, 1.3, 1],
-                      } : {}}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                  </motion.div>
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      isComplete
+                        ? 'bg-amber-500'
+                        : isCurrent
+                        ? 'bg-amber-400 scale-125'
+                        : 'bg-stone-700'
+                    }`}
+                  />
                 );
               })}
             </div>
