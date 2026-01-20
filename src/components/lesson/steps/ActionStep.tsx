@@ -581,8 +581,8 @@ function BreathingVisualization({ breathPhase, breathCount }: BreathingVisualiza
 
   const getScale = () => {
     switch (breathPhase) {
-      case 'inhale': return 1.35;
-      case 'hold': return 1.35;
+      case 'inhale': return 1.3;
+      case 'hold': return 1.3;
       case 'exhale': return 1;
       case 'rest': return 1;
     }
@@ -599,115 +599,41 @@ function BreathingVisualization({ breathPhase, breathCount }: BreathingVisualiza
 
   return (
     <div className="relative">
-      {/* Breathing circles */}
-      <div className="relative w-52 h-52 mx-auto">
-        {/* Outermost ring - ethereal glow */}
-        <motion.div
-          className="absolute -inset-4 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, transparent 70%)',
-          }}
-          animate={{
-            scale: getScale() * 1.1,
-            opacity: breathPhase === 'hold' ? 0.8 : 0.4,
-          }}
-          transition={{ duration: getDuration(), ease: 'easeInOut' }}
-        />
-
+      {/* Simplified breathing circle */}
+      <div className="relative w-48 h-48 mx-auto">
         {/* Outer ring */}
         <motion.div
-          className="absolute inset-0 rounded-full"
-          style={{
-            border: '2px solid rgba(167, 139, 250, 0.3)',
-          }}
-          animate={{
-            scale: getScale(),
-            borderColor: breathPhase === 'hold'
-              ? 'rgba(167, 139, 250, 0.5)'
-              : 'rgba(167, 139, 250, 0.3)',
-            boxShadow: breathPhase === 'hold'
-              ? '0 0 40px rgba(167, 139, 250, 0.3)'
-              : '0 0 20px rgba(167, 139, 250, 0.15)',
-          }}
-          transition={{ duration: getDuration(), ease: 'easeInOut' }}
-        />
-
-        {/* Middle ring */}
-        <motion.div
-          className="absolute inset-6 rounded-full bg-purple-500/5"
-          animate={{
-            scale: getScale(),
-            opacity: breathPhase === 'hold' ? 0.6 : 0.3,
-          }}
-          transition={{ duration: getDuration(), ease: 'easeInOut', delay: 0.1 }}
-        />
-
-        {/* Inner ring */}
-        <motion.div
-          className="absolute inset-12 rounded-full bg-gradient-to-br from-purple-500/10 to-amber-500/5"
+          className="absolute inset-0 rounded-full border-2 border-purple-500/30"
           animate={{
             scale: getScale(),
             opacity: breathPhase === 'hold' ? 0.7 : 0.4,
           }}
-          transition={{ duration: getDuration(), ease: 'easeInOut', delay: 0.2 }}
+          transition={{ duration: getDuration(), ease: 'easeInOut' }}
         />
 
-        {/* Core with breath indicator */}
+        {/* Inner glow */}
         <motion.div
-          className="absolute inset-[4.5rem] rounded-full bg-gradient-to-br from-purple-400/30 to-amber-400/20 flex items-center justify-center"
+          className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-500/15 to-amber-500/10"
           animate={{
-            scale: getScale() * 0.85,
+            scale: getScale(),
+            opacity: breathPhase === 'hold' ? 0.6 : 0.35,
           }}
-          transition={{ duration: getDuration(), ease: 'easeInOut', delay: 0.3 }}
-        >
-          <motion.div
-            className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-amber-400"
-            animate={{
-              opacity: breathPhase === 'hold' ? 1 : 0.7,
-            }}
-            transition={{ duration: 0.3 }}
-            style={{
-              boxShadow: '0 0 25px rgba(167, 139, 250, 0.5), 0 0 50px rgba(251, 191, 36, 0.3)',
-            }}
-          />
-        </motion.div>
+          transition={{ duration: getDuration(), ease: 'easeInOut' }}
+        />
 
-        {/* Floating particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-purple-400/50"
-            style={{
-              top: '50%',
-              left: '50%',
-            }}
-            animate={{
-              x: [0, Math.cos((i / 8) * Math.PI * 2) * (getScale() * 50)],
-              y: [0, Math.sin((i / 8) * Math.PI * 2) * (getScale() * 50)],
-              opacity: [0, 0.5, 0],
-            }}
-            transition={{
-              duration: getDuration() * 1.5,
-              repeat: Infinity,
-              delay: i * 0.3,
-              ease: 'easeOut',
-            }}
+        {/* Core */}
+        <div className="absolute inset-16 rounded-full bg-gradient-to-br from-purple-400/25 to-amber-400/15 flex items-center justify-center">
+          <div
+            className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-400 to-amber-400"
+            style={{ boxShadow: '0 0 15px rgba(167, 139, 250, 0.4)' }}
           />
-        ))}
+        </div>
       </div>
 
       {/* Phase instruction */}
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={breathPhase}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="text-lg text-purple-300 mt-8 h-7"
-        >
-          {getPhaseInstruction()}
-        </motion.p>
-      </AnimatePresence>
+      <p className="text-lg text-purple-300 mt-8 h-7">
+        {getPhaseInstruction()}
+      </p>
 
       {/* Breath count */}
       <p className="text-stone-600 text-sm mt-4">
@@ -719,58 +645,28 @@ function BreathingVisualization({ breathPhase, breathCount }: BreathingVisualiza
 
 function ObservationVisualization() {
   return (
-    <div className="relative w-52 h-52 mx-auto">
-      {/* Radiating awareness rings */}
-      {[0, 1, 2, 3].map((i) => (
-        <motion.div
-          key={i}
-          className="absolute inset-0 rounded-full"
-          style={{
-            border: '1px solid rgba(34, 211, 238, 0.1)',
-          }}
-          animate={{
-            scale: [1 + i * 0.15, 1.4 + i * 0.15, 1 + i * 0.15],
-            opacity: [0.3, 0.1, 0.3],
-            borderColor: [
-              'rgba(34, 211, 238, 0.1)',
-              'rgba(34, 211, 238, 0.2)',
-              'rgba(34, 211, 238, 0.1)',
-            ],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            delay: i * 0.6,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
+    <div className="relative w-48 h-48 mx-auto">
+      {/* Simple ring */}
+      <motion.div
+        className="absolute inset-0 rounded-full border border-cyan-500/20"
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.3, 0.5, 0.3],
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
 
       {/* Inner glow */}
-      <motion.div
-        className="absolute inset-12 rounded-full"
+      <div
+        className="absolute inset-8 rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%)',
         }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.4, 0.7, 0.4],
-        }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       {/* Center eye */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div
-          animate={{ scale: [1, 1.08, 1] }}
-          transition={{ duration: 3, repeat: Infinity }}
-          className="text-5xl"
-          style={{
-            filter: 'drop-shadow(0 0 15px rgba(34, 211, 238, 0.4))',
-          }}
-        >
-          👁️
-        </motion.div>
+        <span className="text-5xl">👁️</span>
       </div>
     </div>
   );
@@ -778,76 +674,24 @@ function ObservationVisualization() {
 
 function ReflectionVisualization() {
   return (
-    <div className="relative w-52 h-52 mx-auto">
-      {/* Gentle pulsing aura */}
-      <motion.div
-        className="absolute -inset-4 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(167, 139, 250, 0.08) 0%, transparent 70%)',
-        }}
-        animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.4, 0.7, 0.4],
-        }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
+    <div className="relative w-48 h-48 mx-auto">
       {/* Outer circle */}
       <motion.div
         className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/5 to-amber-500/5"
         animate={{
-          scale: [1, 1.05, 1],
-          opacity: [0.5, 0.8, 0.5],
+          scale: [1, 1.08, 1],
+          opacity: [0.4, 0.6, 0.4],
         }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       {/* Inner glow */}
-      <motion.div
-        className="absolute inset-10 rounded-full bg-gradient-to-br from-purple-500/10 to-amber-500/10"
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.3, 0.6, 0.3],
-        }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-      />
+      <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-500/10 to-amber-500/10" />
 
       {/* Center */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: [0, 5, -5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="text-5xl"
-          style={{
-            filter: 'drop-shadow(0 0 15px rgba(167, 139, 250, 0.4))',
-          }}
-        >
-          🧘
-        </motion.div>
+        <span className="text-5xl">🧘</span>
       </div>
-
-      {/* Floating particles */}
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1.5 h-1.5 rounded-full bg-purple-400/40"
-          style={{
-            top: '50%',
-            left: '50%',
-          }}
-          animate={{
-            x: [0, Math.cos((i / 5) * Math.PI * 2) * 60, 0],
-            y: [0, Math.sin((i / 5) * Math.PI * 2) * 60, 0],
-            opacity: [0, 0.5, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            delay: i * 1.2,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
     </div>
   );
 }
@@ -858,70 +702,36 @@ interface GeneralVisualizationProps {
 
 function GeneralVisualization({ progress }: GeneralVisualizationProps) {
   return (
-    <div className="relative w-52 h-52 mx-auto">
-      {/* Ambient glow */}
-      <motion.div
-        className="absolute -inset-4 rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)',
-        }}
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.4, 0.6, 0.4],
-        }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
+    <div className="relative w-48 h-48 mx-auto">
       {/* Circular progress */}
       <svg className="w-full h-full transform -rotate-90">
         {/* Background ring */}
         <circle
-          cx="104"
-          cy="104"
-          r="96"
+          cx="96"
+          cy="96"
+          r="88"
           fill="none"
           stroke="rgba(68, 64, 60, 0.3)"
-          strokeWidth="6"
+          strokeWidth="5"
         />
         {/* Progress ring */}
-        <motion.circle
-          cx="104"
-          cy="104"
-          r="96"
+        <circle
+          cx="96"
+          cy="96"
+          r="88"
           fill="none"
-          stroke="url(#actionProgressGradient)"
-          strokeWidth="6"
+          stroke="rgba(251, 191, 36, 0.6)"
+          strokeWidth="5"
           strokeLinecap="round"
-          strokeDasharray={603}
-          strokeDashoffset={603 - (603 * progress) / 100}
-          transition={{ duration: 0.5 }}
-          style={{
-            filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.4))',
-          }}
+          strokeDasharray={553}
+          strokeDashoffset={553 - (553 * progress) / 100}
+          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
         />
-        <defs>
-          <linearGradient id="actionProgressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(251, 191, 36, 0.7)" />
-            <stop offset="100%" stopColor="rgba(249, 115, 22, 0.7)" />
-          </linearGradient>
-        </defs>
       </svg>
 
       {/* Center content */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <motion.div
-          animate={{
-            scale: [1, 1.08, 1],
-            opacity: [0.8, 1, 0.8],
-          }}
-          transition={{ duration: 3, repeat: Infinity }}
-          className="text-5xl"
-          style={{
-            filter: 'drop-shadow(0 0 15px rgba(251, 191, 36, 0.4))',
-          }}
-        >
-          🎯
-        </motion.div>
+        <span className="text-5xl">🎯</span>
       </div>
     </div>
   );

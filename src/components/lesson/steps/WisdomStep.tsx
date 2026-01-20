@@ -129,7 +129,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
             transition={{ duration: 1 }}
             className="flex flex-col items-center"
           >
-            {/* Breathing circles - mystical orb */}
+            {/* Breathing circles - simplified orb */}
             <motion.div
               className="relative w-36 h-36 mb-10"
               initial={{ scale: 0.8, opacity: 0 }}
@@ -138,85 +138,33 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
             >
               {/* Outer ring - expanding breath */}
               <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  border: '2px solid rgba(167, 139, 250, 0.3)',
-                }}
-                animate={{
-                  scale: [1, 1.25, 1],
-                  borderColor: [
-                    'rgba(167, 139, 250, 0.3)',
-                    'rgba(167, 139, 250, 0.6)',
-                    'rgba(167, 139, 250, 0.3)',
-                  ],
-                  boxShadow: [
-                    '0 0 20px rgba(167, 139, 250, 0.1)',
-                    '0 0 40px rgba(167, 139, 250, 0.25)',
-                    '0 0 20px rgba(167, 139, 250, 0.1)',
-                  ],
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              />
-
-              {/* Middle ring */}
-              <motion.div
-                className="absolute inset-4 rounded-full bg-purple-500/5"
+                className="absolute inset-0 rounded-full border-2 border-purple-500/30"
                 animate={{
                   scale: [1, 1.2, 1],
                   opacity: [0.3, 0.6, 0.3],
                 }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               />
 
               {/* Inner glow */}
               <motion.div
-                className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-500/20 to-amber-500/10"
+                className="absolute inset-6 rounded-full bg-gradient-to-br from-purple-500/15 to-amber-500/10"
                 animate={{
-                  scale: [1, 1.15, 1],
-                  opacity: [0.4, 0.8, 0.4],
+                  scale: [1, 1.1, 1],
+                  opacity: [0.4, 0.7, 0.4],
                 }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
               />
 
               {/* Core light */}
-              <motion.div
-                className="absolute inset-12 rounded-full flex items-center justify-center"
-                animate={{
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              >
+              <div className="absolute inset-12 rounded-full flex items-center justify-center">
                 <div
                   className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-purple-400"
                   style={{
-                    boxShadow: '0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(167, 139, 250, 0.3)',
+                    boxShadow: '0 0 20px rgba(251, 191, 36, 0.4)',
                   }}
                 />
-              </motion.div>
-
-              {/* Floating particles around orb */}
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1.5 h-1.5 rounded-full bg-purple-400/60"
-                  style={{
-                    top: '50%',
-                    left: '50%',
-                  }}
-                  animate={{
-                    x: [0, Math.cos((i / 6) * Math.PI * 2 + breathCount) * 80],
-                    y: [0, Math.sin((i / 6) * Math.PI * 2 + breathCount) * 80],
-                    opacity: [0, 0.6, 0],
-                    scale: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    delay: i * 0.6,
-                    ease: 'easeOut',
-                  }}
-                />
-              ))}
+              </div>
             </motion.div>
 
             {/* Breathing instruction */}
@@ -345,24 +293,18 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                 &ldquo;
               </motion.span>
 
-              {/* The wisdom text - word by word reveal */}
+              {/* The wisdom text - word by word reveal (no blur for performance) */}
               <p className="text-xl sm:text-2xl text-stone-200 leading-relaxed font-light px-4">
                 {wisdomWords.map((word, index) => (
                   <motion.span
                     key={index}
-                    initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{
                       opacity: index < visibleWords ? 1 : 0,
-                      y: index < visibleWords ? 0 : 15,
-                      filter: index < visibleWords ? 'blur(0px)' : 'blur(4px)',
+                      y: index < visibleWords ? 0 : 8,
                     }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
                     className="inline"
-                    style={{
-                      textShadow: index < visibleWords
-                        ? '0 0 20px rgba(251, 191, 36, 0.2)'
-                        : 'none',
-                    }}
                   >
                     {word}{' '}
                   </motion.span>

@@ -199,21 +199,8 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               transition={{ delay: 0.3, ...springs.gentle }}
               className="relative w-24 h-24 mb-8"
             >
-              {/* Glow */}
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, transparent 70%)',
-                }}
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              />
-
               {/* Icon container */}
-              <div className="relative w-full h-full rounded-full bg-gradient-to-br from-cyan-500/20 to-stone-900 border border-cyan-500/30 flex items-center justify-center">
+              <div className="relative w-full h-full rounded-full bg-gradient-to-br from-cyan-500/15 to-stone-900 border border-cyan-500/30 flex items-center justify-center">
                 <Feather size={36} className="text-cyan-400" />
               </div>
             </motion.div>
@@ -277,41 +264,16 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               transition={{ delay: 0.4 }}
               className="flex-1 relative"
             >
-              {/* Container with dynamic glow */}
-              <motion.div
+              {/* Container with focus styling */}
+              <div
                 className={`
-                  h-full min-h-[180px] relative rounded-2xl transition-all duration-500
+                  h-full min-h-[180px] relative rounded-2xl transition-all duration-300
+                  border-2
                   ${isFocused
-                    ? 'bg-stone-900/80'
-                    : 'bg-stone-900/50'}
+                    ? 'bg-stone-900/80 border-cyan-500/30'
+                    : 'bg-stone-900/50 border-stone-700/50'}
                 `}
-                animate={{
-                  boxShadow: isFocused
-                    ? '0 0 40px rgba(34, 211, 238, 0.1), inset 0 0 20px rgba(34, 211, 238, 0.02)'
-                    : '0 0 0 rgba(34, 211, 238, 0)',
-                  borderColor: isFocused
-                    ? 'rgba(34, 211, 238, 0.3)'
-                    : 'rgba(68, 64, 60, 0.5)',
-                }}
-                style={{
-                  border: '2px solid',
-                }}
               >
-                {/* Focus mode gradient overlay */}
-                <AnimatePresence>
-                  {isFocused && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 rounded-2xl pointer-events-none"
-                      style={{
-                        background: 'linear-gradient(180deg, rgba(34, 211, 238, 0.03) 0%, transparent 40%)',
-                      }}
-                    />
-                  )}
-                </AnimatePresence>
-
                 {/* Textarea */}
                 <textarea
                   ref={textareaRef}
@@ -395,7 +357,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                     {isReady ? 'Ready to continue' : isSubstantial ? 'A bit more depth...' : 'Keep writing...'}
                   </motion.span>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
 
             {/* Milestone toast */}

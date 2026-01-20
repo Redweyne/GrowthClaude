@@ -229,45 +229,13 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
 
   return (
     <div className="relative">
-      {/* Ambient glow based on mood */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-        <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[500px] rounded-full"
-          style={{
-            background: `radial-gradient(circle, ${getAmbientColor()} 0%, transparent 60%)`,
-          }}
-          animate={{
-            opacity: [0.5, 0.8, 0.5],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-
-        {/* Floating particles for celebration */}
-        {sageMood === 'celebrating' && (
-          [...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-amber-400/60"
-              style={{
-                left: `${20 + i * 12}%`,
-                top: '30%',
-              }}
-              animate={{
-                y: [0, -40, 0],
-                opacity: [0, 0.7, 0],
-                scale: [0, 1, 0],
-              }}
-              transition={{
-                duration: 3,
-                delay: i * 0.4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          ))
-        )}
-      </div>
+      {/* Static ambient glow based on mood */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] rounded-full pointer-events-none -z-10"
+        style={{
+          background: `radial-gradient(circle, ${getAmbientColor()} 0%, transparent 60%)`,
+        }}
+      />
 
       <div className="text-center">
         {/* ─────────────────────────────────────────────────────────────────
@@ -279,38 +247,6 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           transition={{ ...springs.gentle, delay: 0.1 }}
           className="mx-auto mb-6 relative"
         >
-          {/* Outer glow rings for wise/celebrating moods */}
-          {(sageMood === 'wise' || sageMood === 'celebrating') && (
-            <>
-              <motion.div
-                className="absolute -inset-6 rounded-full pointer-events-none"
-                style={{
-                  background: sageMood === 'celebrating'
-                    ? 'radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%)'
-                    : 'radial-gradient(circle, rgba(167, 139, 250, 0.12) 0%, transparent 70%)',
-                }}
-                animate={{
-                  scale: [1, 1.15, 1],
-                  opacity: [0.4, 0.7, 0.4],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              {sageMood === 'celebrating' && (
-                <motion.div
-                  className="absolute -inset-4 rounded-full pointer-events-none"
-                  style={{
-                    border: '1px solid rgba(251, 191, 36, 0.2)',
-                  }}
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    opacity: [0.3, 0, 0.3],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              )}
-            </>
-          )}
-
           <SageAvatar mood={sageMood} size="lg" />
         </motion.div>
 
@@ -343,10 +279,10 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               : '0 0 40px rgba(167, 139, 250, 0.05)',
           }}
         >
-          {/* Corner accent glow */}
+          {/* Corner accent glow - static */}
           {!isLowEffort && (
-            <div className="absolute top-0 left-0 w-20 h-20 overflow-hidden rounded-tl-2xl pointer-events-none">
-              <div className="absolute -top-10 -left-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl" />
+            <div className="absolute top-0 left-0 w-16 h-16 overflow-hidden rounded-tl-2xl pointer-events-none">
+              <div className="absolute -top-8 -left-8 w-16 h-16 bg-purple-500/8 rounded-full" />
             </div>
           )}
 
