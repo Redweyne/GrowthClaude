@@ -3,10 +3,22 @@
 import { motion } from 'framer-motion';
 import { Lock, CheckCircle, Star, Flame } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import type { World } from '@/types';
+
+// Generic world type for the map - works with both legacy and Modern Wisdom
+interface MapWorld {
+  name: string;
+  subtitle: string;
+  chapters: Array<{
+    lessons: Array<{
+      id: string;
+      title: string;
+      xpReward: number;
+    }>;
+  }>;
+}
 
 interface WorldMapProps {
-  world: World;
+  world: MapWorld;
   onSelectLesson: (lessonId: string) => void;
 }
 

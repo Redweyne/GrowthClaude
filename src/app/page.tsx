@@ -6,7 +6,6 @@ import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TodaysLesson } from '@/components/home/TodaysLesson';
 import { WorldMap } from '@/components/world/WorldMap';
-import { LessonExperience } from '@/components/lesson/LessonExperience';
 import { FlexibleLessonExperience } from '@/components/lesson/FlexibleLessonExperience';
 import { PracticeMode } from '@/components/practice';
 import { WeeklyCheckin } from '@/components/checkin';
@@ -18,7 +17,6 @@ import { IdentityScreen } from '@/components/identity';
 import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { useTransformationStory } from '@/hooks';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
-import stoicismWorld from '@/content/stoicism';
 import modernWisdomWorld from '@/content/modernWisdom';
 import type { FlexibleLesson, LessonProgress } from '@/types/lessons';
 
@@ -38,12 +36,8 @@ type AppView =
 export default function Home() {
   const { onboardingComplete, completedLessons, isCheckinDue, isAssessmentDue, getPendingLessonAction } = useStore();
   const [currentView, setCurrentView] = useState<AppView>('home');
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
   const [flexibleLessonProgress, setFlexibleLessonProgress] = useState<LessonProgress | null>(null);
-
-  // Use Modern Wisdom as the primary world for new users
-  const [useModernWisdom, setUseModernWisdom] = useState(true);
 
   // Story state
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
@@ -75,25 +69,12 @@ export default function Home() {
     // Could track completion here
   }, []);
 
-  // Get current world - use Modern Wisdom for new users
-  const currentWorld = stoicismWorld; // Keep for map compatibility
+  // Modern Wisdom world
   const modernWorld = modernWisdomWorld;
 
   // Find the next incomplete lesson from Modern Wisdom
   const getNextFlexibleLesson = (): FlexibleLesson | null => {
     for (const chapter of modernWorld.chapters) {
-      for (const lesson of chapter.lessons) {
-        if (!completedLessons[lesson.id]) {
-          return lesson;
-        }
-      }
-    }
-    return null;
-  };
-
-  // Find the next incomplete lesson from Stoicism (legacy)
-  const getNextLesson = () => {
-    for (const chapter of currentWorld.chapters) {
       for (const lesson of chapter.lessons) {
         if (!completedLessons[lesson.id]) {
           return lesson;
@@ -115,26 +96,12 @@ export default function Home() {
     return null;
   };
 
-  // Get a legacy lesson by ID
-  const getLessonById = (id: string) => {
-    for (const chapter of currentWorld.chapters) {
-      for (const lesson of chapter.lessons) {
-        if (lesson.id === id) {
-          return lesson;
-        }
-      }
-    }
-    return null;
-  };
-
   // Check for pending GoDoIt action on mount
   const pendingAction = getPendingLessonAction();
 
   const nextFlexibleLesson = getNextFlexibleLesson();
-  const nextLesson = getNextLesson();
-  const selectedLesson = selectedLessonId ? getLessonById(selectedLessonId) : null;
 
-  // Handle lesson start from home - use Modern Wisdom by default
+  // Handle lesson start from home
   const handleStartLesson = () => {
     // Check for pending action first (user returning from GoDoIt)
     if (pendingAction) {
@@ -154,29 +121,26 @@ export default function Home() {
       }
     }
 
-    // Start next flexible lesson from Modern Wisdom
+    // Start next lesson from Modern Wisdom
     if (nextFlexibleLesson) {
       setSelectedFlexibleLesson(nextFlexibleLesson);
       setFlexibleLessonProgress(null);
       setCurrentView('lesson');
-    } else if (nextLesson) {
-      // Fall back to legacy lessons if modern wisdom is complete
-      setSelectedLessonId(nextLesson.id);
-      setSelectedFlexibleLesson(null);
+    }
+  };
+
+  // Handle lesson select from map
+  const handleSelectLesson = (lessonId: string) => {
+    const lesson = getFlexibleLessonById(lessonId);
+    if (lesson) {
+      setSelectedFlexibleLesson(lesson);
+      setFlexibleLessonProgress(null);
       setCurrentView('lesson');
     }
   };
 
-  // Handle lesson select from map (legacy)
-  const handleSelectLesson = (lessonId: string) => {
-    setSelectedLessonId(lessonId);
-    setSelectedFlexibleLesson(null);
-    setCurrentView('lesson');
-  };
-
   // Handle lesson completion
   const handleLessonComplete = () => {
-    setSelectedLessonId(null);
     setSelectedFlexibleLesson(null);
     setFlexibleLessonProgress(null);
     setCurrentView('home');
@@ -187,34 +151,18 @@ export default function Home() {
     return <OnboardingFlow />;
   }
 
-  // Lesson experience - use FlexibleLessonExperience for modern wisdom lessons
-  if (currentView === 'lesson') {
-    // Modern Wisdom lessons use FlexibleLessonExperience
-    if (selectedFlexibleLesson) {
-      return (
-        <>
-          <AchievementCelebration />
-          <FlexibleLessonExperience
-            lesson={selectedFlexibleLesson}
-            onComplete={handleLessonComplete}
-            resumeProgress={flexibleLessonProgress || undefined}
-          />
-        </>
-      );
-    }
-
-    // Legacy Stoicism lessons use LessonExperience
-    if (selectedLesson) {
-      return (
-        <>
-          <AchievementCelebration />
-          <LessonExperience
-            lesson={selectedLesson}
-            onComplete={handleLessonComplete}
-          />
-        </>
-      );
-    }
+  // Lesson experience
+  if (currentView === 'lesson' && selectedFlexibleLesson) {
+    return (
+      <>
+        <AchievementCelebration />
+        <FlexibleLessonExperience
+          lesson={selectedFlexibleLesson}
+          onComplete={handleLessonComplete}
+          resumeProgress={flexibleLessonProgress || undefined}
+        />
+      </>
+    );
   }
 
   // Practice mode
@@ -321,7 +269,7 @@ export default function Home() {
     );
   }
 
-  // World map
+  // World map - use Modern Wisdom
   if (currentView === 'map') {
     return (
       <>
@@ -333,7 +281,7 @@ export default function Home() {
           >
             ← Back
           </button>
-          <WorldMap world={currentWorld} onSelectLesson={handleSelectLesson} />
+          <WorldMap world={modernWorld} onSelectLesson={handleSelectLesson} />
         </div>
       </>
     );
@@ -355,29 +303,22 @@ export default function Home() {
     );
   }
 
-  // Create adapted lesson for TodaysLesson component
-  // This adapts the flexible lesson format to the legacy format for display
-  const adaptedLesson = nextFlexibleLesson ? {
+  // Create display lesson for home screen (minimal properties needed)
+  const displayLesson = nextFlexibleLesson ? {
     id: nextFlexibleLesson.id,
-    slug: nextFlexibleLesson.slug,
-    order: nextFlexibleLesson.order,
     title: nextFlexibleLesson.title,
     wisdomText: nextFlexibleLesson.subtitle || 'Begin your transformation',
-    wisdomSource: 'Modern Wisdom',
-    actionPrompt: '',
-    actionType: 'reflect' as const,
-    actionDurationSeconds: 60,
-    reflectionPrompt: '',
-    mentorResponses: [],
     xpReward: nextFlexibleLesson.xpReward,
-    coreConceptTag: nextFlexibleLesson.coreConceptTag,
-  } : nextLesson;
+    actionDurationSeconds: 180, // ~3 min for flexible lessons
+  } : null;
 
-  // Create adapted world for display
-  const adaptedWorld = {
-    ...currentWorld,
-    name: 'Modern Wisdom',
-    subtitle: 'Ancient philosophy, modern life',
+  // Use Modern Wisdom world directly for home screen display
+  // This ensures progress is calculated from Modern Wisdom lessons
+  const displayWorld = {
+    name: modernWorld.name,
+    subtitle: modernWorld.subtitle,
+    color: modernWorld.color,
+    chapters: modernWorld.chapters,
   };
 
   // Check for pending action to show "Continue" message
@@ -388,8 +329,8 @@ export default function Home() {
     <>
       <AchievementCelebration />
       <TodaysLesson
-        lesson={adaptedLesson}
-        world={hasPendingAction ? { ...adaptedWorld, subtitle: 'You have an action to complete!' } : adaptedWorld}
+        lesson={displayLesson}
+        world={hasPendingAction ? { ...displayWorld, subtitle: 'You have an action to complete!' } : displayWorld}
         onStartLesson={handleStartLesson}
         onOpenMap={() => setCurrentView('map')}
         onOpenSettings={() => setCurrentView('settings')}

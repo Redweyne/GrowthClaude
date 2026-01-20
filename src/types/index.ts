@@ -112,6 +112,25 @@ export interface World {
   chapters: Chapter[];
 }
 
+// Generic display type for home screen - works with both legacy World and FlexibleWorld
+export interface DisplayWorld {
+  name: string;
+  subtitle?: string;
+  color: string;
+  chapters: Array<{
+    lessons: Array<{ id: string }>;
+  }>;
+}
+
+// Display lesson for home screen - minimum required for LessonCard
+export interface DisplayLesson {
+  id: string;
+  title: string;
+  wisdomText?: string;
+  xpReward: number;
+  actionDurationSeconds?: number;
+}
+
 // User Progress
 export interface UserProgress {
   lessonId: string;

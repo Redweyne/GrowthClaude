@@ -32,6 +32,7 @@ import { GoDoItStep } from './steps/GoDoItStep';
 import { ReturnConfirmStep } from './steps/ReturnConfirmStep';
 import { InsightStep } from './steps/InsightStep';
 import { VisualizationStep } from './steps/VisualizationStep';
+import { TimerStep } from './steps/TimerStep';
 import { ReflectionStep } from './steps/ReflectionStep';
 import { MentorStep } from './steps/MentorStep';
 import { RewardStep } from './steps/RewardStep';
@@ -49,6 +50,7 @@ import type {
   ReturnConfirmStep as ReturnConfirmStepType,
   InsightStep as InsightStepType,
   VisualizationStep as VisualizationStepType,
+  TimerStep as TimerStepType,
   ReflectionStep as ReflectionStepType,
   MentorStep as MentorStepType,
   RewardStep as RewardStepType,
@@ -244,6 +246,11 @@ export function FlexibleLessonExperience({
     goToNextStep();
   }, [goToNextStep]);
 
+  const handleTimerComplete = useCallback(() => {
+    playBell('soft');
+    goToNextStep();
+  }, [playBell, goToNextStep]);
+
   const handleReflectionComplete = useCallback((text: string) => {
     setWritings(prev => ({ ...prev, reflection: text }));
 
@@ -371,6 +378,14 @@ export function FlexibleLessonExperience({
           <VisualizationStep
             step={currentStep as VisualizationStepType}
             onComplete={handleVisualizationComplete}
+          />
+        );
+
+      case 'timer':
+        return (
+          <TimerStep
+            step={currentStep as TimerStepType}
+            onComplete={handleTimerComplete}
           />
         );
 

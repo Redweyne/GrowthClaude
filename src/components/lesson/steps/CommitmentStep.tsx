@@ -198,7 +198,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     onBlur={() => setIsFocused(false)}
                     placeholder={step.placeholder || "I will..."}
                     className="
-                      w-full h-full min-h-[140px] p-5
+                      w-full h-full min-h-[140px] p-5 pb-14
                       bg-transparent text-lg text-stone-200
                       placeholder-stone-600 leading-relaxed
                       focus:outline-none resize-none
@@ -207,24 +207,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     style={{ caretColor: '#10b981' }}
                   />
 
-                  {/* Hint rotation (when empty) */}
-                  <AnimatePresence>
-                    {commitment.length === 0 && (
-                      <motion.div
-                        key={currentHintIndex}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute bottom-16 left-5 right-5"
-                      >
-                        <p className="text-stone-600 text-sm italic">
-                          {hints[currentHintIndex]}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Word count */}
+                  {/* Word count - always at bottom */}
                   <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
                     <span className={`text-sm transition-colors ${
                       isReady ? 'text-emerald-400' : 'text-stone-500'
@@ -239,6 +222,23 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     </span>
                   </div>
                 </div>
+
+                {/* Hint rotation (shown below the textarea) */}
+                <AnimatePresence>
+                  {commitment.length === 0 && !isFocused && (
+                    <motion.div
+                      key={currentHintIndex}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="mt-3 text-center"
+                    >
+                      <p className="text-stone-600 text-sm italic">
+                        💡 {hints[currentHintIndex]}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
               {/* Submit button */}

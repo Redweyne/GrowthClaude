@@ -4,7 +4,7 @@ import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Play, Flame, Zap, Clock, Sparkles, ChevronRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui';
-import type { Lesson, World } from '@/types';
+import type { DisplayLesson, DisplayWorld } from '@/types';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LESSON CARD
@@ -14,8 +14,8 @@ import type { Lesson, World } from '@/types';
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface LessonCardProps {
-  lesson: Lesson | null;
-  world: World;
+  lesson: DisplayLesson | null;
+  world: DisplayWorld;
   onStartLesson: () => void;
   completedCount: number;
   totalCount: number;

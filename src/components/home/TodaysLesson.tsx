@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp, getXpProgress } from '@/types';
-import type { Lesson, World } from '@/types';
+import type { DisplayLesson, DisplayWorld } from '@/types';
 
 // Import our breathtaking new components
 import { AmbientBackground } from '@/components/ambient';
@@ -21,8 +21,8 @@ import { StatusBanner } from './StatusBanner';
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface TodaysLessonProps {
-  lesson: Lesson | null;
-  world: World;
+  lesson: DisplayLesson | null;
+  world: DisplayWorld;
   onStartLesson: () => void;
   onOpenMap: () => void;
   onOpenSettings: () => void;
