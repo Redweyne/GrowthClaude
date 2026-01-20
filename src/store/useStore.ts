@@ -94,6 +94,15 @@ export interface ActivityDay {
   reflectionsWritten: number;
 }
 
+// Pending action for GoDoIt lessons
+export interface PendingLessonAction {
+  lessonId: string;
+  currentStepId: string;
+  choices: Record<string, string>;
+  writings: Record<string, string>;
+  dismissedAt: string;
+}
+
 interface UserState {
   // User identity
   userId: string | null;
@@ -138,6 +147,9 @@ interface UserState {
   unlockedAchievements: AchievementUnlock[];
   activityLog: ActivityDay[];
   pendingAchievementCelebration: string | null; // Achievement ID to celebrate
+
+  // Pending lesson action (for GoDoIt lessons)
+  pendingLessonAction: PendingLessonAction | null;
 
   // Settings
   soundEnabled: boolean;
@@ -213,6 +225,12 @@ interface UserActions {
     averageReflectionLength: number;
   };
 
+  // Pending Lesson Actions (for GoDoIt lessons)
+  savePendingLessonAction: (action: PendingLessonAction) => void;
+  getPendingLessonAction: () => PendingLessonAction | null;
+  clearPendingLessonAction: () => void;
+  hasPendingLessonAction: (lessonId: string) => boolean;
+
   // Settings
   toggleSound: () => void;
   toggleHaptic: () => void;
@@ -253,6 +271,8 @@ const initialState: UserState = {
   unlockedAchievements: [],
   activityLog: [],
   pendingAchievementCelebration: null,
+  // Pending lesson action
+  pendingLessonAction: null,
   // Settings
   soundEnabled: true,
   hapticEnabled: true,
@@ -812,6 +832,26 @@ export const useStore = create<UserState & UserActions>()(
           daysSinceStart,
           averageReflectionLength,
         };
+      },
+
+      // ============================================
+      // PENDING LESSON ACTIONS (GoDoIt)
+      // ============================================
+      savePendingLessonAction: (action) => {
+        set({ pendingLessonAction: action });
+      },
+
+      getPendingLessonAction: () => {
+        return get().pendingLessonAction;
+      },
+
+      clearPendingLessonAction: () => {
+        set({ pendingLessonAction: null });
+      },
+
+      hasPendingLessonAction: (lessonId) => {
+        const pending = get().pendingLessonAction;
+        return pending !== null && pending.lessonId === lessonId;
       },
 
       // ============================================
