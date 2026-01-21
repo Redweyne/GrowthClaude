@@ -9,6 +9,7 @@ import {
   Brain,
   Map,
   TrendingUp,
+  Globe,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -35,6 +36,7 @@ interface NavigationGridProps {
   onOpenPractice: () => void;
   onOpenMap: () => void;
   onOpenTransformation: () => void;
+  onOpenWorlds: () => void;
   streak: number;
   hasPracticeAvailable: boolean;
   hasTransformationAvailable: boolean;
@@ -174,6 +176,7 @@ export function NavigationGrid({
   onOpenPractice,
   onOpenMap,
   onOpenTransformation,
+  onOpenWorlds,
   streak,
   hasPracticeAvailable,
   hasTransformationAvailable,
@@ -238,6 +241,15 @@ export function NavigationGrid({
     color: '#f97316',
     glowColor: 'rgba(249, 115, 22, 0.2)',
     onClick: onOpenMap,
+  });
+
+  secondaryItems.push({
+    id: 'worlds',
+    label: 'Worlds',
+    icon: Globe,
+    color: '#6366f1',
+    glowColor: 'rgba(99, 102, 241, 0.2)',
+    onClick: onOpenWorlds,
   });
 
   return (

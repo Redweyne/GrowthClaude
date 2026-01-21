@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TodaysLesson } from '@/components/home/TodaysLesson';
-import { WorldMap } from '@/components/world/WorldMap';
+import { WorldMap, WorldSwitcher } from '@/components/world';
 import { FlexibleLessonExperience } from '@/components/lesson/FlexibleLessonExperience';
 import { PracticeMode } from '@/components/practice';
 import { WeeklyCheckin } from '@/components/checkin';
@@ -18,7 +18,8 @@ import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { useTransformationStory } from '@/hooks';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
 import modernWisdomWorld from '@/content/modernWisdom';
-import type { FlexibleLesson, LessonProgress } from '@/types/lessons';
+import stoicismWorld from '@/content/stoicismModern';
+import type { FlexibleLesson, LessonProgress, FlexibleWorld } from '@/types/lessons';
 
 type AppView =
   | 'home'
@@ -31,10 +32,19 @@ type AppView =
   | 'progress'
   | 'achievements'
   | 'identity'
-  | 'settings';
+  | 'settings'
+  | 'worldSwitcher';
 
 export default function Home() {
-  const { onboardingComplete, completedLessons, isCheckinDue, isAssessmentDue, getPendingLessonAction } = useStore();
+  const {
+    onboardingComplete,
+    completedLessons,
+    isCheckinDue,
+    isAssessmentDue,
+    getPendingLessonAction,
+    currentWorldSlug: storedWorldSlug,
+    setCurrentWorld
+  } = useStore();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
   const [flexibleLessonProgress, setFlexibleLessonProgress] = useState<LessonProgress | null>(null);
@@ -69,12 +79,19 @@ export default function Home() {
     // Could track completion here
   }, []);
 
-  // Modern Wisdom world
-  const modernWorld = modernWisdomWorld;
+  // All available worlds
+  const allWorlds: FlexibleWorld[] = [modernWisdomWorld, stoicismWorld];
 
-  // Find the next incomplete lesson from Modern Wisdom
+  // Current active world state (from store, default to modern-wisdom)
+  const currentWorldSlug = storedWorldSlug || 'modern-wisdom';
+  const [showWorldSwitcher, setShowWorldSwitcher] = useState(false);
+
+  // Get the active world
+  const activeWorld = allWorlds.find(w => w.slug === currentWorldSlug) || modernWisdomWorld;
+
+  // Find the next incomplete lesson from active world
   const getNextFlexibleLesson = (): FlexibleLesson | null => {
-    for (const chapter of modernWorld.chapters) {
+    for (const chapter of activeWorld.chapters) {
       for (const lesson of chapter.lessons) {
         if (!completedLessons[lesson.id]) {
           return lesson;
@@ -84,12 +101,14 @@ export default function Home() {
     return null;
   };
 
-  // Get a flexible lesson by ID
+  // Get a flexible lesson by ID (search across ALL worlds for pending actions)
   const getFlexibleLessonById = (id: string): FlexibleLesson | null => {
-    for (const chapter of modernWorld.chapters) {
-      for (const lesson of chapter.lessons) {
-        if (lesson.id === id) {
-          return lesson;
+    for (const world of allWorlds) {
+      for (const chapter of world.chapters) {
+        for (const lesson of chapter.lessons) {
+          if (lesson.id === id) {
+            return lesson;
+          }
         }
       }
     }
@@ -281,7 +300,7 @@ export default function Home() {
           >
             ← Back
           </button>
-          <WorldMap world={modernWorld} onSelectLesson={handleSelectLesson} />
+          <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
         </div>
       </>
     );
@@ -312,13 +331,12 @@ export default function Home() {
     actionDurationSeconds: 180, // ~3 min for flexible lessons
   } : null;
 
-  // Use Modern Wisdom world directly for home screen display
-  // This ensures progress is calculated from Modern Wisdom lessons
+  // Use active world for home screen display
   const displayWorld = {
-    name: modernWorld.name,
-    subtitle: modernWorld.subtitle,
-    color: modernWorld.color,
-    chapters: modernWorld.chapters,
+    name: activeWorld.name,
+    subtitle: activeWorld.subtitle,
+    color: activeWorld.color,
+    chapters: activeWorld.chapters,
   };
 
   // Check for pending action to show "Continue" message
@@ -341,9 +359,21 @@ export default function Home() {
         onOpenProgress={() => setCurrentView('progress')}
         onOpenAchievements={() => setCurrentView('achievements')}
         onOpenIdentity={() => setCurrentView('identity')}
+        onOpenWorlds={() => setShowWorldSwitcher(true)}
         isCheckinDue={isCheckinDue()}
         isAssessmentDue={isAssessmentDue()}
       />
+      {/* World Switcher Modal */}
+      <AnimatePresence>
+        {showWorldSwitcher && (
+          <WorldSwitcher
+            worlds={allWorlds}
+            currentWorldSlug={currentWorldSlug}
+            onSelectWorld={setCurrentWorld}
+            onClose={() => setShowWorldSwitcher(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

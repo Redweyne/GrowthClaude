@@ -33,6 +33,7 @@ interface TodaysLessonProps {
   onOpenProgress: () => void;
   onOpenAchievements: () => void;
   onOpenIdentity: () => void;
+  onOpenWorlds: () => void;
   isCheckinDue: boolean;
   isAssessmentDue: boolean;
 }
@@ -50,6 +51,7 @@ export function TodaysLesson({
   onOpenProgress,
   onOpenAchievements,
   onOpenIdentity,
+  onOpenWorlds,
   isCheckinDue,
   isAssessmentDue,
 }: TodaysLessonProps) {
@@ -136,6 +138,7 @@ export function TodaysLesson({
           onOpenPractice={onOpenPractice}
           onOpenMap={onOpenMap}
           onOpenTransformation={onOpenTransformation}
+          onOpenWorlds={onOpenWorlds}
           streak={currentStreak}
           hasPracticeAvailable={hasPracticeAvailable}
           hasTransformationAvailable={hasTransformationAvailable}

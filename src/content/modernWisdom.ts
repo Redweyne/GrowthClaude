@@ -13,7 +13,9 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import type { FlexibleWorld, FlexibleLesson } from '@/types/lessons';
+import type { FlexibleWorld, FlexibleLesson, FlexibleChapter } from '@/types/lessons';
+import { chapter2_Resilience } from './modernWisdomChapter2';
+import { chapter3_Relationships } from './modernWisdomChapter3';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LESSON 1: THE INSTANT REFRAME (Dichotomy of Control)
@@ -638,7 +640,7 @@ const lesson5_GratitudeShift: FlexibleLesson = {
 // ASSEMBLE CHAPTER 1: FOUNDATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const chapter1_Foundations = {
+const chapter1_Foundations: FlexibleChapter = {
   id: 'chapter-modern-foundations',
   slug: 'foundations',
   name: 'Foundations',
@@ -664,14 +666,14 @@ export const modernWisdomWorld: FlexibleWorld = {
   slug: 'modern-wisdom',
   name: 'Modern Wisdom',
   subtitle: 'Ancient philosophy, modern life',
-  description: 'Timeless wisdom translated for the challenges you face today. Based on books like "The Obstacle Is the Way", "Atomic Habits", and "A Guide to the Good Life".',
+  description: 'Fifteen transformative lessons based on the best modern books: Atomic Habits, The Obstacle Is the Way, Antifragile, and more. Build resilience, master relationships, and design an unshakeable foundation.',
   iconName: 'Sparkles',
   color: '#f59e0b',
   order: 1,
   isPremium: false,
-  estimatedDays: 5,
-  totalLessons: 5,
-  chapters: [chapter1_Foundations],
+  estimatedDays: 15,
+  totalLessons: 15,
+  chapters: [chapter1_Foundations, chapter2_Resilience, chapter3_Relationships],
 };
 
 export default modernWisdomWorld;
