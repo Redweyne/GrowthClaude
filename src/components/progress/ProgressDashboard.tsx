@@ -38,6 +38,7 @@ interface ProgressDashboardProps {
   onOpenAchievements: () => void;
   onOpenIdentity: () => void;
   onOpenStory: () => void;
+  onOpenDemoStory?: () => void;
 }
 
 // Personal insight card component
@@ -120,6 +121,7 @@ export function ProgressDashboard({
   onOpenAchievements,
   onOpenIdentity,
   onOpenStory,
+  onOpenDemoStory,
 }: ProgressDashboardProps) {
   const {
     getProgressStats,
@@ -134,7 +136,7 @@ export function ProgressDashboard({
     monthlyAssessments,
   } = useStore();
 
-  const { canGenerateStory, storyReadiness, seedDemoData } = useTransformationStory();
+  const { canGenerateStory, storyReadiness } = useTransformationStory();
   const [showAllInsights, setShowAllInsights] = useState(false);
 
   const stats = getProgressStats();
@@ -286,8 +288,8 @@ export function ProgressDashboard({
                 : `${storyReadiness.minimumRequired.current}/${storyReadiness.minimumRequired.reflections} reflections needed`
             }
             disabled={!canGenerateStory}
-            showDemoOption={true}
-            onSeedDemo={seedDemoData}
+            showDemoOption={!!onOpenDemoStory}
+            onSeedDemo={onOpenDemoStory}
           />
         </motion.div>
 

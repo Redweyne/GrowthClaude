@@ -5,16 +5,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // Every transformation requires a choice.
-// Here, we don't just ask - we create a moment of truth.
-// The user must look inward and answer honestly.
-//
-// "Can you do something about this in the next 5 minutes?"
-// Yes or No. There is no maybe. That's the power.
+// Clean, readable options - no unnecessary animation phases.
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { ChoiceStep as ChoiceStepType, ChoiceOption } from '@/types/lessons';
 
 interface ChoiceStepProps {
@@ -23,17 +19,13 @@ interface ChoiceStepProps {
 }
 
 export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
-  const [phase, setPhase] = useState<'entering' | 'question' | 'options'>('entering');
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [showOptions, setShowOptions] = useState(false);
 
-  // Phase transitions
+  // Show options after brief delay
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = [];
-
-    timers.push(setTimeout(() => setPhase('question'), 600));
-    timers.push(setTimeout(() => setPhase('options'), 2000));
-
-    return () => timers.forEach(t => clearTimeout(t));
+    const timer = setTimeout(() => setShowOptions(true), 400);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSelect = (option: ChoiceOption) => {
@@ -41,180 +33,120 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
     // Brief pause before moving on
     setTimeout(() => {
       onComplete(option);
-    }, 600);
+    }, 500);
   };
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
       {/* Atmospheric glow */}
-      <motion.div
+      <div
         className="fixed inset-0 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5 }}
         style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(251, 191, 36, 0.12) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(251, 191, 36, 0.10) 0%, transparent 60%)',
         }}
       />
 
-      <div className="max-w-lg w-full relative z-10">
-        <AnimatePresence mode="wait">
-          {/* ─────────────────────────────────────────────────────────────────
-              Entering Phase
-          ───────────────────────────────────────────────────────────────── */}
-          {phase === 'entering' && (
+      <motion.div
+        className="max-w-lg w-full relative z-10"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <div className="space-y-8">
+          {/* The question */}
+          <div className="text-center space-y-3">
+            {step.instruction && (
+              <p className="text-sm text-amber-400/80 tracking-[0.15em] uppercase font-medium">
+                {step.instruction}
+              </p>
+            )}
+            <h2 className="text-2xl sm:text-3xl text-stone-100 leading-relaxed">
+              {step.question}
+            </h2>
+          </div>
+
+          {/* The options */}
+          {showOptions && (
             <motion.div
-              key="entering"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {step.options.map((option, index) => (
+                <motion.button
+                  key={option.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.3 }}
+                  onClick={() => handleSelect(option)}
+                  disabled={selectedOption !== null}
+                  className={`
+                    w-full p-6 rounded-2xl text-left transition-all duration-300
+                    border-2 group relative overflow-hidden
+                    ${selectedOption === option.id
+                      ? 'bg-amber-500/20 border-amber-500/50 scale-[1.02]'
+                      : selectedOption !== null
+                      ? 'bg-stone-900/30 border-stone-800/50 opacity-40'
+                      : 'bg-stone-900/50 border-stone-700/50 hover:bg-stone-800/50 hover:border-amber-500/30'
+                    }
+                  `}
+                >
+                  {/* Selection glow effect */}
+                  {selectedOption === option.id && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.15) 0%, transparent 70%)',
+                      }}
+                    />
+                  )}
+
+                  <div className="relative z-10">
+                    <span className={`
+                      text-xl font-medium block mb-1 transition-colors
+                      ${selectedOption === option.id
+                        ? 'text-amber-300'
+                        : 'text-stone-100 group-hover:text-amber-200'
+                      }
+                    `}>
+                      {option.label}
+                    </span>
+                    {option.subtext && (
+                      <span className="text-stone-400 text-sm">
+                        {option.subtext}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Selection indicator */}
+                  <div className={`
+                    absolute right-6 top-1/2 -translate-y-1/2
+                    w-3 h-3 rounded-full transition-all
+                    ${selectedOption === option.id
+                      ? 'bg-amber-400 opacity-100'
+                      : 'bg-stone-600 opacity-0 group-hover:opacity-50'
+                    }
+                  `} />
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Selection confirmation */}
+          {selectedOption && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="text-center"
             >
-              <motion.div
-                className="w-12 h-12 mx-auto rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(251, 191, 36, 0.3) 0%, transparent 70%)',
-                }}
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              />
+              <div className="w-10 h-10 mx-auto rounded-full bg-amber-500/20 flex items-center justify-center">
+                <span className="text-amber-400 text-xl">✓</span>
+              </div>
             </motion.div>
           )}
-
-          {/* ─────────────────────────────────────────────────────────────────
-              Question & Options Phase
-          ───────────────────────────────────────────────────────────────── */}
-          {(phase === 'question' || phase === 'options') && (
-            <motion.div
-              key="content"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-10"
-            >
-              {/* The question */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-center space-y-4"
-              >
-                {step.instruction && (
-                  <p className="text-sm text-amber-400/80 tracking-[0.15em] uppercase font-medium">
-                    {step.instruction}
-                  </p>
-                )}
-                <h2 className="text-2xl sm:text-3xl text-stone-100 leading-relaxed font-light">
-                  {step.question}
-                </h2>
-              </motion.div>
-
-              {/* The options */}
-              <AnimatePresence>
-                {phase === 'options' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="space-y-4"
-                  >
-                    {step.options.map((option, index) => (
-                      <motion.button
-                        key={option.id}
-                        initial={{ opacity: 0, x: index === 0 ? -20 : 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.15, duration: 0.4 }}
-                        onClick={() => handleSelect(option)}
-                        disabled={selectedOption !== null}
-                        className={`
-                          w-full p-6 rounded-2xl text-left transition-all duration-300
-                          border-2 group relative overflow-hidden
-                          ${selectedOption === option.id
-                            ? 'bg-amber-500/20 border-amber-500/50 scale-[1.02]'
-                            : selectedOption !== null
-                            ? 'bg-stone-900/30 border-stone-800/50 opacity-40'
-                            : 'bg-stone-900/50 border-stone-700/50 hover:bg-stone-800/50 hover:border-amber-500/30'
-                          }
-                        `}
-                      >
-                        {/* Selection glow effect */}
-                        {selectedOption === option.id && (
-                          <motion.div
-                            className="absolute inset-0 pointer-events-none"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            style={{
-                              background: 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.15) 0%, transparent 70%)',
-                            }}
-                          />
-                        )}
-
-                        <div className="relative z-10">
-                          <span className={`
-                            text-xl font-medium block mb-1 transition-colors
-                            ${selectedOption === option.id
-                              ? 'text-amber-300'
-                              : 'text-stone-100 group-hover:text-amber-200'
-                            }
-                          `}>
-                            {option.label}
-                          </span>
-                          {option.subtext && (
-                            <span className="text-stone-500 text-sm">
-                              {option.subtext}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Hover indicator */}
-                        <motion.div
-                          className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          initial={false}
-                        >
-                          <div className={`
-                            w-3 h-3 rounded-full
-                            ${selectedOption === option.id
-                              ? 'bg-amber-400'
-                              : 'bg-stone-600 group-hover:bg-amber-400/50'
-                            }
-                          `} />
-                        </motion.div>
-                      </motion.button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Selection confirmation */}
-              <AnimatePresence>
-                {selectedOption && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center"
-                  >
-                    <motion.div
-                      className="w-8 h-8 mx-auto rounded-full bg-amber-500/20 flex items-center justify-center"
-                      animate={{
-                        scale: [1, 1.2, 1],
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <span className="text-amber-400 text-lg">✓</span>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -71,7 +71,7 @@ export default function Home() {
   // Story state
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
   const [showShareCard, setShowShareCard] = useState(false);
-  const { generateStory, canGenerateStory } = useTransformationStory();
+  const { generateStory, canGenerateStory, generateDemoStory } = useTransformationStory();
 
   // Handle opening the story
   const handleOpenStory = useCallback(() => {
@@ -81,6 +81,14 @@ export default function Home() {
       setActiveStory(story);
     }
   }, [canGenerateStory, generateStory]);
+
+  // Handle opening demo story (without modifying user data)
+  const handleOpenDemoStory = useCallback(() => {
+    const demoStory = generateDemoStory();
+    if (demoStory) {
+      setActiveStory(demoStory);
+    }
+  }, [generateDemoStory]);
 
   // Handle closing the story
   const handleCloseStory = useCallback(() => {
@@ -345,6 +353,7 @@ export default function Home() {
           onOpenAchievements={() => setCurrentView('achievements')}
           onOpenIdentity={() => setCurrentView('identity')}
           onOpenStory={handleOpenStory}
+          onOpenDemoStory={handleOpenDemoStory}
         />
         {/* Story Modal */}
         <AnimatePresence>

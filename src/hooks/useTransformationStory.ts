@@ -180,18 +180,19 @@ export function useTransformationStory() {
     return buildTransformationStory(context, type);
   }, [buildContext]);
 
-  // Seed demo data for users to experience the story feature
-  const seedDemoData = useCallback(() => {
-    store.seedDemoData();
-    return true;
-  }, [store]);
+  // Generate a demo story WITHOUT modifying user data
+  // This creates a story from demo context for preview purposes only
+  const generateDemoStory = useCallback((): TransformationStory | null => {
+    const demoContext = buildDemoContext();
+    return buildTransformationStory(demoContext, 'on_demand');
+  }, []);
 
   return {
     canGenerateStory,
     storyReadiness,
     generateStory,
     buildContext,
-    seedDemoData
+    generateDemoStory
   };
 }
 
@@ -310,4 +311,124 @@ function getDominantPatterns(history: MonthlyPatternForStory[]): string[] {
     .map(([pattern]) => pattern);
 
   return sorted;
+}
+
+// ============================================================================
+// BUILD DEMO CONTEXT - Creates demo data without touching user state
+// ============================================================================
+function buildDemoContext(): StoryGenerationContext {
+  const now = new Date();
+  const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
+
+  const demoReflections: ReflectionForStory[] = [
+    {
+      id: 'demo-1',
+      text: 'I keep trying to control everything around me and it\'s exhausting. My boss made a decision I disagree with and I spent the whole night stressed about it. I realize now that I waste so much energy fighting battles I can\'t win.',
+      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
+      lessonTitle: 'Introduction to Stoicism',
+      coreConceptTag: 'acceptance',
+      wordCount: 49
+    },
+    {
+      id: 'demo-2',
+      text: 'Today I caught myself getting angry about traffic. But then I remembered - this is outside my control. For the first time, I actually felt my shoulders drop. I can\'t control traffic, but I can control my reaction. This is harder than it sounds.',
+      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+      lessonTitle: 'The Dichotomy of Control',
+      coreConceptTag: 'control',
+      wordCount: 52
+    },
+    {
+      id: 'demo-3',
+      text: 'Started my morning with 10 minutes of silent reflection before checking my phone. It felt strange at first - almost uncomfortable. But by the end I noticed my mind was clearer than usual. Small win, but it felt meaningful.',
+      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+      lessonTitle: 'The Stoic Morning',
+      coreConceptTag: 'discipline',
+      wordCount: 45
+    },
+    {
+      id: 'demo-4',
+      text: 'I imagined losing everything - my job, my relationships, my health. Instead of feeling depressed, I felt this wave of appreciation for what I have. My problems suddenly seemed smaller. I called my mom just to tell her I love her.',
+      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      lessonTitle: 'Negative Visualization',
+      coreConceptTag: 'gratitude',
+      wordCount: 48
+    },
+    {
+      id: 'demo-5',
+      text: 'Got rejected from a job I really wanted. Old me would have spiraled. But I asked myself: what can this teach me? I realized the interview revealed gaps in my skills I didn\'t know existed. The rejection wasn\'t the end - it was information.',
+      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      lessonTitle: 'The Obstacle Is The Way',
+      coreConceptTag: 'perspective',
+      wordCount: 51
+    },
+    {
+      id: 'demo-6',
+      text: 'I\'m starting to notice a real shift in myself. When my colleague criticized my work today, I didn\'t react defensively like I used to. I listened, took what was useful, and let go of the rest. It felt... powerful. Like I\'m finally becoming the person I\'ve always wanted to be.',
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      lessonTitle: 'Living in the Present',
+      coreConceptTag: 'acceptance',
+      wordCount: 56
+    }
+  ];
+
+  const demoIdentity: IdentityForStory[] = [
+    {
+      statement: 'I am someone who responds rather than reacts.',
+      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      context: 'After practicing the pause'
+    },
+    {
+      statement: 'I embrace obstacles as opportunities for growth.',
+      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      context: 'After the job rejection'
+    }
+  ];
+
+  const demoAchievements: AchievementForStory[] = [
+    { id: 'first-lesson', name: 'First Steps', icon: '🌱', rarity: 'common', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 'first-reflection', name: 'Inner Voice', icon: '💭', rarity: 'common', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 'week-streak', name: 'Consistent', icon: '🔥', rarity: 'rare', unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 'deep-thinker', name: 'Deep Thinker', icon: '🧠', rarity: 'rare', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() }
+  ];
+
+  const totalWords = demoReflections.reduce((sum, r) => sum + r.wordCount, 0);
+
+  const metrics: StoryMetrics = {
+    totalReflections: demoReflections.length,
+    totalWordsWritten: totalWords,
+    averageReflectionLength: Math.round(totalWords / demoReflections.length),
+    longestReflection: Math.max(...demoReflections.map(r => r.wordCount)),
+    totalActiveDays: 20,
+    currentStreak: 7,
+    longestStreak: 12,
+    consistencyPercentage: 71,
+    lessonsCompleted: 6,
+    practiceSessionsCompleted: 0,
+    assessmentsCompleted: 0,
+    identityStatementsCreated: 2,
+    wisdomApplications: 0,
+    achievementsUnlocked: 4,
+    totalXpEarned: 350,
+    currentLevel: 3,
+    dominantPatterns: ['control', 'acceptance', 'growth'],
+    patternShifts: [],
+    daysSinceStart: 28,
+    totalTimeInvested: '3 hours'
+  };
+
+  return {
+    userName: 'Demo User',
+    transformationGoal: 'calmer',
+    whyStatement: 'I want to find calm in the chaos and become the best version of myself.',
+    periodStart: startDate,
+    periodEnd: now,
+    daysSinceJourneyStart: 28,
+    reflections: demoReflections,
+    identityStatements: demoIdentity,
+    assessments: [],
+    wisdomLogs: [],
+    achievements: demoAchievements,
+    patternHistory: buildPatternHistory(demoReflections),
+    metrics
+  };
 }
