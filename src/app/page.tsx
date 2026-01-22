@@ -456,7 +456,7 @@ export default function Home() {
       <AchievementCelebration />
       <TodaysLesson
         lesson={displayLesson}
-        world={hasPendingAction ? { ...displayWorld, subtitle: 'You have an action to complete!' } : displayWorld}
+        world={displayWorld}
         onStartLesson={handleStartLesson}
         onOpenMap={() => setCurrentView('map')}
         onOpenSettings={() => setCurrentView('settings')}
@@ -472,6 +472,8 @@ export default function Home() {
         isCheckinDue={isCheckinDue()}
         isAssessmentDue={isAssessmentDue()}
         unreadEchoCount={totalUnreadCount}
+        hasPendingAction={hasPendingAction}
+        pendingCommitment={pendingAction?.writings?.commitment}
       />
 
       {/* World Switcher Modal */}

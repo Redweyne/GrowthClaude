@@ -27,194 +27,284 @@ const lesson1_InstantReframe: FlexibleLesson = {
   id: 'modern-1-instant-reframe',
   slug: 'instant-reframe',
   order: 1,
-  title: 'The Instant Reframe',
-  subtitle: 'Stop suffering over what you can\'t control',
-  description: 'Learn the single question that eliminates 80% of your stress.',
+  title: 'The Weight You Carry',
+  subtitle: 'Discover the question that sets you free',
+  description: 'One question has freed emperors and prisoners alike. Today, it frees you.',
   coreConceptTag: 'control',
-  xpReward: 20,
-  estimatedMinutes: 5,
-  thumbnail: { icon: '🎯', color: '#f59e0b' },
+  xpReward: 25,
+  estimatedMinutes: 7,
+  thumbnail: { icon: '⚖️', color: '#f59e0b' },
   steps: [
-    // STEP 1: The Hook - Paint the pain
+    // ═══════════════════════════════════════════════════════════════════════
+    // OPENING - Deep emotional connection
+    // ═══════════════════════════════════════════════════════════════════════
     {
-      id: 'scenario',
+      id: 'opening',
       type: 'scenario',
-      narrative: "Something's been weighing on you. Maybe it's a conversation you're dreading. A decision that keeps you up at night. Someone who wronged you. A situation that feels stuck.",
-      subtext: "We all carry these invisible weights.",
-      bridgeQuestion: "Take a moment. What's bothering you right now?",
-      continueLabel: "I have something in mind",
+      narrative: "Right now, something is sitting in the back of your mind. It's been there for a while. Maybe it's a conversation you keep rehearsing. A wrong that was done to you. A decision you've been avoiding. A fear about the future that won't let go.",
       mood: 'tension',
     },
 
-    // STEP 2: The Pivotal Question
     {
-      id: 'control-choice',
+      id: 'scenario-2',
+      type: 'scenario',
+      narrative: "You can feel it right now, can't you? That familiar weight. The mental loop that plays when you're trying to fall asleep. The tension that lives in your shoulders, your chest, your jaw.",
+      subtext: "This weight is real. And today, we're going to do something about it.",
+      bridgeQuestion: "Are you ready to face it?",
+      continueLabel: "Yes, I'm ready",
+      mood: 'tension',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NAME THE BURDEN - Make it concrete
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+      id: 'name-burden',
+      type: 'commitment',
+      prompt: "Name it. What's the thing that's been weighing on you? Don't filter it. Don't make it sound better than it is. Write exactly what's been eating at you.",
+      placeholder: "The thing that's really bothering me is...",
+      minimumWords: 8,
+      guidanceHints: [
+        'Be specific. "Work stress" becomes "My manager criticized me in front of everyone and I can\'t stop replaying it"',
+        'Be honest. No one sees this but you.',
+        'Let it out. This is the first step to letting it go.',
+      ],
+      continueLabel: "I've named it",
+      storeAs: 'burden',
+      nextStepId: 'feel-it',
+    },
+
+    // Pause to feel it
+    {
+      id: 'feel-it',
+      type: 'timer',
+      title: 'Feel the Weight',
+      instruction: "Take 30 seconds to actually feel this burden. Don't analyze it. Don't try to fix it. Just notice where it lives in your body. Your shoulders? Your chest? Your stomach?",
+      durationSeconds: 30,
+      timerStyle: 'presence',
+      guidanceMessages: [
+        'Where do you feel it in your body?',
+        'How long have you been carrying this?',
+        'Just notice. Don\'t judge.',
+      ],
+      nextStepId: 'ancient-question',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // THE ANCIENT QUESTION - The turning point
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+      id: 'ancient-question',
+      type: 'insight',
+      text: "For two thousand years, emperors and slaves have asked themselves one question to find peace. Marcus Aurelius asked it while ruling Rome. Epictetus asked it while in chains. James Stockdale asked it while being tortured as a prisoner of war. Today, you ask it about what you just named.",
+      style: 'principle',
+      followUp: "The question is simple. But answering it honestly changes everything.",
+      nextStepId: 'the-choice',
+    },
+
+    // THE PIVOTAL CHOICE
+    {
+      id: 'the-choice',
       type: 'choice',
-      instruction: 'Be honest with yourself',
-      question: 'Can you do something about this in the next 5 minutes?',
+      instruction: 'Answer with ruthless honesty',
+      question: 'Is there a concrete action you can take about this in the next 5 minutes?',
       options: [
         {
           id: 'yes',
-          label: 'Yes, I can take action',
-          subtext: 'There\'s something concrete I could do right now',
-          nextStepId: 'commit-action',
+          label: 'Yes — there is something I can do',
+          subtext: 'A specific action I could take right now',
+          nextStepId: 'action-validation',
+          storeAs: 'controlChoice',
         },
         {
           id: 'no',
-          label: 'No, it\'s outside my control',
-          subtext: 'I can\'t change this directly',
-          nextStepId: 'acceptance-insight',
+          label: 'No — this is truly outside my control',
+          subtext: 'I cannot change this through my own actions',
+          nextStepId: 'acceptance-validation',
+          storeAs: 'controlChoice',
         },
       ],
     },
 
     // ═══════════════════════════════════════════════════════════════════════
-    // YES PATH - Take Action
+    // YES PATH - The Path of Action
     // ═══════════════════════════════════════════════════════════════════════
+    {
+      id: 'action-validation',
+      type: 'insight',
+      text: "You have power here. Most people never realize that. They sit with their worries, replaying them endlessly, when the cure was always within reach. You saw differently. You saw an opening.",
+      style: 'reframe',
+      followUp: "Now comes the hardest part: actually doing something about it.",
+      nextStepId: 'commit-action',
+    },
 
-    // STEP 3a: Write the commitment
     {
       id: 'commit-action',
       type: 'commitment',
-      prompt: 'What specifically will you do in the next 5 minutes?',
-      placeholder: 'I will send that message... I will make that call... I will start that task...',
-      minimumWords: 4,
+      prompt: "What exactly will you do? Be specific. Not 'I'll talk to them' but 'I'll send the text that says...' Not 'I'll work on it' but 'I'll spend 5 minutes doing...'",
+      placeholder: "In the next 5 minutes, I will specifically...",
+      minimumWords: 8,
       guidanceHints: [
-        'Be specific - what exactly will you do?',
-        'Make it small enough to start immediately',
-        'One clear action is all you need',
+        'Make it so specific you can\'t misunderstand yourself',
+        'Make it small enough to do NOW, not "later"',
+        'The smaller the better. Done beats perfect.',
       ],
-      continueLabel: 'I commit to this',
+      continueLabel: "This is my commitment",
       storeAs: 'commitment',
       nextStepId: 'go-do-it',
     },
 
-    // STEP 4a: The Sacred Dismissal
     {
       id: 'go-do-it',
       type: 'goDoIt',
-      sageMessage: "Now go. Do exactly what you wrote. Don't think about it. Don't wait for the perfect moment. The moment is now. I'll be here when you return - but only return after you've taken action. If you return without doing it, you're only lying to yourself.",
-      sageSubtext: "Action is the antidote to anxiety.",
-      dismissLabel: "I'm going to do it now",
+      sageMessage: "This is the moment that separates those who change from those who only wish they did. Go now. Do exactly what you wrote. Not after you finish reading. Not when it feels right. NOW. Come back only when it's done. I'll be here.",
+      sageSubtext: "Action is the antidote to anxiety. The cure to worry is movement.",
+      dismissLabel: "I'm going now",
       returnStepId: 'return-check',
     },
 
-    // STEP 5a: Welcome Back
     {
       id: 'return-check',
       type: 'returnConfirm',
-      welcomeMessage: 'Welcome back.',
-      confirmationQuestion: 'Did you complete the action you committed to?',
+      welcomeMessage: "You came back.",
+      confirmationQuestion: "Did you do what you committed to?",
       completedOption: {
-        label: 'Yes, I did it',
-        nextStepId: 'reflection-action',
+        label: "Yes — I did it",
+        nextStepId: 'action-reflection',
       },
       didNotCompleteOption: {
-        label: 'I didn\'t do it',
-        message: "Thank you for your honesty. That takes courage. The opportunity isn't gone - it's waiting. But let's reflect on what held you back, so next time you can break through.",
-        nextStepId: 'reflection-action',
+        label: "No — I didn't do it",
+        message: "Thank you for your honesty. Most people would lie to themselves right now. You didn't. That honesty is rare and valuable. Let's understand what happened — not to judge you, but to learn.",
+        nextStepId: 'action-reflection-incomplete',
       },
     },
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // NO PATH - Acceptance
-    // ═══════════════════════════════════════════════════════════════════════
-
-    // STEP 3b: The Wisdom of Letting Go
+    // Reflection for completed action
     {
-      id: 'acceptance-insight',
-      type: 'insight',
-      text: "You've just done something most people never do: you honestly admitted this is outside your control. That's not weakness. That's wisdom. Fighting battles you can't win is the source of most suffering.",
-      style: 'reframe',
-      followUp: "Now let's practice what letting go actually feels like.",
-      nextStepId: 'acceptance-visualization',
+      id: 'action-reflection',
+      type: 'reflection',
+      prompt: "You did it. How do you feel now? What shifted in you the moment you took action? Be specific about the before and after.",
+      minimumWords: 15,
+      encouragements: [
+        'What was harder than you expected?',
+        'What was easier than you expected?',
+        'How does this moment feel different from the one before you started?',
+      ],
+      nextStepId: 'reward',
     },
 
-    // STEP 4b: Visualization Exercise
+    // Reflection for incomplete action
+    {
+      id: 'action-reflection-incomplete',
+      type: 'reflection',
+      prompt: "What got in the way? Don't judge yourself — just observe. What voice talked you out of it? What did you tell yourself? Understanding this is more valuable than you think.",
+      minimumWords: 15,
+      encouragements: [
+        'What story did your mind tell you?',
+        'Was the fear before worse than the actual task would have been?',
+        'What would you need to do differently next time?',
+      ],
+      nextStepId: 'reward',
+    },
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // NO PATH - The Path of Acceptance
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+      id: 'acceptance-validation',
+      type: 'insight',
+      text: "You just did something incredibly difficult: you told yourself the truth. This thing that's been torturing you — you cannot fix it through action. Most people spend months, years, entire lifetimes fighting battles they can never win. You stopped. Right here. Right now.",
+      style: 'reframe',
+      followUp: "This isn't defeat. This is wisdom. The question now is: can you actually let go?",
+      nextStepId: 'acceptance-depth',
+    },
+
+    {
+      id: 'acceptance-depth',
+      type: 'scenario',
+      narrative: "Letting go sounds simple. But your mind has become addicted to this worry. It returns to it like a tongue to a sore tooth. The same thoughts. The same anger. The same fear. Over and over.",
+      subtext: "You've tried to stop thinking about it. That doesn't work. What works is something different.",
+      bridgeQuestion: "Are you ready to try a different way?",
+      continueLabel: "Show me",
+      mood: 'hope',
+    },
+
     {
       id: 'acceptance-visualization',
       type: 'visualization',
       title: 'The Release',
       instructions: [
-        'Close your eyes. Take a deep breath.',
-        'Picture the thing that\'s been bothering you.',
-        'See it clearly. Feel its weight.',
-        'Now imagine placing it in an open hand in front of you.',
-        'Slowly turn your hand over. Let it fall.',
-        'Watch it drift away. It was never yours to carry.',
-        'Take another breath. Feel the space where the weight used to be.',
+        'Close your eyes. Take three deep breaths.',
+        'Now picture the thing you named. See it clearly in your mind.',
+        'Notice how your body responds. The tightening. The resistance.',
+        'Now imagine you\'re holding this burden in your cupped hands.',
+        'Feel its weight. You\'ve been carrying this for so long.',
+        'Now slowly... open your hands. Palm up. Fingers spread.',
+        'Watch it lift. It was never yours to carry.',
+        'It exists. But it doesn\'t need to live inside you.',
+        'Take one more breath. Feel the space where the weight used to be.',
       ],
-      paceSeconds: 5,
+      paceSeconds: 4,
       style: 'grounding',
-      nextStepId: 'reflection-acceptance',
+      nextStepId: 'acceptance-reflection',
     },
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // CONVERGENCE - Both paths lead to reflection
-    // ═══════════════════════════════════════════════════════════════════════
-
-    // STEP 6a: Reflection (Action path)
     {
-      id: 'reflection-action',
+      id: 'acceptance-reflection',
       type: 'reflection',
-      prompt: 'What did you learn from taking action (or from what held you back)?',
-      minimumWords: 10,
+      prompt: "What shifted in you during that exercise? Even if it was small. Even if the worry came back immediately. What did it feel like, for that brief moment, to let go?",
+      minimumWords: 15,
       encouragements: [
-        'What surprised you?',
-        'How do you feel now compared to before?',
-        'What would you do differently next time?',
+        'Don\'t judge whether you did it "right"',
+        'What did you notice in your body?',
+        'Is there still resistance? That\'s okay. Name it.',
       ],
       nextStepId: 'reward',
     },
 
-    // STEP 6b: Reflection (Acceptance path)
-    {
-      id: 'reflection-acceptance',
-      type: 'reflection',
-      prompt: 'What shifted when you practiced letting go? How does it feel to stop fighting what you can\'t control?',
-      minimumWords: 10,
-      encouragements: [
-        'What did releasing feel like?',
-        'Is there still resistance? That\'s okay.',
-        'What would change if you truly accepted this?',
-      ],
-      nextStepId: 'reward',
-    },
-
-    // STEP 7: Celebration
+    // ═══════════════════════════════════════════════════════════════════════
+    // CLOSING - Both paths converge
+    // ═══════════════════════════════════════════════════════════════════════
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
+      celebrationStyle: 'breakthrough',
+      nextStepId: 'closing-insight',
+    },
+
+    {
+      id: 'closing-insight',
+      type: 'insight',
+      text: "What you just practiced is called the Dichotomy of Control. It's the foundation of Stoic philosophy, and it has guided leaders, survivors, and ordinary people for over two thousand years. One question: 'Is this within my control?' If yes, act. If no, accept. That's it. That's the entire philosophy.",
+      source: 'Epictetus',
+      sourceBook: 'The Enchiridion',
+      style: 'quote',
       nextStepId: 'mentor',
     },
 
-    // STEP 8: Sage's Wisdom
     {
       id: 'mentor',
       type: 'mentor',
       responses: {
         default: [
-          "You just practiced the most powerful question in philosophy: 'Is this within my control?' Those four words have freed emperors and prisoners alike. Keep asking it.",
-          "This is the foundation of inner peace: knowing where your power ends and acceptance begins. You're not giving up - you're getting strategic about where you spend your energy.",
-          "Ryan Holiday wrote an entire book about this - 'The Obstacle Is the Way.' The Stoics knew it 2000 years ago. And now you've felt it yourself.",
+          "This question will change your life if you let it. Every worry, every stress, every sleepless night — ask yourself: 'Can I do something about this?' Then act or accept. That's where peace lives.",
         ],
         byChoice: {
           yes: [
-            "You didn't just think about change - you created it. That's rare. Most people stay trapped in their heads. You moved your feet. That's the difference between philosophy and transformation.",
-            "Action is the cure for anxiety. You proved that today. The thing that was weighing on you? You faced it. That takes courage.",
+            "You didn't just think about your problem — you moved. That's rare. Most people are paralyzed by their worries. You proved you're not. Remember this feeling. This is who you're becoming: someone who acts.",
+            "The philosopher William James said: 'Action seems to follow feeling, but really action and feeling go together.' You proved that today. You didn't wait to feel ready. You acted, and the feeling followed.",
           ],
           no: [
-            "Acceptance isn't defeat - it's wisdom. You stopped wasting energy on a battle you couldn't win. That energy is now available for battles you CAN win.",
-            "Letting go isn't giving up. It's growing up. You just practiced a skill that most people never learn. The weight you released - it was never yours to carry.",
+            "You practiced the hardest skill in philosophy: accepting what you cannot change without becoming passive about what you can. That takes wisdom most people never develop.",
+            "The Stoics called this 'amor fati' — love of fate. Not just tolerating what you can't control, but making peace with it. You took the first step today. The burden you named? It hasn't disappeared. But you've started changing your relationship with it.",
           ],
         },
         byCompletion: {
           completed: [
-            "You said you would, and you did. That's integrity. That's how identity changes - one kept promise at a time. You're becoming someone who acts.",
+            "You said you would, and you did. That's rare. Most people break promises to themselves so often they stop believing they're capable of change. You just proved otherwise. One kept promise at a time — that's how identity changes.",
           ],
           notCompleted: [
-            "You came back and told the truth. That's harder than lying to yourself. The resistance you felt? That's the edge of growth. Next time, you'll know what it feels like - and you'll push through.",
+            "You came back and told the truth. That matters more than you know. The gap between intention and action? That's where growth lives. You saw the gap today. Tomorrow, you'll know what to expect. And you'll be ready.",
           ],
         },
       },

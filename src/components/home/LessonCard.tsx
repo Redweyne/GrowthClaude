@@ -19,6 +19,8 @@ interface LessonCardProps {
   onStartLesson: () => void;
   completedCount: number;
   totalCount: number;
+  hasPendingAction?: boolean;
+  pendingCommitment?: string;
 }
 
 // Spring configurations
@@ -34,6 +36,8 @@ export function LessonCard({
   onStartLesson,
   completedCount,
   totalCount,
+  hasPendingAction = false,
+  pendingCommitment,
 }: LessonCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -132,6 +136,141 @@ export function LessonCard({
   }
 
   const duration = Math.ceil((lesson.actionDurationSeconds || 120) / 60 + 2);
+
+  // PENDING ACTION STATE - User needs to complete their commitment
+  if (hasPendingAction) {
+    return (
+      <motion.div
+        className="relative"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, ...springs.gentle }}
+      >
+        {/* Urgent label */}
+        <motion.div
+          className="text-center mb-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-amber-400"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [1, 0.7, 1],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+            <span className="text-amber-400 text-sm font-medium tracking-wide">
+              ACTION IN PROGRESS
+            </span>
+          </span>
+        </motion.div>
+
+        {/* Main card */}
+        <motion.div
+          className="relative rounded-3xl cursor-pointer overflow-hidden"
+          onClick={onStartLesson}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          {/* Pulsing border */}
+          <motion.div
+            className="absolute inset-0 rounded-3xl"
+            animate={{
+              boxShadow: [
+                '0 0 0 2px rgba(251, 191, 36, 0.3), 0 0 30px rgba(251, 191, 36, 0.15)',
+                '0 0 0 2px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.25)',
+                '0 0 0 2px rgba(251, 191, 36, 0.3), 0 0 30px rgba(251, 191, 36, 0.15)',
+              ],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+
+          {/* Card background */}
+          <div
+            className="relative p-8 rounded-3xl border border-amber-500/30"
+            style={{
+              background: `linear-gradient(135deg,
+                rgba(251, 191, 36, 0.08) 0%,
+                rgba(28, 25, 23, 0.95) 30%,
+                rgba(12, 10, 9, 0.98) 100%)`,
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-6">
+              <motion.div
+                className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center"
+                animate={{
+                  rotate: [0, 5, -5, 0],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <span className="text-2xl">⚡</span>
+              </motion.div>
+              <div>
+                <h3 className="text-xl font-bold text-amber-100">
+                  Your Action Awaits
+                </h3>
+                <p className="text-amber-400/70 text-sm">
+                  Complete it, then return here
+                </p>
+              </div>
+            </div>
+
+            {/* The commitment they made */}
+            {pendingCommitment && (
+              <div className="mb-8 p-5 rounded-2xl bg-stone-900/50 border border-stone-800">
+                <p className="text-xs text-stone-500 uppercase tracking-wide mb-2">
+                  You committed to:
+                </p>
+                <p className="text-lg text-stone-100 leading-relaxed">
+                  &ldquo;{pendingCommitment}&rdquo;
+                </p>
+              </div>
+            )}
+
+            {/* Message */}
+            <p className="text-stone-400 mb-8 leading-relaxed">
+              Remember: <span className="text-amber-300">action is the antidote to anxiety.</span>
+              {' '}Don&apos;t just think about it. Do it. Then come back to reflect.
+            </p>
+
+            {/* Return button */}
+            <Button
+              size="lg"
+              glow
+              className="w-full group"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartLesson();
+              }}
+            >
+              <span className="mr-2">✓</span>
+              I&apos;ve Done It — Continue
+              <ChevronRight
+                size={18}
+                className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+              />
+            </Button>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

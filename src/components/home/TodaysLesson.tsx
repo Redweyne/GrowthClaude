@@ -38,6 +38,8 @@ interface TodaysLessonProps {
   isCheckinDue: boolean;
   isAssessmentDue: boolean;
   unreadEchoCount?: number;
+  hasPendingAction?: boolean;
+  pendingCommitment?: string;
 }
 
 export function TodaysLesson({
@@ -58,6 +60,8 @@ export function TodaysLesson({
   isCheckinDue,
   isAssessmentDue,
   unreadEchoCount = 0,
+  hasPendingAction = false,
+  pendingCommitment,
 }: TodaysLessonProps) {
   // Get user state
   const { name, totalXp, currentStreak, completedLessons } = useStore();
@@ -131,6 +135,8 @@ export function TodaysLesson({
             onStartLesson={onStartLesson}
             completedCount={completedCount}
             totalCount={totalCount}
+            hasPendingAction={hasPendingAction}
+            pendingCommitment={pendingCommitment}
           />
         </div>
 
