@@ -34,8 +34,10 @@ interface TodaysLessonProps {
   onOpenAchievements: () => void;
   onOpenIdentity: () => void;
   onOpenWorlds: () => void;
+  onOpenEchoes?: () => void;
   isCheckinDue: boolean;
   isAssessmentDue: boolean;
+  unreadEchoCount?: number;
 }
 
 export function TodaysLesson({
@@ -52,8 +54,10 @@ export function TodaysLesson({
   onOpenAchievements,
   onOpenIdentity,
   onOpenWorlds,
+  onOpenEchoes,
   isCheckinDue,
   isAssessmentDue,
+  unreadEchoCount = 0,
 }: TodaysLessonProps) {
   // Get user state
   const { name, totalXp, currentStreak, completedLessons } = useStore();
@@ -139,9 +143,11 @@ export function TodaysLesson({
           onOpenMap={onOpenMap}
           onOpenTransformation={onOpenTransformation}
           onOpenWorlds={onOpenWorlds}
+          onOpenEchoes={onOpenEchoes}
           streak={currentStreak}
           hasPracticeAvailable={hasPracticeAvailable}
           hasTransformationAvailable={hasTransformationAvailable}
+          unreadEchoCount={unreadEchoCount}
         />
       </motion.div>
     </div>

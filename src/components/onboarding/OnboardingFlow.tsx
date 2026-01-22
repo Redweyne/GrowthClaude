@@ -8,7 +8,7 @@
 // Every element is designed to create reverence, not just collect data.
 // The atmosphere builds. The journey deepens. The commitment solidifies.
 //
-// Order: Welcome → Name → Goal → Why → Commitment → Ready
+// Order: Welcome → Name → Anonymous Identity → Goal → Why → Commitment → Ready
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
@@ -17,17 +17,19 @@ import { useStore } from '@/store/useStore';
 import { AmbientBackground } from '@/components/ambient';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { NameStep } from './steps/NameStep';
+import { IdentityStep } from './steps/IdentityStep';
 import { GoalStep } from './steps/GoalStep';
 import { WhyStep } from './steps/WhyStep';
 import { CommitmentStep } from './steps/CommitmentStep';
 import { ReadyStep } from './steps/ReadyStep';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 // Step titles for context
 const STEP_LABELS = [
   'Welcome',
-  'Identity',
+  'Your Name',
+  'Community',
   'Vision',
   'Purpose',
   'Commitment',
@@ -87,12 +89,14 @@ export function OnboardingFlow() {
       case 1:
         return <NameStep onNext={nextStep} onBack={prevStep} />;
       case 2:
-        return <GoalStep onNext={nextStep} onBack={prevStep} />;
+        return <IdentityStep onNext={nextStep} onBack={prevStep} />;
       case 3:
-        return <WhyStep onNext={nextStep} onBack={prevStep} />;
+        return <GoalStep onNext={nextStep} onBack={prevStep} />;
       case 4:
-        return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
+        return <WhyStep onNext={nextStep} onBack={prevStep} />;
       case 5:
+        return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
+      case 6:
         return <ReadyStep onNext={nextStep} onBack={prevStep} />;
       default:
         return null;
@@ -129,7 +133,7 @@ export function OnboardingFlow() {
 
             {/* Dots */}
             <div className="flex items-center gap-3">
-              {[1, 2, 3, 4].map((step) => (
+              {[1, 2, 3, 4, 5].map((step) => (
                 <motion.div
                   key={step}
                   className="relative"

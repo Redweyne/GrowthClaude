@@ -17,8 +17,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Feather } from 'lucide-react';
+import { ChevronRight, Feather, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useEchoesStore } from '@/store/useEchoesStore';
 import type { Lesson } from '@/types';
 
 interface ReflectionStepProps {
@@ -75,9 +76,13 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const [milestone, setMilestone] = useState<string | null>(null);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [phase, setPhase] = useState<'entering' | 'writing' | 'complete'>('entering');
+  const [isPublic, setIsPublic] = useState(false); // Privacy toggle
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastKeystrokeRef = useRef<number>(0);
   const promptShownRef = useRef<Set<number>>(new Set());
+
+  // Echoes store for publishing public reflections
+  const { publishReflection, genderIdentity } = useEchoesStore();
 
   // Initialize keystroke timestamp on mount
   useEffect(() => {
@@ -160,10 +165,21 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const handleSubmit = useCallback(() => {
     if (!isSubstantial) return;
     setPhase('complete');
+
+    // Publish to Echoes if user chose to share publicly
+    if (isPublic && genderIdentity) {
+      publishReflection(
+        lesson.id,
+        lesson.title,
+        reflection.trim(),
+        true // isOpenToConnect - always true for public reflections
+      );
+    }
+
     setTimeout(() => {
       onComplete(reflection.trim());
     }, 800);
-  }, [isSubstantial, reflection, onComplete]);
+  }, [isSubstantial, reflection, onComplete, isPublic, genderIdentity, publishReflection, lesson.id, lesson.title]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -388,10 +404,48 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               transition={{ delay: 0.6 }}
               className="mt-6 space-y-4"
             >
-              {/* Tip */}
+              {/* Privacy toggle */}
+              {genderIdentity && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="flex items-center justify-center gap-4 p-3 rounded-xl bg-stone-900/50 border border-stone-800"
+                >
+                  {/* Private option */}
+                  <button
+                    onClick={() => setIsPublic(false)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      !isPublic
+                        ? 'bg-stone-800 text-stone-200 shadow-lg'
+                        : 'text-stone-500 hover:text-stone-400'
+                    }`}
+                  >
+                    <Lock size={16} />
+                    <span className="text-sm font-medium">Private</span>
+                  </button>
+
+                  {/* Public option */}
+                  <button
+                    onClick={() => setIsPublic(true)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      isPublic
+                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
+                        : 'text-stone-500 hover:text-stone-400'
+                    }`}
+                  >
+                    <Globe size={16} />
+                    <span className="text-sm font-medium">Share Anonymously</span>
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Privacy description */}
               <div className="text-center">
                 <p className="text-xs text-stone-600">
-                  Write honestly. This reflection is for your growth alone.
+                  {isPublic
+                    ? 'Others can read and reflect on your words. You may receive thoughtful responses.'
+                    : 'This reflection is just for you. No one else will see it.'}
                 </p>
               </div>
 

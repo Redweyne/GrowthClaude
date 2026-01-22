@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { useEchoesStore } from '@/store/useEchoesStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { TodaysLesson } from '@/components/home/TodaysLesson';
 import { WorldMap, WorldSwitcher } from '@/components/world';
@@ -15,8 +16,10 @@ import { ProgressDashboard } from '@/components/progress';
 import { AchievementGallery, AchievementCelebration } from '@/components/achievements';
 import { IdentityScreen } from '@/components/identity';
 import { TransformationStory, ShareableStoryCard } from '@/components/story';
+import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
 import { useTransformationStory } from '@/hooks';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
+import type { PublicReflection } from '@/types/echoes';
 import modernWisdomWorld from '@/content/modernWisdom';
 import stoicismWorld from '@/content/stoicismModern';
 import type { FlexibleLesson, LessonProgress, FlexibleWorld } from '@/types/lessons';
@@ -33,7 +36,9 @@ type AppView =
   | 'achievements'
   | 'identity'
   | 'settings'
-  | 'worldSwitcher';
+  | 'worldSwitcher'
+  | 'echoes'
+  | 'echo-review';
 
 export default function Home() {
   const {
@@ -45,9 +50,23 @@ export default function Home() {
     currentWorldSlug: storedWorldSlug,
     setCurrentWorld
   } = useStore();
+  const {
+    shouldShowEchoPrompt,
+    markEchoPromptSeen,
+    getReflectionToReview,
+    getUnreadEchoCount,
+    getUnreadInvitationCount,
+    getUnreadMessageCount
+  } = useEchoesStore();
+
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
   const [flexibleLessonProgress, setFlexibleLessonProgress] = useState<LessonProgress | null>(null);
+
+  // Echoes state
+  const [showEchoPrompt, setShowEchoPrompt] = useState(false);
+  const [reflectionForReview, setReflectionForReview] = useState<PublicReflection | null>(null);
+  const [completedLessonInfo, setCompletedLessonInfo] = useState<{ id: string; title: string } | null>(null);
 
   // Story state
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
@@ -140,7 +159,7 @@ export default function Home() {
       }
     }
 
-    // Start next lesson from Modern Wisdom
+    // Start next lesson from active world
     if (nextFlexibleLesson) {
       setSelectedFlexibleLesson(nextFlexibleLesson);
       setFlexibleLessonProgress(null);
@@ -160,10 +179,66 @@ export default function Home() {
 
   // Handle lesson completion
   const handleLessonComplete = () => {
+    // Save completed lesson info for Echo prompt
+    if (selectedFlexibleLesson) {
+      setCompletedLessonInfo({
+        id: selectedFlexibleLesson.id,
+        title: selectedFlexibleLesson.title,
+      });
+    }
+
     setSelectedFlexibleLesson(null);
     setFlexibleLessonProgress(null);
+
+    // Check if we should show the Echo prompt
+    if (shouldShowEchoPrompt()) {
+      setShowEchoPrompt(true);
+    } else {
+      setCurrentView('home');
+    }
+  };
+
+  // Handle Echo prompt response
+  const handleEchoPromptAccept = () => {
+    setShowEchoPrompt(false);
+    markEchoPromptSeen();
+
+    // Get a reflection to review (using the completed lesson's info)
+    const reflection = completedLessonInfo
+      ? getReflectionToReview(completedLessonInfo.id, completedLessonInfo.title)
+      : getReflectionToReview('any', 'Growth Journey');
+
+    if (reflection) {
+      setReflectionForReview(reflection);
+      setCurrentView('echo-review');
+    } else {
+      setCurrentView('home');
+    }
+
+    // Clear the completed lesson info
+    setCompletedLessonInfo(null);
+  };
+
+  const handleEchoPromptDecline = () => {
+    setShowEchoPrompt(false);
+    markEchoPromptSeen();
+    setCompletedLessonInfo(null);
     setCurrentView('home');
   };
+
+  // Handle Echo review completion
+  const handleEchoReviewComplete = () => {
+    setReflectionForReview(null);
+    setCurrentView('home');
+  };
+
+  const handleEchoReviewSkip = () => {
+    setReflectionForReview(null);
+    setCurrentView('home');
+  };
+
+  // Calculate total unread count for inbox
+  const totalUnreadCount = getUnreadEchoCount() + getUnreadInvitationCount() + getUnreadMessageCount();
 
   // Onboarding flow
   if (!onboardingComplete) {
@@ -236,6 +311,30 @@ export default function Home() {
     );
   }
 
+  // Echo Review - Reflecting on another's journey
+  if (currentView === 'echo-review' && reflectionForReview) {
+    return (
+      <>
+        <AchievementCelebration />
+        <EchoReview
+          reflection={reflectionForReview}
+          onComplete={handleEchoReviewComplete}
+          onSkip={handleEchoReviewSkip}
+        />
+      </>
+    );
+  }
+
+  // Echoes Inbox - View received reflections, invitations, connections
+  if (currentView === 'echoes') {
+    return (
+      <>
+        <AchievementCelebration />
+        <EchoInbox onClose={() => setCurrentView('home')} />
+      </>
+    );
+  }
+
   // Progress Dashboard (Phase 3)
   if (currentView === 'progress') {
     return (
@@ -288,7 +387,7 @@ export default function Home() {
     );
   }
 
-  // World map - use Modern Wisdom
+  // World map - use active world
   if (currentView === 'map') {
     return (
       <>
@@ -360,9 +459,12 @@ export default function Home() {
         onOpenAchievements={() => setCurrentView('achievements')}
         onOpenIdentity={() => setCurrentView('identity')}
         onOpenWorlds={() => setShowWorldSwitcher(true)}
+        onOpenEchoes={() => setCurrentView('echoes')}
         isCheckinDue={isCheckinDue()}
         isAssessmentDue={isAssessmentDue()}
+        unreadEchoCount={totalUnreadCount}
       />
+
       {/* World Switcher Modal */}
       <AnimatePresence>
         {showWorldSwitcher && (
@@ -371,6 +473,16 @@ export default function Home() {
             currentWorldSlug={currentWorldSlug}
             onSelectWorld={setCurrentWorld}
             onClose={() => setShowWorldSwitcher(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Echo Prompt Modal - appears after lesson completion */}
+      <AnimatePresence>
+        {showEchoPrompt && (
+          <EchoPrompt
+            onAccept={handleEchoPromptAccept}
+            onDecline={handleEchoPromptDecline}
           />
         )}
       </AnimatePresence>

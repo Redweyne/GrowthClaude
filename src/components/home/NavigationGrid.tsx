@@ -10,6 +10,7 @@ import {
   Map,
   TrendingUp,
   Globe,
+  MessageCircleHeart,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -37,9 +38,11 @@ interface NavigationGridProps {
   onOpenMap: () => void;
   onOpenTransformation: () => void;
   onOpenWorlds: () => void;
+  onOpenEchoes?: () => void;
   streak: number;
   hasPracticeAvailable: boolean;
   hasTransformationAvailable: boolean;
+  unreadEchoCount?: number;
 }
 
 // Spring configurations
@@ -177,9 +180,11 @@ export function NavigationGrid({
   onOpenMap,
   onOpenTransformation,
   onOpenWorlds,
+  onOpenEchoes,
   streak,
   hasPracticeAvailable,
   hasTransformationAvailable,
+  unreadEchoCount = 0,
 }: NavigationGridProps) {
   // Primary navigation items (always shown)
   const primaryItems: NavItem[] = [
@@ -231,6 +236,19 @@ export function NavigationGrid({
       color: '#34d399',
       glowColor: 'rgba(52, 211, 153, 0.2)',
       onClick: onOpenTransformation,
+    });
+  }
+
+  // Echoes - the reflection exchange system
+  if (onOpenEchoes) {
+    secondaryItems.push({
+      id: 'echoes',
+      label: 'Echoes',
+      icon: MessageCircleHeart,
+      color: '#f472b6',
+      glowColor: 'rgba(244, 114, 182, 0.2)',
+      onClick: onOpenEchoes,
+      badge: unreadEchoCount > 0 ? unreadEchoCount : undefined,
     });
   }
 

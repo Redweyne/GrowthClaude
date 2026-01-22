@@ -1,0 +1,420 @@
+'use client';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ECHO REVIEW - REFLECTING ON ANOTHER'S JOURNEY
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// This is where the magic happens. One soul meeting another through words.
+// The user reads someone's reflection and writes their own response.
+// It's not a comment - it's a genuine reflection on their journey.
+//
+// The atmosphere is intimate, thoughtful, sacred.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, SkipForward, Feather, Heart } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { AmbientBackground } from '@/components/ambient';
+import { useEchoesStore } from '@/store/useEchoesStore';
+import { getGenderLabel } from '@/types/echoes';
+import type { PublicReflection } from '@/types/echoes';
+
+interface EchoReviewProps {
+  reflection: PublicReflection;
+  onComplete: () => void;
+  onSkip: () => void;
+}
+
+export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) {
+  const [response, setResponse] = useState('');
+  const [isOpenToConnect, setIsOpenToConnect] = useState(false);
+  const [phase, setPhase] = useState<'reading' | 'writing' | 'sending' | 'complete'>('reading');
+  const [isFocused, setIsFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { sendEchoResponse, markReflectionResponded, genderIdentity } = useEchoesStore();
+
+  // Word count
+  const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
+  const isSubstantial = wordCount >= 10;
+
+  // Determine if this is a seed reflection (can't connect)
+  const isSeedReflection = reflection.id.startsWith('seed-');
+
+  // Get pronoun info
+  const genderLabel = getGenderLabel(reflection.authorGender).toLowerCase();
+
+  // Transition to writing phase
+  const handleStartWriting = () => {
+    setPhase('writing');
+    setTimeout(() => textareaRef.current?.focus(), 300);
+  };
+
+  // Handle sending the response
+  const handleSend = useCallback(() => {
+    if (!isSubstantial || !genderIdentity) return;
+
+    setPhase('sending');
+
+    // Send the echo response
+    sendEchoResponse(reflection, response.trim(), isOpenToConnect);
+    markReflectionResponded(reflection.id);
+
+    // Brief pause, then complete
+    setTimeout(() => {
+      setPhase('complete');
+      setTimeout(onComplete, 1000);
+    }, 800);
+  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, onComplete]);
+
+  // Keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && isSubstantial) {
+        e.preventDefault();
+        handleSend();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSubstantial, handleSend]);
+
+  return (
+    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+      {/* Ambient background */}
+      <AmbientBackground intensity="subtle" particleCount={6} orbCount={2} />
+
+      {/* Warm glow */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(251, 191, 36, 0.08) 0%, transparent 60%)',
+        }}
+      />
+
+      {/* Header */}
+      <div className="relative z-10 p-4 flex justify-between items-center">
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
+        >
+          Reflecting on Another&apos;s Journey
+        </motion.span>
+
+        <button
+          onClick={onSkip}
+          className="flex items-center gap-1 text-stone-500 hover:text-stone-400 text-sm transition-colors"
+        >
+          <SkipForward size={16} />
+          Skip
+        </button>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-lg">
+          <AnimatePresence mode="wait">
+            {/* ─────────────────────────────────────────────────────────────────
+                Reading Phase - Absorbing Their Words
+            ───────────────────────────────────────────────────────────────── */}
+            {phase === 'reading' && (
+              <motion.div
+                key="reading"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                {/* Header */}
+                <div className="text-center">
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-amber-400 text-sm mb-2"
+                  >
+                    A fellow {genderLabel} reflected on &ldquo;{reflection.lessonTitle}&rdquo;:
+                  </motion.p>
+                </div>
+
+                {/* Their reflection */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="p-6 rounded-2xl bg-stone-900/80 border border-stone-800"
+                >
+                  <p className="text-stone-200 text-lg leading-relaxed font-light">
+                    &ldquo;{reflection.content}&rdquo;
+                  </p>
+                </motion.div>
+
+                {/* Prompt */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-center text-stone-400 text-sm"
+                >
+                  Take a moment to absorb their words...
+                </motion.p>
+
+                {/* Continue button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <Button
+                    onClick={handleStartWriting}
+                    size="lg"
+                    glow
+                    className="w-full group"
+                  >
+                    <Feather size={18} className="mr-2" />
+                    Write Your Reflection
+                    <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* ─────────────────────────────────────────────────────────────────
+                Writing Phase - Your Response
+            ───────────────────────────────────────────────────────────────── */}
+            {phase === 'writing' && (
+              <motion.div
+                key="writing"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                {/* Their reflection (smaller) */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="p-4 rounded-xl bg-stone-900/50 border border-stone-800/50"
+                >
+                  <p className="text-stone-500 text-sm mb-2">
+                    A fellow {genderLabel} wrote:
+                  </p>
+                  <p className="text-stone-400 text-sm leading-relaxed line-clamp-3">
+                    &ldquo;{reflection.content}&rdquo;
+                  </p>
+                </motion.div>
+
+                {/* Writing prompt */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-center"
+                >
+                  <p className="text-amber-400 text-sm mb-2 tracking-wide">
+                    Your reflection for {reflection.authorGender === 'brother' ? 'him' : reflection.authorGender === 'sister' ? 'her' : 'them'}:
+                  </p>
+                  <p className="text-stone-300">
+                    What does their journey make you think about?
+                    <br />
+                    What encouragement can you offer?
+                  </p>
+                </motion.div>
+
+                {/* Writing area */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <div
+                    className={`
+                      relative rounded-2xl transition-all duration-300 border-2
+                      ${isFocused
+                        ? 'bg-stone-900/80 border-amber-500/30'
+                        : 'bg-stone-900/50 border-stone-700/50'}
+                    `}
+                  >
+                    <textarea
+                      ref={textareaRef}
+                      value={response}
+                      onChange={(e) => setResponse(e.target.value)}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      placeholder="Write your thoughts..."
+                      className="
+                        w-full min-h-[160px] p-5
+                        bg-transparent text-lg text-stone-200
+                        placeholder-stone-600 leading-relaxed
+                        focus:outline-none resize-none
+                        font-light tracking-wide
+                      "
+                      style={{ caretColor: '#fbbf24' }}
+                    />
+
+                    {/* Word count */}
+                    <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
+                      <span className="text-stone-500 text-sm">
+                        {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                      </span>
+                      <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600'}`}>
+                        {isSubstantial ? 'Ready to send' : 'A bit more...'}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Open to connect checkbox (only if not a seed reflection) */}
+                {!isSeedReflection && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex items-center justify-center"
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div
+                        className={`
+                          w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                          ${isOpenToConnect
+                            ? 'bg-amber-500 border-amber-500'
+                            : 'border-stone-600 group-hover:border-stone-500'}
+                        `}
+                        onClick={() => setIsOpenToConnect(!isOpenToConnect)}
+                      >
+                        {isOpenToConnect && (
+                          <motion.svg
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-3 h-3 text-stone-950"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </motion.svg>
+                        )}
+                      </div>
+                      <span className="text-stone-400 text-sm">
+                        I&apos;m open to connecting if {reflection.authorGender === 'brother' ? 'he' : reflection.authorGender === 'sister' ? 'she' : 'they'}&apos;d like to
+                      </span>
+                    </label>
+                  </motion.div>
+                )}
+
+                {/* Send button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="space-y-3"
+                >
+                  <Button
+                    onClick={handleSend}
+                    size="lg"
+                    disabled={!isSubstantial}
+                    glow={isSubstantial}
+                    className="w-full group"
+                  >
+                    <Heart size={18} className="mr-2" />
+                    Send Reflection
+                    <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+
+                  {isSubstantial && (
+                    <p className="text-center text-xs text-stone-600">
+                      Press ⌘+Enter to send
+                    </p>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* ─────────────────────────────────────────────────────────────────
+                Sending Phase - Brief Animation
+            ───────────────────────────────────────────────────────────────── */}
+            {phase === 'sending' && (
+              <motion.div
+                key="sending"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center py-16"
+              >
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-6"
+                >
+                  <Heart size={28} className="text-amber-400" />
+                </motion.div>
+                <p className="text-stone-400">Sending your reflection...</p>
+              </motion.div>
+            )}
+
+            {/* ─────────────────────────────────────────────────────────────────
+                Complete Phase - Confirmation
+            ───────────────────────────────────────────────────────────────── */}
+            {phase === 'complete' && (
+              <motion.div
+                key="complete"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center py-16 text-center"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  className="relative w-20 h-20 mb-6"
+                >
+                  {/* Glow */}
+                  <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(52, 211, 153, 0.4) 0%, transparent 70%)',
+                    }}
+                    animate={{
+                      scale: [1, 1.4, 1],
+                      opacity: [0.5, 0.8, 0.5],
+                    }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  <div className="relative w-full h-full rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                    <span className="text-4xl">✨</span>
+                  </div>
+                </motion.div>
+
+                <motion.h3
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-xl font-semibold text-stone-200 mb-2"
+                >
+                  Reflection Sent
+                </motion.h3>
+
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-stone-400"
+                >
+                  Your words will reach them.
+                </motion.p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default EchoReview;
