@@ -10,6 +10,7 @@
 // - Beautiful, atmospheric visuals
 // - Words that actually mean something
 // - Time to absorb before moving on
+// - Triumphant audio that makes the moment unforgettable
 //
 // Design principles:
 // - Each phase LINGERS. User controls when to move forward.
@@ -23,7 +24,7 @@ import { Flame, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { Confetti } from '@/components/effects';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import {
   getGrowthLevel,
   getGrowthProgress,
@@ -44,7 +45,7 @@ type Phase = 'breathing' | 'acknowledgment' | 'growth' | 'wisdom';
 
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { totalXp, currentStreak, lastLessonDate, name } = useStore();
-  const { playLevelUp, playCelebration, playTap, playSuccess } = useSound();
+  const audio = useAudio();
 
   const [phase, setPhase] = useState<Phase>('breathing');
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -86,7 +87,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
   // Handle phase advancement
   const advancePhase = useCallback(() => {
-    playTap();
+    audio.playTap();
     setCanAdvance(false);
 
     switch (phase) {
@@ -98,8 +99,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         if (leveledUp) {
           setShowLevelUp(true);
           setShowConfetti(true);
-          playLevelUp();
-          playCelebration();
+          audio.playLevelUp();
+          audio.playCelebrate();
         }
         break;
       case 'growth':
@@ -109,7 +110,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         onComplete();
         break;
     }
-  }, [phase, leveledUp, playTap, playLevelUp, playCelebration, onComplete]);
+  }, [phase, leveledUp, audio, onComplete]);
 
   // Enable advancement after minimum time per phase
   useEffect(() => {
@@ -124,13 +125,13 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       setCanAdvance(true);
     }, timings[phase]);
 
-    // Initial sound
+    // Initial sound - a soft singing bowl to create sacred space
     if (phase === 'breathing') {
-      playSuccess();
+      audio.playSingingBowl();
     }
 
     return () => clearTimeout(timer);
-  }, [phase, leveledUp, playSuccess]);
+  }, [phase, leveledUp, audio]);
 
   // Keyboard support
   useEffect(() => {

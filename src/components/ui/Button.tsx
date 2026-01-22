@@ -2,10 +2,12 @@
 
 import { forwardRef, type ReactNode, type MouseEvent, useState, useCallback } from 'react';
 import { motion, type HTMLMotionProps, AnimatePresence } from 'framer-motion';
+import { useAudio } from '@/hooks/useAudio';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BUTTON COMPONENT
 // A tactile, luminous button that feels satisfying to interact with
+// Now with audio feedback for every interaction!
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'children'> {
@@ -14,6 +16,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'children'
   isLoading?: boolean;
   glow?: boolean;
   children?: ReactNode;
+  sound?: 'tap' | 'tapConfirm' | 'success' | 'none'; // Control which sound plays
 }
 
 // Spring presets for different interactions
@@ -43,16 +46,29 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       glow = false,
       className = '',
       onClick,
+      sound = 'tap',
       ...props
     },
     ref
   ) => {
     const [ripples, setRipples] = useState<Ripple[]>([]);
+    const audio = useAudio();
 
-    // Create ripple on click
+    // Create ripple on click with sound
     const handleClick = useCallback(
       (e: MouseEvent<HTMLButtonElement>) => {
         if (disabled || isLoading) return;
+
+        // Play sound based on variant and sound prop
+        if (sound !== 'none') {
+          if (sound === 'success') {
+            audio.playSuccess();
+          } else if (sound === 'tapConfirm' || variant === 'primary' || glow) {
+            audio.playTapConfirm();
+          } else {
+            audio.playTap();
+          }
+        }
 
         const rect = e.currentTarget.getBoundingClientRect();
         const size = Math.max(rect.width, rect.height) * 2;
@@ -75,7 +91,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         onClick?.(e);
       },
-      [disabled, isLoading, onClick]
+      [disabled, isLoading, onClick, audio, sound, variant, glow]
     );
 
     // Base styles

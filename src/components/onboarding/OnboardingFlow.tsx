@@ -8,13 +8,18 @@
 // Every element is designed to create reverence, not just collect data.
 // The atmosphere builds. The journey deepens. The commitment solidifies.
 //
+// Audio: Mystical ambient music plays from the start, with chimes between
+// steps and a triumphant celebration at completion.
+//
 // Order: Welcome → Name → Anonymous Identity → Goal → Why → Commitment → Ready
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { AmbientBackground } from '@/components/ambient';
+import { useContextualAudio } from '@/hooks/useContextualAudio';
+import { useAudio } from '@/hooks/useAudio';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { NameStep } from './steps/NameStep';
 import { IdentityStep } from './steps/IdentityStep';
@@ -40,26 +45,91 @@ export function OnboardingFlow() {
   const { onboardingStep, setOnboardingStep, completeOnboarding } = useStore();
   const [direction, setDirection] = useState(1);
   const [mounted, setMounted] = useState(false);
+  
+  // Audio integration
+  const contextualAudio = useContextualAudio({ initialScene: 'silent' });
+  const audio = useAudio();
+  const audioStartedRef = useRef(false);
+  const prevStepRef = useRef(onboardingStep);
+
+  // Start onboarding music on first user interaction
+  const initializeAudio = useCallback(() => {
+    if (!audioStartedRef.current) {
+      audioStartedRef.current = true;
+      contextualAudio.enterScene('onboarding');
+    }
+  }, [contextualAudio]);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // Listen for first interaction to start audio
+    const handleInteraction = () => {
+      initializeAudio();
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+    
+    document.addEventListener('click', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [initializeAudio]);
 
-  const nextStep = () => {
+  // Play sounds on step changes
+  useEffect(() => {
+    if (mounted && prevStepRef.current !== onboardingStep) {
+      const wasForward = onboardingStep > prevStepRef.current;
+      
+      if (wasForward) {
+        // Moving forward - play step transition chime
+        if (onboardingStep === TOTAL_STEPS - 1) {
+          // Final step - play bigger reveal sound
+          audio.playReveal();
+        } else {
+          // Regular step - play chime
+          audio.playChime();
+        }
+      } else {
+        // Moving backward - subtle whoosh
+        audio.playWhoosh('out');
+      }
+      
+      prevStepRef.current = onboardingStep;
+    }
+  }, [onboardingStep, mounted, audio]);
+
+  const nextStep = useCallback(() => {
+    // Initialize audio on first forward action
+    initializeAudio();
+    
     if (onboardingStep < TOTAL_STEPS - 1) {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      completeOnboarding();
+      // Completing onboarding - play celebration!
+      audio.playCelebrate();
+      
+      // Transition to reward music briefly, then complete
+      contextualAudio.transitionTo('reward', { crossfadeDuration: 1 });
+      
+      // Small delay to let celebration sound play
+      setTimeout(() => {
+        contextualAudio.stopMusic(2);
+        completeOnboarding();
+      }, 1500);
     }
-  };
+  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio, contextualAudio]);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     if (onboardingStep > 0) {
       setDirection(-1);
       setOnboardingStep(onboardingStep - 1);
     }
-  };
+  }, [onboardingStep, setOnboardingStep]);
 
   const variants = {
     enter: (dir: number) => ({
