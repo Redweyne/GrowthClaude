@@ -19,6 +19,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useAudio } from '@/hooks/useAudio';
+import { useBreathingGuide } from '@/hooks/useBreathingGuide';
 import type { TimerStep as TimerStepType } from '@/types/lessons';
 
 interface TimerStepProps {
@@ -41,16 +43,49 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
   const [isPaused, setIsPaused] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Audio hooks for meditation experience
+  const { startMusic, stopMusic, playSuccess, playComplete, playSingingBowl, playGong } = useAudio();
+  const { start: startBreathingGuide, stop: stopBreathingGuide } = useBreathingGuide({
+    pattern: '4-7-8', // Relaxation breathing pattern: 4s in, 7s hold, 8s out
+    playBowlOnStart: false, // We play it manually
+    playBowlOnEnd: false,
+  });
+
   const progress = 1 - (timeRemaining / step.durationSeconds);
   const messages = step.guidanceMessages || [];
 
-  // Start practice after preparation
+  // Start practice after preparation with audio
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('practicing');
+
+      // Play singing bowl to signal start
+      playSingingBowl();
+
+      // Start appropriate audio based on timer style
+      if (step.timerStyle === 'breathing') {
+        startBreathingGuide();
+      } else {
+        // Start ambient music for focus/presence/countdown
+        startMusic('lessonDeep', 2);
+      }
     }, 3500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [playSingingBowl, startBreathingGuide, startMusic, step.timerStyle]);
+
+  // Cleanup audio on unmount or phase change
+  useEffect(() => {
+    if (phase === 'complete') {
+      stopBreathingGuide();
+      stopMusic(1);
+      playGong(); // Signal completion
+      playComplete();
+    }
+    return () => {
+      stopBreathingGuide();
+      stopMusic(0.5);
+    };
+  }, [phase, stopBreathingGuide, stopMusic, playGong, playComplete]);
 
   // Main timer
   useEffect(() => {

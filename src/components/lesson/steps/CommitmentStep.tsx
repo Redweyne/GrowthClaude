@@ -16,6 +16,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Target } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useAudio } from '@/hooks/useAudio';
+import { useTypingAmbience } from '@/hooks/useTypingAmbience';
 import type { CommitmentStep as CommitmentStepType } from '@/types/lessons';
 
 interface CommitmentStepProps {
@@ -37,19 +39,34 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Audio hooks for commitment experience
+  const { playSuccessBig, startWritingAmbience, stopWritingAmbience, playBell } = useAudio();
+  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: true });
+
   const minimumWords = step.minimumWords || 3;
   const wordCount = commitment.trim().split(/\s+/).filter(Boolean).length;
   const isReady = wordCount >= minimumWords;
   const hints = step.guidanceHints || DEFAULT_GUIDANCE;
 
-  // Phase transitions
+  // Phase transitions with audio
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('writing');
+      startWritingAmbience('forest'); // Forest sounds for commitment
       setTimeout(() => textareaRef.current?.focus(), 100);
     }, 1500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [startWritingAmbience]);
+
+  // Stop ambience when component unmounts or phase changes to confirming
+  useEffect(() => {
+    if (phase === 'confirming') {
+      stopWritingAmbience();
+    }
+    return () => {
+      stopWritingAmbience();
+    };
+  }, [phase, stopWritingAmbience]);
 
   // Rotate hints
   useEffect(() => {
@@ -62,20 +79,23 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
     return () => clearInterval(interval);
   }, [phase, commitment.length, hints.length]);
 
-  // Handle text change
+  // Handle text change with typing sounds
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCommitment(e.target.value);
     onKeystroke?.();
-  }, [onKeystroke]);
+    handleKeystroke(); // Trigger typing sound
+  }, [onKeystroke, handleKeystroke]);
 
-  // Handle submit
+  // Handle submit with commitment sealed sound
   const handleSubmit = useCallback(() => {
     if (!isReady) return;
     setPhase('confirming');
+    playBell(); // Bell to seal the commitment
+    playSuccessBig(); // Big success for the important moment
     setTimeout(() => {
       onComplete(commitment.trim());
     }, 800);
-  }, [isReady, commitment, onComplete]);
+  }, [isReady, commitment, onComplete, playBell, playSuccessBig]);
 
   // Keyboard shortcut
   useEffect(() => {

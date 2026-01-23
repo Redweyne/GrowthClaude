@@ -11,6 +11,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useAudio } from '@/hooks/useAudio';
 import type { ChoiceStep as ChoiceStepType, ChoiceOption } from '@/types/lessons';
 
 interface ChoiceStepProps {
@@ -22,6 +23,9 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
 
+  // Audio for choice interactions
+  const { playTapConfirm, playSuccess } = useAudio();
+
   // Show options after brief delay
   useEffect(() => {
     const timer = setTimeout(() => setShowOptions(true), 400);
@@ -30,8 +34,10 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
 
   const handleSelect = (option: ChoiceOption) => {
     setSelectedOption(option.id);
+    playTapConfirm(); // Confirmation sound on selection
     // Brief pause before moving on
     setTimeout(() => {
+      playSuccess(); // Success sound before completing
       onComplete(option);
     }, 500);
   };

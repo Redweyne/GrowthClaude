@@ -17,6 +17,7 @@ import { AchievementGallery, AchievementCelebration } from '@/components/achieve
 import { IdentityScreen } from '@/components/identity';
 import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
+import { SettingsPanel } from '@/components/settings';
 import { useTransformationStory } from '@/hooks';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
 import type { PublicReflection } from '@/types/echoes';
@@ -414,19 +415,13 @@ export default function Home() {
     );
   }
 
-  // Settings (simple placeholder for now)
+  // Settings
   if (currentView === 'settings') {
     return (
-      <div className="min-h-screen bg-zinc-950 p-6">
-        <button
-          onClick={() => setCurrentView('home')}
-          className="mb-8 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors text-sm"
-        >
-          ← Back
-        </button>
-        <h1 className="text-2xl font-bold text-white mb-4">Settings</h1>
-        <p className="text-zinc-400">Settings coming soon...</p>
-      </div>
+      <>
+        <AchievementCelebration />
+        <SettingsPanel onBack={() => setCurrentView('home')} />
+      </>
     );
   }
 

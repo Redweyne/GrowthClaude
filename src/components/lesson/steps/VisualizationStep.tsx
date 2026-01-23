@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useAudio } from '@/hooks/useAudio';
 import type { VisualizationStep as VisualizationStepType } from '@/types/lessons';
 
 interface VisualizationStepProps {
@@ -46,8 +47,22 @@ const STYLE_CONFIG = {
 export function VisualizationStep({ step, onComplete }: VisualizationStepProps) {
   const [showButton, setShowButton] = useState(false);
 
+  // Audio for immersive visualization
+  const { startMusic, stopMusic, playChime, playSuccess } = useAudio();
+
   const style = step.style || 'cosmic';
   const config = STYLE_CONFIG[style];
+
+  // Start ambient music when visualization begins
+  useEffect(() => {
+    // Choose music based on style - use visualization for visuals
+    startMusic('visualization', 3);
+    playChime(); // Gentle chime to signal visualization start
+
+    return () => {
+      stopMusic(2);
+    };
+  }, [startMusic, stopMusic, playChime]);
 
   // Show button after reading time
   useEffect(() => {
@@ -126,7 +141,11 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
             >
               <Button
                 size="lg"
-                onClick={() => onComplete()}
+                onClick={() => {
+                  playSuccess();
+                  stopMusic(1.5); // Fade out music
+                  onComplete();
+                }}
                 glow
                 className="w-full group"
               >

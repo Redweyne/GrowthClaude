@@ -20,6 +20,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Feather, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useAudio } from '@/hooks/useAudio';
+import { useTypingAmbience } from '@/hooks/useTypingAmbience';
 import type { Lesson } from '@/types';
 
 interface ReflectionStepProps {
@@ -81,6 +83,10 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const lastKeystrokeRef = useRef<number>(0);
   const promptShownRef = useRef<Set<number>>(new Set());
 
+  // Audio hooks for immersive experience
+  const { playSuccess, startWritingAmbience, stopWritingAmbience, playChime } = useAudio();
+  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: true });
+
   // Echoes store for publishing public reflections
   const { publishReflection, genderIdentity } = useEchoesStore();
 
@@ -108,10 +114,22 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('writing');
+      // Start ambient writing sounds
+      startWritingAmbience('rain');
       setTimeout(() => textareaRef.current?.focus(), 100);
     }, 2200);
     return () => clearTimeout(timer);
-  }, []);
+  }, [startWritingAmbience]);
+
+  // Stop ambience when component unmounts or phase changes to complete
+  useEffect(() => {
+    if (phase === 'complete') {
+      stopWritingAmbience();
+    }
+    return () => {
+      stopWritingAmbience();
+    };
+  }, [phase, stopWritingAmbience]);
 
   // Show encouragement prompts based on inactivity
   useEffect(() => {
@@ -140,31 +158,35 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     };
   }, [secondsElapsed, phase, reflection, wordCount, showPrompt]);
 
-  // Track milestones
+  // Track milestones with audio feedback
   useEffect(() => {
     let timerId: ReturnType<typeof setTimeout> | null = null;
     const reachedMilestone = MILESTONES.find(m => wordCount >= m.words && wordCount < m.words + 10);
     if (reachedMilestone && milestone !== reachedMilestone.message) {
       setMilestone(reachedMilestone.message);
+      playChime(); // Gentle chime for milestone
       timerId = setTimeout(() => setMilestone(null), 3000);
     }
     return () => {
       if (timerId) clearTimeout(timerId);
     };
-  }, [wordCount, milestone]);
+  }, [wordCount, milestone, playChime]);
 
-  // Handle text change
+  // Handle text change with typing sounds
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setReflection(e.target.value);
     lastKeystrokeRef.current = Date.now();
     setShowPrompt(false);
     onKeystroke?.();
-  }, [onKeystroke]);
+    // Trigger typing sound on keystroke
+    handleKeystroke();
+  }, [onKeystroke, handleKeystroke]);
 
-  // Handle submit
+  // Handle submit with completion sound
   const handleSubmit = useCallback(() => {
     if (!isSubstantial) return;
     setPhase('complete');
+    playSuccess(); // Play success sound on completion
 
     // Publish to Echoes if user chose to share publicly
     if (isPublic && genderIdentity) {
@@ -179,7 +201,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     setTimeout(() => {
       onComplete(reflection.trim());
     }, 800);
-  }, [isSubstantial, reflection, onComplete, isPublic, genderIdentity, publishReflection, lesson.id, lesson.title]);
+  }, [isSubstantial, reflection, onComplete, isPublic, genderIdentity, publishReflection, lesson.id, lesson.title, playSuccess]);
 
   // Keyboard shortcut
   useEffect(() => {

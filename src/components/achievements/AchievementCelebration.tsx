@@ -13,7 +13,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import { Confetti } from '@/components/effects/Confetti';
 import { MilestoneUnlockAnimation } from './AchievementBadge';
 import { getMilestoneById, type Milestone } from '@/types/achievements';
@@ -28,7 +28,7 @@ export function MilestoneCelebration() {
     clearPendingCelebration,
     markAchievementCelebrated,
   } = useStore();
-  const { playCelebration, playLevelUp } = useSound();
+  const { playCelebrate, playLevelUp, playUnlock } = useAudio();
 
   const [showCelebration, setShowCelebration] = useState(false);
   const [currentMilestone, setCurrentMilestone] = useState<Milestone | undefined>(undefined);
@@ -50,11 +50,13 @@ export function MilestoneCelebration() {
           setShowConfetti(true);
           playLevelUp();
         } else {
-          playCelebration();
+          playUnlock();
         }
+        // Always play celebrate sound for achievements
+        playCelebrate();
       }
     }
-  }, [pendingId, playCelebration, playLevelUp]);
+  }, [pendingId, playCelebrate, playLevelUp, playUnlock]);
 
   // Handle completion of the celebration
   const handleComplete = useCallback(() => {

@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Quote, Lightbulb, Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useAudio } from '@/hooks/useAudio';
 import type { InsightStep as InsightStepType } from '@/types/lessons';
 
 interface InsightStepProps {
@@ -54,9 +55,22 @@ const STYLE_CONFIG = {
 export function InsightStep({ step, onComplete }: InsightStepProps) {
   const [showButton, setShowButton] = useState(false);
 
+  // Audio for revelation moments
+  const { playReveal, playSuccess, playBell } = useAudio();
+
   const style = step.style || 'revelation';
   const config = STYLE_CONFIG[style];
   const Icon = config.icon;
+
+  // Play revelation sound when insight appears
+  useEffect(() => {
+    // Different sounds for different insight styles
+    if (style === 'quote') {
+      playBell(); // Gentle bell for quotes
+    } else {
+      playReveal(); // Revelation sound for principles/insights
+    }
+  }, [style, playBell, playReveal]);
 
   // Simple delay before showing button
   useEffect(() => {
@@ -141,7 +155,10 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             >
               <Button
                 size="lg"
-                onClick={onComplete}
+                onClick={() => {
+                  playSuccess();
+                  onComplete();
+                }}
                 glow
                 className="w-full group"
               >
