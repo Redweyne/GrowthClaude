@@ -196,10 +196,10 @@ export function useAudio() {
   // MEDITATION SOUNDS
   // ─────────────────────────────────────────────────────────────────────────
 
-  const playSingingBowl = useCallback((frequency?: number) => {
+  const playSingingBowl = useCallback(() => {
     if (!soundEnabled) return;
     init();
-    playSingingBowlSound(frequency);
+    playSingingBowlSound();
   }, [soundEnabled, init]);
 
   const playGong = useCallback(() => {
@@ -276,7 +276,7 @@ export function useAudio() {
   return {
     // Initialize
     init,
-    
+
     // UI sounds
     playUI,
     playTap,
@@ -296,23 +296,23 @@ export function useAudio() {
     playReveal,
     playKeystroke,
     playError,
-    
+
     // Music
     startMusic,
     stopMusic,
-    
+
     // Writing ambience
     startWritingAmbience,
     stopWritingAmbience,
-    
+
     // Meditation
     playSingingBowl,
     playGong,
     playBreathingTone,
-    
+
     // XP
     playXpCounting,
-    
+
     // Aliases
     playSparkle,
     playReward,
@@ -320,7 +320,7 @@ export function useAudio() {
     playDing,
     playCorrect,
     playSound,
-    
+
     // Settings
     updateSettings,
   };
