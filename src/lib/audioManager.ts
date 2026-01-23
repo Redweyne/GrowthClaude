@@ -5,22 +5,25 @@
 // ============================================================================
 
 // Audio file paths
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
+// Audio file paths
 export const SOUNDS = {
-  tap: '/audio/ui/tap.mp3',
-  success: '/audio/ui/success.mp3',
-  complete: '/audio/ui/complete.mp3',
-  levelUp: '/audio/ui/level-up.mp3',
-  streak: '/audio/ui/streak.mp3',
-  bell: '/audio/ui/bell.mp3',
-  chime: '/audio/ui/chime.mp3',
-  whoosh: '/audio/ui/whoosh.mp3',
-  pop: '/audio/ui/pop.mp3',
-  celebrate: '/audio/ui/celebrate.mp3',
-  keystroke: '/audio/ui/keystroke.mp3',
-  ambientCalm: '/audio/ambient/calm.mp3',
-  ambientFocus: '/audio/ambient/focus.mp3',
-  ambientReflection: '/audio/ambient/reflection.mp3',
-  ambientWisdom: '/audio/ambient/wisdom.mp3',
+  tap: `${BASE_PATH}/audio/ui/tap.mp3`,
+  success: `${BASE_PATH}/audio/ui/success.mp3`,
+  complete: `${BASE_PATH}/audio/ui/complete.mp3`,
+  levelUp: `${BASE_PATH}/audio/ui/level-up.mp3`,
+  streak: `${BASE_PATH}/audio/ui/streak.mp3`,
+  bell: `${BASE_PATH}/audio/ui/bell.mp3`,
+  chime: `${BASE_PATH}/audio/ui/chime.mp3`,
+  whoosh: `${BASE_PATH}/audio/ui/whoosh.mp3`,
+  pop: `${BASE_PATH}/audio/ui/pop.mp3`,
+  celebrate: `${BASE_PATH}/audio/ui/celebrate.mp3`,
+  keystroke: `${BASE_PATH}/audio/ui/keystroke.mp3`,
+  ambientCalm: `${BASE_PATH}/audio/ambient/calm.mp3`,
+  ambientFocus: `${BASE_PATH}/audio/ambient/focus.mp3`,
+  ambientReflection: `${BASE_PATH}/audio/ambient/reflection.mp3`,
+  ambientWisdom: `${BASE_PATH}/audio/ambient/wisdom.mp3`,
 } as const;
 
 export type SoundName = keyof typeof SOUNDS;

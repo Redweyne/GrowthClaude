@@ -55,48 +55,50 @@ let isInitialized = false;
 // AUDIO FILE PATHS
 // ─────────────────────────────────────────────────────────────────────────────
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 const UI_SOUNDS: Record<string, string> = {
-  tap: '/audio/ui/tap.mp3',
-  tapConfirm: '/audio/ui/tap.mp3',
-  success: '/audio/ui/success.mp3',
-  successBig: '/audio/ui/celebrate.mp3',
-  complete: '/audio/ui/complete.mp3',
-  levelUp: '/audio/ui/level-up.mp3',
-  streak: '/audio/ui/streak.mp3',
-  bell: '/audio/ui/bell.mp3',
-  chime: '/audio/ui/chime.mp3',
-  whoosh: '/audio/ui/whoosh.mp3',
-  whooshOut: '/audio/ui/whoosh.mp3',
-  pop: '/audio/ui/pop.mp3',
-  celebrate: '/audio/ui/celebrate.mp3',
-  unlock: '/audio/ui/streak.mp3',
-  notification: '/audio/ui/bell.mp3',
-  reveal: '/audio/ui/chime.mp3',
-  keystroke: '/audio/ui/keystroke.mp3',
-  error: '/audio/ui/pop.mp3',
-  gong: '/audio/ui/bell.mp3',
-  singingBowl: '/audio/ui/bell.mp3',
+  tap: `${BASE_PATH}/audio/ui/tap.mp3`,
+  tapConfirm: `${BASE_PATH}/audio/ui/tap.mp3`,
+  success: `${BASE_PATH}/audio/ui/success.mp3`,
+  successBig: `${BASE_PATH}/audio/ui/celebrate.mp3`,
+  complete: `${BASE_PATH}/audio/ui/complete.mp3`,
+  levelUp: `${BASE_PATH}/audio/ui/level-up.mp3`,
+  streak: `${BASE_PATH}/audio/ui/streak.mp3`,
+  bell: `${BASE_PATH}/audio/ui/bell.mp3`,
+  chime: `${BASE_PATH}/audio/ui/chime.mp3`,
+  whoosh: `${BASE_PATH}/audio/ui/whoosh.mp3`,
+  whooshOut: `${BASE_PATH}/audio/ui/whoosh.mp3`,
+  pop: `${BASE_PATH}/audio/ui/pop.mp3`,
+  celebrate: `${BASE_PATH}/audio/ui/celebrate.mp3`,
+  unlock: `${BASE_PATH}/audio/ui/streak.mp3`,
+  notification: `${BASE_PATH}/audio/ui/bell.mp3`,
+  reveal: `${BASE_PATH}/audio/ui/chime.mp3`,
+  keystroke: `${BASE_PATH}/audio/ui/keystroke.mp3`,
+  error: `${BASE_PATH}/audio/ui/pop.mp3`,
+  gong: `${BASE_PATH}/audio/ui/bell.mp3`,
+  singingBowl: `${BASE_PATH}/audio/ui/bell.mp3`,
 };
 
 // Scene/Music tracks (longer ambient music)
 const SCENE_MUSIC: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
   // lessonDeep is for Timer step
-  lessonDeep: { path: '/audio/writing/lessonDeep.mp3', randomStart: true, duration: 6600 }, // ~110 min
+  lessonDeep: { path: `${BASE_PATH}/audio/writing/lessonDeep.mp3`, randomStart: true, duration: 6600 }, // ~110 min
   // visualization is for Visualization step
-  visualization: { path: '/audio/writing/visualization.mp3', randomStart: true, duration: 7200 }, // ~2 hours
+  visualization: { path: `${BASE_PATH}/audio/writing/visualization.mp3`, randomStart: true, duration: 7200 }, // ~2 hours
   // Other scene types map to ambient folder
-  lessonCalm: { path: '/audio/ambient/calm.mp3', randomStart: false },
-  reflection: { path: '/audio/ambient/reflection.mp3', randomStart: false },
-  onboarding: { path: '/audio/ambient/calm.mp3', randomStart: false },
-  reward: { path: '/audio/ambient/focus.mp3', randomStart: false },
-  home: { path: '/audio/ambient/calm.mp3', randomStart: false },
+  lessonCalm: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
+  reflection: { path: `${BASE_PATH}/audio/ambient/reflection.mp3`, randomStart: false },
+  onboarding: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
+  reward: { path: `${BASE_PATH}/audio/ambient/focus.mp3`, randomStart: false },
+  home: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
 };
 
 // Writing ambience tracks
 const WRITING_AMBIENCE: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
-  rain: { path: '/audio/writing/rain.mp3', randomStart: false }, // Shorter, no random start
-  forest: { path: '/audio/writing/forest.mp3', randomStart: true, duration: 1350 }, // ~22 min
-  fire: { path: '/audio/writing/rain.mp3', randomStart: false }, // Fallback to rain
+  rain: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false }, // Shorter, no random start
+  forest: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: true, duration: 1350 }, // ~22 min
+  fire: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false }, // Fallback to rain
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -148,7 +150,7 @@ export function initAudioEngine(): void {
   preloadUISounds();
 
   isInitialized = true;
-  console.log('[AudioEngine] 🔊 Initialized with real MP3 files (Howler.js)');
+  console.log(`[AudioEngine] 🔊 Initialized with real MP3 files (Howler.js) - Base Path: '${BASE_PATH}'`);
   console.log('[AudioEngine] 🔍 Checking UI sounds:', Object.keys(UI_SOUNDS).length);
 }
 
