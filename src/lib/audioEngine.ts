@@ -113,6 +113,12 @@ function preloadUISounds(): void {
         volume: settings.uiVolume * settings.masterVolume,
         preload: true,
         html5: false, // Use Web Audio for low latency
+        onloaderror: (id, error) => {
+          console.error(`[AudioEngine] ❌ Failed to load UI sound: ${name} (${path})`, error);
+        },
+        onload: () => {
+          console.log(`[AudioEngine] ✅ Loaded UI sound: ${name}`);
+        }
       });
       uiSoundCache.set(name, howl);
     }
@@ -142,7 +148,8 @@ export function initAudioEngine(): void {
   preloadUISounds();
 
   isInitialized = true;
-  console.log('[AudioEngine] Initialized with real MP3 files');
+  console.log('[AudioEngine] 🔊 Initialized with real MP3 files (Howler.js)');
+  console.log('[AudioEngine] 🔍 Checking UI sounds:', Object.keys(UI_SOUNDS).length);
 }
 
 export function ensureInitialized(): boolean {
@@ -270,7 +277,8 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
       }
     },
     onloaderror: (id, error) => {
-      console.warn(`[AudioEngine] Failed to load ${config.path}:`, error);
+      console.error(`[AudioEngine] ❌ Failed to load scene music: ${type} (${config.path})`, error);
+      console.error('[AudioEngine] This usually means Git LFS is missing or the file is a pointer.');
     },
   });
 
