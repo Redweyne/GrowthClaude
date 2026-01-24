@@ -128,6 +128,23 @@ function preloadUISounds(): void {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// DEBOUNCE - Prevent double-plays from React StrictMode / re-renders
+// ─────────────────────────────────────────────────────────────────────────────
+
+const lastPlayedTime: Map<string, number> = new Map();
+const DEBOUNCE_MS = 100; // Ignore duplicate plays within 100ms
+
+function shouldPlay(sound: string): boolean {
+  const now = Date.now();
+  const lastPlayed = lastPlayedTime.get(sound) || 0;
+  if (now - lastPlayed < DEBOUNCE_MS) {
+    return false; // Skip - played too recently
+  }
+  lastPlayedTime.set(sound, now);
+  return true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ACTIVE AUDIO SOURCES
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -135,6 +152,8 @@ let activeMusicHowl: Howl | null = null;
 let activeMusicId: number | null = null;
 let activeAmbienceHowl: Howl | null = null;
 let activeAmbienceId: number | null = null;
+let currentMusicType: string | null = null;
+let currentAmbienceType: string | null = null;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
@@ -198,11 +217,16 @@ export function getSettings(): AudioSettings {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UI SOUNDS - One-shot playback
+// UI SOUNDS - One-shot playback with debouncing
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function playUI(sound: UISound): void {
   if (!ensureInitialized()) return;
+
+  // Debounce check - skip if played too recently (prevents React StrictMode double-plays)
+  if (!shouldPlay(sound)) {
+    return;
+  }
 
   const cachedSound = uiSoundCache.get(sound);
   if (cachedSound) {
@@ -255,6 +279,11 @@ export const playCelebration = (volume?: number) => {
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
 
+  // Skip if already playing this exact type (prevents React StrictMode double-starts)
+  if (currentMusicType === type && activeMusicHowl && activeMusicId !== null) {
+    return;
+  }
+
   // Stop current music with crossfade
   stopAmbientMusic(fadeInDuration * 0.5);
 
@@ -263,6 +292,8 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     console.warn(`[AudioEngine] Unknown scene type: ${type}`);
     return;
   }
+
+  currentMusicType = type;
 
   const howl = new Howl({
     src: [config.path],
@@ -281,6 +312,7 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     onloaderror: (id, error) => {
       console.error(`[AudioEngine] ❌ Failed to load scene music: ${type} (${config.path})`, error);
       console.error('[AudioEngine] This usually means Git LFS is missing or the file is a pointer.');
+      currentMusicType = null;
     },
   });
 
@@ -297,6 +329,11 @@ export function stopAmbientMusic(fadeOutDuration: number = 2): void {
   const howl = activeMusicHowl;
   const id = activeMusicId;
 
+  // Clear state immediately to prevent re-entry
+  activeMusicHowl = null;
+  activeMusicId = null;
+  currentMusicType = null;
+
   // Fade out and stop
   howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
 
@@ -304,9 +341,6 @@ export function stopAmbientMusic(fadeOutDuration: number = 2): void {
     howl.stop(id);
     howl.unload();
   }, fadeOutDuration * 1000);
-
-  activeMusicHowl = null;
-  activeMusicId = null;
 }
 
 // Alias for useAudio hook compatibility
@@ -326,6 +360,11 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     return;
   }
 
+  // Skip if already playing this exact type (prevents React StrictMode double-starts)
+  if (currentAmbienceType === ambienceType && activeAmbienceHowl && activeAmbienceId !== null) {
+    return;
+  }
+
   // Stop current ambience
   stopWritingAmbience();
 
@@ -334,6 +373,8 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     console.warn(`[AudioEngine] Unknown ambience type: ${ambienceType}`);
     return;
   }
+
+  currentAmbienceType = ambienceType;
 
   const howl = new Howl({
     src: [config.path],
@@ -363,6 +404,11 @@ export function stopWritingAmbience(): void {
   const howl = activeAmbienceHowl;
   const id = activeAmbienceId;
 
+  // Clear state immediately to prevent re-entry
+  activeAmbienceHowl = null;
+  activeAmbienceId = null;
+  currentAmbienceType = null;
+
   // Fade out over 1 second
   howl.fade(howl.volume(id) as number, 0, 1000, id);
 
@@ -370,9 +416,6 @@ export function stopWritingAmbience(): void {
     howl.stop(id);
     howl.unload();
   }, 1000);
-
-  activeAmbienceHowl = null;
-  activeAmbienceId = null;
 }
 
 // Aliases for compatibility
