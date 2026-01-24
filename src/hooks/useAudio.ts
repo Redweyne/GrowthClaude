@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import {
   initAudioEngine,
+  resumeAudio,
   playUI as playUISound,
   startAmbientMusic,
   stopAmbientMusic,
@@ -44,28 +45,35 @@ export function useAudio() {
     if (initialized.current) return;
     try {
       initAudioEngine();
+      // iOS Safari requires resuming audio context after user interaction
+      resumeAudio();
       initialized.current = true;
     } catch {
       // Audio not available
     }
   }, []);
 
-  // Auto-initialize on user interaction
+  // Auto-initialize on user interaction (critical for iOS Safari)
   useEffect(() => {
     const handleInteraction = () => {
       init();
+      // Always try to resume audio on any interaction (iOS requirement)
+      resumeAudio();
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('touchend', handleInteraction);
       document.removeEventListener('keydown', handleInteraction);
     };
 
     document.addEventListener('click', handleInteraction);
     document.addEventListener('touchstart', handleInteraction);
+    document.addEventListener('touchend', handleInteraction); // iOS sometimes needs touchend
     document.addEventListener('keydown', handleInteraction);
 
     return () => {
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('touchend', handleInteraction);
       document.removeEventListener('keydown', handleInteraction);
     };
   }, [init]);
