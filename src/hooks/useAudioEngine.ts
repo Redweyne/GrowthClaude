@@ -24,7 +24,7 @@ import {
     type AmbientSound,
     type BreathPhase,
 } from '@/lib/audioEngine';
-import { playHaptic, HAPTIC_PATTERNS } from '@/lib/audioManager';
+import { playHaptic, HAPTIC_PATTERNS } from '@/lib/audioEngine';
 
 export type BowlType = 'small' | 'medium' | 'large';
 export type SceneType = AmbientSound;

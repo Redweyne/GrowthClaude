@@ -3,23 +3,18 @@
 // ============================================================================
 // LESSON AMBIENCE - Background music ONLY during reflection
 // ============================================================================
-//
-// Music only plays during the reflection/writing phase - the calm moment
-// when the user is thinking and writing. Not during the whole lesson.
-//
-// Keystroke sounds removed - silence is more calming than bad sounds.
+// Now uses audioEngine.ts (Howler.js) - NO FALLBACKS, NO GENERATED SOUNDS
 // ============================================================================
 
 import { useCallback, useRef, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import {
-  startAmbient,
-  stopAmbient,
-  isAmbientPlaying,
-  playSound,
+  startAmbientMusic,
+  stopAmbientMusic,
+  playUI,
   playHaptic,
   HAPTIC_PATTERNS,
-} from '@/lib/audioManager';
+} from '@/lib/audioEngine';
 
 type LessonPhase = 'entering' | 'wisdom' | 'action' | 'reflection' | 'completion';
 
@@ -29,7 +24,7 @@ export function useLessonAmbience() {
   const isPlayingRef = useRef(false);
 
   const initAudio = useCallback(() => {
-    // Nothing needed
+    // Nothing needed - audioEngine handles this
   }, []);
 
   // Start ambient - ONLY plays during reflection
@@ -39,7 +34,7 @@ export function useLessonAmbience() {
 
     // Only play ambient during reflection - the calm writing moment
     if (phase === 'reflection') {
-      startAmbient('ambientReflection', 3000);
+      startAmbientMusic('reflection', 3);
       isPlayingRef.current = true;
     }
   }, [soundEnabled]);
@@ -51,25 +46,25 @@ export function useLessonAmbience() {
 
     if (newPhase === 'reflection') {
       // Start ambient for reflection
-      startAmbient('ambientReflection', 2000);
+      startAmbientMusic('reflection', 2);
       isPlayingRef.current = true;
     } else if (isPlayingRef.current) {
       // Stop ambient when leaving reflection
-      stopAmbient(1500);
+      stopAmbientMusic(1.5);
       isPlayingRef.current = false;
     }
   }, [soundEnabled]);
 
   // Stop ambient
   const stopAmbience = useCallback(() => {
-    stopAmbient(1500);
+    stopAmbientMusic(1.5);
     isPlayingRef.current = false;
   }, []);
 
   // Bell sound
   const playBell = useCallback((type: 'soft' | 'bright' | 'deep' = 'soft') => {
     if (!soundEnabled) return;
-    playSound('bell', type === 'deep' ? 0.8 : 0.6);
+    playUI('bell');
     if (hapticEnabled) playHaptic(HAPTIC_PATTERNS.tap);
   }, [soundEnabled, hapticEnabled]);
 
@@ -81,14 +76,19 @@ export function useLessonAmbience() {
   // Completion chime
   const playCompletionChime = useCallback(() => {
     if (!soundEnabled) return;
-    playSound('complete', 0.8);
+    playUI('complete');
     if (hapticEnabled) playHaptic(HAPTIC_PATTERNS.complete);
   }, [soundEnabled, hapticEnabled]);
+
+  // Check if ambient is playing
+  const isAmbientPlaying = useCallback(() => {
+    return isPlayingRef.current;
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      stopAmbient(500);
+      stopAmbientMusic(0.5);
     };
   }, []);
 

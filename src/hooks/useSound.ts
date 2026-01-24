@@ -3,41 +3,34 @@
 // ============================================================================
 // USE SOUND - Simple hook for playing real audio files
 // ============================================================================
-//
-// This hook plays actual audio files, not generated oscillator nonsense.
-// Add your audio files to /public/audio/ui/ and /public/audio/ambient/
-//
-// Get free sounds from:
-//   - pixabay.com/sound-effects
-//   - pixabay.com/music
-//   - chosic.com/free-music/relaxing
+// Now uses audioEngine.ts (Howler.js) - NO FALLBACKS, NO GENERATED SOUNDS
 // ============================================================================
 
 import { useCallback, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import {
-  playSound as playSoundFile,
+  initAudioEngine,
+  playUI,
   playHaptic,
-  preloadUISounds,
   HAPTIC_PATTERNS,
-  type SoundName,
-} from '@/lib/audioManager';
+  type UISound,
+} from '@/lib/audioEngine';
 
 export function useSound() {
   const { soundEnabled, hapticEnabled } = useStore();
   const initialized = useRef(false);
 
-  // Preload common sounds on first user interaction
+  // Initialize audio on first user interaction
   const initAudio = useCallback(() => {
     if (initialized.current) return;
     initialized.current = true;
-    preloadUISounds();
+    initAudioEngine();
   }, []);
 
   // Generic sound player
-  const play = useCallback((name: SoundName, volume?: number) => {
+  const play = useCallback((name: UISound, volume?: number) => {
     if (!soundEnabled) return;
-    playSoundFile(name, volume);
+    playUI(name);
   }, [soundEnabled]);
 
   // Haptic helper
@@ -51,55 +44,55 @@ export function useSound() {
   // =========================================================================
 
   const playTap = useCallback(() => {
-    play('tap', 0.5);
+    play('tap');
     vibrate(HAPTIC_PATTERNS.tap);
   }, [play, vibrate]);
 
   const playSuccess = useCallback(() => {
-    play('success', 0.7);
+    play('success');
     vibrate(HAPTIC_PATTERNS.success);
   }, [play, vibrate]);
 
   const playComplete = useCallback(() => {
-    play('complete', 0.8);
+    play('complete');
     vibrate(HAPTIC_PATTERNS.complete);
   }, [play, vibrate]);
 
   const playLevelUp = useCallback(() => {
-    play('levelUp', 0.9);
+    play('levelUp');
     vibrate(HAPTIC_PATTERNS.celebrate);
   }, [play, vibrate]);
 
   const playStreak = useCallback(() => {
-    play('streak', 0.7);
+    play('streak');
     vibrate(HAPTIC_PATTERNS.success);
   }, [play, vibrate]);
 
   const playCelebration = useCallback(() => {
-    play('celebrate', 1.0);
+    play('celebrate');
     vibrate(HAPTIC_PATTERNS.celebrate);
   }, [play, vibrate]);
 
   const playBell = useCallback(() => {
-    play('bell', 0.6);
+    play('bell');
     vibrate(HAPTIC_PATTERNS.tap);
   }, [play, vibrate]);
 
   const playChime = useCallback(() => {
-    play('chime', 0.6);
+    play('chime');
   }, [play]);
 
   const playWhoosh = useCallback(() => {
-    play('whoosh', 0.4);
+    play('whoosh');
   }, [play]);
 
   const playPop = useCallback(() => {
-    play('pop', 0.5);
+    play('pop');
     vibrate(HAPTIC_PATTERNS.tap);
   }, [play, vibrate]);
 
   const playKeystroke = useCallback(() => {
-    play('keystroke', 0.3);
+    play('keystroke');
   }, [play]);
 
   // Aliases for compatibility
@@ -114,7 +107,7 @@ export function useSound() {
     const ticks = Math.min(count, 15);
     for (let i = 0; i < ticks; i++) {
       setTimeout(() => {
-        play('pop', 0.3 + (i / ticks) * 0.3);
+        play('pop');
       }, i * 50);
     }
     setTimeout(() => playSuccess(), ticks * 50 + 100);
