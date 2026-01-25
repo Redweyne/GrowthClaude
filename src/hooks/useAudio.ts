@@ -24,6 +24,7 @@ import {
   stopAmbientMusic,
   startWritingAmbience as startWriting,
   stopWritingAmbience as stopWriting,
+  stopAllAudio as stopAll,
   playSingingBowl as playSingingBowlSound,
   playGong as playGongSound,
   playBreathingTone as playBreathTone,
@@ -210,6 +211,10 @@ export function useAudio() {
     stopWriting();
   }, []);
 
+  const stopAllAudio = useCallback(() => {
+    stopAll();
+  }, []);
+
   // ─────────────────────────────────────────────────────────────────────────
   // MEDITATION SOUNDS
   // ─────────────────────────────────────────────────────────────────────────
@@ -322,6 +327,9 @@ export function useAudio() {
     // Writing ambience
     startWritingAmbience,
     stopWritingAmbience,
+
+    // Stop all
+    stopAllAudio,
 
     // Meditation
     playSingingBowl,

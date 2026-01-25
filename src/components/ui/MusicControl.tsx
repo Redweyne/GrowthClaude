@@ -34,33 +34,45 @@ interface MusicControlProps {
 export function MusicControl({ currentTrack }: MusicControlProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTrack, setActiveTrack] = useState<string>(currentTrack || 'silence');
+  const [isLoading, setIsLoading] = useState(false);
   const { soundEnabled, setSoundEnabled } = useStore();
-  const { startMusic, stopMusic, startWritingAmbience, stopWritingAmbience } = useAudio();
+  const { startMusic, startWritingAmbience, stopAllAudio } = useAudio();
 
   const handleSelectTrack = useCallback((trackId: string) => {
-    setActiveTrack(trackId);
-
-    if (trackId === 'silence') {
-      stopMusic(1);
-      stopWritingAmbience();
-    } else if (['rain', 'forest', 'fire'].includes(trackId)) {
-      stopMusic(0.5);
-      startWritingAmbience(trackId as WritingAmbience);
-    } else {
-      stopWritingAmbience();
-      startMusic(trackId as AmbientSound, 2);
+    // Prevent rapid clicking
+    if (isLoading) return;
+    if (trackId === activeTrack) {
+      setIsOpen(false);
+      return;
     }
 
+    setIsLoading(true);
+    setActiveTrack(trackId);
+
+    // Stop ALL audio immediately before starting new track
+    stopAllAudio();
+
+    // Small delay to ensure cleanup, then start new track
+    setTimeout(() => {
+      if (trackId === 'silence') {
+        // Already stopped
+      } else if (['rain', 'forest', 'fire'].includes(trackId)) {
+        startWritingAmbience(trackId as WritingAmbience);
+      } else {
+        startMusic(trackId as AmbientSound, 2);
+      }
+      setIsLoading(false);
+    }, 100);
+
     setIsOpen(false);
-  }, [startMusic, stopMusic, startWritingAmbience, stopWritingAmbience]);
+  }, [activeTrack, isLoading, startMusic, startWritingAmbience, stopAllAudio]);
 
   const toggleSound = useCallback(() => {
     if (soundEnabled) {
-      stopMusic(0.5);
-      stopWritingAmbience();
+      stopAllAudio();
     }
     setSoundEnabled(!soundEnabled);
-  }, [soundEnabled, setSoundEnabled, stopMusic, stopWritingAmbience]);
+  }, [soundEnabled, setSoundEnabled, stopAllAudio]);
 
   const currentOption = MUSIC_OPTIONS.find(o => o.id === activeTrack) || MUSIC_OPTIONS[0];
 
@@ -91,9 +103,10 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
                   <button
                     key={option.id}
                     onClick={() => handleSelectTrack(option.id)}
+                    disabled={isLoading}
                     className={`
                       w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
-                      transition-colors
+                      transition-colors disabled:opacity-50
                       ${activeTrack === option.id
                         ? 'bg-cyan-500/20 text-cyan-300'
                         : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'

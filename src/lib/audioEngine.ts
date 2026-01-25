@@ -372,7 +372,8 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     src: [config.path],
     volume: 0,
     loop: true,
-    // Let Howler auto-detect (fixes PC vs iPhone compatibility)
+    html5: true, // Use HTML5 Audio - better for iOS speaker (bypasses some silent mode restrictions)
+    preload: true,
     onload: function () {
       console.log(`[AudioEngine] ✅ Scene music loaded: ${type}`);
       // Seek to random position BEFORE playing (not after)
@@ -404,7 +405,7 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
   // Don't play here - wait for onload to seek first
 }
 
-export function stopAmbientMusic(fadeOutDuration: number = 2): void {
+export function stopAmbientMusic(fadeOutDuration: number = 2, immediate: boolean = false): void {
   // Cancel any existing pending stop
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
@@ -416,26 +417,27 @@ export function stopAmbientMusic(fadeOutDuration: number = 2): void {
   const howl = activeMusicHowl;
   const id = activeMusicId;
 
-  // Use a small delay before stopping - allows React StrictMode remount to cancel
-  pendingMusicStop = setTimeout(() => {
-    pendingMusicStop = null;
+  // Clear state immediately to prevent new audio from seeing old state
+  activeMusicHowl = null;
+  activeMusicId = null;
+  currentMusicType = null;
 
-    // Double-check we still want to stop this specific howl
-    if (activeMusicHowl !== howl) return;
-
-    // Clear state
-    activeMusicHowl = null;
-    activeMusicId = null;
-    currentMusicType = null;
-
-    // Fade out and stop
-    howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
-
-    setTimeout(() => {
-      howl.stop(id);
-      howl.unload();
-    }, fadeOutDuration * 1000);
-  }, 50); // 50ms delay - enough for React StrictMode but imperceptible
+  if (immediate) {
+    // Stop immediately without fade
+    howl.stop(id);
+    howl.unload();
+  } else {
+    // Use a small delay before stopping - allows React StrictMode remount to cancel
+    pendingMusicStop = setTimeout(() => {
+      pendingMusicStop = null;
+      // Fade out and stop
+      howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
+      setTimeout(() => {
+        howl.stop(id);
+        howl.unload();
+      }, fadeOutDuration * 1000);
+    }, 50); // 50ms delay
+  }
 }
 
 // Alias for useAudio hook compatibility
@@ -501,7 +503,8 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     src: [config.path],
     volume: 0,
     loop: true,
-    // Let Howler auto-detect (fixes PC vs iPhone compatibility)
+    html5: true, // Use HTML5 Audio - better for iOS speaker (bypasses some silent mode restrictions)
+    preload: true,
     onload: function () {
       console.log(`[AudioEngine] ✅ Ambience loaded: ${ambienceType}`);
       // Seek to random position BEFORE playing (not after)
@@ -533,7 +536,7 @@ export function startWritingAmbience(type?: WritingAmbience): void {
   // Don't play here - wait for onload to seek first
 }
 
-export function stopWritingAmbience(): void {
+export function stopWritingAmbience(immediate: boolean = false): void {
   // Cancel any existing pending stop
   if (pendingAmbienceStop) {
     clearTimeout(pendingAmbienceStop);
@@ -545,26 +548,33 @@ export function stopWritingAmbience(): void {
   const howl = activeAmbienceHowl;
   const id = activeAmbienceId;
 
-  // Use a small delay before stopping - allows React StrictMode remount to cancel
-  pendingAmbienceStop = setTimeout(() => {
-    pendingAmbienceStop = null;
+  // Clear state immediately to prevent new audio from seeing old state
+  activeAmbienceHowl = null;
+  activeAmbienceId = null;
+  currentAmbienceType = null;
 
-    // Double-check we still want to stop this specific howl
-    if (activeAmbienceHowl !== howl) return;
+  if (immediate) {
+    // Stop immediately without fade
+    howl.stop(id);
+    howl.unload();
+  } else {
+    // Use a small delay before stopping - allows React StrictMode remount to cancel
+    pendingAmbienceStop = setTimeout(() => {
+      pendingAmbienceStop = null;
+      // Fade out over 1 second
+      howl.fade(howl.volume(id) as number, 0, 1000, id);
+      setTimeout(() => {
+        howl.stop(id);
+        howl.unload();
+      }, 1000);
+    }, 50); // 50ms delay
+  }
+}
 
-    // Clear state
-    activeAmbienceHowl = null;
-    activeAmbienceId = null;
-    currentAmbienceType = null;
-
-    // Fade out over 1 second
-    howl.fade(howl.volume(id) as number, 0, 1000, id);
-
-    setTimeout(() => {
-      howl.stop(id);
-      howl.unload();
-    }, 1000);
-  }, 50); // 50ms delay - enough for React StrictMode but imperceptible
+// Stop all audio immediately (for switching tracks)
+export function stopAllAudio(): void {
+  stopAmbientMusic(0, true);
+  stopWritingAmbience(true);
 }
 
 // Aliases for compatibility
