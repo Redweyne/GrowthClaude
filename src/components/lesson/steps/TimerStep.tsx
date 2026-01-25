@@ -73,7 +73,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
     return () => clearTimeout(timer);
   }, [playSingingBowl, startBreathingGuide, startMusic, step.timerStyle]);
 
-  // Cleanup audio on unmount or phase change
+  // Handle completion audio (no cleanup - that kills audio on phase changes)
   useEffect(() => {
     if (phase === 'complete') {
       stopBreathingGuide();
@@ -81,10 +81,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
       playGong(); // Signal completion
       playComplete();
     }
-    return () => {
-      stopBreathingGuide();
-      stopMusic(0.5);
-    };
+    // NO cleanup - React StrictMode and phase changes were killing audio
   }, [phase, stopBreathingGuide, stopMusic, playGong, playComplete]);
 
   // Main timer

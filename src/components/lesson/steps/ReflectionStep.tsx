@@ -121,14 +121,12 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     return () => clearTimeout(timer);
   }, [startWritingAmbience]);
 
-  // Stop ambience when component unmounts or phase changes to complete
+  // Stop ambience ONLY when complete (not on cleanup - that kills audio on phase changes)
   useEffect(() => {
     if (phase === 'complete') {
       stopWritingAmbience();
     }
-    return () => {
-      stopWritingAmbience();
-    };
+    // NO cleanup - React StrictMode and phase changes were killing audio
   }, [phase, stopWritingAmbience]);
 
   // Show encouragement prompts based on inactivity

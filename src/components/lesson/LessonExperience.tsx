@@ -231,12 +231,8 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     setStage('reflection');
   }, [transitionTo]);
 
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      stopAmbience();
-    };
-  }, [stopAmbience]);
+  // NO cleanup on unmount - child step components handle their own audio lifecycle
+  // Audio is stopped when lesson is completed, not on component unmount
 
   // Calculate progress
   const getProgress = () => {

@@ -58,11 +58,9 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
     // Choose music based on style - use visualization for visuals
     startMusic('visualization', 3);
     playChime(); // Gentle chime to signal visualization start
-
-    return () => {
-      stopMusic(2);
-    };
-  }, [startMusic, stopMusic, playChime]);
+    // NO cleanup - React StrictMode and phase changes were killing audio
+    // Music is stopped explicitly when user clicks Continue
+  }, [startMusic, playChime]);
 
   // Show button after reading time
   useEffect(() => {

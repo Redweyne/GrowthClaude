@@ -58,14 +58,12 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
     return () => clearTimeout(timer);
   }, [startWritingAmbience]);
 
-  // Stop ambience when component unmounts or phase changes to confirming
+  // Stop ambience ONLY when confirming (not on cleanup - that kills audio on phase changes)
   useEffect(() => {
     if (phase === 'confirming') {
       stopWritingAmbience();
     }
-    return () => {
-      stopWritingAmbience();
-    };
+    // NO cleanup - React StrictMode and phase changes were killing audio
   }, [phase, stopWritingAmbience]);
 
   // Rotate hints

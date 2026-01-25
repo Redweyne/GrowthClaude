@@ -155,13 +155,11 @@ export function FlexibleLessonExperience({
     playBell('deep');
   }, [initAudio, initAmbienceAudio, playBell]);
 
-  // Initialize on mount
+  // Initialize on mount (no cleanup - step components manage their own audio)
   useEffect(() => {
     handleInitializeAudio();
-    return () => {
-      stopAmbience();
-    };
-  }, [handleInitializeAudio, stopAmbience]);
+    // NO cleanup here - child step components handle their own audio lifecycle
+  }, [handleInitializeAudio]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Navigation Helpers
