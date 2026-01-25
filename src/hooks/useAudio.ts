@@ -177,7 +177,11 @@ export function useAudio() {
   // ─────────────────────────────────────────────────────────────────────────
 
   const startMusic = useCallback((type: AmbientSound, fadeIn: number = 3) => {
-    if (!soundEnabled) return;
+    console.log('[useAudio] startMusic called', { type, fadeIn, soundEnabled });
+    if (!soundEnabled) {
+      console.log('[useAudio] ⚠️ Sound is disabled, not starting music');
+      return;
+    }
     init();
     resumeAudio(); // Ensure audio context is resumed (iOS)
     startAmbientMusic(type, fadeIn);
@@ -192,7 +196,11 @@ export function useAudio() {
   // ─────────────────────────────────────────────────────────────────────────
 
   const startWritingAmbience = useCallback((type?: WritingAmbience) => {
-    if (!soundEnabled) return;
+    console.log('[useAudio] startWritingAmbience called', { type, soundEnabled });
+    if (!soundEnabled) {
+      console.log('[useAudio] ⚠️ Sound is disabled, not starting ambience');
+      return;
+    }
     init();
     resumeAudio(); // Ensure audio context is resumed (iOS)
     startWriting(type);
