@@ -110,12 +110,10 @@ export function OnboardingFlow() {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      // Completing onboarding - play celebration!
-      audio.playCelebrate();
-      
+      // Completing onboarding - Button already plays celebration sound
       // Transition to reward music briefly, then complete
       contextualAudio.transitionTo('reward', { crossfadeDuration: 1 });
-      
+
       // Small delay to let celebration sound play
       setTimeout(() => {
         contextualAudio.stopMusic(2);

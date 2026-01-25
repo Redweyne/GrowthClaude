@@ -334,6 +334,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                   size="lg"
                   glow
                   onClick={onNext}
+                  sound="celebrate"
                   className="w-full group text-lg py-5"
                 >
                   <Flame size={22} className="mr-3 text-amber-300" />

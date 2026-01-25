@@ -16,7 +16,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'children'
   isLoading?: boolean;
   glow?: boolean;
   children?: ReactNode;
-  sound?: 'tap' | 'tapConfirm' | 'success' | 'none'; // Control which sound plays
+  sound?: 'tap' | 'tapConfirm' | 'success' | 'celebrate' | 'none'; // Control which sound plays
 }
 
 // Spring presets for different interactions
@@ -59,9 +59,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       (e: MouseEvent<HTMLButtonElement>) => {
         if (disabled || isLoading) return;
 
-        // Play sound based on variant and sound prop
+        // Play sound based on sound prop
         if (sound !== 'none') {
-          if (sound === 'success') {
+          if (sound === 'celebrate') {
+            audio.playCelebrate();
+          } else if (sound === 'success') {
             audio.playSuccess();
           } else if (sound === 'tapConfirm' || variant === 'primary' || glow) {
             audio.playTapConfirm();

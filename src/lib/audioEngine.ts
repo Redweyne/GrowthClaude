@@ -80,18 +80,17 @@ const UI_SOUNDS: Record<string, string> = {
   singingBowl: `${BASE_PATH}/audio/ui/bell.mp3`,
 };
 
-// Scene/Music tracks (longer ambient music)
+// Scene/Music tracks - ALL use existing writing folder files for FAST loading
 const SCENE_MUSIC: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
-  // lessonDeep is for Timer step
-  lessonDeep: { path: `${BASE_PATH}/audio/writing/lessonDeep.mp3`, randomStart: true, duration: 6600 }, // ~110 min
-  // visualization is for Visualization step
-  visualization: { path: `${BASE_PATH}/audio/writing/visualization.mp3`, randomStart: true, duration: 7200 }, // ~2 hours
-  // Other scene types map to ambient folder
-  lessonCalm: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
-  reflection: { path: `${BASE_PATH}/audio/ambient/reflection.mp3`, randomStart: false },
-  onboarding: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
-  reward: { path: `${BASE_PATH}/audio/ambient/focus.mp3`, randomStart: false },
-  home: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
+  // Use existing rain.mp3 and forest.mp3 for fast loading (they're already loaded for ambience)
+  lessonCalm: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
+  reflection: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
+  onboarding: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: false },
+  reward: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: false },
+  home: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
+  // Longer tracks for specific steps
+  lessonDeep: { path: `${BASE_PATH}/audio/writing/lessonDeep.mp3`, randomStart: true, duration: 6600 },
+  visualization: { path: `${BASE_PATH}/audio/writing/visualization.mp3`, randomStart: true, duration: 7200 },
 };
 
 // Writing ambience tracks
@@ -108,22 +107,30 @@ const WRITING_AMBIENCE: Record<string, { path: string; randomStart: boolean; dur
 const uiSoundCache: Map<string, Howl> = new Map();
 
 function preloadUISounds(): void {
+  // Get unique paths to avoid loading same file multiple times
+  const uniquePaths = new Map<string, string[]>();
   Object.entries(UI_SOUNDS).forEach(([name, path]) => {
-    if (!uiSoundCache.has(name)) {
-      const howl = new Howl({
-        src: [path],
-        volume: settings.uiVolume * settings.masterVolume,
-        preload: true,
-        // Let Howler auto-detect best method (fixes cross-platform issues)
-        onloaderror: (id, error) => {
-          console.error(`[AudioEngine] ❌ Failed to load UI sound: ${name} (${path})`, error);
-        },
-        onload: () => {
-          console.log(`[AudioEngine] ✅ Loaded UI sound: ${name}`);
-        }
-      });
-      uiSoundCache.set(name, howl);
+    if (!uniquePaths.has(path)) {
+      uniquePaths.set(path, []);
     }
+    uniquePaths.get(path)!.push(name);
+  });
+
+  uniquePaths.forEach((names, path) => {
+    const howl = new Howl({
+      src: [path],
+      volume: settings.uiVolume * settings.masterVolume,
+      preload: true,
+      pool: 3, // Allow 3 simultaneous plays of same sound
+      onloaderror: (id, error) => {
+        console.error(`[AudioEngine] ❌ Failed to load: ${path}`, error);
+      },
+      onload: () => {
+        console.log(`[AudioEngine] ✅ Loaded: ${names[0]}`);
+      }
+    });
+    // Cache for all names that use this path
+    names.forEach(name => uiSoundCache.set(name, howl));
   });
 }
 
@@ -132,7 +139,7 @@ function preloadUISounds(): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const lastPlayedTime: Map<string, number> = new Map();
-const DEBOUNCE_MS = 100; // Ignore duplicate plays within 100ms
+const DEBOUNCE_MS = 200; // Ignore duplicate plays within 200ms
 
 function shouldPlay(sound: string): boolean {
   const now = Date.now();
@@ -275,6 +282,9 @@ export function playUI(sound: UISound): void {
     return;
   }
 
+  // Ensure audio is unlocked (critical for iOS)
+  resumeAudio();
+
   const cachedSound = uiSoundCache.get(sound);
   if (cachedSound) {
     cachedSound.volume(settings.uiVolume * settings.masterVolume);
@@ -372,7 +382,6 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     src: [config.path],
     volume: 0,
     loop: true,
-    html5: true, // Use HTML5 Audio - better for iOS speaker (bypasses some silent mode restrictions)
     preload: true,
     onload: function () {
       console.log(`[AudioEngine] ✅ Scene music loaded: ${type}`);
@@ -503,7 +512,6 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     src: [config.path],
     volume: 0,
     loop: true,
-    html5: true, // Use HTML5 Audio - better for iOS speaker (bypasses some silent mode restrictions)
     preload: true,
     onload: function () {
       console.log(`[AudioEngine] ✅ Ambience loaded: ${ambienceType}`);
