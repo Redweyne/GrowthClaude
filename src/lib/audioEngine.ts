@@ -283,6 +283,9 @@ export const playCelebration = (volume?: number) => {
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
 
+  // Resume audio context if suspended (critical for iOS)
+  resumeAudio();
+
   // Cancel any pending stop - React StrictMode protection
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
@@ -320,12 +323,15 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     ? Math.random() * (config.duration * 0.8)
     : 0;
 
+  console.log(`[AudioEngine] 🎵 Loading scene music: ${type} from ${config.path}`);
+
   const howl = new Howl({
     src: [config.path],
     volume: 0,
     loop: true,
     html5: true, // Use HTML5 for long audio
     onload: function () {
+      console.log(`[AudioEngine] ✅ Scene music loaded: ${type}`);
       // Seek to random position BEFORE playing (not after)
       if (randomStartPosition > 0) {
         howl.seek(randomStartPosition);
@@ -339,6 +345,15 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     onloaderror: (id, error) => {
       console.error(`[AudioEngine] ❌ Failed to load scene music: ${type} (${config.path})`, error);
       currentMusicType = null;
+    },
+    onplayerror: (id, error) => {
+      console.error(`[AudioEngine] ❌ Failed to play scene music: ${type}`, error);
+      // Try to unlock and replay (iOS requirement)
+      howl.once('unlock', () => {
+        console.log(`[AudioEngine] 🔓 Audio unlocked, retrying scene music...`);
+        activeMusicId = howl.play();
+        howl.fade(0, settings.musicVolume * settings.masterVolume, fadeInDuration * 1000, activeMusicId);
+      });
     },
   });
 
@@ -391,6 +406,9 @@ export const stopSceneMusic = stopAmbientMusic;
 export function startWritingAmbience(type?: WritingAmbience): void {
   if (!ensureInitialized()) return;
 
+  // Resume audio context if suspended (critical for iOS)
+  resumeAudio();
+
   // Cancel any pending stop - React StrictMode protection
   if (pendingAmbienceStop) {
     clearTimeout(pendingAmbienceStop);
@@ -434,12 +452,15 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     ? Math.random() * (config.duration * 0.8)
     : 0;
 
+  console.log(`[AudioEngine] 🎵 Loading ambience: ${ambienceType} from ${config.path}`);
+
   const howl = new Howl({
     src: [config.path],
     volume: 0,
     loop: true,
     html5: true,
     onload: function () {
+      console.log(`[AudioEngine] ✅ Ambience loaded: ${ambienceType}`);
       // Seek to random position BEFORE playing (not after)
       if (randomStartPosition > 0) {
         howl.seek(randomStartPosition);
@@ -449,6 +470,19 @@ export function startWritingAmbience(type?: WritingAmbience): void {
       activeAmbienceId = howl.play();
       // Fade in over 2 seconds
       howl.fade(0, settings.ambienceVolume * settings.masterVolume, 2000, activeAmbienceId);
+    },
+    onloaderror: (id, error) => {
+      console.error(`[AudioEngine] ❌ Failed to load ambience: ${ambienceType} (${config.path})`, error);
+      currentAmbienceType = null;
+    },
+    onplayerror: (id, error) => {
+      console.error(`[AudioEngine] ❌ Failed to play ambience: ${ambienceType}`, error);
+      // Try to unlock and replay (iOS requirement)
+      howl.once('unlock', () => {
+        console.log(`[AudioEngine] 🔓 Audio unlocked, retrying ambience...`);
+        activeAmbienceId = howl.play();
+        howl.fade(0, settings.ambienceVolume * settings.masterVolume, 2000, activeAmbienceId);
+      });
     },
   });
 
