@@ -1,102 +1,64 @@
 'use client';
 
 // ============================================================================
-// LESSON AMBIENCE - Background music ONLY during reflection
+// USE LESSON AMBIENCE - DEPRECATED - Use useAudio instead
 // ============================================================================
-// Now uses audioEngine.ts (Howler.js) - NO FALLBACKS, NO GENERATED SOUNDS
+//
+// This file is kept for backwards compatibility.
+// All functionality now comes from useAudio via AudioProvider.
+//
 // ============================================================================
 
-import { useCallback, useRef, useEffect } from 'react';
-import { useStore } from '@/store/useStore';
-import {
-  startAmbientMusic,
-  stopAmbientMusic,
-  playUI,
-  playHaptic,
-  HAPTIC_PATTERNS,
-} from '@/lib/audioEngine';
+import { useCallback } from 'react';
+import { useAudio } from '@/hooks/useAudio';
 
 type LessonPhase = 'entering' | 'wisdom' | 'action' | 'reflection' | 'completion';
 
+/**
+ * @deprecated Use useAudio() instead
+ */
 export function useLessonAmbience() {
-  const { soundEnabled, hapticEnabled } = useStore();
-  const currentPhaseRef = useRef<LessonPhase>('entering');
-  const isPlayingRef = useRef(false);
+  const audio = useAudio();
 
-  const initAudio = useCallback(() => {
-    // Nothing needed - audioEngine handles this
-  }, []);
-
-  // Start ambient - ONLY plays during reflection
   const startAmbience = useCallback((phase: LessonPhase) => {
-    if (!soundEnabled) return;
-    currentPhaseRef.current = phase;
-
-    // Only play ambient during reflection - the calm writing moment
     if (phase === 'reflection') {
-      startAmbientMusic('reflection', 3);
-      isPlayingRef.current = true;
+      audio.startMusic('reflection', 3);
     }
-  }, [soundEnabled]);
+  }, [audio]);
 
-  // Transition between phases
   const transitionTo = useCallback((newPhase: LessonPhase) => {
-    if (!soundEnabled) return;
-    currentPhaseRef.current = newPhase;
-
     if (newPhase === 'reflection') {
-      // Start ambient for reflection
-      startAmbientMusic('reflection', 2);
-      isPlayingRef.current = true;
-    } else if (isPlayingRef.current) {
-      // Stop ambient when leaving reflection
-      stopAmbientMusic(1.5);
-      isPlayingRef.current = false;
+      audio.startMusic('reflection', 2);
+    } else {
+      audio.stopMusic(1.5);
     }
-  }, [soundEnabled]);
+  }, [audio]);
 
-  // Stop ambient
   const stopAmbience = useCallback(() => {
-    stopAmbientMusic(1.5);
-    isPlayingRef.current = false;
-  }, []);
+    audio.stopMusic(1.5);
+  }, [audio]);
 
-  // Bell sound
   const playBell = useCallback((type: 'soft' | 'bright' | 'deep' = 'soft') => {
-    if (!soundEnabled) return;
-    playUI('bell');
-    if (hapticEnabled) playHaptic(HAPTIC_PATTERNS.tap);
-  }, [soundEnabled, hapticEnabled]);
+    audio.playBell();
+  }, [audio]);
 
-  // Keystroke - disabled (silence is better)
   const playKeystroke = useCallback(() => {
     // Intentionally empty - silence during typing is more calming
   }, []);
 
-  // Completion chime
   const playCompletionChime = useCallback(() => {
-    if (!soundEnabled) return;
-    playUI('complete');
-    if (hapticEnabled) playHaptic(HAPTIC_PATTERNS.complete);
-  }, [soundEnabled, hapticEnabled]);
+    audio.playComplete();
+  }, [audio]);
 
-  // Check if ambient is playing
   const isAmbientPlaying = useCallback(() => {
-    return isPlayingRef.current;
-  }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopAmbientMusic(0.5);
-    };
-  }, []);
+    return audio.state.isMusicPlaying;
+  }, [audio.state.isMusicPlaying]);
 
   return {
     startAmbience,
     transitionTo,
     stopAmbience,
-    initAudio,
+    initAudio: () => {}, // No-op, AudioProvider handles initialization
     playBell,
     playKeystroke,
     playCompletionChime,

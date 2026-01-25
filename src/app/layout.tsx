@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { fontBody } from '@/lib/fonts';
+import { Providers } from './providers';
 import './globals.css';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -65,7 +66,9 @@ export default function RootLayout({
         />
 
         {/* Main content */}
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

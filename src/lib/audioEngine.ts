@@ -1,17 +1,48 @@
 'use client';
 
 // ============================================================================
-// AUDIO ENGINE - Real MP3 Audio System using Howler.js
+// AUDIO ENGINE v2.0 - Consolidated Audio System with iOS Safari Support
 // ============================================================================
 //
-// This engine plays real audio files for an immersive experience:
-// - UI sounds from /public/audio/ui/
-// - Ambient/Writing ambience from /public/audio/writing/
-// - Scene music with random start positions for long tracks
+// This is the SINGLE SOURCE OF TRUTH for all audio in the app.
+// All audio playback, state management, and iOS handling goes through here.
+//
+// Key features:
+// - Proper iOS Safari unlock sequence (waits for callback)
+// - Singleton pattern with observable state
+// - Debug logging via localStorage.setItem('AUDIO_DEBUG', 'true')
+// - Automatic retry on audio failures
+// - Proper cleanup with minimum 300ms delays for iOS
 //
 // ============================================================================
 
 import { Howl, Howler } from 'howler';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEBUG LOGGING
+// ─────────────────────────────────────────────────────────────────────────────
+
+function isDebugEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('AUDIO_DEBUG') === 'true';
+}
+
+function log(message: string, ...args: unknown[]): void {
+  if (isDebugEnabled()) {
+    console.log(`[AudioEngine] ${message}`, ...args);
+  }
+}
+
+function logWarn(message: string, ...args: unknown[]): void {
+  if (isDebugEnabled()) {
+    console.warn(`[AudioEngine] ⚠️ ${message}`, ...args);
+  }
+}
+
+function logError(message: string, ...args: unknown[]): void {
+  // Always log errors
+  console.error(`[AudioEngine] ❌ ${message}`, ...args);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES & CONFIGURATION
@@ -38,7 +69,26 @@ export interface AudioSettings {
   writingAmbienceType: WritingAmbience;
 }
 
-// Default settings
+export interface AudioEngineState {
+  isInitialized: boolean;
+  isUnlocked: boolean;
+  isUnlocking: boolean;
+  currentMusicTrack: string | null;
+  currentAmbienceTrack: string | null;
+  isMusicPlaying: boolean;
+  isAmbiencePlaying: boolean;
+  settings: AudioSettings;
+  lastError: string | null;
+}
+
+// State change listeners
+type StateListener = (state: AudioEngineState) => void;
+const stateListeners: Set<StateListener> = new Set();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEFAULT SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+
 const defaultSettings: AudioSettings = {
   masterVolume: 0.7,
   musicVolume: 0.5,
@@ -48,8 +98,46 @@ const defaultSettings: AudioSettings = {
   writingAmbienceType: 'rain',
 };
 
-let settings: AudioSettings = { ...defaultSettings };
-let isInitialized = false;
+// ─────────────────────────────────────────────────────────────────────────────
+// SINGLETON STATE
+// ─────────────────────────────────────────────────────────────────────────────
+
+const engineState: AudioEngineState = {
+  isInitialized: false,
+  isUnlocked: false,
+  isUnlocking: false,
+  currentMusicTrack: null,
+  currentAmbienceTrack: null,
+  isMusicPlaying: false,
+  isAmbiencePlaying: false,
+  settings: { ...defaultSettings },
+  lastError: null,
+};
+
+// Notify all listeners of state change
+function notifyStateChange(): void {
+  const stateCopy = { ...engineState, settings: { ...engineState.settings } };
+  stateListeners.forEach(listener => {
+    try {
+      listener(stateCopy);
+    } catch (e) {
+      logError('State listener error:', e);
+    }
+  });
+}
+
+// Subscribe to state changes
+export function subscribeToState(listener: StateListener): () => void {
+  stateListeners.add(listener);
+  // Immediately call with current state
+  listener({ ...engineState, settings: { ...engineState.settings } });
+  return () => stateListeners.delete(listener);
+}
+
+// Get current state (immutable copy)
+export function getState(): AudioEngineState {
+  return { ...engineState, settings: { ...engineState.settings } };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AUDIO FILE PATHS
@@ -74,40 +162,215 @@ const UI_SOUNDS: Record<string, string> = {
   unlock: `${BASE_PATH}/audio/ui/streak.mp3`,
   notification: `${BASE_PATH}/audio/ui/bell.mp3`,
   reveal: `${BASE_PATH}/audio/ui/chime.mp3`,
-  keystroke: `${BASE_PATH}/audio/ui/tap.mp3`, // Use soft tap sound instead of harsh keystroke
+  keystroke: `${BASE_PATH}/audio/ui/tap.mp3`,
   error: `${BASE_PATH}/audio/ui/pop.mp3`,
   gong: `${BASE_PATH}/audio/ui/bell.mp3`,
   singingBowl: `${BASE_PATH}/audio/ui/bell.mp3`,
 };
 
-// Scene/Music tracks - ALL use existing writing folder files for FAST loading
 const SCENE_MUSIC: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
-  // Use existing rain.mp3 and forest.mp3 for fast loading (they're already loaded for ambience)
   lessonCalm: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
   reflection: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
   onboarding: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: false },
   reward: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: false },
   home: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
-  // Longer tracks for specific steps
   lessonDeep: { path: `${BASE_PATH}/audio/writing/lessonDeep.mp3`, randomStart: true, duration: 6600 },
   visualization: { path: `${BASE_PATH}/audio/writing/visualization.mp3`, randomStart: true, duration: 7200 },
 };
 
-// Writing ambience tracks
 const WRITING_AMBIENCE: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
-  rain: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false }, // Shorter, no random start
-  forest: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: true, duration: 1350 }, // ~22 min
-  fire: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false }, // Fallback to rain
+  rain: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
+  forest: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: true, duration: 1350 },
+  fire: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRE-LOADED UI SOUNDS (for instant playback)
+// AUDIO CACHES & ACTIVE SOURCES
 // ─────────────────────────────────────────────────────────────────────────────
 
 const uiSoundCache: Map<string, Howl> = new Map();
+let activeMusicHowl: Howl | null = null;
+let activeMusicId: number | null = null;
+let activeAmbienceHowl: Howl | null = null;
+let activeAmbienceId: number | null = null;
+
+// Pending operations (for cleanup)
+let pendingMusicStop: ReturnType<typeof setTimeout> | null = null;
+let pendingAmbienceStop: ReturnType<typeof setTimeout> | null = null;
+
+// Retry queue for failed audio
+const retryQueue: Array<() => void> = [];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEBOUNCE - Prevent double-plays
+// ─────────────────────────────────────────────────────────────────────────────
+
+const lastPlayedTime: Map<string, number> = new Map();
+const DEBOUNCE_MS = 150;
+
+function shouldPlay(sound: string): boolean {
+  const now = Date.now();
+  const lastPlayed = lastPlayedTime.get(sound) || 0;
+  if (now - lastPlayed < DEBOUNCE_MS) {
+    log(`Debounced: ${sound} (played ${now - lastPlayed}ms ago)`);
+    return false;
+  }
+  lastPlayedTime.set(sound, now);
+  return true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// iOS AUDIO UNLOCK - The critical fix
+// ─────────────────────────────────────────────────────────────────────────────
+
+let unlockPromise: Promise<boolean> | null = null;
+
+async function unlockAudioAsync(): Promise<boolean> {
+  // Already unlocked
+  if (engineState.isUnlocked) {
+    log('Already unlocked');
+    return true;
+  }
+
+  // Already unlocking - wait for that to complete
+  if (unlockPromise) {
+    log('Unlock in progress, waiting...');
+    return unlockPromise;
+  }
+
+  log('🔓 Starting audio unlock sequence...');
+  engineState.isUnlocking = true;
+  notifyStateChange();
+
+  unlockPromise = new Promise<boolean>((resolve) => {
+    // Step 1: Resume audio context
+    const resumeContext = async () => {
+      if (Howler.ctx && Howler.ctx.state === 'suspended') {
+        try {
+          await Howler.ctx.resume();
+          log('✓ Audio context resumed');
+        } catch (e) {
+          logWarn('Failed to resume context:', e);
+        }
+      }
+    };
+
+    // Step 2: Play silent sound and WAIT for it to complete
+    const playSilentSound = () => {
+      return new Promise<boolean>((resolveSound) => {
+        const silentSound = new Howl({
+          src: ['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'],
+          volume: 0.001, // Tiny volume, not 0 (iOS ignores 0 volume)
+          onend: () => {
+            log('✓ Silent sound completed - audio UNLOCKED');
+            resolveSound(true);
+          },
+          onplayerror: () => {
+            logWarn('Silent sound play error');
+            resolveSound(false);
+          },
+          onloaderror: () => {
+            logWarn('Silent sound load error');
+            resolveSound(false);
+          },
+        });
+
+        const playId = silentSound.play();
+        if (playId === null || playId === undefined) {
+          logWarn('Silent sound failed to start');
+          resolveSound(false);
+        }
+
+        // Timeout fallback (iOS might not fire onend)
+        setTimeout(() => {
+          resolveSound(true);
+        }, 500);
+      });
+    };
+
+    // Execute unlock sequence
+    resumeContext().then(() => {
+      playSilentSound().then((success) => {
+        engineState.isUnlocked = success;
+        engineState.isUnlocking = false;
+        unlockPromise = null;
+        notifyStateChange();
+
+        if (success) {
+          log('🔓 Audio unlock complete!');
+          // Process any queued retries
+          while (retryQueue.length > 0) {
+            const retry = retryQueue.shift();
+            if (retry) {
+              log('Processing retry from queue');
+              setTimeout(retry, 50);
+            }
+          }
+        } else {
+          logWarn('Audio unlock failed - will retry on next interaction');
+        }
+
+        resolve(success);
+      });
+    });
+  });
+
+  return unlockPromise;
+}
+
+// Synchronous unlock attempt (for event handlers)
+export function tryUnlock(): void {
+  unlockAudioAsync().catch(() => {
+    // Ignore - will retry
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INITIALIZATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+let eventListenersAdded = false;
+
+function handleUserInteraction(): void {
+  log('User interaction detected');
+  tryUnlock();
+}
+
+export function initAudioEngine(): void {
+  if (engineState.isInitialized) {
+    log('Already initialized');
+    return;
+  }
+
+  log('🔊 Initializing Audio Engine v2.0...');
+
+  // Set global volume
+  Howler.volume(engineState.settings.masterVolume);
+
+  // Preload UI sounds
+  preloadUISounds();
+
+  // Add event listeners ONCE (not in every hook!)
+  if (!eventListenersAdded && typeof document !== 'undefined') {
+    const events = ['click', 'touchstart', 'touchend', 'keydown'];
+    events.forEach(event => {
+      document.addEventListener(event, handleUserInteraction, { passive: true });
+    });
+    eventListenersAdded = true;
+    log('Event listeners added');
+  }
+
+  engineState.isInitialized = true;
+  notifyStateChange();
+
+  log('✓ Audio Engine initialized', {
+    basePath: BASE_PATH,
+    uiSounds: Object.keys(UI_SOUNDS).length,
+    musicTracks: Object.keys(SCENE_MUSIC).length,
+  });
+}
 
 function preloadUISounds(): void {
-  // Get unique paths to avoid loading same file multiple times
   const uniquePaths = new Map<string, string[]>();
   Object.entries(UI_SOUNDS).forEach(([name, path]) => {
     if (!uniquePaths.has(path)) {
@@ -119,121 +382,27 @@ function preloadUISounds(): void {
   uniquePaths.forEach((names, path) => {
     const howl = new Howl({
       src: [path],
-      volume: settings.uiVolume * settings.masterVolume,
+      volume: engineState.settings.uiVolume * engineState.settings.masterVolume,
       preload: true,
-      pool: 3, // Allow 3 simultaneous plays of same sound
+      pool: 3,
       onloaderror: (id, error) => {
-        console.error(`[AudioEngine] ❌ Failed to load: ${path}`, error);
+        logError(`Failed to preload: ${path}`, error);
       },
       onload: () => {
-        console.log(`[AudioEngine] ✅ Loaded: ${names[0]}`);
-      }
+        log(`✓ Preloaded: ${names[0]}`);
+      },
     });
-    // Cache for all names that use this path
     names.forEach(name => uiSoundCache.set(name, howl));
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DEBOUNCE - Prevent double-plays from React StrictMode / re-renders
-// ─────────────────────────────────────────────────────────────────────────────
-
-const lastPlayedTime: Map<string, number> = new Map();
-const DEBOUNCE_MS = 200; // Ignore duplicate plays within 200ms
-
-function shouldPlay(sound: string): boolean {
-  const now = Date.now();
-  const lastPlayed = lastPlayedTime.get(sound) || 0;
-  if (now - lastPlayed < DEBOUNCE_MS) {
-    return false; // Skip - played too recently
-  }
-  lastPlayedTime.set(sound, now);
-  return true;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ACTIVE AUDIO SOURCES
-// ─────────────────────────────────────────────────────────────────────────────
-
-let activeMusicHowl: Howl | null = null;
-let activeMusicId: number | null = null;
-let activeAmbienceHowl: Howl | null = null;
-let activeAmbienceId: number | null = null;
-let currentMusicType: string | null = null;
-let currentAmbienceType: string | null = null;
-
-// Pending stop timeouts - allows cancellation when React StrictMode remounts
-let pendingMusicStop: ReturnType<typeof setTimeout> | null = null;
-let pendingAmbienceStop: ReturnType<typeof setTimeout> | null = null;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INITIALIZATION
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Track if audio has been unlocked by user interaction
-let isAudioUnlocked = false;
-
-function unlockAudio(): void {
-  if (isAudioUnlocked) return;
-
-  // Resume audio context
-  if (Howler.ctx && Howler.ctx.state === 'suspended') {
-    Howler.ctx.resume().then(() => {
-      console.log('[AudioEngine] 🔓 Audio context resumed');
-    }).catch((e) => {
-      console.warn('[AudioEngine] Failed to resume audio context:', e);
-    });
-  }
-
-  // Play a silent sound to unlock on iOS
-  const silentSound = new Howl({
-    src: ['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'],
-    volume: 0,
-    onend: () => {
-      console.log('[AudioEngine] 🔓 Audio unlocked via silent sound');
-      isAudioUnlocked = true;
-    }
-  });
-  silentSound.play();
-
-  isAudioUnlocked = true;
-}
-
-export function initAudioEngine(): void {
-  if (isInitialized) return;
-
-  // Set global volume
-  Howler.volume(settings.masterVolume);
-
-  // Preload UI sounds for instant playback
-  preloadUISounds();
-
-  // Set up global unlock on first user interaction
-  const handleFirstInteraction = () => {
-    unlockAudio();
-    document.removeEventListener('click', handleFirstInteraction);
-    document.removeEventListener('touchstart', handleFirstInteraction);
-    document.removeEventListener('touchend', handleFirstInteraction);
-    document.removeEventListener('keydown', handleFirstInteraction);
-  };
-
-  document.addEventListener('click', handleFirstInteraction, { once: true });
-  document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-  document.addEventListener('touchend', handleFirstInteraction, { once: true });
-  document.addEventListener('keydown', handleFirstInteraction, { once: true });
-
-  isInitialized = true;
-  console.log(`[AudioEngine] 🔊 Initialized with real MP3 files (Howler.js) - Base Path: '${BASE_PATH}'`);
-  console.log('[AudioEngine] 🔍 Checking UI sounds:', Object.keys(UI_SOUNDS).length);
-}
-
 export function ensureInitialized(): boolean {
-  if (!isInitialized) {
+  if (!engineState.isInitialized) {
     try {
       initAudioEngine();
       return true;
     } catch (e) {
-      console.warn('[AudioEngine] Failed to initialize:', e);
+      logError('Failed to initialize:', e);
       return false;
     }
   }
@@ -245,69 +414,85 @@ export function ensureInitialized(): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function updateSettings(newSettings: Partial<AudioSettings>): void {
-  settings = { ...settings, ...newSettings };
+  engineState.settings = { ...engineState.settings, ...newSettings };
 
   // Update global volume
-  Howler.volume(settings.masterVolume);
+  Howler.volume(engineState.settings.masterVolume);
 
   // Update cached UI sounds
   uiSoundCache.forEach((howl) => {
-    howl.volume(settings.uiVolume * settings.masterVolume);
+    howl.volume(engineState.settings.uiVolume * engineState.settings.masterVolume);
   });
 
   // Update active music
   if (activeMusicHowl && activeMusicId !== null) {
-    activeMusicHowl.volume(settings.musicVolume * settings.masterVolume, activeMusicId);
+    activeMusicHowl.volume(
+      engineState.settings.musicVolume * engineState.settings.masterVolume,
+      activeMusicId
+    );
   }
 
   // Update active ambience
   if (activeAmbienceHowl && activeAmbienceId !== null) {
-    activeAmbienceHowl.volume(settings.ambienceVolume * settings.masterVolume, activeAmbienceId);
+    activeAmbienceHowl.volume(
+      engineState.settings.ambienceVolume * engineState.settings.masterVolume,
+      activeAmbienceId
+    );
   }
+
+  notifyStateChange();
 }
 
 export function getSettings(): AudioSettings {
-  return { ...settings };
+  return { ...engineState.settings };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// UI SOUNDS - One-shot playback with debouncing
+// UI SOUNDS - One-shot playback
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function playUI(sound: UISound): void {
   if (!ensureInitialized()) return;
 
-  // Debounce check - skip if played too recently (prevents React StrictMode double-plays)
-  if (!shouldPlay(sound)) {
-    return;
-  }
+  // Debounce check
+  if (!shouldPlay(sound)) return;
 
-  // Ensure audio is unlocked (critical for iOS)
-  resumeAudio();
+  log(`▶ Playing UI sound: ${sound}`);
+
+  // Try to unlock first (async, won't block)
+  tryUnlock();
 
   const cachedSound = uiSoundCache.get(sound);
   if (cachedSound) {
-    cachedSound.volume(settings.uiVolume * settings.masterVolume);
-    cachedSound.play();
+    cachedSound.volume(engineState.settings.uiVolume * engineState.settings.masterVolume);
+    const playId = cachedSound.play();
+
+    if (playId === undefined || playId === null) {
+      logWarn(`UI sound failed to play: ${sound}, queueing retry`);
+      retryQueue.push(() => playUI(sound));
+    }
   } else {
     // Fallback: load and play
     const path = UI_SOUNDS[sound];
     if (path) {
       const howl = new Howl({
         src: [path],
-        volume: settings.uiVolume * settings.masterVolume,
+        volume: engineState.settings.uiVolume * engineState.settings.masterVolume,
+        onplayerror: () => {
+          logWarn(`Fallback UI sound failed: ${sound}`);
+        },
       });
       howl.play();
     }
   }
 }
 
-// Convenience exports for direct access
+// Convenience exports
 export const playTap = () => playUI('tap');
 export const playSuccess = (volume?: number) => {
   const cached = uiSoundCache.get('success');
   if (cached) {
-    cached.volume((volume || settings.uiVolume) * settings.masterVolume);
+    cached.volume((volume || engineState.settings.uiVolume) * engineState.settings.masterVolume);
     cached.play();
   } else {
     playUI('success');
@@ -317,12 +502,12 @@ export const playComplete = () => playUI('complete');
 export const playLevelUp = () => playUI('levelUp');
 export const playUnlock = () => playUI('unlock');
 export const playReveal = () => playUI('reveal');
-export const playChime = (pitch?: 'low' | 'medium' | 'high') => playUI('chime');
+export const playChime = () => playUI('chime');
 export const playTransition = () => playUI('whoosh');
 export const playCelebration = (volume?: number) => {
   const cached = uiSoundCache.get('celebrate');
   if (cached) {
-    cached.volume((volume || settings.uiVolume) * settings.masterVolume);
+    cached.volume((volume || engineState.settings.uiVolume) * engineState.settings.masterVolume);
     cached.play();
   } else {
     playUI('celebrate');
@@ -330,310 +515,343 @@ export const playCelebration = (volume?: number) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SCENE MUSIC - Looping background with optional random start
+// SCENE MUSIC - Looping background with crossfade
 // ─────────────────────────────────────────────────────────────────────────────
+
+const MIN_CLEANUP_DELAY = 300; // Minimum delay for iOS cleanup
 
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
 
-  // Resume audio context if suspended (critical for iOS)
-  resumeAudio();
+  log(`🎵 Starting music: ${type}`);
 
-  // Cancel any pending stop - React StrictMode protection
+  // Try to unlock
+  tryUnlock();
+
+  // Cancel any pending stop
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
     pendingMusicStop = null;
   }
 
-  // Skip if already playing this exact type
-  if (currentMusicType === type && activeMusicHowl && activeMusicId !== null) {
-    // Resume if it was fading out
-    activeMusicHowl.fade(activeMusicHowl.volume() as number, settings.musicVolume * settings.masterVolume, 500, activeMusicId);
+  // Skip if already playing this track
+  if (engineState.currentMusicTrack === type && activeMusicHowl && activeMusicId !== null) {
+    log(`Already playing: ${type}, resuming volume`);
+    activeMusicHowl.fade(
+      activeMusicHowl.volume() as number,
+      engineState.settings.musicVolume * engineState.settings.masterVolume,
+      500,
+      activeMusicId
+    );
     return;
   }
 
-  // Stop current music immediately if switching tracks (no crossfade delay)
+  // Stop current music with proper cleanup delay
   if (activeMusicHowl && activeMusicId !== null) {
     const oldHowl = activeMusicHowl;
     const oldId = activeMusicId;
-    oldHowl.fade(oldHowl.volume(oldId) as number, 0, fadeInDuration * 500, oldId);
+    log(`Stopping previous track: ${engineState.currentMusicTrack}`);
+    oldHowl.fade(oldHowl.volume(oldId) as number, 0, MIN_CLEANUP_DELAY, oldId);
     setTimeout(() => {
       oldHowl.stop(oldId);
       oldHowl.unload();
-    }, fadeInDuration * 500);
+    }, MIN_CLEANUP_DELAY);
   }
+
+  // Clear references immediately
+  activeMusicHowl = null;
+  activeMusicId = null;
 
   const config = SCENE_MUSIC[type];
   if (!config) {
-    console.warn(`[AudioEngine] Unknown scene type: ${type}`);
+    logWarn(`Unknown music type: ${type}`);
+    engineState.currentMusicTrack = null;
+    engineState.isMusicPlaying = false;
+    notifyStateChange();
     return;
   }
 
-  currentMusicType = type;
+  // Update state immediately (optimistic)
+  engineState.currentMusicTrack = type;
+  notifyStateChange();
 
-  // Calculate random start position BEFORE creating howl
+  // Calculate random start position
   const randomStartPosition = (config.randomStart && config.duration)
     ? Math.random() * (config.duration * 0.8)
     : 0;
-
-  console.log(`[AudioEngine] 🎵 Loading scene music: ${type} from ${config.path}`);
 
   const howl = new Howl({
     src: [config.path],
     volume: 0,
     loop: true,
     preload: true,
-    onload: function () {
-      console.log(`[AudioEngine] ✅ Scene music loaded: ${type}`);
-      // Seek to random position BEFORE playing (not after)
+    onload: function() {
+      log(`✓ Music loaded: ${type}`);
+
+      // Seek to random position BEFORE playing
       if (randomStartPosition > 0) {
         howl.seek(randomStartPosition);
-        console.log(`[AudioEngine] Starting ${type} at ${Math.floor(randomStartPosition)}s`);
+        log(`Starting at ${Math.floor(randomStartPosition)}s`);
       }
-      // Now start playing from the correct position
+
       activeMusicId = howl.play();
-      // Fade in
-      howl.fade(0, settings.musicVolume * settings.masterVolume, fadeInDuration * 1000, activeMusicId);
+      howl.fade(0, engineState.settings.musicVolume * engineState.settings.masterVolume, fadeInDuration * 1000, activeMusicId!);
+
+      engineState.isMusicPlaying = true;
+      notifyStateChange();
     },
     onloaderror: (id, error) => {
-      console.error(`[AudioEngine] ❌ Failed to load scene music: ${type} (${config.path})`, error);
-      currentMusicType = null;
+      logError(`Failed to load music: ${type}`, error);
+      engineState.currentMusicTrack = null;
+      engineState.isMusicPlaying = false;
+      engineState.lastError = `Failed to load: ${type}`;
+      notifyStateChange();
     },
     onplayerror: (id, error) => {
-      console.error(`[AudioEngine] ❌ Failed to play scene music: ${type}`, error);
-      // Try to unlock and replay (iOS requirement)
+      logError(`Failed to play music: ${type}`, error);
+
+      // Queue retry
+      retryQueue.push(() => startAmbientMusic(type, fadeInDuration));
+
       howl.once('unlock', () => {
-        console.log(`[AudioEngine] 🔓 Audio unlocked, retrying scene music...`);
+        log(`🔓 Retrying music after unlock: ${type}`);
         activeMusicId = howl.play();
-        howl.fade(0, settings.musicVolume * settings.masterVolume, fadeInDuration * 1000, activeMusicId);
+        howl.fade(0, engineState.settings.musicVolume * engineState.settings.masterVolume, fadeInDuration * 1000, activeMusicId!);
+        engineState.isMusicPlaying = true;
+        notifyStateChange();
       });
     },
   });
 
   activeMusicHowl = howl;
-  // Don't play here - wait for onload to seek first
 }
 
 export function stopAmbientMusic(fadeOutDuration: number = 2, immediate: boolean = false): void {
-  // Cancel any existing pending stop
+  // Cancel any pending stop
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
     pendingMusicStop = null;
   }
 
-  if (!activeMusicHowl || activeMusicId === null) return;
+  if (!activeMusicHowl || activeMusicId === null) {
+    engineState.currentMusicTrack = null;
+    engineState.isMusicPlaying = false;
+    notifyStateChange();
+    return;
+  }
 
   const howl = activeMusicHowl;
   const id = activeMusicId;
 
-  // Clear state immediately to prevent new audio from seeing old state
+  log(`⏹ Stopping music: ${engineState.currentMusicTrack}`);
+
+  // Clear state immediately
   activeMusicHowl = null;
   activeMusicId = null;
-  currentMusicType = null;
+  engineState.currentMusicTrack = null;
+  engineState.isMusicPlaying = false;
+  notifyStateChange();
 
   if (immediate) {
-    // Stop immediately without fade
     howl.stop(id);
     howl.unload();
   } else {
-    // Use a small delay before stopping - allows React StrictMode remount to cancel
+    // Use minimum cleanup delay
     pendingMusicStop = setTimeout(() => {
       pendingMusicStop = null;
-      // Fade out and stop
       howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
       setTimeout(() => {
         howl.stop(id);
         howl.unload();
       }, fadeOutDuration * 1000);
-    }, 50); // 50ms delay
+    }, MIN_CLEANUP_DELAY);
   }
 }
 
-// Alias for useAudio hook compatibility
+// Aliases
 export const startSceneMusic = startAmbientMusic;
 export const stopSceneMusic = stopAmbientMusic;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// WRITING AMBIENCE - Rain for reflection, Forest for commitment
+// WRITING AMBIENCE
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function startWritingAmbience(type?: WritingAmbience): void {
   if (!ensureInitialized()) return;
 
-  // Resume audio context if suspended (critical for iOS)
-  resumeAudio();
+  // Try to unlock
+  tryUnlock();
 
-  // Cancel any pending stop - React StrictMode protection
+  // Cancel any pending stop
   if (pendingAmbienceStop) {
     clearTimeout(pendingAmbienceStop);
     pendingAmbienceStop = null;
   }
 
-  const ambienceType = type || settings.writingAmbienceType;
+  const ambienceType = type || engineState.settings.writingAmbienceType;
   if (ambienceType === 'silence') {
     stopWritingAmbience();
     return;
   }
 
-  // Skip if already playing this exact type
-  if (currentAmbienceType === ambienceType && activeAmbienceHowl && activeAmbienceId !== null) {
-    // Resume if it was fading out
-    activeAmbienceHowl.fade(activeAmbienceHowl.volume() as number, settings.ambienceVolume * settings.masterVolume, 500, activeAmbienceId);
+  log(`🌧 Starting ambience: ${ambienceType}`);
+
+  // Skip if already playing
+  if (engineState.currentAmbienceTrack === ambienceType && activeAmbienceHowl && activeAmbienceId !== null) {
+    log(`Already playing: ${ambienceType}`);
+    activeAmbienceHowl.fade(
+      activeAmbienceHowl.volume() as number,
+      engineState.settings.ambienceVolume * engineState.settings.masterVolume,
+      500,
+      activeAmbienceId
+    );
     return;
   }
 
-  // Stop current ambience immediately if switching
+  // Stop current with cleanup delay
   if (activeAmbienceHowl && activeAmbienceId !== null) {
     const oldHowl = activeAmbienceHowl;
     const oldId = activeAmbienceId;
-    oldHowl.fade(oldHowl.volume(oldId) as number, 0, 500, oldId);
+    oldHowl.fade(oldHowl.volume(oldId) as number, 0, MIN_CLEANUP_DELAY, oldId);
     setTimeout(() => {
       oldHowl.stop(oldId);
       oldHowl.unload();
-    }, 500);
+    }, MIN_CLEANUP_DELAY);
   }
+
+  // Clear refs
+  activeAmbienceHowl = null;
+  activeAmbienceId = null;
 
   const config = WRITING_AMBIENCE[ambienceType];
   if (!config) {
-    console.warn(`[AudioEngine] Unknown ambience type: ${ambienceType}`);
+    logWarn(`Unknown ambience type: ${ambienceType}`);
     return;
   }
 
-  currentAmbienceType = ambienceType;
+  engineState.currentAmbienceTrack = ambienceType;
+  notifyStateChange();
 
-  // Calculate random start position BEFORE creating howl
   const randomStartPosition = (config.randomStart && config.duration)
     ? Math.random() * (config.duration * 0.8)
     : 0;
-
-  console.log(`[AudioEngine] 🎵 Loading ambience: ${ambienceType} from ${config.path}`);
 
   const howl = new Howl({
     src: [config.path],
     volume: 0,
     loop: true,
     preload: true,
-    onload: function () {
-      console.log(`[AudioEngine] ✅ Ambience loaded: ${ambienceType}`);
-      // Seek to random position BEFORE playing (not after)
+    onload: function() {
+      log(`✓ Ambience loaded: ${ambienceType}`);
+
       if (randomStartPosition > 0) {
         howl.seek(randomStartPosition);
-        console.log(`[AudioEngine] Starting ${ambienceType} ambient at ${Math.floor(randomStartPosition)}s`);
       }
-      // Now start playing from the correct position
+
       activeAmbienceId = howl.play();
-      // Fade in over 2 seconds
-      howl.fade(0, settings.ambienceVolume * settings.masterVolume, 2000, activeAmbienceId);
+      howl.fade(0, engineState.settings.ambienceVolume * engineState.settings.masterVolume, 2000, activeAmbienceId!);
+
+      engineState.isAmbiencePlaying = true;
+      notifyStateChange();
     },
     onloaderror: (id, error) => {
-      console.error(`[AudioEngine] ❌ Failed to load ambience: ${ambienceType} (${config.path})`, error);
-      currentAmbienceType = null;
+      logError(`Failed to load ambience: ${ambienceType}`, error);
+      engineState.currentAmbienceTrack = null;
+      engineState.isAmbiencePlaying = false;
+      notifyStateChange();
     },
     onplayerror: (id, error) => {
-      console.error(`[AudioEngine] ❌ Failed to play ambience: ${ambienceType}`, error);
-      // Try to unlock and replay (iOS requirement)
-      howl.once('unlock', () => {
-        console.log(`[AudioEngine] 🔓 Audio unlocked, retrying ambience...`);
-        activeAmbienceId = howl.play();
-        howl.fade(0, settings.ambienceVolume * settings.masterVolume, 2000, activeAmbienceId);
-      });
+      logError(`Failed to play ambience: ${ambienceType}`, error);
+      retryQueue.push(() => startWritingAmbience(ambienceType));
     },
   });
 
   activeAmbienceHowl = howl;
-  // Don't play here - wait for onload to seek first
 }
 
 export function stopWritingAmbience(immediate: boolean = false): void {
-  // Cancel any existing pending stop
   if (pendingAmbienceStop) {
     clearTimeout(pendingAmbienceStop);
     pendingAmbienceStop = null;
   }
 
-  if (!activeAmbienceHowl || activeAmbienceId === null) return;
+  if (!activeAmbienceHowl || activeAmbienceId === null) {
+    engineState.currentAmbienceTrack = null;
+    engineState.isAmbiencePlaying = false;
+    notifyStateChange();
+    return;
+  }
 
   const howl = activeAmbienceHowl;
   const id = activeAmbienceId;
 
-  // Clear state immediately to prevent new audio from seeing old state
+  log(`⏹ Stopping ambience: ${engineState.currentAmbienceTrack}`);
+
   activeAmbienceHowl = null;
   activeAmbienceId = null;
-  currentAmbienceType = null;
+  engineState.currentAmbienceTrack = null;
+  engineState.isAmbiencePlaying = false;
+  notifyStateChange();
 
   if (immediate) {
-    // Stop immediately without fade
     howl.stop(id);
     howl.unload();
   } else {
-    // Use a small delay before stopping - allows React StrictMode remount to cancel
     pendingAmbienceStop = setTimeout(() => {
       pendingAmbienceStop = null;
-      // Fade out over 1 second
       howl.fade(howl.volume(id) as number, 0, 1000, id);
       setTimeout(() => {
         howl.stop(id);
         howl.unload();
       }, 1000);
-    }, 50); // 50ms delay
+    }, MIN_CLEANUP_DELAY);
   }
 }
 
-// Stop all audio immediately (for switching tracks)
-export function stopAllAudio(): void {
-  stopAmbientMusic(0, true);
-  stopWritingAmbience(true);
-}
-
-// Aliases for compatibility
+// Aliases
 export const startAmbience = startWritingAmbience;
 export const stopAmbience = stopWritingAmbience;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MEDITATION SOUNDS - Singing bowl and gong
+// STOP ALL AUDIO
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function playSingingBowl(
-  bowl: 'small' | 'medium' | 'large' = 'medium',
-  intensity: number = 0.6,
-  duration: number = 8
-): void {
-  if (!ensureInitialized()) return;
-  playUI('bell'); // Use bell as singing bowl
+export function stopAllAudio(): void {
+  log('⏹ Stopping all audio');
+  stopAmbientMusic(0, true);
+  stopWritingAmbience(true);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEDITATION & SPECIAL SOUNDS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function playSingingBowl(): void {
+  playUI('bell');
 }
 
 export function playGong(): void {
-  if (!ensureInitialized()) return;
-  playUI('bell'); // Use bell as gong
+  playUI('bell');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BREATHING GUIDE
-// ─────────────────────────────────────────────────────────────────────────────
-
-let breathingActive = false;
+export function playBreathingTone(phase: 'inhale' | 'exhale' | 'hold', duration: number): void {
+  // Optional: could add subtle tones here
+}
 
 export function startBreathingGuide(): void {
-  breathingActive = true;
+  // No-op for now
 }
 
 export function updateBreathPhase(phase: 'inhale' | 'exhale' | 'hold', durationMs: number): void {
-  // Could play subtle tones here if needed
+  // Optional
 }
 
 export function stopBreathingGuide(): void {
-  breathingActive = false;
-}
-
-export function playBreathingTone(
-  phase: 'inhale' | 'exhale' | 'hold',
-  duration: number
-): void {
-  // Optional: play subtle breathing tones
+  // No-op
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// XP COUNTING SOUNDS
+// XP COUNTING
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function playXpCounting(totalXp: number, duration: number = 1.5): void {
@@ -648,7 +866,6 @@ export function playXpCounting(totalXp: number, duration: number = 1.5): void {
     }, i * interval);
   }
 
-  // Final success sound
   setTimeout(() => {
     playUI('success');
   }, duration * 1000);
@@ -678,7 +895,7 @@ export const HAPTIC_PATTERNS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TYPE EXPORTS FOR HOOKS
+// TYPE EXPORTS
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type BowlType = 'small' | 'medium' | 'large';
@@ -687,25 +904,15 @@ export type AmbienceType = WritingAmbience | 'silence';
 export type BreathPhase = 'inhale' | 'exhale' | 'hold';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUDIO READY CHECK
+// STATUS CHECKS
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function isAudioReady(): boolean {
-  return isInitialized;
+  return engineState.isInitialized && engineState.isUnlocked;
 }
 
 export function resumeAudio(): void {
-  // Always try to unlock audio
-  unlockAudio();
-
-  // Also explicitly resume context
-  if (Howler.ctx && Howler.ctx.state === 'suspended') {
-    Howler.ctx.resume().then(() => {
-      console.log('[AudioEngine] 🔓 Audio context resumed via resumeAudio');
-    }).catch(() => {
-      // Silently fail - might not have user interaction yet
-    });
-  }
+  tryUnlock();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -713,7 +920,8 @@ export function resumeAudio(): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function cleanup(): void {
-  // Cancel any pending stops
+  log('🧹 Cleaning up audio engine');
+
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
     pendingMusicStop = null;
@@ -723,30 +931,34 @@ export function cleanup(): void {
     pendingAmbienceStop = null;
   }
 
-  // Stop immediately
   if (activeMusicHowl) {
     activeMusicHowl.stop();
     activeMusicHowl.unload();
     activeMusicHowl = null;
     activeMusicId = null;
-    currentMusicType = null;
   }
   if (activeAmbienceHowl) {
     activeAmbienceHowl.stop();
     activeAmbienceHowl.unload();
     activeAmbienceHowl = null;
     activeAmbienceId = null;
-    currentAmbienceType = null;
   }
 
-  // Unload all cached sounds
-  uiSoundCache.forEach((howl) => {
-    howl.unload();
-  });
+  uiSoundCache.forEach((howl) => howl.unload());
   uiSoundCache.clear();
 
-  isInitialized = false;
+  engineState.isInitialized = false;
+  engineState.isUnlocked = false;
+  engineState.currentMusicTrack = null;
+  engineState.currentAmbienceTrack = null;
+  engineState.isMusicPlaying = false;
+  engineState.isAmbiencePlaying = false;
+  notifyStateChange();
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEFAULT EXPORT
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default {
   initAudioEngine,
@@ -755,6 +967,7 @@ export default {
   stopAmbientMusic,
   startWritingAmbience,
   stopWritingAmbience,
+  stopAllAudio,
   playSingingBowl,
   playGong,
   playBreathingTone,
@@ -762,5 +975,7 @@ export default {
   playHaptic,
   updateSettings,
   getSettings,
+  getState,
+  subscribeToState,
   cleanup,
 };

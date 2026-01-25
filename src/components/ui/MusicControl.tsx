@@ -4,7 +4,7 @@
 // MUSIC CONTROL - Floating music switcher for lesson phases
 // ============================================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music, X, Volume2, VolumeX } from 'lucide-react';
 import { useAudio } from '@/hooks/useAudio';
@@ -15,16 +15,17 @@ interface MusicOption {
   id: string;
   label: string;
   icon: string;
+  type: 'silence' | 'ambience' | 'music';
 }
 
 const MUSIC_OPTIONS: MusicOption[] = [
-  { id: 'silence', label: 'Silence', icon: '🔇' },
-  { id: 'rain', label: 'Rain', icon: '🌧️' },
-  { id: 'forest', label: 'Forest', icon: '🌲' },
-  { id: 'lessonCalm', label: 'Calm', icon: '🌊' },
-  { id: 'lessonDeep', label: 'Deep Focus', icon: '🧘' },
-  { id: 'visualization', label: 'Ethereal', icon: '✨' },
-  { id: 'reflection', label: 'Reflection', icon: '🪷' },
+  { id: 'silence', label: 'Silence', icon: '🔇', type: 'silence' },
+  { id: 'rain', label: 'Rain', icon: '🌧️', type: 'ambience' },
+  { id: 'forest', label: 'Forest', icon: '🌲', type: 'ambience' },
+  { id: 'lessonCalm', label: 'Calm', icon: '🌊', type: 'music' },
+  { id: 'lessonDeep', label: 'Deep Focus', icon: '🧘', type: 'music' },
+  { id: 'visualization', label: 'Ethereal', icon: '✨', type: 'music' },
+  { id: 'reflection', label: 'Reflection', icon: '🪷', type: 'music' },
 ];
 
 interface MusicControlProps {
@@ -33,39 +34,52 @@ interface MusicControlProps {
 
 export function MusicControl({ currentTrack }: MusicControlProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTrack, setActiveTrack] = useState<string>(currentTrack || 'silence');
   const [isLoading, setIsLoading] = useState(false);
   const { soundEnabled, setSoundEnabled } = useStore();
-  const { startMusic, startWritingAmbience, stopAllAudio } = useAudio();
+  const { startMusic, startAmbience, stopAllAudio, state } = useAudio();
 
-  const handleSelectTrack = useCallback((trackId: string) => {
+  // Track the active track from engine state OR local selection
+  const [selectedTrack, setSelectedTrack] = useState<string>(currentTrack || 'silence');
+
+  // Sync with engine state
+  useEffect(() => {
+    if (state.currentMusicTrack) {
+      setSelectedTrack(state.currentMusicTrack);
+    } else if (state.currentAmbienceTrack) {
+      setSelectedTrack(state.currentAmbienceTrack);
+    } else if (!state.isMusicPlaying && !state.isAmbiencePlaying) {
+      setSelectedTrack('silence');
+    }
+  }, [state.currentMusicTrack, state.currentAmbienceTrack, state.isMusicPlaying, state.isAmbiencePlaying]);
+
+  const handleSelectTrack = useCallback((option: MusicOption) => {
     // Prevent rapid clicking
     if (isLoading) return;
-    if (trackId === activeTrack) {
+    if (option.id === selectedTrack) {
       setIsOpen(false);
       return;
     }
 
     setIsLoading(true);
-    setActiveTrack(trackId);
+    setSelectedTrack(option.id);
 
     // Stop ALL audio immediately before starting new track
     stopAllAudio();
 
-    // Small delay to ensure cleanup, then start new track
+    // Use proper delay for iOS cleanup (300ms minimum)
     setTimeout(() => {
-      if (trackId === 'silence') {
+      if (option.type === 'silence') {
         // Already stopped
-      } else if (['rain', 'forest', 'fire'].includes(trackId)) {
-        startWritingAmbience(trackId as WritingAmbience);
+      } else if (option.type === 'ambience') {
+        startAmbience(option.id as WritingAmbience);
       } else {
-        startMusic(trackId as AmbientSound, 2);
+        startMusic(option.id as AmbientSound, 2);
       }
       setIsLoading(false);
-    }, 100);
+    }, 350); // 350ms delay for iOS audio context cleanup
 
     setIsOpen(false);
-  }, [activeTrack, isLoading, startMusic, startWritingAmbience, stopAllAudio]);
+  }, [selectedTrack, isLoading, startMusic, startAmbience, stopAllAudio]);
 
   const toggleSound = useCallback(() => {
     if (soundEnabled) {
@@ -74,7 +88,8 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
     setSoundEnabled(!soundEnabled);
   }, [soundEnabled, setSoundEnabled, stopAllAudio]);
 
-  const currentOption = MUSIC_OPTIONS.find(o => o.id === activeTrack) || MUSIC_OPTIONS[0];
+  const currentOption = MUSIC_OPTIONS.find(o => o.id === selectedTrack) || MUSIC_OPTIONS[0];
+  const isPlaying = state.isMusicPlaying || state.isAmbiencePlaying;
 
   return (
     <>
@@ -102,12 +117,12 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
                 {MUSIC_OPTIONS.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleSelectTrack(option.id)}
+                    onClick={() => handleSelectTrack(option)}
                     disabled={isLoading}
                     className={`
                       w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
                       transition-colors disabled:opacity-50
-                      ${activeTrack === option.id
+                      ${selectedTrack === option.id
                         ? 'bg-cyan-500/20 text-cyan-300'
                         : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
                       }
@@ -115,6 +130,9 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
                   >
                     <span>{option.icon}</span>
                     <span>{option.label}</span>
+                    {isLoading && selectedTrack === option.id && (
+                      <span className="ml-auto text-xs opacity-50">...</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -156,7 +174,7 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
             <X size={18} />
           ) : (
             <>
-              <Music size={18} className={soundEnabled && activeTrack !== 'silence' ? 'text-cyan-400' : ''} />
+              <Music size={18} className={soundEnabled && isPlaying ? 'text-cyan-400' : ''} />
               <span className="text-xs">{currentOption.icon}</span>
             </>
           )}
