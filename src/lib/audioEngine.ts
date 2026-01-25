@@ -114,7 +114,7 @@ function preloadUISounds(): void {
         src: [path],
         volume: settings.uiVolume * settings.masterVolume,
         preload: true,
-        html5: false, // Use Web Audio for low latency
+        // Let Howler auto-detect best method (fixes cross-platform issues)
         onloaderror: (id, error) => {
           console.error(`[AudioEngine] ❌ Failed to load UI sound: ${name} (${path})`, error);
         },
@@ -163,6 +163,35 @@ let pendingAmbienceStop: ReturnType<typeof setTimeout> | null = null;
 // INITIALIZATION
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Track if audio has been unlocked by user interaction
+let isAudioUnlocked = false;
+
+function unlockAudio(): void {
+  if (isAudioUnlocked) return;
+
+  // Resume audio context
+  if (Howler.ctx && Howler.ctx.state === 'suspended') {
+    Howler.ctx.resume().then(() => {
+      console.log('[AudioEngine] 🔓 Audio context resumed');
+    }).catch((e) => {
+      console.warn('[AudioEngine] Failed to resume audio context:', e);
+    });
+  }
+
+  // Play a silent sound to unlock on iOS
+  const silentSound = new Howl({
+    src: ['data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'],
+    volume: 0,
+    onend: () => {
+      console.log('[AudioEngine] 🔓 Audio unlocked via silent sound');
+      isAudioUnlocked = true;
+    }
+  });
+  silentSound.play();
+
+  isAudioUnlocked = true;
+}
+
 export function initAudioEngine(): void {
   if (isInitialized) return;
 
@@ -171,6 +200,20 @@ export function initAudioEngine(): void {
 
   // Preload UI sounds for instant playback
   preloadUISounds();
+
+  // Set up global unlock on first user interaction
+  const handleFirstInteraction = () => {
+    unlockAudio();
+    document.removeEventListener('click', handleFirstInteraction);
+    document.removeEventListener('touchstart', handleFirstInteraction);
+    document.removeEventListener('touchend', handleFirstInteraction);
+    document.removeEventListener('keydown', handleFirstInteraction);
+  };
+
+  document.addEventListener('click', handleFirstInteraction, { once: true });
+  document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+  document.addEventListener('touchend', handleFirstInteraction, { once: true });
+  document.addEventListener('keydown', handleFirstInteraction, { once: true });
 
   isInitialized = true;
   console.log(`[AudioEngine] 🔊 Initialized with real MP3 files (Howler.js) - Base Path: '${BASE_PATH}'`);
@@ -329,7 +372,7 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     src: [config.path],
     volume: 0,
     loop: true,
-    html5: true, // Use HTML5 for long audio
+    // Let Howler auto-detect (fixes PC vs iPhone compatibility)
     onload: function () {
       console.log(`[AudioEngine] ✅ Scene music loaded: ${type}`);
       // Seek to random position BEFORE playing (not after)
@@ -458,7 +501,7 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     src: [config.path],
     volume: 0,
     loop: true,
-    html5: true,
+    // Let Howler auto-detect (fixes PC vs iPhone compatibility)
     onload: function () {
       console.log(`[AudioEngine] ✅ Ambience loaded: ${ambienceType}`);
       // Seek to random position BEFORE playing (not after)
@@ -634,8 +677,16 @@ export function isAudioReady(): boolean {
 }
 
 export function resumeAudio(): void {
+  // Always try to unlock audio
+  unlockAudio();
+
+  // Also explicitly resume context
   if (Howler.ctx && Howler.ctx.state === 'suspended') {
-    Howler.ctx.resume();
+    Howler.ctx.resume().then(() => {
+      console.log('[AudioEngine] 🔓 Audio context resumed via resumeAudio');
+    }).catch(() => {
+      // Silently fail - might not have user interaction yet
+    });
   }
 }
 
