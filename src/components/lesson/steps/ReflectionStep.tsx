@@ -493,19 +493,21 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 )}
               </Button>
 
-              {/* Keyboard hint */}
-              <AnimatePresence>
-                {isSubstantial && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-center text-xs text-stone-600"
-                  >
-                    Press ⌘+Enter to continue
-                  </motion.p>
-                )}
-              </AnimatePresence>
+              {/* Keyboard hint - fixed height to prevent layout shift */}
+              <div className="h-5 text-center">
+                <AnimatePresence>
+                  {isSubstantial && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="text-xs text-stone-600"
+                    >
+                      Press ⌘+Enter to continue
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
           </motion.div>
         )}

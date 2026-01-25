@@ -242,22 +242,22 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   </div>
                 </div>
 
-                {/* Hint rotation (shown below the textarea) */}
-                <AnimatePresence>
-                  {commitment.length === 0 && !isFocused && (
-                    <motion.div
-                      key={currentHintIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="mt-3 text-center"
-                    >
-                      <p className="text-stone-600 text-sm italic">
+                {/* Hint rotation - fixed height container to prevent layout shifts */}
+                <div className="mt-3 h-6 text-center">
+                  <AnimatePresence mode="wait">
+                    {commitment.length === 0 && !isFocused && (
+                      <motion.p
+                        key={currentHintIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-stone-600 text-sm italic"
+                      >
                         💡 {hints[currentHintIndex]}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
 
               {/* Submit button */}
@@ -281,15 +281,21 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   />
                 </Button>
 
-                {isReady && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center text-xs text-stone-600"
-                  >
-                    Press ⌘+Enter to continue
-                  </motion.p>
-                )}
+                {/* Fixed height for keyboard hint to prevent layout shift */}
+                <div className="h-5 text-center">
+                  <AnimatePresence>
+                    {isReady && (
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-xs text-stone-600"
+                      >
+                        Press ⌘+Enter to continue
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
               </motion.div>
             </motion.div>
           )}
