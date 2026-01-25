@@ -179,6 +179,7 @@ export function useAudio() {
   const startMusic = useCallback((type: AmbientSound, fadeIn: number = 3) => {
     if (!soundEnabled) return;
     init();
+    resumeAudio(); // Ensure audio context is resumed (iOS)
     startAmbientMusic(type, fadeIn);
   }, [soundEnabled, init]);
 
@@ -193,6 +194,7 @@ export function useAudio() {
   const startWritingAmbience = useCallback((type?: WritingAmbience) => {
     if (!soundEnabled) return;
     init();
+    resumeAudio(); // Ensure audio context is resumed (iOS)
     startWriting(type);
   }, [soundEnabled, init]);
 
