@@ -254,6 +254,13 @@ export default function Home() {
     return <OnboardingFlow />;
   }
 
+  // Handle lesson dismiss (GoDoIt - user leaves to take action, no Echo prompt)
+  const handleLessonDismiss = () => {
+    setSelectedFlexibleLesson(null);
+    setFlexibleLessonProgress(null);
+    setCurrentView('home');
+  };
+
   // Lesson experience
   if (currentView === 'lesson' && selectedFlexibleLesson) {
     return (
@@ -262,6 +269,7 @@ export default function Home() {
         <FlexibleLessonExperience
           lesson={selectedFlexibleLesson}
           onComplete={handleLessonComplete}
+          onDismiss={handleLessonDismiss}
           resumeProgress={flexibleLessonProgress || undefined}
         />
       </>

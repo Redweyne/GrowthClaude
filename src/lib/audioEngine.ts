@@ -315,18 +315,26 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
 
   currentMusicType = type;
 
+  // Calculate random start position BEFORE creating howl
+  const randomStartPosition = (config.randomStart && config.duration)
+    ? Math.random() * (config.duration * 0.8)
+    : 0;
+
   const howl = new Howl({
     src: [config.path],
     volume: 0,
     loop: true,
     html5: true, // Use HTML5 for long audio
     onload: function () {
-      // Random start position for long tracks
-      if (config.randomStart && config.duration) {
-        const randomPosition = Math.random() * (config.duration * 0.8);
-        howl.seek(randomPosition);
-        console.log(`[AudioEngine] Starting ${type} at ${Math.floor(randomPosition)}s`);
+      // Seek to random position BEFORE playing (not after)
+      if (randomStartPosition > 0) {
+        howl.seek(randomStartPosition);
+        console.log(`[AudioEngine] Starting ${type} at ${Math.floor(randomStartPosition)}s`);
       }
+      // Now start playing from the correct position
+      activeMusicId = howl.play();
+      // Fade in
+      howl.fade(0, settings.musicVolume * settings.masterVolume, fadeInDuration * 1000, activeMusicId);
     },
     onloaderror: (id, error) => {
       console.error(`[AudioEngine] ❌ Failed to load scene music: ${type} (${config.path})`, error);
@@ -335,10 +343,7 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
   });
 
   activeMusicHowl = howl;
-  activeMusicId = howl.play();
-
-  // Fade in
-  howl.fade(0, settings.musicVolume * settings.masterVolume, fadeInDuration * 1000, activeMusicId);
+  // Don't play here - wait for onload to seek first
 }
 
 export function stopAmbientMusic(fadeOutDuration: number = 2): void {
@@ -424,26 +429,31 @@ export function startWritingAmbience(type?: WritingAmbience): void {
 
   currentAmbienceType = ambienceType;
 
+  // Calculate random start position BEFORE creating howl
+  const randomStartPosition = (config.randomStart && config.duration)
+    ? Math.random() * (config.duration * 0.8)
+    : 0;
+
   const howl = new Howl({
     src: [config.path],
     volume: 0,
     loop: true,
     html5: true,
     onload: function () {
-      // Random start position for long tracks (forest)
-      if (config.randomStart && config.duration) {
-        const randomPosition = Math.random() * (config.duration * 0.8);
-        howl.seek(randomPosition);
-        console.log(`[AudioEngine] Starting ${ambienceType} ambient at ${Math.floor(randomPosition)}s`);
+      // Seek to random position BEFORE playing (not after)
+      if (randomStartPosition > 0) {
+        howl.seek(randomStartPosition);
+        console.log(`[AudioEngine] Starting ${ambienceType} ambient at ${Math.floor(randomStartPosition)}s`);
       }
+      // Now start playing from the correct position
+      activeAmbienceId = howl.play();
+      // Fade in over 2 seconds
+      howl.fade(0, settings.ambienceVolume * settings.masterVolume, 2000, activeAmbienceId);
     },
   });
 
   activeAmbienceHowl = howl;
-  activeAmbienceId = howl.play();
-
-  // Fade in over 2 seconds
-  howl.fade(0, settings.ambienceVolume * settings.masterVolume, 2000, activeAmbienceId);
+  // Don't play here - wait for onload to seek first
 }
 
 export function stopWritingAmbience(): void {

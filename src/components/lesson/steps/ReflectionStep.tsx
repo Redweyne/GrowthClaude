@@ -19,6 +19,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Feather, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { MusicControl } from '@/components/ui/MusicControl';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTypingAmbience } from '@/hooks/useTypingAmbience';
@@ -85,7 +86,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
 
   // Audio hooks for immersive experience
   const { playSuccess, startWritingAmbience, stopWritingAmbience, playChime } = useAudio();
-  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: true });
+  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false }); // Disabled - silence is better
 
   // Echoes store for publishing public reflections
   const { publishReflection, genderIdentity } = useEchoesStore();
@@ -558,6 +559,9 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Music control - visible during writing phase */}
+      {phase === 'writing' && <MusicControl currentTrack="rain" />}
     </div>
   );
 }

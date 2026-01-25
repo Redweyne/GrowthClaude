@@ -16,6 +16,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Target } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { MusicControl } from '@/components/ui/MusicControl';
 import { useAudio } from '@/hooks/useAudio';
 import { useTypingAmbience } from '@/hooks/useTypingAmbience';
 import type { CommitmentStep as CommitmentStepType } from '@/types/lessons';
@@ -41,7 +42,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
 
   // Audio hooks for commitment experience
   const { playSuccessBig, startWritingAmbience, stopWritingAmbience, playBell } = useAudio();
-  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: true });
+  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false }); // Disabled - silence is better
 
   const minimumWords = step.minimumWords || 3;
   const wordCount = commitment.trim().split(/\s+/).filter(Boolean).length;
@@ -325,6 +326,9 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
           )}
         </AnimatePresence>
       </div>
+
+      {/* Music control - visible during writing phase */}
+      {phase === 'writing' && <MusicControl currentTrack="forest" />}
     </div>
   );
 }

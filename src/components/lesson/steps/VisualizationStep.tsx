@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { MusicControl } from '@/components/ui/MusicControl';
 import { useAudio } from '@/hooks/useAudio';
 import type { VisualizationStep as VisualizationStepType } from '@/types/lessons';
 
@@ -157,6 +158,9 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
           )}
         </div>
       </motion.div>
+
+      {/* Music control - always visible during visualization */}
+      <MusicControl currentTrack="visualization" />
     </div>
   );
 }

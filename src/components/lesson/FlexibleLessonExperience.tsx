@@ -59,6 +59,7 @@ import type {
 interface FlexibleLessonExperienceProps {
   lesson: FlexibleLesson;
   onComplete: () => void;
+  onDismiss?: () => void; // Called when user leaves for GoDoIt action (no Echo prompt)
   // For resuming from a GoDoIt step
   resumeProgress?: LessonProgress;
 }
@@ -84,6 +85,7 @@ const STEP_THEMES: Record<string, {
 export function FlexibleLessonExperience({
   lesson,
   onComplete,
+  onDismiss,
   resumeProgress,
 }: FlexibleLessonExperienceProps) {
   // ─────────────────────────────────────────────────────────────────────────
@@ -226,8 +228,14 @@ export function FlexibleLessonExperience({
     });
 
     // Close the lesson (user goes to do their action)
-    onComplete();
-  }, [lesson.id, currentStep, choices, writings, onComplete, savePendingLessonAction]);
+    // Use onDismiss if provided - this skips the Echo prompt
+    // Only use onComplete if this is the actual end of the lesson
+    if (onDismiss) {
+      onDismiss();
+    } else {
+      onComplete();
+    }
+  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction]);
 
   const handleReturnConfirmComplete = useCallback((completed: boolean) => {
     setActionCompleted(completed);

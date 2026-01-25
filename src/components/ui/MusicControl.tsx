@@ -1,0 +1,151 @@
+'use client';
+
+// ============================================================================
+// MUSIC CONTROL - Floating music switcher for lesson phases
+// ============================================================================
+
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Music, X, Volume2, VolumeX } from 'lucide-react';
+import { useAudio } from '@/hooks/useAudio';
+import { useStore } from '@/store/useStore';
+import type { AmbientSound, WritingAmbience } from '@/lib/audioEngine';
+
+interface MusicOption {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+const MUSIC_OPTIONS: MusicOption[] = [
+  { id: 'silence', label: 'Silence', icon: '🔇' },
+  { id: 'rain', label: 'Rain', icon: '🌧️' },
+  { id: 'forest', label: 'Forest', icon: '🌲' },
+  { id: 'lessonCalm', label: 'Calm', icon: '🌊' },
+  { id: 'lessonDeep', label: 'Deep Focus', icon: '🧘' },
+  { id: 'visualization', label: 'Ethereal', icon: '✨' },
+  { id: 'reflection', label: 'Reflection', icon: '🪷' },
+];
+
+interface MusicControlProps {
+  currentTrack?: string;
+  position?: 'bottom-left' | 'bottom-right' | 'top-right';
+}
+
+export function MusicControl({ currentTrack, position = 'bottom-left' }: MusicControlProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeTrack, setActiveTrack] = useState<string>(currentTrack || 'silence');
+  const { soundEnabled, setSoundEnabled } = useStore();
+  const { startMusic, stopMusic, startWritingAmbience, stopWritingAmbience } = useAudio();
+
+  const positionClasses = {
+    'bottom-left': 'bottom-4 left-4',
+    'bottom-right': 'bottom-4 right-4',
+    'top-right': 'top-4 right-4',
+  };
+
+  const handleSelectTrack = useCallback((trackId: string) => {
+    setActiveTrack(trackId);
+
+    if (trackId === 'silence') {
+      stopMusic(1);
+      stopWritingAmbience();
+    } else if (['rain', 'forest', 'fire'].includes(trackId)) {
+      stopMusic(0.5);
+      startWritingAmbience(trackId as WritingAmbience);
+    } else {
+      stopWritingAmbience();
+      startMusic(trackId as AmbientSound, 2);
+    }
+
+    setIsOpen(false);
+  }, [startMusic, stopMusic, startWritingAmbience, stopWritingAmbience]);
+
+  const toggleSound = useCallback(() => {
+    if (soundEnabled) {
+      stopMusic(0.5);
+      stopWritingAmbience();
+    }
+    setSoundEnabled(!soundEnabled);
+  }, [soundEnabled, setSoundEnabled, stopMusic, stopWritingAmbience]);
+
+  const currentOption = MUSIC_OPTIONS.find(o => o.id === activeTrack) || MUSIC_OPTIONS[0];
+
+  return (
+    <div className={`fixed ${positionClasses[position]} z-40`}>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-14 left-0 mb-2 p-2 rounded-xl bg-stone-900/95 border border-stone-700/50 backdrop-blur-sm shadow-xl min-w-[160px]"
+          >
+            <div className="space-y-1">
+              {MUSIC_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleSelectTrack(option.id)}
+                  className={`
+                    w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
+                    transition-colors
+                    ${activeTrack === option.id
+                      ? 'bg-cyan-500/20 text-cyan-300'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
+                    }
+                  `}
+                >
+                  <span>{option.icon}</span>
+                  <span>{option.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Sound toggle */}
+            <div className="mt-2 pt-2 border-t border-stone-700/50">
+              <button
+                onClick={toggleSound}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
+                  transition-colors
+                  ${!soundEnabled
+                    ? 'bg-red-500/20 text-red-300'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
+                  }
+                `}
+              >
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                <span>{soundEnabled ? 'Sound On' : 'Sound Off'}</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main button */}
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`
+          flex items-center gap-2 px-3 py-2 rounded-full
+          bg-stone-900/80 border border-stone-700/50 backdrop-blur-sm
+          text-stone-400 hover:text-stone-200 hover:border-stone-600
+          transition-colors shadow-lg
+        `}
+      >
+        {isOpen ? (
+          <X size={18} />
+        ) : (
+          <>
+            <Music size={18} className={soundEnabled && activeTrack !== 'silence' ? 'text-cyan-400' : ''} />
+            <span className="text-xs hidden sm:inline">{currentOption.icon}</span>
+          </>
+        )}
+      </motion.button>
+    </div>
+  );
+}
+
+export default MusicControl;

@@ -19,6 +19,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { MusicControl } from '@/components/ui/MusicControl';
 import { useAudio } from '@/hooks/useAudio';
 import { useBreathingGuide } from '@/hooks/useBreathingGuide';
 import type { TimerStep as TimerStepType } from '@/types/lessons';
@@ -460,6 +461,9 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Music control - visible during practicing phase */}
+      {phase === 'practicing' && <MusicControl currentTrack="lessonDeep" />}
     </div>
   );
 }
