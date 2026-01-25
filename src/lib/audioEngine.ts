@@ -74,7 +74,7 @@ const UI_SOUNDS: Record<string, string> = {
   unlock: `${BASE_PATH}/audio/ui/streak.mp3`,
   notification: `${BASE_PATH}/audio/ui/bell.mp3`,
   reveal: `${BASE_PATH}/audio/ui/chime.mp3`,
-  keystroke: `${BASE_PATH}/audio/ui/keystroke.mp3`,
+  keystroke: `${BASE_PATH}/audio/ui/tap.mp3`, // Use soft tap sound instead of harsh keystroke
   error: `${BASE_PATH}/audio/ui/pop.mp3`,
   gong: `${BASE_PATH}/audio/ui/bell.mp3`,
   singingBowl: `${BASE_PATH}/audio/ui/bell.mp3`,
@@ -154,6 +154,10 @@ let activeAmbienceHowl: Howl | null = null;
 let activeAmbienceId: number | null = null;
 let currentMusicType: string | null = null;
 let currentAmbienceType: string | null = null;
+
+// Pending stop timeouts - allows cancellation when React StrictMode remounts
+let pendingMusicStop: ReturnType<typeof setTimeout> | null = null;
+let pendingAmbienceStop: ReturnType<typeof setTimeout> | null = null;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
@@ -279,13 +283,29 @@ export const playCelebration = (volume?: number) => {
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
 
-  // Skip if already playing this exact type (prevents React StrictMode double-starts)
+  // Cancel any pending stop - React StrictMode protection
+  if (pendingMusicStop) {
+    clearTimeout(pendingMusicStop);
+    pendingMusicStop = null;
+  }
+
+  // Skip if already playing this exact type
   if (currentMusicType === type && activeMusicHowl && activeMusicId !== null) {
+    // Resume if it was fading out
+    activeMusicHowl.fade(activeMusicHowl.volume() as number, settings.musicVolume * settings.masterVolume, 500, activeMusicId);
     return;
   }
 
-  // Stop current music with crossfade
-  stopAmbientMusic(fadeInDuration * 0.5);
+  // Stop current music immediately if switching tracks (no crossfade delay)
+  if (activeMusicHowl && activeMusicId !== null) {
+    const oldHowl = activeMusicHowl;
+    const oldId = activeMusicId;
+    oldHowl.fade(oldHowl.volume(oldId) as number, 0, fadeInDuration * 500, oldId);
+    setTimeout(() => {
+      oldHowl.stop(oldId);
+      oldHowl.unload();
+    }, fadeInDuration * 500);
+  }
 
   const config = SCENE_MUSIC[type];
   if (!config) {
@@ -303,7 +323,6 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     onload: function () {
       // Random start position for long tracks
       if (config.randomStart && config.duration) {
-        // Start somewhere in the first 80% of the track
         const randomPosition = Math.random() * (config.duration * 0.8);
         howl.seek(randomPosition);
         console.log(`[AudioEngine] Starting ${type} at ${Math.floor(randomPosition)}s`);
@@ -311,7 +330,6 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     },
     onloaderror: (id, error) => {
       console.error(`[AudioEngine] ❌ Failed to load scene music: ${type} (${config.path})`, error);
-      console.error('[AudioEngine] This usually means Git LFS is missing or the file is a pointer.');
       currentMusicType = null;
     },
   });
@@ -324,23 +342,37 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
 }
 
 export function stopAmbientMusic(fadeOutDuration: number = 2): void {
+  // Cancel any existing pending stop
+  if (pendingMusicStop) {
+    clearTimeout(pendingMusicStop);
+    pendingMusicStop = null;
+  }
+
   if (!activeMusicHowl || activeMusicId === null) return;
 
   const howl = activeMusicHowl;
   const id = activeMusicId;
 
-  // Clear state immediately to prevent re-entry
-  activeMusicHowl = null;
-  activeMusicId = null;
-  currentMusicType = null;
+  // Use a small delay before stopping - allows React StrictMode remount to cancel
+  pendingMusicStop = setTimeout(() => {
+    pendingMusicStop = null;
 
-  // Fade out and stop
-  howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
+    // Double-check we still want to stop this specific howl
+    if (activeMusicHowl !== howl) return;
 
-  setTimeout(() => {
-    howl.stop(id);
-    howl.unload();
-  }, fadeOutDuration * 1000);
+    // Clear state
+    activeMusicHowl = null;
+    activeMusicId = null;
+    currentMusicType = null;
+
+    // Fade out and stop
+    howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
+
+    setTimeout(() => {
+      howl.stop(id);
+      howl.unload();
+    }, fadeOutDuration * 1000);
+  }, 50); // 50ms delay - enough for React StrictMode but imperceptible
 }
 
 // Alias for useAudio hook compatibility
@@ -354,19 +386,35 @@ export const stopSceneMusic = stopAmbientMusic;
 export function startWritingAmbience(type?: WritingAmbience): void {
   if (!ensureInitialized()) return;
 
+  // Cancel any pending stop - React StrictMode protection
+  if (pendingAmbienceStop) {
+    clearTimeout(pendingAmbienceStop);
+    pendingAmbienceStop = null;
+  }
+
   const ambienceType = type || settings.writingAmbienceType;
   if (ambienceType === 'silence') {
     stopWritingAmbience();
     return;
   }
 
-  // Skip if already playing this exact type (prevents React StrictMode double-starts)
+  // Skip if already playing this exact type
   if (currentAmbienceType === ambienceType && activeAmbienceHowl && activeAmbienceId !== null) {
+    // Resume if it was fading out
+    activeAmbienceHowl.fade(activeAmbienceHowl.volume() as number, settings.ambienceVolume * settings.masterVolume, 500, activeAmbienceId);
     return;
   }
 
-  // Stop current ambience
-  stopWritingAmbience();
+  // Stop current ambience immediately if switching
+  if (activeAmbienceHowl && activeAmbienceId !== null) {
+    const oldHowl = activeAmbienceHowl;
+    const oldId = activeAmbienceId;
+    oldHowl.fade(oldHowl.volume(oldId) as number, 0, 500, oldId);
+    setTimeout(() => {
+      oldHowl.stop(oldId);
+      oldHowl.unload();
+    }, 500);
+  }
 
   const config = WRITING_AMBIENCE[ambienceType];
   if (!config) {
@@ -399,23 +447,37 @@ export function startWritingAmbience(type?: WritingAmbience): void {
 }
 
 export function stopWritingAmbience(): void {
+  // Cancel any existing pending stop
+  if (pendingAmbienceStop) {
+    clearTimeout(pendingAmbienceStop);
+    pendingAmbienceStop = null;
+  }
+
   if (!activeAmbienceHowl || activeAmbienceId === null) return;
 
   const howl = activeAmbienceHowl;
   const id = activeAmbienceId;
 
-  // Clear state immediately to prevent re-entry
-  activeAmbienceHowl = null;
-  activeAmbienceId = null;
-  currentAmbienceType = null;
+  // Use a small delay before stopping - allows React StrictMode remount to cancel
+  pendingAmbienceStop = setTimeout(() => {
+    pendingAmbienceStop = null;
 
-  // Fade out over 1 second
-  howl.fade(howl.volume(id) as number, 0, 1000, id);
+    // Double-check we still want to stop this specific howl
+    if (activeAmbienceHowl !== howl) return;
 
-  setTimeout(() => {
-    howl.stop(id);
-    howl.unload();
-  }, 1000);
+    // Clear state
+    activeAmbienceHowl = null;
+    activeAmbienceId = null;
+    currentAmbienceType = null;
+
+    // Fade out over 1 second
+    howl.fade(howl.volume(id) as number, 0, 1000, id);
+
+    setTimeout(() => {
+      howl.stop(id);
+      howl.unload();
+    }, 1000);
+  }, 50); // 50ms delay - enough for React StrictMode but imperceptible
 }
 
 // Aliases for compatibility
@@ -538,8 +600,31 @@ export function resumeAudio(): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function cleanup(): void {
-  stopAmbientMusic(0);
-  stopWritingAmbience();
+  // Cancel any pending stops
+  if (pendingMusicStop) {
+    clearTimeout(pendingMusicStop);
+    pendingMusicStop = null;
+  }
+  if (pendingAmbienceStop) {
+    clearTimeout(pendingAmbienceStop);
+    pendingAmbienceStop = null;
+  }
+
+  // Stop immediately
+  if (activeMusicHowl) {
+    activeMusicHowl.stop();
+    activeMusicHowl.unload();
+    activeMusicHowl = null;
+    activeMusicId = null;
+    currentMusicType = null;
+  }
+  if (activeAmbienceHowl) {
+    activeAmbienceHowl.stop();
+    activeAmbienceHowl.unload();
+    activeAmbienceHowl = null;
+    activeAmbienceId = null;
+    currentAmbienceType = null;
+  }
 
   // Unload all cached sounds
   uiSoundCache.forEach((howl) => {
