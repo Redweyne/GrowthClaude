@@ -270,6 +270,8 @@ export type LessonStep =
 // FLEXIBLE LESSON INTERFACE
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { DailyExercise } from './dailyPractice';
+
 export interface FlexibleLesson {
   id: string;
   slug: string;
@@ -300,6 +302,16 @@ export interface FlexibleLesson {
 
   // Estimated time in minutes
   estimatedMinutes?: number;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DAILY PRACTICE SYSTEM ADDITIONS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // 5 exercises for the daily practice phase
+  exercises?: DailyExercise[];
+
+  // Teaser text for "tomorrow's glimpse" preview
+  teaserText?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

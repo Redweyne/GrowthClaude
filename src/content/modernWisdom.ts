@@ -34,6 +34,72 @@ const lesson1_InstantReframe: FlexibleLesson = {
   xpReward: 25,
   estimatedMinutes: 7,
   thumbnail: { icon: '⚖️', color: '#f59e0b' },
+  teaserText: "Tomorrow you'll discover the one question that has freed emperors and prisoners alike for 2000 years.",
+  exercises: [
+    {
+      id: 'ex-1-scenario',
+      type: 'scenario',
+      title: 'The Traffic Test',
+      content: {
+        situation: "You're stuck in heavy traffic. You're already 20 minutes late for an important meeting. Your phone is buzzing with messages asking where you are. You feel your frustration rising, your grip tightening on the steering wheel.",
+        question: "Using the dichotomy of control, what is within your control right now, and what isn't? How would you respond?",
+        hints: [
+          "Consider: can you control the traffic?",
+          "What CAN you control about this situation?",
+          "How would acceptance of what you can't control change your experience?"
+        ]
+      }
+    },
+    {
+      id: 'ex-1-quote',
+      type: 'quote',
+      title: 'Epictetus on Freedom',
+      content: {
+        quote: "Make the best use of what is in your power, and take the rest as it happens. Some things are up to us and some things are not up to us.",
+        author: "Epictetus",
+        source: "Enchiridion",
+        reflectionPrompt: "Think of a current worry in your life. Which parts are truly 'up to you' and which parts are you needlessly trying to control?"
+      }
+    },
+    {
+      id: 'ex-1-application',
+      type: 'application',
+      title: 'Tomorrow\'s Question',
+      content: {
+        instruction: "Tomorrow, when you notice yourself feeling stressed or worried, pause and ask: 'Is this within my control?' If yes, act. If no, practice acceptance.",
+        planPrompt: "What's one specific situation tomorrow where you could apply this question? Be specific about when and where.",
+        examples: [
+          "When I check my email and see something frustrating",
+          "During my commute when things don't go as planned",
+          "In a meeting when someone disagrees with me"
+        ]
+      }
+    },
+    {
+      id: 'ex-1-anchor',
+      type: 'anchor',
+      title: 'The Open Palms',
+      content: {
+        gesture: "Open your hands, palms up, fingers relaxed",
+        meaning: "This gesture represents releasing what you cannot control. Open palms cannot grip, cannot hold tight, cannot fight against reality.",
+        breathPattern: "As you breathe in, notice any tension in your hands. As you breathe out, let your palms open fully, releasing the urge to control.",
+        repetitions: 3
+      }
+    },
+    {
+      id: 'ex-1-reframe',
+      type: 'reframe',
+      title: 'Control Reframe',
+      content: {
+        challengePrompt: "Describe something that's been stressing you out lately - something you keep thinking about but can't seem to resolve.",
+        reframeGuide: "Now separate what's within your control from what isn't. Rewrite this situation focusing ONLY on the parts you can actually influence.",
+        example: {
+          before: "My coworker keeps undermining me in meetings and I can't stop thinking about it",
+          after: "I can't control my coworker's behavior, but I can control: how I prepare for meetings, how I respond in the moment, and whether I address it directly with them or my manager"
+        }
+      }
+    }
+  ],
   steps: [
     // ═══════════════════════════════════════════════════════════════════════
     // OPENING - Deep emotional connection
@@ -234,8 +300,8 @@ const lesson1_InstantReframe: FlexibleLesson = {
       type: 'visualization',
       title: 'The Release',
       instructions: [
-        'Close your eyes. Take three deep breaths.',
-        'Now picture the thing you named. See it clearly in your mind.',
+        'Take three deep breaths. Slow and deliberate.',
+        'Picture the thing you named. See it clearly in your mind.',
         'Notice how your body responds. The tightening. The resistance.',
         'Now imagine you\'re holding this burden in your cupped hands.',
         'Feel its weight. You\'ve been carrying this for so long.',
@@ -328,6 +394,72 @@ const lesson2_PowerOfTiny: FlexibleLesson = {
   xpReward: 18,
   estimatedMinutes: 4,
   thumbnail: { icon: '🌱', color: '#10b981' },
+  teaserText: "Tomorrow you'll learn the 2-minute rule that makes habits impossible to fail.",
+  exercises: [
+    {
+      id: 'ex-2-scenario',
+      type: 'scenario',
+      title: 'The Overwhelmed Beginner',
+      content: {
+        situation: "Your friend wants to get fit. They buy an expensive gym membership, workout clothes, supplements, and create an ambitious 6-day workout plan. Three weeks later, they've been to the gym twice and feel like a failure. They ask you for advice.",
+        question: "Using the power of tiny, what would you tell them? How would you help them redesign their approach?",
+        hints: [
+          "Think: what's the 2-minute version?",
+          "What habit is so small they can't fail?",
+          "How does showing up matter more than performance?"
+        ]
+      }
+    },
+    {
+      id: 'ex-2-quote',
+      type: 'quote',
+      title: 'James Clear on Identity',
+      content: {
+        quote: "Every action you take is a vote for the type of person you wish to become. No single instance will transform your beliefs, but as the votes build up, so does the evidence of your new identity.",
+        author: "James Clear",
+        source: "Atomic Habits",
+        reflectionPrompt: "What identity are you voting for with your daily tiny actions? What small habit would cast a vote for the person you want to become?"
+      }
+    },
+    {
+      id: 'ex-2-application',
+      type: 'application',
+      title: 'The 2-Minute Tomorrow',
+      content: {
+        instruction: "Tomorrow morning, before you do anything else, do a 2-minute version of something you've been wanting to build into your life.",
+        planPrompt: "What specific 2-minute habit will you do tomorrow morning? Where will you do it? What's your cue to start?",
+        examples: [
+          "When my feet hit the floor, I'll do 2 pushups",
+          "After I brush my teeth, I'll write one sentence in a journal",
+          "Before I check my phone, I'll take 3 deep breaths"
+        ]
+      }
+    },
+    {
+      id: 'ex-2-anchor',
+      type: 'anchor',
+      title: 'The Seed Gesture',
+      content: {
+        gesture: "Touch your thumb to your index finger, forming a small circle - like holding a tiny seed",
+        meaning: "This small circle represents the tiny habit - small enough to hold, but containing infinite potential for growth. Every mighty oak started as something this small.",
+        breathPattern: "Breathe in and imagine planting this seed. Breathe out and imagine it taking root. Small. Consistent. Unstoppable.",
+        repetitions: 3
+      }
+    },
+    {
+      id: 'ex-2-reframe',
+      type: 'reframe',
+      title: 'From All-or-Nothing to Something',
+      content: {
+        challengePrompt: "What's something you've been failing at because you've been trying to do too much? A goal where you keep starting strong and then quitting?",
+        reframeGuide: "Now shrink it. What's the 2-minute version that you could do every single day no matter what? Make it so small it feels almost pointless.",
+        example: {
+          before: "I want to meditate for 20 minutes every morning but I keep skipping it",
+          after: "I will sit down, close my eyes, and take exactly 3 breaths. That's my meditation. Done. I can always do more, but 3 breaths is the only requirement."
+        }
+      }
+    }
+  ],
   steps: [
     {
       id: 'scenario',
@@ -431,6 +563,72 @@ const lesson3_ObstacleOpportunity: FlexibleLesson = {
   xpReward: 20,
   estimatedMinutes: 5,
   thumbnail: { icon: '🔥', color: '#ef4444' },
+  teaserText: "Tomorrow you'll learn the ancient secret that turns every obstacle into your greatest advantage.",
+  exercises: [
+    {
+      id: 'ex-3-scenario',
+      type: 'scenario',
+      title: 'The Unexpected Layoff',
+      content: {
+        situation: "Your coworker just got laid off after 8 years at the company. They're devastated, angry, and scared. They call you seeking comfort but also convinced their life is ruined.",
+        question: "Using 'the obstacle is the way' thinking, how would you help them see this differently? What opportunity might be hiding in this setback?",
+        hints: [
+          "What doors might this close that needed closing?",
+          "What might they pursue now that they wouldn't have before?",
+          "How have layoffs transformed other people's lives for the better?"
+        ]
+      }
+    },
+    {
+      id: 'ex-3-quote',
+      type: 'quote',
+      title: 'Marcus Aurelius on Obstacles',
+      content: {
+        quote: "The impediment to action advances action. What stands in the way becomes the way.",
+        author: "Marcus Aurelius",
+        source: "Meditations",
+        reflectionPrompt: "Think of a past obstacle that ended up redirecting your life in a better direction. What 'gift' did that difficulty ultimately give you?"
+      }
+    },
+    {
+      id: 'ex-3-application',
+      type: 'application',
+      title: 'The Obstacle Flip',
+      content: {
+        instruction: "Tomorrow, when you encounter any frustration or obstacle, immediately ask: 'What opportunity is hiding in this?'",
+        planPrompt: "What's one obstacle you're currently facing? How might you actively look for the opportunity within it tomorrow?",
+        examples: [
+          "The difficult client is teaching me patience and communication skills",
+          "The boring task is a chance to practice focus and presence",
+          "The rejection is redirecting me somewhere better"
+        ]
+      }
+    },
+    {
+      id: 'ex-3-anchor',
+      type: 'anchor',
+      title: 'The Phoenix Rising',
+      content: {
+        gesture: "Press your palms together at your chest, then slowly raise them overhead while spreading your fingers wide - like flames rising",
+        meaning: "Like the phoenix, you rise from what tried to burn you. The gesture transforms downward pressure into upward movement.",
+        breathPattern: "Breathe in with palms together. Breathe out as you raise and spread - transforming the obstacle into fuel for your rise.",
+        repetitions: 3
+      }
+    },
+    {
+      id: 'ex-3-reframe',
+      type: 'reframe',
+      title: 'From Block to Building Block',
+      content: {
+        challengePrompt: "What obstacle are you currently facing that feels like it's just blocking your path? Something that seems purely negative?",
+        reframeGuide: "Now flip it. What skill, strength, or opportunity could this obstacle be creating for you? How might your future self thank this difficulty?",
+        example: {
+          before: "I keep getting rejected from jobs and it's destroying my confidence",
+          after: "Each rejection is teaching me resilience and helping me refine my approach. The right opportunity hasn't appeared yet because I'm being prepared for something better. This difficulty is building my determination."
+        }
+      }
+    }
+  ],
   steps: [
     {
       id: 'scenario',
@@ -553,6 +751,72 @@ const lesson4_MorningMindset: FlexibleLesson = {
   xpReward: 18,
   estimatedMinutes: 4,
   thumbnail: { icon: '🌅', color: '#f97316' },
+  teaserText: "Tomorrow you'll learn the 2-minute morning practice used by Roman emperors and modern CEOs alike.",
+  exercises: [
+    {
+      id: 'ex-4-scenario',
+      type: 'scenario',
+      title: 'The Reactive Morning',
+      content: {
+        situation: "Your friend tells you they wake up every day already stressed. They immediately check their phone, see work emails and social media, and feel anxious before they even get out of bed. They say they have no time for a morning routine.",
+        question: "How would you help them design a 2-minute morning practice that takes back control of how their day starts?",
+        hints: [
+          "What could they do BEFORE reaching for their phone?",
+          "How can anticipating challenges reduce their power?",
+          "What tiny ritual could change their whole morning energy?"
+        ]
+      }
+    },
+    {
+      id: 'ex-4-quote',
+      type: 'quote',
+      title: 'Marcus Aurelius at Dawn',
+      content: {
+        quote: "Begin each day by telling yourself: Today I will meet with interference, ingratitude, insolence, disloyalty, ill-will, and selfishness. But I have seen the beauty of good, and the ugliness of evil, and have recognized that the wrongdoer has a nature related to my own.",
+        author: "Marcus Aurelius",
+        source: "Meditations",
+        reflectionPrompt: "What typically catches you off guard during your day? How would anticipating it change your reaction?"
+      }
+    },
+    {
+      id: 'ex-4-application',
+      type: 'application',
+      title: 'Morning Premeditation',
+      content: {
+        instruction: "Tomorrow morning, before checking any devices, spend 2 minutes: 1) Take 5 deep breaths, 2) Ask: what might frustrate me today? 3) Decide: how do I WANT to respond?",
+        planPrompt: "What time will you wake up? What's one challenge you can anticipate for tomorrow? How will you choose to respond to it?",
+        examples: [
+          "The meeting at 10am might get tense - I'll choose to stay curious instead of defensive",
+          "Traffic will probably be bad - I'll use that time to listen to something uplifting",
+          "My inbox will be full - I'll process it calmly, one email at a time"
+        ]
+      }
+    },
+    {
+      id: 'ex-4-anchor',
+      type: 'anchor',
+      title: 'The Warrior\'s Breath',
+      content: {
+        gesture: "Place your right hand over your heart, left hand on your belly",
+        meaning: "This stance connects head and heart, preparation and presence. A warrior prepares for battle not with fear, but with calm readiness.",
+        breathPattern: "Breathe in courage through the hand on your belly. Breathe out calm through the hand on your heart. You are prepared. You are ready.",
+        repetitions: 5
+      }
+    },
+    {
+      id: 'ex-4-reframe',
+      type: 'reframe',
+      title: 'From Victim to Victor',
+      content: {
+        challengePrompt: "Describe a recurring frustration in your daily life - something that seems to 'happen to you' regularly and throws off your mood.",
+        reframeGuide: "Now rewrite this as something you can anticipate and prepare for. How can you respond to it as a warrior who expected this, not a victim who was surprised?",
+        example: {
+          before: "My boss always dumps work on me at 5pm and ruins my evening",
+          after: "I know my boss often has last-minute requests. At 4:30pm, I'll prepare myself mentally. When it comes, I'll calmly assess: what can wait until tomorrow, and what truly can't? I expected this. I'm ready."
+        }
+      }
+    }
+  ],
   steps: [
     {
       id: 'scenario',
@@ -646,6 +910,72 @@ const lesson5_GratitudeShift: FlexibleLesson = {
   xpReward: 20,
   estimatedMinutes: 5,
   thumbnail: { icon: '✨', color: '#8b5cf6' },
+  teaserText: "Tomorrow you'll discover the counterintuitive technique that makes gratitude feel real instead of forced.",
+  exercises: [
+    {
+      id: 'ex-5-scenario',
+      type: 'scenario',
+      title: 'The Gratitude Skeptic',
+      content: {
+        situation: "Your friend says: 'I've tried gratitude journals and they feel fake. Listing things I'm grateful for just feels like going through the motions. It doesn't actually change how I feel.'",
+        question: "How would you explain negative visualization to them? How is it different from forced gratitude?",
+        hints: [
+          "Why does imagining loss work better than listing blessings?",
+          "How does contrast create genuine appreciation?",
+          "What makes this approach feel real instead of performative?"
+        ]
+      }
+    },
+    {
+      id: 'ex-5-quote',
+      type: 'quote',
+      title: 'Seneca on Wealth',
+      content: {
+        quote: "It is not the man who has too little, but the man who craves more, that is poor. What difference does it make how much is in your bank account or in your barns, if you covet your neighbor's harvest and you count not your past blessings, but the blessings you're yet to have?",
+        author: "Seneca",
+        source: "Letters from a Stoic",
+        reflectionPrompt: "What do you already have that you've stopped noticing? What would you desperately miss if it were suddenly gone?"
+      }
+    },
+    {
+      id: 'ex-5-application',
+      type: 'application',
+      title: 'The Temporary Gift Practice',
+      content: {
+        instruction: "Tomorrow, choose one person or thing you often take for granted. Spend 60 seconds imagining your life without them. Then notice how your appreciation shifts.",
+        planPrompt: "Who or what will you focus on tomorrow? Why did you choose this person or thing?",
+        examples: [
+          "My morning coffee - imagining not having access to it",
+          "My ability to walk - imagining being unable to move freely",
+          "My partner/friend - imagining they weren't in my life"
+        ]
+      }
+    },
+    {
+      id: 'ex-5-anchor',
+      type: 'anchor',
+      title: 'The Heart Hold',
+      content: {
+        gesture: "Place both hands over your heart, one on top of the other, and gently press",
+        meaning: "This gesture physically connects you to what matters. Your heart beats without your effort - a gift you never asked for but always receive.",
+        breathPattern: "Breathe in and feel your heart beating under your hands. Breathe out and silently say 'thank you' for this gift you didn't earn.",
+        repetitions: 3
+      }
+    },
+    {
+      id: 'ex-5-reframe',
+      type: 'reframe',
+      title: 'From Taking to Receiving',
+      content: {
+        challengePrompt: "What's something in your life you've completely stopped appreciating? Something that's become so normal you don't even notice it anymore?",
+        reframeGuide: "Now imagine it being taken away tomorrow. Really feel the loss. Then write about how this 'ordinary' thing is actually an extraordinary gift.",
+        example: {
+          before: "My health is fine, nothing special. I just exist.",
+          after: "My body woke up today. My lungs filled with air without me asking. My heart has beaten over a billion times without missing. I can see colors, hear music, taste food. This ordinary body is actually a miracle I've been ignoring."
+        }
+      }
+    }
+  ],
   steps: [
     {
       id: 'scenario',

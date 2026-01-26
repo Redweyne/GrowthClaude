@@ -33,7 +33,7 @@ export const stoicismWorld: World = {
             'Some things are within our power, while others are not. Within our power are opinion, motivation, desire, and aversion—in short, whatever is our own doing. Not within our power are our body, our reputation, positions of authority, and whatever is not our own doing. Make this distinction now, and you will never be frustrated.',
           wisdomSource: 'Epictetus',
           actionPrompt:
-            'Close your eyes for 60 seconds. Bring to mind one thing that is stressing you right now. Ask yourself: "Is this within my control?" If not, take three deep breaths and mentally release it. If yes, identify one small action you can take.',
+            'For the next 60 seconds, bring to mind one thing that is stressing you right now. Ask yourself: "Is this within my control?" If not, take three deep breaths and mentally release it. If yes, identify one small action you can take.',
           actionType: 'reflect',
           actionDurationSeconds: 90,
           reflectionPrompt:
@@ -365,7 +365,7 @@ export const stoicismWorld: World = {
             'Retreat into yourself. The rational mind that rules has this nature: it is content with itself when it acts justly, and so gains tranquility. Nowhere can a person find a more peaceful retreat than in their own mind. Grant yourself this retreat often and renew yourself.',
           wisdomSource: 'Marcus Aurelius',
           actionPrompt:
-            'Close your eyes. Visualize an inner sanctuary—a place within you that no external event can ever touch. Describe it silently: What does it look like? Feel like? This is your inner citadel. Visit it now.',
+            'Visualize an inner sanctuary—a place within you that no external event can ever touch. What does it look like? Feel like? This is your inner citadel. Visit it now.',
           actionType: 'reflect',
           actionDurationSeconds: 120,
           reflectionPrompt:

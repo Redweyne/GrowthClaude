@@ -134,7 +134,7 @@ const lesson12_MementoMori: FlexibleLesson = {
             type: 'visualization',
             title: 'One Year Left',
             instructions: [
-                'Close your eyes.',
+                'Take a moment to be still.',
                 'Imagine you just learned you have one year left to live.',
                 'One year. 365 days.',
                 'What would you STOP doing immediately?',
@@ -422,7 +422,7 @@ const lesson15_InnerCitadel: FlexibleLesson = {
             type: 'visualization',
             title: 'Build Your Citadel',
             instructions: [
-                'Close your eyes. Breathe deeply.',
+                'Breathe deeply. Let yourself settle.',
                 'Imagine a fortress. YOUR fortress.',
                 'It exists within you. Always has.',
                 'What does it look like? See the walls.',

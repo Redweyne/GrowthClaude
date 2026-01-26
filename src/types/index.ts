@@ -1,3 +1,6 @@
+// Re-export Daily Practice types
+export * from './dailyPractice';
+
 // Transformation Goals
 export type TransformationGoal =
   | 'calmer'

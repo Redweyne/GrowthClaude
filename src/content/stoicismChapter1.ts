@@ -95,7 +95,7 @@ const lesson1_DichotomyControl: FlexibleLesson = {
             type: 'visualization',
             title: 'The Release',
             instructions: [
-                'Close your eyes. Breathe deeply.',
+                'Breathe deeply. Let yourself settle.',
                 'See this worry in your hands.',
                 'Feel its weight. Acknowledge it fully.',
                 'Now... recognize: this was never yours to carry.',

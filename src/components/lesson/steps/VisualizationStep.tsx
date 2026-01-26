@@ -4,8 +4,8 @@
 // VISUALIZATION STEP - THE INNER JOURNEY
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Close your eyes. See something new.
-// Clean, readable instructions - no buggy word reveals.
+// Read and imagine. Let the words paint pictures in your mind.
+// No "close your eyes" - that's absurd when you need to read instructions.
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -111,7 +111,7 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
             )}
 
             <p className="text-stone-500 text-sm">
-              Close your eyes. Breathe deeply. Read slowly.
+              Read slowly. Let the words paint pictures in your mind.
             </p>
           </div>
 

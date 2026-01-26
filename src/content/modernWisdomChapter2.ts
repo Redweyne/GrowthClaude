@@ -19,6 +19,72 @@ const lesson6_ComebackFormula: FlexibleLesson = {
     xpReward: 22,
     estimatedMinutes: 6,
     thumbnail: { icon: '🔄', color: '#ec4899' },
+    teaserText: "Tomorrow you'll learn the 3-step formula that turned Michael Jordan's greatest failure into his greatest strength.",
+    exercises: [
+        {
+            id: 'ex-6-scenario',
+            type: 'scenario',
+            title: 'The Public Failure',
+            content: {
+                situation: "You gave a presentation at work that bombed. You stumbled over your words, forgot key points, and you could see people checking their phones. Your manager's feedback was polite but clearly disappointed. You feel humiliated and want to avoid presenting forever.",
+                question: "Using the Comeback Formula (Feel, Learn, Rise), how would you process this setback and turn it into fuel?",
+                hints: [
+                    "Step 1: What would 'feeling it fully' look like?",
+                    "Step 2: What lesson is hiding in this failure?",
+                    "Step 3: What specific comeback action would you take?"
+                ]
+            }
+        },
+        {
+            id: 'ex-6-quote',
+            type: 'quote',
+            title: 'Jordan on Failure',
+            content: {
+                quote: "I've missed more than 9,000 shots in my career. I've lost almost 300 games. 26 times I've been trusted to take the game winning shot and missed. I've failed over and over and over again in my life. And that is why I succeed.",
+                author: "Michael Jordan",
+                source: "Nike Commercial, 1997",
+                reflectionPrompt: "What's a failure in your past that you now realize was essential to who you've become?"
+            }
+        },
+        {
+            id: 'ex-6-application',
+            type: 'application',
+            title: 'The Mini Comeback',
+            content: {
+                instruction: "Tomorrow, intentionally notice any small setback or frustration. Practice the full formula: 30 seconds to feel it, ask what it's teaching you, then immediately declare one small action forward.",
+                planPrompt: "What type of setback might you encounter tomorrow? How will you remind yourself to apply the formula?",
+                examples: [
+                    "If my code has a bug - feel the frustration, learn what I missed, write one test to prevent it",
+                    "If someone criticizes my work - feel the sting, find the valid kernel, make one improvement",
+                    "If plans fall through - feel the disappointment, see what I can learn, make a new plan"
+                ]
+            }
+        },
+        {
+            id: 'ex-6-anchor',
+            type: 'anchor',
+            title: 'The Reset Strike',
+            content: {
+                gesture: "Make a fist with your dominant hand, then open it completely - fingers spread wide",
+                meaning: "The fist holds the pain. The open hand releases it and reaches for what's next. This is the physical motion of the comeback - acknowledge, then move.",
+                breathPattern: "Breathe in and make a fist, feeling the setback. Breathe out and open your hand, releasing it and reaching forward.",
+                repetitions: 3
+            }
+        },
+        {
+            id: 'ex-6-reframe',
+            type: 'reframe',
+            title: 'From Failure to Chapter One',
+            content: {
+                challengePrompt: "What recent setback or failure are you still carrying? Something that still stings when you think about it?",
+                reframeGuide: "Now rewrite this as Chapter One of your comeback story. If this setback is the beginning, what does the next chapter look like?",
+                example: {
+                    before: "I got passed over for promotion and I feel like my career is stuck. All that hard work for nothing.",
+                    after: "Chapter One: I got passed over for promotion. This is where I learned that working hard isn't enough - I need to make my work visible. Chapter Two begins now: I schedule a meeting with my manager to understand exactly what I need to do differently, and I start documenting my wins weekly."
+                }
+            }
+        }
+    ],
     steps: [
         {
             id: 'scenario',
@@ -55,7 +121,7 @@ const lesson6_ComebackFormula: FlexibleLesson = {
             id: 'feel-timer',
             type: 'timer',
             title: 'Feel It Fully',
-            instruction: "Close your eyes. For 60 seconds, let yourself feel the disappointment completely. Don't fight it. Don't analyze it. Just feel it.",
+            instruction: "For 60 seconds, let yourself feel the disappointment completely. Don't fight it. Don't analyze it. Just feel it.",
             durationSeconds: 60,
             timerStyle: 'breathing',
             guidanceMessages: [
@@ -155,6 +221,72 @@ const lesson7_EmbraceStruggle: FlexibleLesson = {
     xpReward: 20,
     estimatedMinutes: 5,
     thumbnail: { icon: '💪', color: '#8b5cf6' },
+    teaserText: "Tomorrow you'll learn why the Navy SEALs, Spartans, and Stoics all embraced voluntary discomfort - and why you should too.",
+    exercises: [
+        {
+            id: 'ex-7-scenario',
+            type: 'scenario',
+            title: 'The Comfort Trap',
+            content: {
+                situation: "Your friend has optimized their life for maximum comfort: food delivery, working from home, entertainment on demand. But they're increasingly anxious, can't handle small inconveniences, and feel fragile. They don't understand why they feel worse when their life is 'easier' than ever.",
+                question: "Using today's wisdom about voluntary hardship, how would you explain what's happening and what they could do?",
+                hints: [
+                    "What happens to muscles that are never challenged?",
+                    "Why might comfort be weakening instead of strengthening?",
+                    "What small voluntary discomforts could rebuild their resilience?"
+                ]
+            }
+        },
+        {
+            id: 'ex-7-quote',
+            type: 'quote',
+            title: 'Goggins on Callusing',
+            content: {
+                quote: "You have to build calluses on your brain just like how you build calluses on your hands. Callus your mind through pain and suffering.",
+                author: "David Goggins",
+                source: "Can't Hurt Me",
+                reflectionPrompt: "Where in your life have you been avoiding discomfort? What mental callus might you be failing to develop?"
+            }
+        },
+        {
+            id: 'ex-7-application',
+            type: 'application',
+            title: 'Tomorrow\'s Hard Choice',
+            content: {
+                instruction: "Tomorrow, make ONE choice where you deliberately choose the harder path instead of the easier one. Take the stairs. Have the difficult conversation. Do the task you've been avoiding first.",
+                planPrompt: "What specific hard choice will you make tomorrow? When will the opportunity arise?",
+                examples: [
+                    "When I want to hit snooze, I'll get up immediately",
+                    "Instead of texting, I'll make the phone call I've been avoiding",
+                    "I'll take a cold shower for the last 30 seconds"
+                ]
+            }
+        },
+        {
+            id: 'ex-7-anchor',
+            type: 'anchor',
+            title: 'The Iron Grip',
+            content: {
+                gesture: "Squeeze both fists as tight as you can for 5 seconds, then release",
+                meaning: "This brief voluntary discomfort - the squeeze, the burn, the release - represents choosing hard over easy. You just proved you can endure discomfort by choice.",
+                breathPattern: "Breathe in and squeeze your fists tight. Hold. Feel the burn. Breathe out and release. You chose the hard path. You're still here.",
+                repetitions: 3
+            }
+        },
+        {
+            id: 'ex-7-reframe',
+            type: 'reframe',
+            title: 'From Avoiding to Embracing',
+            content: {
+                challengePrompt: "What's something uncomfortable that you've been avoiding? A task, a conversation, a physical challenge?",
+                reframeGuide: "Now rewrite this discomfort as training - an opportunity to callus your mind. How could seeking this discomfort make you stronger?",
+                example: {
+                    before: "I hate cold mornings and always delay getting out of my warm bed. I know it makes me rush and feel behind all day.",
+                    after: "Getting out of bed into the cold is my daily training. Every morning I prove to myself that comfort doesn't control me. The 10 seconds of cold is the price I pay for mental strength. I'm building a callus against softness, one morning at a time."
+                }
+            }
+        }
+    ],
     steps: [
         {
             id: 'scenario',
@@ -290,6 +422,72 @@ const lesson8_FearSetting: FlexibleLesson = {
     xpReward: 24,
     estimatedMinutes: 7,
     thumbnail: { icon: '🎯', color: '#ef4444' },
+    teaserText: "Tomorrow you'll learn the fear-dissolving technique that Tim Ferriss credits with saving his life.",
+    exercises: [
+        {
+            id: 'ex-8-scenario',
+            type: 'scenario',
+            title: 'The Paralyzed Friend',
+            content: {
+                situation: "Your friend has been talking about quitting their unfulfilling job to pursue their passion for years. They have savings, skills, and a plan - but they can't pull the trigger. They say they're 'not ready yet' and list vague fears about 'what could go wrong.'",
+                question: "How would you walk them through fear-setting to help them see their fears clearly?",
+                hints: [
+                    "What would help them define the SPECIFIC worst case?",
+                    "How could they prevent or minimize that worst case?",
+                    "What's the cost of staying stuck forever?"
+                ]
+            }
+        },
+        {
+            id: 'ex-8-quote',
+            type: 'quote',
+            title: 'Seneca on Fear',
+            content: {
+                quote: "We suffer more often in imagination than in reality. There are more things likely to frighten us than there are to crush us; we suffer more in imagination than in reality.",
+                author: "Seneca",
+                source: "Letters from a Stoic",
+                reflectionPrompt: "Think of a fear that once seemed huge but turned out to be smaller when you faced it. What does that teach you about your current fears?"
+            }
+        },
+        {
+            id: 'ex-8-application',
+            type: 'application',
+            title: 'Mini Fear-Setting',
+            content: {
+                instruction: "Tomorrow, take one thing you've been procrastinating on due to vague fear. Spend 3 minutes doing a quick fear-set: what's the worst case, how could you prevent it, how could you recover?",
+                planPrompt: "What's one decision or action you've been avoiding? What fear has been keeping you stuck?",
+                examples: [
+                    "Sending that email I've been drafting for a week",
+                    "Having that conversation I keep postponing",
+                    "Making that appointment I've been avoiding"
+                ]
+            }
+        },
+        {
+            id: 'ex-8-anchor',
+            type: 'anchor',
+            title: 'The Clear Eyes',
+            content: {
+                gesture: "Place your fingertips gently on your closed eyelids, then slowly open your eyes and remove your fingers - moving from darkness to sight",
+                meaning: "Fear thrives in darkness. This gesture represents moving from blind worry to clear seeing. When you define your fears, you take away their shadow power.",
+                breathPattern: "Breathe in with fingers covering eyes, feeling the unknown. Breathe out as you open your eyes - seeing clearly. Defined fears are manageable fears.",
+                repetitions: 3
+            }
+        },
+        {
+            id: 'ex-8-reframe',
+            type: 'reframe',
+            title: 'From Paralysis to Action',
+            content: {
+                challengePrompt: "What decision have you been avoiding because of fear? What leap have you been too scared to take?",
+                reframeGuide: "Now apply fear-setting: What's the true worst case? How could you prevent it? How could you recover? What's the cost of NOT taking this leap?",
+                example: {
+                    before: "I want to ask for a raise but I'm terrified. What if they say no? What if they think I'm greedy? What if it backfires?",
+                    after: "Worst case: They say no and think I'm overconfident. Prevent: I'll prepare data on my contributions and market rates. Recover: Even if rejected, I'll know where I stand and can plan accordingly. Cost of inaction: I stay resentful, underpaid, and never know what was possible. The fear of asking is worse than any realistic outcome."
+                }
+            }
+        }
+    ],
     steps: [
         {
             id: 'scenario',
@@ -418,6 +616,72 @@ const lesson9_AntifragileMind: FlexibleLesson = {
     xpReward: 22,
     estimatedMinutes: 5,
     thumbnail: { icon: '⚡', color: '#3b82f6' },
+    teaserText: "Tomorrow you'll discover why some people get STRONGER from chaos while others break - and how to become the former.",
+    exercises: [
+        {
+            id: 'ex-9-scenario',
+            type: 'scenario',
+            title: 'The Market Crash',
+            content: {
+                situation: "The economy tanks. Two entrepreneurs face the same crisis. One panics, cuts everything, and hunkers down in survival mode. The other sees opportunity - they negotiate better deals with suppliers, hire talented people who are suddenly available, and double down on innovation. Same external event, opposite responses.",
+                question: "What makes the second entrepreneur antifragile? How are they gaining from disorder while the first is being crushed by it?",
+                hints: [
+                    "What mindset allows someone to see opportunity in chaos?",
+                    "How does preparation for volatility create advantage?",
+                    "What's the difference between fragile, robust, and antifragile?"
+                ]
+            }
+        },
+        {
+            id: 'ex-9-quote',
+            type: 'quote',
+            title: 'Taleb on Fire',
+            content: {
+                quote: "Wind extinguishes a candle and energizes fire. Likewise with randomness, uncertainty, chaos: you want to use them, not hide from them. You want to be the fire and wish for the wind.",
+                author: "Nassim Nicholas Taleb",
+                source: "Antifragile",
+                reflectionPrompt: "In what area of your life are you the candle (fragile to change) and where could you become the fire (fueled by change)?"
+            }
+        },
+        {
+            id: 'ex-9-application',
+            type: 'application',
+            title: 'The Stress Transmutation',
+            content: {
+                instruction: "Tomorrow, when you encounter any stressor or unexpected change, immediately ask: 'How could this be making me stronger? What is this forcing me to develop?'",
+                planPrompt: "What's a current source of stress in your life? How might you start seeing it as a training stimulus rather than a threat?",
+                examples: [
+                    "The deadline pressure is building my ability to focus under stress",
+                    "The difficult colleague is teaching me negotiation and patience",
+                    "The uncertainty is forcing me to become more adaptable"
+                ]
+            }
+        },
+        {
+            id: 'ex-9-anchor',
+            type: 'anchor',
+            title: 'The Absorb and Rise',
+            content: {
+                gesture: "Push your palms down as if absorbing pressure, then flip them and push upward - like absorbing force from below and redirecting it upward",
+                meaning: "The antifragile don't resist pressure - they absorb it and use it to rise higher. This gesture embodies converting downward force into upward momentum.",
+                breathPattern: "Breathe in as you push down, absorbing the stress. Breathe out as you push up, transmuting pressure into power.",
+                repetitions: 3
+            }
+        },
+        {
+            id: 'ex-9-reframe',
+            type: 'reframe',
+            title: 'From Victim to Beneficiary',
+            content: {
+                challengePrompt: "What current challenge or stressor feels like it's happening TO you? Something that seems purely negative?",
+                reframeGuide: "Now rewrite this challenge as something that's happening FOR you. What strength, skill, or capability is this forcing you to develop?",
+                example: {
+                    before: "My company keeps changing priorities and it's impossible to plan anything. I'm constantly having to adapt and it's exhausting.",
+                    after: "My company's constant changes are training me in adaptability - the most valuable skill in an uncertain world. While others need stability, I'm becoming someone who thrives in change. Every pivot is making me more antifragile. Companies will pay a premium for people who can navigate chaos."
+                }
+            }
+        }
+    ],
     steps: [
         {
             id: 'scenario',
@@ -513,6 +777,72 @@ const lesson10_FutureSelf: FlexibleLesson = {
     xpReward: 25,
     estimatedMinutes: 7,
     thumbnail: { icon: '✉️', color: '#14b8a6' },
+    teaserText: "Tomorrow you'll write a letter to yourself one year from now - a powerful practice that bridges present and future.",
+    exercises: [
+        {
+            id: 'ex-10-scenario',
+            type: 'scenario',
+            title: 'The Disconnected Present',
+            content: {
+                situation: "Your friend is struggling with motivation. They can't see the point of their daily habits because they don't connect to any clear future. They know they should exercise, save money, and work on their skills, but it all feels pointless because the future version of themselves feels like a stranger.",
+                question: "How would you help them connect with their future self? Why does that connection matter for present behavior?",
+                hints: [
+                    "Why do people treat their future self like a stranger?",
+                    "How does visualizing your future self change today's choices?",
+                    "What's the research on future-self connection and decision making?"
+                ]
+            }
+        },
+        {
+            id: 'ex-10-quote',
+            type: 'quote',
+            title: 'On Becoming',
+            content: {
+                quote: "The only person you are destined to become is the person you decide to be.",
+                author: "Ralph Waldo Emerson",
+                source: "Self-Reliance",
+                reflectionPrompt: "Who have you decided to become? Are your daily actions actually building that person, or are you drifting?"
+            }
+        },
+        {
+            id: 'ex-10-application',
+            type: 'application',
+            title: 'Future Self Check-In',
+            content: {
+                instruction: "Tomorrow, before making any significant choice, pause and ask: 'What would my future self want me to do here? Will they thank me or regret this decision?'",
+                planPrompt: "What decision or choice do you know you'll face tomorrow? What would your best future self want you to do?",
+                examples: [
+                    "When I want to skip the workout, I'll ask if future me will be grateful I pushed through",
+                    "Before an impulse purchase, I'll consider whether future me would want that money",
+                    "When procrastinating, I'll imagine future me having to deal with the rushed result"
+                ]
+            }
+        },
+        {
+            id: 'ex-10-anchor',
+            type: 'anchor',
+            title: 'The Bridge Reach',
+            content: {
+                gesture: "Extend your hand forward as if reaching across time to shake hands with your future self",
+                meaning: "This reach bridges present and future. Your future self exists - they're being built by your choices right now. This gesture connects you across time.",
+                breathPattern: "Breathe in and extend your hand forward. Breathe out and imagine your future self reaching back. You are connected. Your choices matter.",
+                repetitions: 3
+            }
+        },
+        {
+            id: 'ex-10-reframe',
+            type: 'reframe',
+            title: 'From Stranger to Self',
+            content: {
+                challengePrompt: "What's something you keep putting off even though you know future you will pay the price?",
+                reframeGuide: "Now imagine your future self as someone you deeply care about. Write about how your present behavior is affecting them - not a stranger, but YOU, older.",
+                example: {
+                    before: "I keep staying up late scrolling my phone even though I'm always tired. I know it's bad but I can't stop.",
+                    after: "Every night I stay up late, I'm stealing energy from the person I'll be tomorrow. That tired, foggy person trying to focus at work? That's me, betrayed by the me from last night. The me who succeeds is the me who protects his sleep - because future me and present me are the same person."
+                }
+            }
+        }
+    ],
     steps: [
         {
             id: 'scenario',
@@ -527,7 +857,7 @@ const lesson10_FutureSelf: FlexibleLesson = {
             type: 'visualization',
             title: 'Meet Your Future Self',
             instructions: [
-                'Close your eyes. Breathe deeply.',
+                'Breathe deeply. Let yourself settle.',
                 "It's one year from today.",
                 'Imagine the best realistic version of yourself.',
                 'What habits did they build?',
