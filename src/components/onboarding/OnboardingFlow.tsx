@@ -105,22 +105,21 @@ export function OnboardingFlow() {
   const nextStep = useCallback(() => {
     // Initialize audio on first forward action
     initializeAudio();
-    
+
     if (onboardingStep < TOTAL_STEPS - 1) {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      // Completing onboarding - Button already plays celebration sound
-      // Transition to reward music briefly, then complete
-      contextualAudio.transitionTo('reward', { crossfadeDuration: 1 });
+      // Completing onboarding - stop ALL music immediately
+      // No transition music - just silence for dashboard
+      audio.stopAllAudio();
 
-      // Small delay to let celebration sound play
+      // Small delay for clean transition
       setTimeout(() => {
-        contextualAudio.stopMusic(2);
         completeOnboarding();
-      }, 1500);
+      }, 300);
     }
-  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio, contextualAudio]);
+  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio]);
 
   const prevStep = useCallback(() => {
     if (onboardingStep > 0) {

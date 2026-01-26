@@ -52,7 +52,11 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
     }
   }, [state.currentMusicTrack, state.currentAmbienceTrack, state.isMusicPlaying, state.isAmbiencePlaying]);
 
-  const handleSelectTrack = useCallback((option: MusicOption) => {
+  const handleSelectTrack = useCallback((option: MusicOption, e: React.MouseEvent) => {
+    // CRITICAL: Prevent iOS Safari from triggering page refresh
+    e.preventDefault();
+    e.stopPropagation();
+
     // Prevent rapid clicking
     if (isLoading) return;
     if (option.id === selectedTrack) {
@@ -117,7 +121,8 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
                 {MUSIC_OPTIONS.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleSelectTrack(option)}
+                    type="button"
+                    onClick={(e) => handleSelectTrack(option, e)}
                     disabled={isLoading}
                     className={`
                       w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
@@ -140,6 +145,7 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
               {/* Sound toggle */}
               <div className="mt-2 pt-2 border-t border-stone-700/50">
                 <button
+                  type="button"
                   onClick={toggleSound}
                   className={`
                     w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
@@ -160,6 +166,7 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
 
         {/* Main button */}
         <motion.button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

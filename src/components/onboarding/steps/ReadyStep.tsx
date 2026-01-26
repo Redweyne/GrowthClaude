@@ -19,6 +19,7 @@ import { useStore } from '@/store/useStore';
 import { TRANSFORMATION_GOALS } from '@/types';
 import { Button } from '@/components/ui';
 import { Confetti } from '@/components/effects';
+import { useAudio } from '@/hooks/useAudio';
 
 interface ReadyStepProps {
   onNext: () => void;
@@ -30,6 +31,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
   const [phase, setPhase] = useState<'summary' | 'mentor' | 'ready'>('summary');
   const [showConfetti, setShowConfetti] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { playCelebrate } = useAudio();
 
   const selectedGoal = TRANSFORMATION_GOALS.find((g) => g.id === transformationGoal);
 
@@ -43,14 +45,17 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
     const timer1 = setTimeout(() => setPhase('mentor'), 3500);
     const timer2 = setTimeout(() => {
       setPhase('ready');
-      // Trigger confetti on ready phase
-      setTimeout(() => setShowConfetti(true), 300);
+      // Trigger confetti and celebration sound on ready phase
+      setTimeout(() => {
+        setShowConfetti(true);
+        playCelebrate(); // Play celebration sound when page appears
+      }, 300);
     }, 7500);
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [mounted]);
+  }, [mounted, playCelebrate]);
 
   if (!mounted) {
     return <div className="min-h-[70vh]" />;
@@ -334,7 +339,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                   size="lg"
                   glow
                   onClick={onNext}
-                  sound="celebrate"
+                  sound="tapConfirm"
                   className="w-full group text-lg py-5"
                 >
                   <Flame size={22} className="mr-3 text-amber-300" />
