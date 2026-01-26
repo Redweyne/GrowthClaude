@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
-import { TodaysLesson } from '@/components/home/TodaysLesson';
+import { DailyFlowHome } from '@/components/daily/DailyFlowHome';
+import { MandatoryEchoFlow } from '@/components/daily/MandatoryEchoFlow';
+import { Dashboard } from '@/components/dashboard/Dashboard';
+import { ExerciseExperience } from '@/components/exercises/ExerciseExperience';
 import { WorldMap, WorldSwitcher } from '@/components/world';
 import { FlexibleLessonExperience } from '@/components/lesson/FlexibleLessonExperience';
 import { PracticeMode } from '@/components/practice';
@@ -20,6 +24,7 @@ import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
 import { SettingsPanel } from '@/components/settings';
 import { useTransformationStory } from '@/hooks';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
+import { getLevelFromXp } from '@/types';
 import type { PublicReflection } from '@/types/echoes';
 import modernWisdomWorld from '@/content/modernWisdom';
 import stoicismWorld from '@/content/stoicismModern';
@@ -27,8 +32,11 @@ import type { FlexibleLesson, LessonProgress, FlexibleWorld } from '@/types/less
 
 type AppView =
   | 'home'
+  | 'dashboard'
   | 'map'
   | 'lesson'
+  | 'mandatory-echo'
+  | 'exercises'
   | 'practice'
   | 'checkin'
   | 'assessment'
@@ -49,7 +57,10 @@ export default function Home() {
     isAssessmentDue,
     getPendingLessonAction,
     currentWorldSlug: storedWorldSlug,
-    setCurrentWorld
+    setCurrentWorld,
+    totalXp,
+    currentStreak,
+    name: userName,
   } = useStore();
   const {
     shouldShowEchoPrompt,
@@ -59,6 +70,21 @@ export default function Home() {
     getUnreadInvitationCount,
     getUnreadMessageCount
   } = useEchoesStore();
+
+  // Daily practice store
+  const {
+    initializeToday,
+    getTodaysLesson,
+    getTomorrowsLesson,
+    getCurrentDayNumber,
+    getTotalDaysInWorld,
+    getDailyFlowState,
+    getExercisesCompletedToday,
+    completeLesson,
+    completeMandatoryEcho,
+    completeExercise,
+    globalCalendar,
+  } = useDailyPracticeStore();
 
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
@@ -109,6 +135,20 @@ export default function Home() {
 
   // All available worlds
   const allWorlds: FlexibleWorld[] = [modernWisdomWorld, stoicismWorld];
+
+  // Initialize daily practice on mount
+  useEffect(() => {
+    initializeToday(allWorlds);
+  }, []);
+
+  // Get daily practice state
+  const todaysLesson = getTodaysLesson(allWorlds);
+  const tomorrowsLesson = getTomorrowsLesson(allWorlds);
+  const dayNumber = getCurrentDayNumber();
+  const totalDaysInWorld = getTotalDaysInWorld();
+  const dailyFlowState = getDailyFlowState();
+  const exercisesCompletedToday = getExercisesCompletedToday();
+  const level = getLevelFromXp(totalXp);
 
   // Current active world state (from store, default to modern-wisdom)
   const currentWorldSlug = storedWorldSlug || 'modern-wisdom';
@@ -186,7 +226,7 @@ export default function Home() {
     }
   };
 
-  // Handle lesson completion
+  // Handle lesson completion - now goes to mandatory echo
   const handleLessonComplete = () => {
     // Save completed lesson info for Echo prompt
     if (selectedFlexibleLesson) {
@@ -194,17 +234,37 @@ export default function Home() {
         id: selectedFlexibleLesson.id,
         title: selectedFlexibleLesson.title,
       });
+      // Mark lesson complete in daily practice store
+      completeLesson(selectedFlexibleLesson.xpReward || 50);
+
+      // Get a reflection to review for mandatory echo
+      const reflection = getReflectionToReview(selectedFlexibleLesson.id, selectedFlexibleLesson.title);
+      if (reflection) {
+        setReflectionForReview(reflection);
+      }
     }
 
     setSelectedFlexibleLesson(null);
     setFlexibleLessonProgress(null);
 
-    // Check if we should show the Echo prompt
-    if (shouldShowEchoPrompt()) {
-      setShowEchoPrompt(true);
-    } else {
-      setCurrentView('home');
-    }
+    // Go to mandatory echo (no skipping!)
+    setCurrentView('mandatory-echo');
+  };
+
+  // Handle mandatory echo completion
+  const handleMandatoryEchoComplete = (reflectionId: string) => {
+    completeMandatoryEcho(reflectionId);
+    setCurrentView('exercises');
+  };
+
+  // Handle exercise completion
+  const handleExerciseComplete = (exerciseId: string, response?: string) => {
+    completeExercise(exerciseId, response);
+  };
+
+  // Handle all exercises done
+  const handleExercisesComplete = () => {
+    setCurrentView('home');
   };
 
   // Handle Echo prompt response
@@ -433,73 +493,113 @@ export default function Home() {
     );
   }
 
-  // Create display lesson for home screen (minimal properties needed)
-  const displayLesson = nextFlexibleLesson ? {
-    id: nextFlexibleLesson.id,
-    title: nextFlexibleLesson.title,
-    wisdomText: nextFlexibleLesson.subtitle || 'Begin your transformation',
-    xpReward: nextFlexibleLesson.xpReward,
-    actionDurationSeconds: 180, // ~3 min for flexible lessons
-  } : null;
+  // Dashboard - navigation hub
+  if (currentView === 'dashboard') {
+    return (
+      <>
+        <AchievementCelebration />
+        <Dashboard
+          name={userName || 'Friend'}
+          totalXp={totalXp}
+          currentStreak={currentStreak}
+          level={level}
+          todayLessonCompleted={dailyFlowState.canAccessEcho}
+          todayEchoCompleted={dailyFlowState.canAccessPractice}
+          exercisesCompleted={exercisesCompletedToday.length}
+          totalExercises={todaysLesson?.exercises?.length || 5}
+          todaysLessonTitle={todaysLesson?.title}
+          isWeeklyCheckinDue={isCheckinDue()}
+          isMonthlyAssessmentDue={isAssessmentDue()}
+          daysUntilAssessment={30}
+          unreadEchoCount={totalUnreadCount}
+          yourEchoCount={0}
+          totalLessons={Object.keys(completedLessons).length}
+          totalMilestones={0}
+          identityStatements={0}
+          onClose={() => setCurrentView('home')}
+          onOpenTodayPractice={() => setCurrentView('home')}
+          onOpenWeeklyCheckin={() => setCurrentView('checkin')}
+          onOpenMonthlyAssessment={() => setCurrentView('assessment')}
+          onOpenBrowseEchoes={() => setCurrentView('echoes')}
+          onOpenYourEchoes={() => setCurrentView('echoes')}
+          onOpenPastLessons={() => setCurrentView('map')}
+          onOpenMilestones={() => setCurrentView('achievements')}
+          onOpenIdentity={() => setCurrentView('identity')}
+          onOpenStats={() => setCurrentView('progress')}
+          onOpenSettings={() => setCurrentView('settings')}
+        />
+      </>
+    );
+  }
 
-  // Use active world for home screen display
-  const displayWorld = {
-    name: activeWorld.name,
-    subtitle: activeWorld.subtitle,
-    color: activeWorld.color,
-    chapters: activeWorld.chapters,
-  };
+  // Mandatory Echo - after lesson completion, cannot skip
+  if (currentView === 'mandatory-echo' && reflectionForReview) {
+    return (
+      <>
+        <AchievementCelebration />
+        <MandatoryEchoFlow
+          reflection={reflectionForReview}
+          todaysLessonTitle={completedLessonInfo?.title || todaysLesson?.title || ''}
+          onComplete={handleMandatoryEchoComplete}
+        />
+      </>
+    );
+  }
+
+  // If no reflection available for mandatory echo, skip to exercises
+  if (currentView === 'mandatory-echo' && !reflectionForReview) {
+    // Mark echo as complete with dummy ID and go to exercises
+    completeMandatoryEcho('no-reflection-available');
+    setCurrentView('exercises');
+  }
+
+  // Exercise experience - 5 exercises after echo
+  if (currentView === 'exercises' && todaysLesson?.exercises) {
+    return (
+      <>
+        <AchievementCelebration />
+        <ExerciseExperience
+          exercises={todaysLesson.exercises}
+          lessonTitle={todaysLesson.title}
+          completedExercises={exercisesCompletedToday}
+          onCompleteExercise={handleExerciseComplete}
+          onAllComplete={handleExercisesComplete}
+          onBack={() => setCurrentView('home')}
+        />
+      </>
+    );
+  }
 
   // Check for pending action to show "Continue" message
   const hasPendingAction = !!pendingAction;
 
-  // Home - Today's Lesson
+  // Home - Daily Flow Home (new synchronized daily practice)
   return (
     <>
       <AchievementCelebration />
-      <TodaysLesson
-        lesson={displayLesson}
-        world={displayWorld}
-        onStartLesson={handleStartLesson}
-        onOpenMap={() => setCurrentView('map')}
-        onOpenSettings={() => setCurrentView('settings')}
-        onOpenPractice={() => setCurrentView('practice')}
-        onOpenCheckin={() => setCurrentView('checkin')}
-        onOpenAssessment={() => setCurrentView('assessment')}
-        onOpenTransformation={() => setCurrentView('transformation')}
-        onOpenProgress={() => setCurrentView('progress')}
-        onOpenAchievements={() => setCurrentView('achievements')}
-        onOpenIdentity={() => setCurrentView('identity')}
-        onOpenWorlds={() => setShowWorldSwitcher(true)}
-        onOpenEchoes={() => setCurrentView('echoes')}
-        isCheckinDue={isCheckinDue()}
-        isAssessmentDue={isAssessmentDue()}
-        unreadEchoCount={totalUnreadCount}
+      <DailyFlowHome
+        name={userName || 'Friend'}
+        totalXp={totalXp}
+        currentStreak={currentStreak}
+        dayNumber={dayNumber}
+        totalDays={totalDaysInWorld}
+        worldName={activeWorld.name}
+        todaysLesson={todaysLesson}
+        tomorrowsLesson={tomorrowsLesson}
+        flowState={dailyFlowState}
+        exercisesCompleted={exercisesCompletedToday.length}
+        totalExercises={todaysLesson?.exercises?.length || 5}
         hasPendingAction={hasPendingAction}
         pendingCommitment={pendingAction?.writings?.commitment}
+        onStartLesson={handleStartLesson}
+        onContinueLesson={handleStartLesson}
+        onStartEcho={() => setCurrentView('mandatory-echo')}
+        onStartExercises={() => setCurrentView('exercises')}
+        onOpenSettings={() => setCurrentView('settings')}
+        onBrowseMoreEchoes={() => setCurrentView('echoes')}
+        onRedoPastLesson={() => setCurrentView('map')}
+        onOpenDashboard={() => setCurrentView('dashboard')}
       />
-
-      {/* World Switcher Modal */}
-      <AnimatePresence>
-        {showWorldSwitcher && (
-          <WorldSwitcher
-            worlds={allWorlds}
-            currentWorldSlug={currentWorldSlug}
-            onSelectWorld={setCurrentWorld}
-            onClose={() => setShowWorldSwitcher(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Echo Prompt Modal - appears after lesson completion */}
-      <AnimatePresence>
-        {showEchoPrompt && (
-          <EchoPrompt
-            onAccept={handleEchoPromptAccept}
-            onDecline={handleEchoPromptDecline}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 }
