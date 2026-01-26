@@ -17,7 +17,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Check, X } from 'lucide-react';
+import { Play, ChevronRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { MusicControl } from '@/components/ui/MusicControl';
 import { useAudio } from '@/hooks/useAudio';
@@ -45,7 +45,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Audio hooks for meditation experience
-  const { startMusic, stopMusic, playSuccess, playComplete, playSingingBowl, playGong } = useAudio();
+  const { startMusic, stopMusic, playComplete, playSingingBowl, playGong } = useAudio();
   const { start: startBreathingGuide, stop: stopBreathingGuide } = useBreathingGuide({
     pattern: '4-7-8', // Relaxation breathing pattern: 4s in, 7s hold, 8s out
     playBowlOnStart: false, // We play it manually
@@ -55,23 +55,20 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
   const progress = 1 - (timeRemaining / step.durationSeconds);
   const messages = step.guidanceMessages || [];
 
-  // Start practice after preparation with audio
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPhase('practicing');
+  // START PRACTICE - Only when user clicks the button
+  const handleStartPractice = useCallback(() => {
+    setPhase('practicing');
 
-      // Play singing bowl to signal start
-      playSingingBowl();
+    // Play singing bowl to signal start
+    playSingingBowl();
 
-      // Start appropriate audio based on timer style
-      if (step.timerStyle === 'breathing') {
-        startBreathingGuide();
-      } else {
-        // Start ambient music for focus/presence/countdown
-        startMusic('lessonDeep', 2);
-      }
-    }, 3500);
-    return () => clearTimeout(timer);
+    // Start appropriate audio based on timer style
+    if (step.timerStyle === 'breathing') {
+      startBreathingGuide();
+    } else {
+      // Start ambient music for focus/presence/countdown
+      startMusic('lessonDeep', 2);
+    }
   }, [playSingingBowl, startBreathingGuide, startMusic, step.timerStyle]);
 
   // Handle completion audio (no cleanup - that kills audio on phase changes)
@@ -286,7 +283,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
       <div className="max-w-lg w-full relative z-10">
         <AnimatePresence mode="wait">
           {/* ─────────────────────────────────────────────────────────────────
-              Preparing Phase
+              Preparing Phase - Wait for user to click Start
           ───────────────────────────────────────────────────────────────── */}
           {phase === 'preparing' && (
             <motion.div
@@ -305,41 +302,49 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 {step.title}
               </motion.h2>
 
-              {/* Pulsing preparation indicator */}
+              {/* Duration indicator */}
               <motion.div
-                className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center"
-                animate={{
-                  scale: [1, 1.1, 1],
-                  opacity: [0.7, 1, 0.7],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-amber-500/10 to-stone-900 border border-amber-500/20 flex items-center justify-center"
               >
-                <span className="text-amber-400 text-sm tracking-[0.2em] uppercase">Ready</span>
+                <span className="text-3xl font-light text-amber-400 tabular-nums">
+                  {formatTime(step.durationSeconds)}
+                </span>
               </motion.div>
 
               {/* Instruction preview */}
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.4 }}
                 className="text-stone-400 text-lg"
               >
                 {step.instruction}
               </motion.p>
 
-              {/* Duration */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="text-stone-600 text-sm"
+              {/* Start Button - User must click to begin */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="pt-4"
               >
-                {formatTime(step.durationSeconds)} duration
-              </motion.p>
+                <Button
+                  size="lg"
+                  glow
+                  onClick={handleStartPractice}
+                  className="w-full group"
+                >
+                  <Play size={20} className="mr-2" />
+                  Start Practice
+                  <ChevronRight
+                    size={18}
+                    className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  />
+                </Button>
+              </motion.div>
             </motion.div>
           )}
 
