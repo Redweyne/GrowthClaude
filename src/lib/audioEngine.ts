@@ -818,8 +818,10 @@ export const stopAmbience = stopWritingAmbience;
 
 export function stopAllAudio(): void {
   log('⏹ Stopping all audio');
-  stopAmbientMusic(0, true);
-  stopWritingAmbience(true);
+  // iOS FIX: Don't use immediate=true as it calls unload() right after stop()
+  // which can crash iOS WebKit. Use a very short fade instead.
+  stopAmbientMusic(0.1, false); // 100ms fade
+  stopWritingAmbience(false);   // Uses default fade
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

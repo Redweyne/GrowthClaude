@@ -98,29 +98,30 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
     setSelectedTrack(option.id);
     setIsOpen(false);
 
-    // Wrap audio operations in try-catch to prevent crashes
-    try {
-      stopAllAudio();
-    } catch (err) {
-      console.warn('[MusicControl] Error stopping audio:', err);
-    }
+    // iOS FIX: Don't call stopAllAudio() - it crashes iOS WebKit
+    // Instead, just start the new track directly. The audio engine
+    // handles stopping the old track gracefully when starting a new one.
 
-    // Longer delay for iOS Safari audio context cleanup
+    // Small delay for iOS stability
     setTimeout(() => {
       try {
         if (option.type === 'silence') {
-          // Already stopped
+          // For silence, we do need to stop - but use the safer stopMusic/stopAmbience
+          // which have proper fade out handling
+          stopAllAudio();
         } else if (option.type === 'ambience') {
+          // Starting new ambience automatically stops old music/ambience gracefully
           startAmbience(option.id as WritingAmbience);
         } else {
+          // Starting new music automatically stops old music gracefully
           startMusic(option.id as AmbientSound, 2);
         }
       } catch (err) {
-        console.warn('[MusicControl] Error starting audio:', err);
+        console.warn('[MusicControl] Error changing track:', err);
       }
       setIsLoading(false);
       isOperatingRef.current = false;
-    }, 500); // 500ms delay for iOS safety
+    }, 100); // Short delay for iOS event loop
   }, [selectedTrack, isLoading, startMusic, startAmbience, stopAllAudio, shouldIgnoreEvent]);
 
   // Toggle sound with iOS safety
