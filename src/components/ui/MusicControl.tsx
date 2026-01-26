@@ -3,8 +3,11 @@
 // ============================================================================
 // MUSIC CONTROL - Floating music switcher for lesson phases
 // ============================================================================
+// iOS Safari Safe: All interactions use proper event handling to prevent
+// page crashes and unwanted navigation.
+// ============================================================================
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music, X, Volume2, VolumeX } from 'lucide-react';
 import { useAudio } from '@/hooks/useAudio';
@@ -37,6 +40,7 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { soundEnabled, setSoundEnabled } = useStore();
   const { startMusic, startAmbience, stopAllAudio, state } = useAudio();
+  const isOperatingRef = useRef(false);
 
   // Track the active track from engine state OR local selection
   const [selectedTrack, setSelectedTrack] = useState<string>(currentTrack || 'silence');
@@ -52,45 +56,103 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
     }
   }, [state.currentMusicTrack, state.currentAmbienceTrack, state.isMusicPlaying, state.isAmbiencePlaying]);
 
-  const handleSelectTrack = useCallback((option: MusicOption, e: React.MouseEvent) => {
-    // CRITICAL: Prevent iOS Safari from triggering page refresh
+  // Prevent double-firing from touch + click on iOS
+  const lastInteractionRef = useRef<number>(0);
+  const DEBOUNCE_MS = 300;
+
+  const shouldIgnoreEvent = useCallback(() => {
+    const now = Date.now();
+    if (now - lastInteractionRef.current < DEBOUNCE_MS) {
+      return true;
+    }
+    lastInteractionRef.current = now;
+    return false;
+  }, []);
+
+  // Safe close menu handler
+  const closeMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (shouldIgnoreEvent()) return;
+    setIsOpen(false);
+  }, [shouldIgnoreEvent]);
+
+  // Handle track selection with iOS-safe audio operations
+  const handleSelectTrack = useCallback((option: MusicOption) => (e: React.MouseEvent) => {
+    // CRITICAL: Prevent default behavior that causes iOS crashes
     e.preventDefault();
     e.stopPropagation();
 
-    // Prevent rapid clicking
-    if (isLoading) return;
+    // Debounce to prevent double-firing
+    if (shouldIgnoreEvent()) return;
+
+    // Prevent rapid clicking or double operations
+    if (isLoading || isOperatingRef.current) return;
     if (option.id === selectedTrack) {
       setIsOpen(false);
       return;
     }
 
+    isOperatingRef.current = true;
     setIsLoading(true);
     setSelectedTrack(option.id);
+    setIsOpen(false);
 
-    // Stop ALL audio immediately before starting new track
-    stopAllAudio();
+    // Wrap audio operations in try-catch to prevent crashes
+    try {
+      stopAllAudio();
+    } catch (err) {
+      console.warn('[MusicControl] Error stopping audio:', err);
+    }
 
-    // Use proper delay for iOS cleanup (300ms minimum)
+    // Longer delay for iOS Safari audio context cleanup
     setTimeout(() => {
-      if (option.type === 'silence') {
-        // Already stopped
-      } else if (option.type === 'ambience') {
-        startAmbience(option.id as WritingAmbience);
-      } else {
-        startMusic(option.id as AmbientSound, 2);
+      try {
+        if (option.type === 'silence') {
+          // Already stopped
+        } else if (option.type === 'ambience') {
+          startAmbience(option.id as WritingAmbience);
+        } else {
+          startMusic(option.id as AmbientSound, 2);
+        }
+      } catch (err) {
+        console.warn('[MusicControl] Error starting audio:', err);
       }
       setIsLoading(false);
-    }, 350); // 350ms delay for iOS audio context cleanup
+      isOperatingRef.current = false;
+    }, 500); // 500ms delay for iOS safety
+  }, [selectedTrack, isLoading, startMusic, startAmbience, stopAllAudio, shouldIgnoreEvent]);
 
-    setIsOpen(false);
-  }, [selectedTrack, isLoading, startMusic, startAmbience, stopAllAudio]);
+  // Toggle sound with iOS safety
+  const toggleSound = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  const toggleSound = useCallback(() => {
-    if (soundEnabled) {
-      stopAllAudio();
+    if (shouldIgnoreEvent()) return;
+    if (isOperatingRef.current) return;
+    isOperatingRef.current = true;
+
+    try {
+      if (soundEnabled) {
+        stopAllAudio();
+      }
+      setSoundEnabled(!soundEnabled);
+    } catch (err) {
+      console.warn('[MusicControl] Error toggling sound:', err);
     }
-    setSoundEnabled(!soundEnabled);
-  }, [soundEnabled, setSoundEnabled, stopAllAudio]);
+
+    setTimeout(() => {
+      isOperatingRef.current = false;
+    }, 300);
+  }, [soundEnabled, setSoundEnabled, stopAllAudio, shouldIgnoreEvent]);
+
+  // Toggle menu with iOS safety
+  const toggleMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (shouldIgnoreEvent()) return;
+    setIsOpen(prev => !prev);
+  }, [shouldIgnoreEvent]);
 
   const currentOption = MUSIC_OPTIONS.find(o => o.id === selectedTrack) || MUSIC_OPTIONS[0];
   const isPlaying = state.isMusicPlaying || state.isAmbiencePlaying;
@@ -101,7 +163,10 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
       {isOpen && (
         <div
           className="fixed inset-0 z-[998]"
-          onClick={() => setIsOpen(false)}
+          onClick={closeMenu}
+          role="button"
+          tabIndex={-1}
+          aria-label="Close music menu"
         />
       )}
 
@@ -116,13 +181,14 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
               className="absolute bottom-12 left-0 mb-2 p-2 rounded-xl bg-stone-900/95 border border-stone-700/50 backdrop-blur-sm shadow-2xl min-w-[160px]"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="space-y-1">
                 {MUSIC_OPTIONS.map((option) => (
                   <button
                     key={option.id}
                     type="button"
-                    onClick={(e) => handleSelectTrack(option, e)}
+                    onClick={handleSelectTrack(option)}
                     disabled={isLoading}
                     className={`
                       w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm
@@ -167,7 +233,7 @@ export function MusicControl({ currentTrack }: MusicControlProps) {
         {/* Main button */}
         <motion.button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={toggleMenu}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className={`
