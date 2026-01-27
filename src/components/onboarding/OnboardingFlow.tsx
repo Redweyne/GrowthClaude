@@ -281,7 +281,7 @@ export function OnboardingFlow() {
       )}
 
       {/* Step content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center p-6">
+      <div className={`relative z-10 flex-1 flex items-center justify-center p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'pt-24' : ''}`}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={onboardingStep}

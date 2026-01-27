@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -32,47 +32,77 @@ export function AnchorExercise({
   const [isInhaling, setIsInhaling] = useState(true);
   const [isHolding, setIsHolding] = useState(false);
 
+  // Use refs to track state without triggering re-renders
+  const breathCountRef = useRef(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
   const totalBreaths = content.repetitions || 3;
   const breathCycleDuration = 8000; // 4s inhale + 4s exhale
 
-  // Breathing cycle
-  const startBreathCycle = useCallback(() => {
-    setIsInhaling(true);
-    setIsHolding(false);
+  // Cleanup function
+  const cleanup = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    timeoutsRef.current.forEach(t => clearTimeout(t));
+    timeoutsRef.current = [];
+  };
 
-    // Inhale for 4 seconds
-    setTimeout(() => {
-      setIsHolding(true);
-    }, 3500);
-
-    // Start exhale after 4 seconds
-    setTimeout(() => {
-      setIsInhaling(false);
-      setIsHolding(false);
-    }, 4000);
-
-    // Complete breath after 8 seconds
-    setTimeout(() => {
-      setBreathCount((prev) => {
-        const newCount = prev + 1;
-        if (newCount >= totalBreaths) {
-          setPhase('complete');
-        }
-        return newCount;
-      });
-    }, breathCycleDuration);
-  }, [totalBreaths]);
-
-  // Start breathing when entering breathing phase
+  // Start breathing when entering breathing phase - only runs once
   useEffect(() => {
     if (phase !== 'breathing') return;
-    if (breathCount >= totalBreaths) return;
 
-    startBreathCycle();
-    const interval = setInterval(startBreathCycle, breathCycleDuration);
+    // Reset
+    breathCountRef.current = 0;
+    setBreathCount(0);
 
-    return () => clearInterval(interval);
-  }, [phase, breathCount, totalBreaths, startBreathCycle]);
+    const runBreathCycle = () => {
+      // Check if we should stop
+      if (breathCountRef.current >= totalBreaths) {
+        cleanup();
+        setPhase('complete');
+        return;
+      }
+
+      setIsInhaling(true);
+      setIsHolding(false);
+
+      // Hold after 3.5s
+      const holdTimeout = setTimeout(() => {
+        setIsHolding(true);
+      }, 3500);
+      timeoutsRef.current.push(holdTimeout);
+
+      // Start exhale after 4s
+      const exhaleTimeout = setTimeout(() => {
+        setIsInhaling(false);
+        setIsHolding(false);
+      }, 4000);
+      timeoutsRef.current.push(exhaleTimeout);
+
+      // Complete breath after 8s
+      const completeTimeout = setTimeout(() => {
+        breathCountRef.current += 1;
+        setBreathCount(breathCountRef.current);
+
+        if (breathCountRef.current >= totalBreaths) {
+          cleanup();
+          setPhase('complete');
+        }
+      }, breathCycleDuration);
+      timeoutsRef.current.push(completeTimeout);
+    };
+
+    // Start first cycle immediately
+    runBreathCycle();
+
+    // Set up interval for subsequent cycles
+    intervalRef.current = setInterval(runBreathCycle, breathCycleDuration);
+
+    return cleanup;
+  }, [phase, totalBreaths]); // Only depends on phase and totalBreaths
 
   const handleStart = () => {
     setPhase('breathing');
