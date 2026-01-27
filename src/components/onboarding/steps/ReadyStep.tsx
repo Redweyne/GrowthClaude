@@ -14,12 +14,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Sparkles, Flame, Star, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Flame, Star, Zap } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { TRANSFORMATION_GOALS } from '@/types';
 import { Button } from '@/components/ui';
 import { Confetti } from '@/components/effects';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 
 interface ReadyStepProps {
   onNext: () => void;
@@ -27,6 +28,7 @@ interface ReadyStepProps {
 }
 
 export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
+  const { t, isRTL } = useTranslation();
   const { name, transformationGoal, dailyCommitmentMinutes } = useStore();
   const [phase, setPhase] = useState<'summary' | 'mentor' | 'ready'>('summary');
   const [showConfetti, setShowConfetti] = useState(false);
@@ -75,13 +77,17 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
       {phase === 'summary' && (
         <motion.button
           onClick={onBack}
-          initial={{ opacity: 0, x: -10 }}
+          initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 self-start group"
+          className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
         >
-          <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm">Back</span>
+          {isRTL ? (
+            <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+          ) : (
+            <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          )}
+          <span className="text-sm">{t('common.back')}</span>
         </motion.button>
       )}
 
@@ -126,7 +132,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 </motion.div>
 
                 <p className="text-2xl text-amber-100 font-light mb-2">
-                  {name}, you&apos;ve chosen to
+                  {name}, {t('onboarding.ready.youveChosen')}
                 </p>
                 <p className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
                   {selectedGoal?.title}
@@ -140,16 +146,16 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 transition={{ delay: 0.5 }}
                 className="py-5 px-6 rounded-2xl bg-stone-900/50 border border-stone-800/80"
               >
-                <div className="flex items-center justify-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
+                <div className={`flex items-center justify-center gap-6 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Zap size={16} className="text-amber-500" />
-                    <span className="text-amber-200">{dailyCommitmentMinutes} min</span>
-                    <span className="text-stone-500">daily</span>
+                    <span className="text-amber-200">{dailyCommitmentMinutes} {t('onboarding.ready.min')}</span>
+                    <span className="text-stone-500">{t('onboarding.ready.daily')}</span>
                   </div>
                   <div className="w-px h-4 bg-stone-800" />
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Star size={16} className="text-purple-400" />
-                    <span className="text-stone-400">Stoic wisdom</span>
+                    <span className="text-stone-400">{t('onboarding.ready.stoicWisdom')}</span>
                   </div>
                 </div>
               </motion.div>
@@ -225,12 +231,12 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 transition={{ delay: 0.5 }}
               >
                 <p className="text-2xl text-amber-100 font-light mb-4">
-                  You won&apos;t walk this path alone.
+                  {t('onboarding.ready.wontWalkAlone')}
                 </p>
                 <p className="text-stone-400 leading-relaxed">
-                  A mentor will guide you—responding to your reflections
+                  {t('onboarding.ready.mentorWillGuide')}
                   <br />
-                  with wisdom tailored to your journey.
+                  {t('onboarding.ready.wisdomTailored')}
                 </p>
               </motion.div>
 
@@ -322,10 +328,10 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 transition={{ delay: 0.3 }}
               >
                 <p className="text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 font-light mb-4">
-                  {name}, you&apos;re ready.
+                  {name}, {t('onboarding.ready.youreReady')}
                 </p>
                 <p className="text-stone-400 text-lg mb-10">
-                  Your first lesson awaits.
+                  {t('onboarding.ready.firstLessonAwaits')}
                 </p>
               </motion.div>
 
@@ -340,10 +346,10 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                   glow
                   onClick={onNext}
                   sound="tapConfirm"
-                  className="w-full group text-lg py-5"
+                  className={`w-full group text-lg py-5 ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
-                  <Flame size={22} className="mr-3 text-amber-300" />
-                  Begin My Journey
+                  <Flame size={22} className={`${isRTL ? 'ml-3' : 'mr-3'} text-amber-300`} />
+                  {t('onboarding.ready.beginMyJourney')}
                 </Button>
 
                 <motion.p
@@ -352,7 +358,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                   transition={{ delay: 1.2 }}
                   className="text-xs text-stone-600 mt-6 italic"
                 >
-                  &ldquo;The person you become is shaped by what you do every day.&rdquo;
+                  &ldquo;{t('onboarding.ready.personYouBecome')}&rdquo;
                 </motion.p>
               </motion.div>
             </motion.div>

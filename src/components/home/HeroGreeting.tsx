@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { Settings } from 'lucide-react';
 import { StreakBadge } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HERO GREETING
@@ -12,18 +13,18 @@ import { StreakBadge } from '@/components/ui';
 // inspirational Stoic wisdom that changes daily
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Stoic wisdom quotes that rotate daily
-const dailyWisdom = [
-  { text: 'The obstacle is the way.', author: 'Marcus Aurelius' },
-  { text: 'We suffer more in imagination than in reality.', author: 'Seneca' },
-  { text: 'No man is free who is not master of himself.', author: 'Epictetus' },
-  { text: 'Begin at once to live.', author: 'Seneca' },
-  { text: 'Waste no time arguing what a good person should be. Be one.', author: 'Marcus Aurelius' },
-  { text: 'First say to yourself what you would be; then do what you have to do.', author: 'Epictetus' },
-  { text: 'It is not death that a man should fear, but never beginning to live.', author: 'Marcus Aurelius' },
-  { text: 'Luck is what happens when preparation meets opportunity.', author: 'Seneca' },
-  { text: 'Make the best use of what is in your power, and take the rest as it happens.', author: 'Epictetus' },
-  { text: 'The happiness of your life depends upon the quality of your thoughts.', author: 'Marcus Aurelius' },
+// Stoic wisdom quotes that rotate daily (with authors)
+const wisdomAuthors = [
+  'Marcus Aurelius',
+  'Seneca',
+  'Epictetus',
+  'Seneca',
+  'Marcus Aurelius',
+  'Epictetus',
+  'Marcus Aurelius',
+  'Seneca',
+  'Epictetus',
+  'Marcus Aurelius',
 ];
 
 interface HeroGreetingProps {
@@ -38,28 +39,35 @@ const springs = {
   responsive: { type: 'spring' as const, stiffness: 300, damping: 20 },
 };
 
-// Get time-based greeting
-function getGreeting(): { text: string; emoji: string } {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return { text: 'Good morning', emoji: '~' };
-  if (hour >= 12 && hour < 17) return { text: 'Good afternoon', emoji: '~' };
-  if (hour >= 17 && hour < 21) return { text: 'Good evening', emoji: '~' };
-  return { text: 'Welcome back', emoji: '~' };
-}
-
-// Get consistent daily quote
-function getDailyQuote() {
+// Get consistent daily quote index
+function getDailyQuoteIndex(): number {
   const today = new Date();
   const dayOfYear = Math.floor(
     (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
   );
-  return dailyWisdom[dayOfYear % dailyWisdom.length];
+  return dayOfYear % 10; // 10 quotes
 }
 
 export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps) {
+  const { t, isRTL } = useTranslation();
   const [mounted, setMounted] = useState(false);
-  const greeting = useMemo(() => getGreeting(), []);
-  const quote = useMemo(() => getDailyQuote(), []);
+  const quoteIndex = useMemo(() => getDailyQuoteIndex(), []);
+
+  // Get time-based greeting using translations
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return t('home.greetings.morning');
+    if (hour >= 12 && hour < 17) return t('home.greetings.afternoon');
+    if (hour >= 17 && hour < 21) return t('home.greetings.evening');
+    return t('home.greetings.evening');
+  }, [t]);
+
+  // Get wisdom quote from translations
+  const wisdomQuotes = t('home.wisdomQuotes') as unknown as string[];
+  const quote = {
+    text: Array.isArray(wisdomQuotes) ? wisdomQuotes[quoteIndex] : '',
+    author: wisdomAuthors[quoteIndex],
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -121,9 +129,9 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
       transition={{ duration: 0.5 }}
     >
       {/* Top row - streak and settings */}
-      <div className="flex items-center justify-between mb-6">
+      <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, ...springs.gentle }}
         >
@@ -133,7 +141,7 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
         <motion.button
           onClick={onOpenSettings}
           className="relative w-11 h-11 rounded-2xl bg-stone-900/60 backdrop-blur-sm border border-stone-800/80 flex items-center justify-center hover:border-amber-500/30 transition-all duration-300 group"
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, ...springs.gentle }}
           whileHover={{ scale: 1.05 }}
@@ -154,17 +162,17 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
 
       {/* Greeting text */}
       <motion.p
-        className="text-stone-500 text-sm tracking-wide uppercase mb-2"
+        className={`text-stone-500 text-sm tracking-wide uppercase mb-2 ${isRTL ? 'text-right' : ''}`}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
       >
-        {greeting.text}
+        {greeting}
       </motion.p>
 
       {/* Name with staggered letter animation */}
       <motion.h1
-        className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 tracking-tight mb-4"
+        className={`text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 tracking-tight mb-4 ${isRTL ? 'text-right' : ''}`}
         style={{
           perspective: '1000px',
           WebkitTextStroke: '0.5px rgba(251, 191, 36, 0.1)',
@@ -190,21 +198,21 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
 
       {/* Daily wisdom quote */}
       <motion.div
-        className="relative pl-4 border-l-2 border-amber-500/20"
+        className={`relative ${isRTL ? 'pr-4 border-r-2' : 'pl-4 border-l-2'} border-amber-500/20`}
         variants={quoteVariants}
         initial="hidden"
         animate="visible"
       >
-        <p className="text-stone-400 text-sm italic leading-relaxed">
+        <p className={`text-stone-400 text-sm italic leading-relaxed ${isRTL ? 'text-right' : ''}`}>
           &ldquo;{quote.text}&rdquo;
         </p>
-        <p className="text-stone-600 text-xs mt-1">
+        <p className={`text-stone-600 text-xs mt-1 ${isRTL ? 'text-right' : ''}`}>
           — {quote.author}
         </p>
 
         {/* Subtle glow on quote */}
         <div
-          className="absolute -left-px top-0 bottom-0 w-0.5 rounded-full"
+          className={`absolute ${isRTL ? '-right-px' : '-left-px'} top-0 bottom-0 w-0.5 rounded-full`}
           style={{
             background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0.1) 100%)',
             boxShadow: '0 0 8px rgba(251, 191, 36, 0.3)',

@@ -8,9 +8,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { DAILY_COMMITMENTS, TRANSFORMATION_GOALS } from '@/types';
+import { useTranslation } from '@/i18n';
 
 interface CommitmentStepProps {
   onNext: () => void;
@@ -18,10 +19,32 @@ interface CommitmentStepProps {
 }
 
 export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
+  const { t, isRTL } = useTranslation();
   const { name, transformationGoal, dailyCommitmentMinutes, setDailyCommitment } = useStore();
   const [showPledge, setShowPledge] = useState(false);
 
   const selectedGoal = TRANSFORMATION_GOALS.find(g => g.id === transformationGoal);
+
+  // Get translated commitment descriptions
+  const getCommitmentDesc = (minutes: number): string => {
+    const descMap: Record<number, string> = {
+      5: t('onboarding.commitment.commitments.fiveMinDesc'),
+      10: t('onboarding.commitment.commitments.tenMinDesc'),
+      15: t('onboarding.commitment.commitments.fifteenMinDesc'),
+      20: t('onboarding.commitment.commitments.twentyMinDesc'),
+    };
+    return descMap[minutes] || '';
+  };
+
+  const getCommitmentLabel = (minutes: number): string => {
+    const labelMap: Record<number, string> = {
+      5: t('onboarding.commitment.commitments.fiveMin'),
+      10: t('onboarding.commitment.commitments.tenMin'),
+      15: t('onboarding.commitment.commitments.fifteenMin'),
+      20: t('onboarding.commitment.commitments.twentyMin'),
+    };
+    return labelMap[minutes] || `${minutes} ${t('onboarding.commitment.min')}`;
+  };
 
   const handleSelectCommitment = (minutes: number) => {
     setDailyCommitment(minutes);
@@ -40,21 +63,21 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-6 self-start"
+        className={`flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-6 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
-        <ChevronLeft size={20} />
-        <span className="text-sm">Back</span>
+        {isRTL ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        <span className="text-sm">{t('common.back')}</span>
       </button>
 
       {/* Context - their path */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex items-center gap-2 mb-6"
+        className={`flex items-center gap-2 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
       >
         <span className="text-2xl">{selectedGoal?.icon}</span>
         <span className="text-zinc-500 text-sm">
-          Your path: <span className="text-zinc-300">{selectedGoal?.title}</span>
+          {t('onboarding.why.yourPath')} <span className="text-zinc-300">{selectedGoal?.title}</span>
         </span>
       </motion.div>
 
@@ -66,10 +89,10 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         className="mb-8"
       >
         <p className="text-xl sm:text-2xl text-white font-light mb-2">
-          {name ? `${name}, how` : 'How'} much time will you give yourself each day?
+          {name ? `${name}, ` : ''}{t('onboarding.commitment.howMuchTime')}
         </p>
         <p className="text-zinc-500 text-sm">
-          Small and consistent beats big and sporadic. Choose what you'll actually do.
+          {t('onboarding.commitment.smallConsistent')}
         </p>
       </motion.div>
 
@@ -93,10 +116,10 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
             <p className={`text-2xl font-bold mb-1 transition-colors ${
               dailyCommitmentMinutes === commitment.minutes ? 'text-white' : 'text-zinc-300'
             }`}>
-              {commitment.label}
+              {getCommitmentLabel(commitment.minutes)}
             </p>
             <p className="text-xs text-zinc-500">
-              {commitment.description}
+              {getCommitmentDesc(commitment.minutes)}
             </p>
 
             {/* Selected indicator */}
@@ -104,7 +127,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center"
+                className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'} w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center`}
               >
                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -124,10 +147,10 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
             exit={{ opacity: 0 }}
             className="py-6 px-5 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-6"
           >
-            <p className="text-center text-white leading-relaxed">
-              "I, <span className="text-indigo-400">{name || 'I'}</span>, commit to{' '}
-              <span className="text-indigo-400">{dailyCommitmentMinutes} minutes</span> daily
-              to become{' '}
+            <p className={`text-center text-white leading-relaxed ${isRTL ? 'text-right' : ''}`}>
+              "{t('onboarding.commitment.iCommit')} <span className="text-indigo-400">{name || t('onboarding.commitment.iCommit')}</span>, {t('onboarding.commitment.commitTo')}{' '}
+              <span className="text-indigo-400">{dailyCommitmentMinutes} {t('onboarding.commitment.minutesDaily')}</span>{' '}
+              {t('onboarding.commitment.toBecome')}{' '}
               <span className="text-indigo-400">{selectedGoal?.title?.toLowerCase()}</span>."
             </p>
           </motion.div>
@@ -144,7 +167,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         transition={{ delay: 0.4 }}
         className="text-center text-xs text-zinc-600 mb-4"
       >
-        You can change this anytime. What matters is that you show up.
+        {t('onboarding.commitment.canChangeAnytime')}
       </motion.p>
 
       {/* Continue button */}
@@ -165,7 +188,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
           whileHover={dailyCommitmentMinutes ? { scale: 1.02 } : {}}
           whileTap={dailyCommitmentMinutes ? { scale: 0.98 } : {}}
         >
-          {dailyCommitmentMinutes ? 'I commit to this' : 'Choose your commitment'}
+          {dailyCommitmentMinutes ? t('onboarding.commitment.iCommitToThis') : t('onboarding.commitment.chooseYour')}
         </motion.button>
       </motion.div>
     </div>

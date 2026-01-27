@@ -25,6 +25,7 @@ import {
   BarChart3,
   MessageCircle,
   ChevronRight,
+  ChevronLeft,
   Flame,
   X,
   Sparkles,
@@ -36,6 +37,7 @@ import {
 import { AmbientBackground } from '@/components/ambient';
 import { HelpTooltip } from '@/components/help';
 import { getXpProgress } from '@/types';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -235,36 +237,38 @@ interface JourneyMapMiniProps {
   currentDay: number;
   totalDays: number;
   onPress?: () => void;
+  isRTL?: boolean;
+  t: (key: string) => string;
 }
 
-function JourneyMapMini({ worldName, currentDay, totalDays, onPress }: JourneyMapMiniProps) {
+function JourneyMapMini({ worldName, currentDay, totalDays, onPress, isRTL = false, t }: JourneyMapMiniProps) {
   const progress = Math.round((currentDay / totalDays) * 100);
   const milestones = [0, 25, 50, 75, 100];
 
   return (
     <motion.button
       onClick={onPress}
-      className="w-full p-4 rounded-2xl bg-gradient-to-br from-stone-900/80 to-stone-800/50 border border-stone-700/50 text-left"
+      className={`w-full p-4 rounded-2xl bg-gradient-to-br from-stone-900/80 to-stone-800/50 border border-stone-700/50 ${isRTL ? 'text-right' : 'text-left'}`}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+      <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
             <Target size={16} className="text-amber-400" />
           </div>
           <div>
             <p className="text-stone-300 font-medium text-sm">{worldName}</p>
-            <p className="text-stone-500 text-xs">Day {currentDay} of {totalDays}</p>
+            <p className="text-stone-500 text-xs">{t('world.dayOf').replace('{current}', String(currentDay)).replace('{total}', String(totalDays))}</p>
           </div>
         </div>
-        <ChevronRight size={16} className="text-stone-600" />
+        {isRTL ? <ChevronLeft size={16} className="text-stone-600" /> : <ChevronRight size={16} className="text-stone-600" />}
       </div>
 
       {/* Progress track */}
       <div className="relative h-2 bg-stone-800 rounded-full overflow-hidden">
         <motion.div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+          className={`absolute inset-y-0 ${isRTL ? 'right-0' : 'left-0'} bg-gradient-to-r from-amber-500 to-orange-500 rounded-full`}
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 1, ease: 'easeOut' }}
@@ -277,13 +281,13 @@ function JourneyMapMini({ worldName, currentDay, totalDays, onPress }: JourneyMa
             className={`absolute top-1/2 -translate-y-1/2 w-1 h-1 rounded-full ${
               progress >= milestone ? 'bg-stone-900' : 'bg-stone-600'
             }`}
-            style={{ left: `${milestone}%` }}
+            style={{ [isRTL ? 'right' : 'left']: `${milestone}%` }}
           />
         ))}
       </div>
 
       {/* Chapter indicators */}
-      <div className="flex justify-between mt-2">
+      <div className={`flex justify-between mt-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {['Start', 'Ch.2', 'Mid', 'Ch.4', 'End'].map((label, index) => (
           <span
             key={label}
@@ -313,6 +317,7 @@ interface NavItemProps {
   onClick: () => void;
   disabled?: boolean;
   compact?: boolean;
+  isRTL?: boolean;
 }
 
 function NavItem({
@@ -325,12 +330,13 @@ function NavItem({
   onClick,
   disabled = false,
   compact = false,
+  isRTL = false,
 }: NavItemProps) {
   return (
     <motion.button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full rounded-xl border transition-all text-left ${
+      className={`w-full rounded-xl border transition-all ${isRTL ? 'text-right' : 'text-left'} ${
         compact ? 'p-3' : 'p-4'
       } ${
         disabled
@@ -340,12 +346,12 @@ function NavItem({
       whileHover={!disabled ? { scale: 1.01, y: -1 } : {}}
       whileTap={!disabled ? { scale: 0.99 } : {}}
     >
-      <div className="flex items-center gap-3">
+      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className={`${compact ? 'w-9 h-9' : 'w-10 h-10'} rounded-lg ${iconBg} flex items-center justify-center`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <p className={`text-stone-200 font-medium ${compact ? 'text-sm' : ''}`}>{label}</p>
             {badge && (
               <span className={`px-2 py-0.5 ${badgeColor} text-white text-xs font-medium rounded-full`}>
@@ -357,7 +363,7 @@ function NavItem({
             <p className="text-stone-500 text-sm truncate">{sublabel}</p>
           )}
         </div>
-        <ChevronRight size={16} className="text-stone-600" />
+        {isRTL ? <ChevronLeft size={16} className="text-stone-600" /> : <ChevronRight size={16} className="text-stone-600" />}
       </div>
     </motion.button>
   );
@@ -402,22 +408,16 @@ export function DashboardNew({
   onOpenStats,
   onOpenSettings,
 }: DashboardProps) {
+  const { t, isRTL } = useTranslation();
   const xpProgress = getXpProgress(totalXp);
   const todayComplete = todayLessonCompleted && todayEchoCompleted && exercisesCompleted === totalExercises;
   const phasesCompleted = (todayLessonCompleted ? 1 : 0) + (todayEchoCompleted ? 1 : 0) + (exercisesCompleted === totalExercises ? 1 : 0);
 
   // Goal display text
   const goalText = useMemo(() => {
-    const goals: Record<string, string> = {
-      calmer: 'finding inner calm',
-      disciplined: 'building discipline',
-      confident: 'growing confidence',
-      leader: 'becoming a leader',
-      focused: 'sharpening focus',
-      resilient: 'building resilience',
-    };
-    return transformationGoal ? goals[transformationGoal] || 'transforming' : 'growing';
-  }, [transformationGoal]);
+    const goalKey = transformationGoal || 'growing';
+    return t(`dashboard.goals.${goalKey}` as any) || t('dashboard.goals.transforming');
+  }, [transformationGoal, t]);
 
   return (
     <div className="min-h-screen bg-stone-950 relative">
@@ -426,9 +426,9 @@ export function DashboardNew({
       {/* Header */}
       <div className="sticky top-0 z-20 bg-stone-950/90 backdrop-blur-lg border-b border-stone-800">
         <div className="max-w-lg mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-stone-100">Your Journey</h1>
-            <div className="flex items-center gap-2">
+          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <h1 className="text-xl font-bold text-stone-100">{t('dashboard.yourJourney')}</h1>
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={onOpenSettings}
                 className="p-2 text-stone-500 hover:text-stone-300 transition-colors"
@@ -437,7 +437,7 @@ export function DashboardNew({
               </button>
               <button
                 onClick={onClose}
-                className="p-2 -mr-2 text-stone-500 hover:text-stone-300 transition-colors"
+                className={`p-2 ${isRTL ? '-ml-2' : '-mr-2'} text-stone-500 hover:text-stone-300 transition-colors`}
               >
                 <X size={24} />
               </button>
@@ -462,15 +462,15 @@ export function DashboardNew({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            Day {daysSinceStart || currentStreak} of Your Transformation
+            {t('dashboard.dayOfTransformation').replace('{day}', String(daysSinceStart || currentStreak))}
           </motion.p>
 
           {/* Main stats row */}
-          <div className="flex items-center justify-center gap-8 mb-6">
+          <div className={`flex items-center justify-center gap-8 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {/* Streak */}
             <div className="flex flex-col items-center">
               <AnimatedFlame streak={currentStreak} size="md" />
-              <p className="text-xs text-stone-500 mt-1">Streak</p>
+              <p className="text-xs text-stone-500 mt-1">{t('common.streak')}</p>
             </div>
 
             {/* XP Progress Ring */}
@@ -487,7 +487,7 @@ export function DashboardNew({
                 <Sparkles size={24} className="text-purple-400" />
               </div>
               <p className="text-xs text-stone-400 mt-1 font-medium">{totalXp.toLocaleString()}</p>
-              <p className="text-xs text-stone-600">XP</p>
+              <p className="text-xs text-stone-600">{t('common.xp')}</p>
             </div>
           </div>
 
@@ -499,15 +499,15 @@ export function DashboardNew({
             className="max-w-sm mx-auto"
           >
             {latestIdentityStatement ? (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20">
+              <div className={`p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20 ${isRTL ? 'text-right' : ''}`}>
                 <p className="text-stone-300 italic">
                   &ldquo;{latestIdentityStatement}&rdquo;
                 </p>
-                <p className="text-stone-500 text-xs mt-2">Your latest identity statement</p>
+                <p className="text-stone-500 text-xs mt-2">{t('dashboard.latestIdentity')}</p>
               </div>
             ) : (
               <p className="text-stone-400">
-                You are becoming someone who is{' '}
+                {t('dashboard.youAreBecoming')}{' '}
                 <span className="text-amber-400 font-medium">{goalText}</span>.
               </p>
             )}
@@ -522,15 +522,15 @@ export function DashboardNew({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center justify-between mb-3 px-1">
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Today</p>
+          <div className={`flex items-center justify-between mb-3 px-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('dashboard.sections.today')}</p>
             <HelpTooltip topic="exercises" size="sm" />
           </div>
 
           {/* Today's practice card */}
           <motion.button
             onClick={onOpenTodayPractice}
-            className={`w-full p-5 rounded-2xl border text-left transition-all ${
+            className={`w-full p-5 rounded-2xl border transition-all ${isRTL ? 'text-right' : 'text-left'} ${
               todayComplete
                 ? 'bg-emerald-500/10 border-emerald-500/30'
                 : 'bg-stone-900/50 border-stone-800 hover:border-stone-700'
@@ -538,7 +538,7 @@ export function DashboardNew({
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-            <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
                 todayComplete ? 'bg-emerald-500/20' : 'bg-amber-500/20'
               }`}>
@@ -557,27 +557,27 @@ export function DashboardNew({
 
               <div className="flex-1">
                 <p className="font-semibold text-stone-100 mb-1">
-                  {todayComplete ? "Today's Practice Complete" : todaysLessonTitle || "Today's Practice"}
+                  {todayComplete ? t('dashboard.todaysPracticeComplete') : todaysLessonTitle || t('dashboard.todaysPractice')}
                 </p>
 
                 {/* Phase indicators */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
+                <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-2 h-2 rounded-full ${todayLessonCompleted ? 'bg-emerald-500' : 'bg-stone-700'}`} />
-                    <span className="text-xs text-stone-500">Lesson</span>
+                    <span className="text-xs text-stone-500">{t('dashboard.lesson')}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-2 h-2 rounded-full ${todayEchoCompleted ? 'bg-emerald-500' : 'bg-stone-700'}`} />
-                    <span className="text-xs text-stone-500">Echo</span>
+                    <span className="text-xs text-stone-500">{t('dashboard.echo')}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className={`flex items-center gap-1.5 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-2 h-2 rounded-full ${exercisesCompleted === totalExercises ? 'bg-emerald-500' : 'bg-stone-700'}`} />
                     <span className="text-xs text-stone-500">{exercisesCompleted}/{totalExercises}</span>
                   </div>
                 </div>
               </div>
 
-              <ChevronRight size={20} className="text-stone-600" />
+              {isRTL ? <ChevronLeft size={20} className="text-stone-600" /> : <ChevronRight size={20} className="text-stone-600" />}
             </div>
           </motion.button>
         </motion.div>
@@ -590,8 +590,8 @@ export function DashboardNew({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="flex items-center justify-between mb-3 px-1">
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Your Journey</p>
+          <div className={`flex items-center justify-between mb-3 px-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('dashboard.sections.yourJourney')}</p>
             <HelpTooltip topic="worlds" size="sm" />
           </div>
 
@@ -602,6 +602,8 @@ export function DashboardNew({
               currentDay={dayInWorld}
               totalDays={totalDaysInWorld}
               onPress={onOpenPastLessons}
+              isRTL={isRTL}
+              t={t}
             />
 
             {/* Check-ins row */}
@@ -609,20 +611,22 @@ export function DashboardNew({
               <NavItem
                 icon={<Calendar size={16} className="text-emerald-400" />}
                 iconBg="bg-emerald-500/20"
-                label="Weekly Check-in"
-                badge={isWeeklyCheckinDue ? 'Due' : undefined}
+                label={t('dashboard.weeklyCheckin')}
+                badge={isWeeklyCheckinDue ? t('dashboard.due') : undefined}
                 badgeColor="bg-emerald-500"
                 onClick={onOpenWeeklyCheckin}
                 compact
+                isRTL={isRTL}
               />
               <NavItem
                 icon={<BarChart3 size={16} className="text-blue-400" />}
                 iconBg="bg-blue-500/20"
-                label="Monthly Review"
-                badge={isMonthlyAssessmentDue ? 'Due' : undefined}
+                label={t('dashboard.monthlyReview')}
+                badge={isMonthlyAssessmentDue ? t('dashboard.due') : undefined}
                 badgeColor="bg-blue-500"
                 onClick={onOpenMonthlyAssessment}
                 compact
+                isRTL={isRTL}
               />
             </div>
 
@@ -631,18 +635,20 @@ export function DashboardNew({
               <NavItem
                 icon={<User size={16} className="text-cyan-400" />}
                 iconBg="bg-cyan-500/20"
-                label="Identity"
-                sublabel={identityStatements > 0 ? `${identityStatements} statements` : 'Who you\'re becoming'}
+                label={t('dashboard.identity')}
+                sublabel={identityStatements > 0 ? t('dashboard.statements').replace('{count}', String(identityStatements)) : t('dashboard.whoYoureBecoming')}
                 onClick={onOpenIdentity}
                 compact
+                isRTL={isRTL}
               />
               <NavItem
                 icon={<Award size={16} className="text-yellow-400" />}
                 iconBg="bg-yellow-500/20"
-                label="Milestones"
-                sublabel={`${totalMilestones} unlocked`}
+                label={t('common.milestones')}
+                sublabel={t('dashboard.unlocked').replace('{count}', String(totalMilestones))}
                 onClick={onOpenMilestones}
                 compact
+                isRTL={isRTL}
               />
             </div>
           </div>
@@ -656,8 +662,8 @@ export function DashboardNew({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="flex items-center justify-between mb-3 px-1">
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Community</p>
+          <div className={`flex items-center justify-between mb-3 px-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('dashboard.sections.community')}</p>
             <HelpTooltip topic="echoes" size="sm" />
           </div>
 
@@ -665,17 +671,19 @@ export function DashboardNew({
             <NavItem
               icon={<Heart size={18} className="text-rose-400" />}
               iconBg="bg-rose-500/20"
-              label="Browse Echoes"
-              sublabel="Read & respond to reflections"
+              label={t('dashboard.browseEchoes')}
+              sublabel={t('dashboard.readRespond')}
               onClick={onOpenBrowseEchoes}
+              isRTL={isRTL}
             />
             <NavItem
               icon={<MessageCircle size={18} className="text-amber-400" />}
               iconBg="bg-amber-500/20"
-              label="Your Inbox"
-              sublabel="Responses to your reflections"
+              label={t('dashboard.yourInbox')}
+              sublabel={t('dashboard.responsesToReflections')}
               badge={unreadEchoCount > 0 ? unreadEchoCount : undefined}
               onClick={onOpenYourEchoes}
+              isRTL={isRTL}
             />
           </div>
         </motion.div>
@@ -692,24 +700,24 @@ export function DashboardNew({
             onClick={onOpenStats}
             className="w-full p-4 rounded-2xl bg-stone-900/30 border border-stone-800/50 hover:border-stone-700 transition-all"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
                   <p className="text-lg font-bold text-stone-200">{totalLessons}</p>
-                  <p className="text-xs text-stone-500">Lessons</p>
+                  <p className="text-xs text-stone-500">{t('common.lessons')}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-bold text-stone-200">{longestStreak}</p>
-                  <p className="text-xs text-stone-500">Best Streak</p>
+                  <p className="text-xs text-stone-500">{t('dashboard.bestStreak')}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-bold text-stone-200">{daysSinceStart || 1}</p>
-                  <p className="text-xs text-stone-500">Days</p>
+                  <p className="text-xs text-stone-500">{t('common.days')}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-stone-500">
-                <span className="text-sm">View all stats</span>
-                <ChevronRight size={16} />
+              <div className={`flex items-center gap-2 text-stone-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <span className="text-sm">{t('dashboard.viewAllStats')}</span>
+                {isRTL ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
               </div>
             </div>
           </button>

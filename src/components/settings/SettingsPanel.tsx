@@ -10,17 +10,26 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { motion } from 'framer-motion';
-import { ArrowLeft, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Globe, Check } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation, languageConfig, type Locale } from '@/i18n';
 
 interface SettingsPanelProps {
   onBack: () => void;
 }
 
 export function SettingsPanel({ onBack }: SettingsPanelProps) {
-  const { soundEnabled, hapticEnabled, toggleSound, toggleHaptic, name } = useStore();
+  const { t, isRTL, locale, setLocale } = useTranslation();
+  const { soundEnabled, hapticEnabled, toggleSound, toggleHaptic, name, setLanguage } = useStore();
   const { playTap, playSuccess, startMusic, stopMusic, playSingingBowl } = useAudio();
+
+  // Handle language change
+  const handleLanguageChange = (newLocale: Locale) => {
+    playTap();
+    setLocale(newLocale);
+    setLanguage(newLocale);
+  };
 
   // Toggle handlers with audio feedback
   const handleToggleSound = () => {
@@ -62,16 +71,16 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
         animate={{ opacity: 1, y: 0 }}
         className="sticky top-0 z-50 backdrop-blur-xl bg-stone-950/80 border-b border-stone-800/50"
       >
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-4">
+        <div className={`max-w-lg mx-auto px-4 py-4 flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={onBack}
-            className="p-2 -ml-2 rounded-xl text-stone-400 hover:text-white hover:bg-stone-800/50 transition-all"
+            className={`p-2 ${isRTL ? '-mr-2' : '-ml-2'} rounded-xl text-stone-400 hover:text-white hover:bg-stone-800/50 transition-all`}
           >
-            <ArrowLeft size={24} />
+            {isRTL ? <ArrowRight size={24} /> : <ArrowLeft size={24} />}
           </button>
-          <div>
-            <h1 className="text-xl font-semibold text-white">Settings</h1>
-            <p className="text-sm text-stone-500">Personalize your experience</p>
+          <div className={isRTL ? 'text-right' : ''}>
+            <h1 className="text-xl font-semibold text-white">{t('settings.title')}</h1>
+            <p className="text-sm text-stone-500">{t('settings.personalize')}</p>
           </div>
         </div>
       </motion.header>
@@ -84,19 +93,65 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h2 className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4">
-            Profile
+          <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.profile')}
           </h2>
           <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 p-4">
-            <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
                 <span className="text-2xl">✨</span>
               </div>
-              <div>
-                <p className="text-lg text-white font-medium">{name || 'Seeker'}</p>
-                <p className="text-sm text-stone-500">On the path of transformation</p>
+              <div className={isRTL ? 'text-right' : ''}>
+                <p className="text-lg text-white font-medium">{name || t('settings.seeker')}</p>
+                <p className="text-sm text-stone-500">{t('settings.onPathOf')}</p>
               </div>
             </div>
+          </div>
+        </motion.section>
+
+        {/* Language Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.language')}
+          </h2>
+          <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 divide-y divide-stone-800/50">
+            {(['en', 'fr', 'ar'] as Locale[]).map((lang) => {
+              const config = languageConfig[lang];
+              const isSelected = locale === lang;
+
+              return (
+                <button
+                  key={lang}
+                  onClick={() => handleLanguageChange(lang)}
+                  className={`w-full p-4 flex items-center justify-between transition-colors ${
+                    isSelected ? 'bg-amber-500/10' : 'hover:bg-stone-800/50'
+                  } ${isRTL ? 'flex-row-reverse' : ''}`}
+                >
+                  <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <span className="text-2xl">{config.flag}</span>
+                    <div className={isRTL ? 'text-right' : ''}>
+                      <p className={`font-medium ${isSelected ? 'text-amber-400' : 'text-white'}`}>
+                        {config.nativeName}
+                      </p>
+                      <p className="text-sm text-stone-500">{config.name}</p>
+                    </div>
+                  </div>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center"
+                    >
+                      <Check size={14} className="text-stone-950" strokeWidth={3} />
+                    </motion.div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </motion.section>
 
@@ -106,33 +161,33 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4">
-            Audio & Haptics
+          <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.audioHaptics')}
           </h2>
           <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 divide-y divide-stone-800/50">
             {/* Sound Toggle */}
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className={`p-4 flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 {soundEnabled ? (
                   <Volume2 className="text-amber-400" size={22} />
                 ) : (
                   <VolumeX className="text-stone-500" size={22} />
                 )}
-                <div>
-                  <p className="text-white font-medium">Sound Effects</p>
-                  <p className="text-sm text-stone-500">UI sounds, chimes, and feedback</p>
+                <div className={isRTL ? 'text-right' : ''}>
+                  <p className="text-white font-medium">{t('settings.soundEffects')}</p>
+                  <p className="text-sm text-stone-500">{t('settings.soundDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch enabled={soundEnabled} onToggle={handleToggleSound} />
             </div>
 
             {/* Haptic Toggle */}
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className={`p-4 flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Vibrate className={hapticEnabled ? 'text-amber-400' : 'text-stone-500'} size={22} />
-                <div>
-                  <p className="text-white font-medium">Haptic Feedback</p>
-                  <p className="text-sm text-stone-500">Vibration on interactions</p>
+                <div className={isRTL ? 'text-right' : ''}>
+                  <p className="text-white font-medium">{t('settings.hapticFeedback')}</p>
+                  <p className="text-sm text-stone-500">{t('settings.hapticDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch enabled={hapticEnabled} onToggle={handleToggleHaptic} />
@@ -147,28 +202,28 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <h2 className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4">
-              Test Audio
+            <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+              {t('settings.testAudio')}
             </h2>
             <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 p-4 space-y-3">
-              <p className="text-sm text-stone-400 mb-4">
-                Preview the immersive audio experience
+              <p className={`text-sm text-stone-400 mb-4 ${isRTL ? 'text-right' : ''}`}>
+                {t('settings.previewAudio')}
               </p>
 
               <div className="grid grid-cols-3 gap-3">
                 <AudioTestButton
                   icon={<Bell size={20} />}
-                  label="UI Sounds"
+                  label={t('settings.uiSounds')}
                   onClick={handleTestUISound}
                 />
                 <AudioTestButton
                   icon={<Music size={20} />}
-                  label="Ambience"
+                  label={t('settings.ambience')}
                   onClick={handleTestAmbience}
                 />
                 <AudioTestButton
                   icon={<Sparkles size={20} />}
-                  label="Meditation"
+                  label={t('settings.meditation')}
                   onClick={handleTestMeditation}
                 />
               </div>
@@ -182,17 +237,17 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <h2 className="text-sm font-medium text-stone-500 uppercase tracking-wider mb-4">
-            About
+          <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.about')}
           </h2>
           <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 p-4">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
                 <span className="text-xl">🌱</span>
               </div>
-              <p className="text-white font-medium">Transformation Hub</p>
-              <p className="text-sm text-stone-500">Your daily journey to growth</p>
-              <p className="text-xs text-stone-600 pt-2">Version 1.0.0</p>
+              <p className="text-white font-medium">{t('settings.appName')}</p>
+              <p className="text-sm text-stone-500">{t('settings.appDesc')}</p>
+              <p className="text-xs text-stone-600 pt-2">{t('settings.version')} 1.0.0</p>
             </div>
           </div>
         </motion.section>
