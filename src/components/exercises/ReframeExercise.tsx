@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { ReframeContent } from '@/types/dailyPractice';
@@ -16,6 +17,8 @@ interface ReframeExerciseProps {
   content: ReframeContent;
   onComplete: (response: string) => void;
   onBack?: () => void;
+  isRTL?: boolean;
+  t?: (key: string) => string;
 }
 
 export function ReframeExercise({
@@ -23,6 +26,8 @@ export function ReframeExercise({
   content,
   onComplete,
   onBack,
+  isRTL = false,
+  t = (key: string) => key,
 }: ReframeExerciseProps) {
   const [response, setResponse] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -39,27 +44,29 @@ export function ReframeExercise({
 
   return (
     <motion.div
-      className="min-h-screen bg-stone-950 flex flex-col"
+      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         {onBack && (
           <button
             onClick={onBack}
-            className="text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4"
+            className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
-            ← Back
+            {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {t('exercises.back')}
           </button>
         )}
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 flex items-center justify-center">
             <span className="text-xl">🔄</span>
           </div>
-          <div>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Reframe</p>
+          <div className={isRTL ? 'text-right' : ''}>
+            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('exercises.reframeTitle')}</p>
             <h1 className="text-xl font-semibold text-stone-100">{title}</h1>
           </div>
         </div>
@@ -69,14 +76,14 @@ export function ReframeExercise({
       <div className="flex-1 px-6 pb-6 flex flex-col">
         {/* Context Card */}
         <Card variant="bordered" padding="lg" className="mb-6">
-          <div className="flex items-start gap-4">
+          <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className="flex-shrink-0 w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center">
               <span className="text-2xl">🔍</span>
             </div>
-            <div>
-              <h3 className="text-stone-200 font-medium mb-2">Shift Your Perspective</h3>
+            <div className={isRTL ? 'text-right' : ''}>
+              <h3 className="text-stone-200 font-medium mb-2">{t('exercises.shiftPerspective')}</h3>
               <p className="text-stone-400">
-                Use today&apos;s wisdom to see this situation differently. The obstacle often contains the opportunity.
+                {t('exercises.shiftPerspectiveDesc')}
               </p>
             </div>
           </div>
@@ -89,24 +96,24 @@ export function ReframeExercise({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <p className="text-amber-300 font-medium text-lg mb-2">{content.challengePrompt}</p>
-          <p className="text-stone-400 text-sm mb-4">{content.reframeGuide}</p>
+          <p className={`text-amber-300 font-medium text-lg mb-2 ${isRTL ? 'text-right' : ''}`}>{content.challengePrompt}</p>
+          <p className={`text-stone-400 text-sm mb-4 ${isRTL ? 'text-right' : ''}`}>{content.reframeGuide}</p>
 
           {/* Example */}
           <Card variant="glass" padding="md" className="mt-3">
-            <p className="text-stone-500 text-xs uppercase tracking-wider mb-3">
-              Example
+            <p className={`text-stone-500 text-xs uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : ''}`}>
+              {t('exercises.example')}
             </p>
             <div className="space-y-3">
-              <div>
-                <p className="text-stone-500 text-xs mb-1">Before:</p>
+              <div className={isRTL ? 'text-right' : ''}>
+                <p className="text-stone-500 text-xs mb-1">{t('exercises.before')}</p>
                 <p className="text-stone-400 text-sm italic">&ldquo;{content.example.before}&rdquo;</p>
               </div>
               <div className="flex justify-center">
                 <span className="text-rose-400">↓</span>
               </div>
-              <div>
-                <p className="text-emerald-500 text-xs mb-1">After:</p>
+              <div className={isRTL ? 'text-right' : ''}>
+                <p className="text-emerald-500 text-xs mb-1">{t('exercises.after')}</p>
                 <p className="text-stone-300 text-sm italic">&ldquo;{content.example.after}&rdquo;</p>
               </div>
             </div>
@@ -132,18 +139,19 @@ export function ReframeExercise({
               onChange={(e) => setResponse(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="Describe the challenge, then reframe it using today's wisdom..."
-              className="w-full h-full min-h-[200px] bg-transparent text-stone-100 placeholder-stone-600 p-4 resize-none focus:outline-none text-lg"
+              placeholder={t('exercises.describeChallenge')}
+              className={`w-full h-full min-h-[200px] bg-transparent text-stone-100 placeholder-stone-600 p-4 resize-none focus:outline-none text-lg ${isRTL ? 'text-right' : ''}`}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
 
             {/* Word count */}
-            <div className="absolute bottom-3 right-3">
+            <div className={`absolute bottom-3 ${isRTL ? 'left-3' : 'right-3'}`}>
               <span
                 className={`text-sm ${
                   canSubmit ? 'text-emerald-500' : 'text-stone-500'
                 }`}
               >
-                {wordCount} / {minimumWords} words
+                {wordCount} / {minimumWords} {t('common.words')}
               </span>
             </div>
           </div>
@@ -162,7 +170,7 @@ export function ReframeExercise({
               className="w-full"
               sound="tapConfirm"
             >
-              Complete Exercise
+              {t('exercises.complete')}
             </Button>
           </motion.div>
         </motion.div>

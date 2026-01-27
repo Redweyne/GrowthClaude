@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { DailyExercise, ExerciseType } from '@/types/dailyPractice';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -24,12 +25,12 @@ const exerciseColors: Record<ExerciseType, string> = {
   reframe: 'from-rose-500/20 to-pink-500/20',
 };
 
-const exerciseLabels: Record<ExerciseType, string> = {
-  scenario: 'Scenario',
-  quote: 'Quote',
-  application: 'Tomorrow',
-  anchor: 'Anchor',
-  reframe: 'Reframe',
+const exerciseLabelKeys: Record<ExerciseType, string> = {
+  scenario: 'exercises.scenarioTitle',
+  quote: 'exercises.quoteTitle',
+  application: 'exercises.applicationTitle',
+  anchor: 'exercises.anchorTitle',
+  reframe: 'exercises.reframeTitle',
 };
 
 interface ExerciseCardProps {
@@ -38,6 +39,8 @@ interface ExerciseCardProps {
   isCompleted: boolean;
   isLocked: boolean;
   onClick: () => void;
+  isRTL?: boolean;
+  t?: (key: string) => string;
 }
 
 export function ExerciseCard({
@@ -46,16 +49,19 @@ export function ExerciseCard({
   isCompleted,
   isLocked,
   onClick,
+  isRTL = false,
+  t = (key: string) => key,
 }: ExerciseCardProps) {
   const icon = exerciseIcons[exercise.type];
   const colorGradient = exerciseColors[exercise.type];
-  const label = exerciseLabels[exercise.type];
+  const labelKey = exerciseLabelKeys[exercise.type];
+  const label = t(labelKey);
 
   return (
     <motion.button
       onClick={onClick}
       disabled={isLocked}
-      className={`w-full text-left p-4 rounded-xl border transition-all ${
+      className={`w-full p-4 rounded-xl border transition-all ${isRTL ? 'text-right' : 'text-left'} ${
         isLocked
           ? 'bg-stone-900/30 border-stone-800/50 opacity-50 cursor-not-allowed'
           : isCompleted
@@ -64,8 +70,9 @@ export function ExerciseCard({
       }`}
       whileHover={!isLocked ? { scale: 1.02, y: -2 } : {}}
       whileTap={!isLocked ? { scale: 0.98 } : {}}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="flex items-center gap-4">
+      <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {/* Status indicator */}
         <div
           className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -93,12 +100,12 @@ export function ExerciseCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
             <span className="text-stone-500 text-xs uppercase tracking-wider">
               {label}
             </span>
             {isCompleted && (
-              <span className="text-emerald-500 text-xs">Complete</span>
+              <span className="text-emerald-500 text-xs">{t('common.complete')}</span>
             )}
           </div>
           <h3
@@ -114,10 +121,10 @@ export function ExerciseCard({
         {!isLocked && !isCompleted && (
           <motion.div
             className="text-stone-500"
-            animate={{ x: [0, 4, 0] }}
+            animate={{ x: isRTL ? [0, -4, 0] : [0, 4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
-            →
+            {isRTL ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
           </motion.div>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ExerciseCard } from './ExerciseCard';
@@ -10,6 +11,7 @@ import { QuoteExercise } from './QuoteExercise';
 import { ApplicationExercise } from './ApplicationExercise';
 import { AnchorExercise } from './AnchorExercise';
 import { ReframeExercise } from './ReframeExercise';
+import { useTranslation } from '@/i18n';
 import type { DailyExercise, ScenarioContent, QuoteContent, ApplicationContent, AnchorContent, ReframeContent } from '@/types/dailyPractice';
 import { isScenarioContent, isQuoteContent, isApplicationContent, isAnchorContent } from '@/types/dailyPractice';
 
@@ -35,6 +37,7 @@ export function ExerciseExperience({
   onBack,
   lessonTitle,
 }: ExerciseExperienceProps) {
+  const { t, isRTL } = useTranslation();
   const [selectedExercise, setSelectedExercise] = useState<DailyExercise | null>(null);
 
   // Calculate progress
@@ -71,6 +74,8 @@ export function ExerciseExperience({
     const commonProps = {
       title: selectedExercise.title,
       onBack: () => setSelectedExercise(null),
+      isRTL,
+      t,
     };
 
     if (isScenarioContent(selectedExercise.content)) {
@@ -142,50 +147,53 @@ export function ExerciseExperience({
   // Exercise list view
   return (
     <motion.div
-      className="min-h-screen bg-stone-950 flex flex-col"
+      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         <button
           onClick={onBack}
-          className="text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4"
+          className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
         >
-          ← Back to Today
+          {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {t('exercises.backToToday')}
         </button>
 
-        <div className="flex items-center justify-between mb-2">
-          <div>
+        <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={isRTL ? 'text-right' : ''}>
             <p className="text-stone-500 text-xs uppercase tracking-wider">
-              Today&apos;s Practice
+              {t('exercises.todaysPractice')}
             </p>
             <h1 className="text-2xl font-semibold text-stone-100">
               {lessonTitle}
             </h1>
           </div>
-          <div className="text-right">
+          <div className={isRTL ? 'text-left' : 'text-right'}>
             <p className="text-amber-400 font-bold text-xl">
               {completedCount}/{totalCount}
             </p>
-            <p className="text-stone-500 text-xs">completed</p>
+            <p className="text-stone-500 text-xs">{t('exercises.completed')}</p>
           </div>
         </div>
 
         {/* Progress bar */}
         <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
+            className={`h-full bg-gradient-to-r from-amber-500 to-orange-500 ${isRTL ? 'origin-right' : ''}`}
             initial={{ width: 0 }}
             animate={{ width: `${(completedCount / totalCount) * 100}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
+            style={isRTL ? { marginLeft: 'auto' } : {}}
           />
         </div>
 
         {!allComplete && (
-          <p className="text-stone-500 text-sm mt-2">
-            ~{estimatedMinutes} min remaining
+          <p className={`text-stone-500 text-sm mt-2 ${isRTL ? 'text-right' : ''}`}>
+            {t('exercises.minRemaining').replace('{min}', String(estimatedMinutes))}
           </p>
         )}
       </div>
@@ -209,23 +217,23 @@ export function ExerciseExperience({
             </motion.div>
 
             <h2 className="text-2xl font-bold text-stone-100 mb-2">
-              Practice Complete!
+              {t('exercises.practiceComplete')}
             </h2>
 
             <p className="text-stone-400 mb-8 max-w-sm">
-              You&apos;ve completed all 5 exercises for today. The wisdom is taking root.
+              {t('exercises.wisdomTakingRoot')}
             </p>
 
             <Card variant="glow" padding="lg" className="w-full max-w-sm mb-6">
-              <div className="flex items-center justify-center gap-4">
+              <div className={`flex items-center justify-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
                   <p className="text-3xl font-bold text-amber-400">+25</p>
-                  <p className="text-stone-500 text-sm">XP Earned</p>
+                  <p className="text-stone-500 text-sm">{t('exercises.xpEarnedAmount').replace('+{amount} ', '')}</p>
                 </div>
                 <div className="w-px h-12 bg-stone-700" />
                 <div className="text-center">
                   <p className="text-3xl font-bold text-emerald-400">5/5</p>
-                  <p className="text-stone-500 text-sm">Exercises</p>
+                  <p className="text-stone-500 text-sm">{t('exercises.exercisesCount')}</p>
                 </div>
               </div>
             </Card>
@@ -236,14 +244,14 @@ export function ExerciseExperience({
               className="w-full max-w-sm"
               sound="celebrate"
             >
-              Complete Today&apos;s Practice
+              {t('exercises.completeTodaysPractice')}
             </Button>
           </motion.div>
         ) : (
           // Exercise list
           <div className="space-y-3">
-            <p className="text-stone-400 text-sm mb-4">
-              Complete these exercises in any order to embody today&apos;s wisdom.
+            <p className={`text-stone-400 text-sm mb-4 ${isRTL ? 'text-right' : ''}`}>
+              {t('exercises.completeInAnyOrder')}
             </p>
 
             {exercises.map((exercise, index) => (
@@ -254,6 +262,8 @@ export function ExerciseExperience({
                 isCompleted={completedExercises.includes(exercise.id)}
                 isLocked={false}
                 onClick={() => setSelectedExercise(exercise)}
+                isRTL={isRTL}
+                t={t}
               />
             ))}
           </div>

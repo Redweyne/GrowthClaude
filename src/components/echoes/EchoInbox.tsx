@@ -15,10 +15,11 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageCircle, Heart, UserPlus, Check, XIcon, ChevronRight, Send } from 'lucide-react';
+import { X, MessageCircle, Heart, UserPlus, Check, XIcon, ChevronRight, ChevronLeft, Send } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useTranslation } from '@/i18n';
 import { getGenderLabel, getGenderPronoun } from '@/types/echoes';
 import type { EchoResponse, ConnectionInvitation, Connection } from '@/types/echoes';
 
@@ -29,6 +30,7 @@ interface EchoInboxProps {
 type TabType = 'echoes' | 'invitations' | 'connections';
 
 export function EchoInbox({ onClose }: EchoInboxProps) {
+  const { t, isRTL } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('echoes');
   const [selectedEcho, setSelectedEcho] = useState<EchoResponse | null>(null);
   const [selectedInvitation, setSelectedInvitation] = useState<ConnectionInvitation | null>(null);
@@ -98,19 +100,19 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
   };
 
   const tabs: { id: TabType; label: string; count?: number }[] = [
-    { id: 'echoes', label: 'Reflections', count: unreadEchoCount },
-    { id: 'invitations', label: 'Invitations', count: pendingInvitationCount },
-    { id: 'connections', label: 'Connections', count: connections.length },
+    { id: 'echoes', label: t('echoes.reflections'), count: unreadEchoCount },
+    { id: 'invitations', label: t('echoes.invitations'), count: pendingInvitationCount },
+    { id: 'connections', label: t('echoes.connectionsTab'), count: connections.length },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-950">
+    <div className={`fixed inset-0 z-50 bg-stone-950 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <AmbientBackground intensity="subtle" particleCount={4} orbCount={1} />
 
       {/* Header */}
       <div className="relative z-10 border-b border-stone-800">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-semibold text-stone-100">Echoes</h1>
+        <div className={`flex items-center justify-between p-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <h1 className="text-xl font-semibold text-stone-100">{t('echoes.title')}</h1>
           <button
             onClick={onClose}
             className="p-2 text-stone-500 hover:text-stone-300 transition-colors"

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { AnchorContent } from '@/types/dailyPractice';
@@ -19,6 +20,8 @@ interface AnchorExerciseProps {
   content: AnchorContent;
   onComplete: () => void;
   onBack?: () => void;
+  isRTL?: boolean;
+  t?: (key: string) => string;
 }
 
 export function AnchorExercise({
@@ -26,6 +29,8 @@ export function AnchorExercise({
   content,
   onComplete,
   onBack,
+  isRTL = false,
+  t = (key: string) => key,
 }: AnchorExerciseProps) {
   const [phase, setPhase] = useState<AnchorPhase>('intro');
   const [breathCount, setBreathCount] = useState(0);
@@ -115,27 +120,29 @@ export function AnchorExercise({
 
   return (
     <motion.div
-      className="min-h-screen bg-stone-950 flex flex-col"
+      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         {onBack && phase === 'intro' && (
           <button
             onClick={onBack}
-            className="text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4"
+            className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
-            ← Back
+            {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {t('exercises.back')}
           </button>
         )}
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
             <span className="text-xl">🫁</span>
           </div>
-          <div>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Anchor</p>
+          <div className={isRTL ? 'text-right' : ''}>
+            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('exercises.anchorTitle')}</p>
             <h1 className="text-xl font-semibold text-stone-100">{title}</h1>
           </div>
         </div>
@@ -162,7 +169,7 @@ export function AnchorExercise({
                   🤚
                 </motion.div>
                 <h2 className="text-xl font-semibold text-stone-100 mb-4">
-                  Create Your Anchor
+                  {t('exercises.createYourAnchor')}
                 </h2>
                 <p className="text-stone-300 mb-4">
                   {content.gesture}
@@ -179,7 +186,7 @@ export function AnchorExercise({
               </Card>
 
               <Button onClick={handleStart} variant="primary" className="w-full">
-                Begin {totalBreaths} Breaths
+                {t('exercises.beginBreaths').replace('{count}', String(totalBreaths))}
               </Button>
             </motion.div>
           )}
@@ -196,7 +203,7 @@ export function AnchorExercise({
               {/* Breath counter */}
               <div className="mb-6">
                 <span className="text-stone-500 text-sm">
-                  Breath {Math.min(breathCount + 1, totalBreaths)} of {totalBreaths}
+                  {t('exercises.breathOf').replace('{current}', String(Math.min(breathCount + 1, totalBreaths))).replace('{total}', String(totalBreaths))}
                 </span>
               </div>
 
@@ -237,13 +244,13 @@ export function AnchorExercise({
                 className="mb-4"
               >
                 <p className="text-2xl font-light text-stone-100">
-                  {isHolding ? 'Hold...' : isInhaling ? 'Breathe in...' : 'Breathe out...'}
+                  {isHolding ? t('exercises.hold') : isInhaling ? t('exercises.breatheIn') : t('exercises.breatheOut')}
                 </p>
               </motion.div>
 
               {/* Gesture reminder */}
               <p className="text-stone-500 text-sm">
-                Keep your anchor gesture while breathing
+                {t('exercises.keepAnchorGesture')}
               </p>
             </motion.div>
           )}
@@ -267,12 +274,12 @@ export function AnchorExercise({
               </motion.div>
 
               <h2 className="text-2xl font-semibold text-stone-100 mb-4">
-                Anchor Set
+                {t('exercises.anchorSet')}
               </h2>
 
               <Card variant="glass" padding="lg" className="mb-6">
                 <p className="text-stone-300 mb-4">
-                  Your gesture is now linked to today&apos;s wisdom. Use it whenever you need a reminder.
+                  {t('exercises.gestureLinked')}
                 </p>
                 <p className="text-amber-400 font-medium italic text-sm">
                   {content.meaning}
@@ -280,7 +287,7 @@ export function AnchorExercise({
               </Card>
 
               <Button onClick={handleComplete} variant="primary" className="w-full" sound="success">
-                Complete Exercise
+                {t('exercises.complete')}
               </Button>
             </motion.div>
           )}

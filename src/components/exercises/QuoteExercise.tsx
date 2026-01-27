@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import type { QuoteContent } from '@/types/dailyPractice';
@@ -16,6 +17,8 @@ interface QuoteExerciseProps {
   content: QuoteContent;
   onComplete: (response: string) => void;
   onBack?: () => void;
+  isRTL?: boolean;
+  t?: (key: string) => string;
 }
 
 export function QuoteExercise({
@@ -23,6 +26,8 @@ export function QuoteExercise({
   content,
   onComplete,
   onBack,
+  isRTL = false,
+  t = (key: string) => key,
 }: QuoteExerciseProps) {
   const [response, setResponse] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -39,27 +44,29 @@ export function QuoteExercise({
 
   return (
     <motion.div
-      className="min-h-screen bg-stone-950 flex flex-col"
+      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         {onBack && (
           <button
             onClick={onBack}
-            className="text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4"
+            className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
-            ← Back
+            {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {t('exercises.back')}
           </button>
         )}
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
             <span className="text-xl">💎</span>
           </div>
-          <div>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Quote</p>
+          <div className={isRTL ? 'text-right' : ''}>
+            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('exercises.quoteTitle')}</p>
             <h1 className="text-xl font-semibold text-stone-100">{title}</h1>
           </div>
         </div>
@@ -71,17 +78,17 @@ export function QuoteExercise({
         <Card variant="warm" padding="lg" className="mb-6">
           <div className="relative">
             {/* Quote mark */}
-            <div className="absolute -top-2 -left-2 text-4xl text-amber-500/30 font-serif">
+            <div className={`absolute -top-2 text-4xl text-amber-500/30 font-serif ${isRTL ? '-right-2' : '-left-2'}`}>
               &ldquo;
             </div>
 
-            <blockquote className="pl-6 pr-4 py-2">
+            <blockquote className={`py-2 ${isRTL ? 'pr-6 pl-4 text-right' : 'pl-6 pr-4'}`}>
               <p className="text-stone-100 text-xl leading-relaxed italic">
                 {content.quote}
               </p>
             </blockquote>
 
-            <div className="mt-4 pl-6 flex flex-col">
+            <div className={`mt-4 flex flex-col ${isRTL ? 'pr-6 text-right' : 'pl-6'}`}>
               <span className="text-amber-400 font-medium">— {content.author}</span>
               {content.source && (
                 <span className="text-stone-500 text-sm">{content.source}</span>
@@ -97,7 +104,7 @@ export function QuoteExercise({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <p className="text-amber-300 font-medium">{content.reflectionPrompt}</p>
+          <p className={`text-amber-300 font-medium ${isRTL ? 'text-right' : ''}`}>{content.reflectionPrompt}</p>
         </motion.div>
 
         {/* Response Input */}
@@ -119,18 +126,19 @@ export function QuoteExercise({
               onChange={(e) => setResponse(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="What does this wisdom stir in you?"
-              className="w-full h-full min-h-[180px] bg-transparent text-stone-100 placeholder-stone-600 p-4 resize-none focus:outline-none text-lg"
+              placeholder={t('exercises.yourThoughts')}
+              className={`w-full h-full min-h-[180px] bg-transparent text-stone-100 placeholder-stone-600 p-4 resize-none focus:outline-none text-lg ${isRTL ? 'text-right' : ''}`}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
 
             {/* Word count */}
-            <div className="absolute bottom-3 right-3">
+            <div className={`absolute bottom-3 ${isRTL ? 'left-3' : 'right-3'}`}>
               <span
                 className={`text-sm ${
                   canSubmit ? 'text-emerald-500' : 'text-stone-500'
                 }`}
               >
-                {wordCount} / {minimumWords} words
+                {wordCount} / {minimumWords} {t('common.words')}
               </span>
             </div>
           </div>
@@ -149,7 +157,7 @@ export function QuoteExercise({
               className="w-full"
               sound="tapConfirm"
             >
-              Complete Exercise
+              {t('exercises.complete')}
             </Button>
           </motion.div>
         </motion.div>

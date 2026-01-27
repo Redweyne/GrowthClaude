@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { Users, Heart, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useTranslation } from '@/i18n';
 
 interface EchoPromptProps {
   onAccept: () => void;
@@ -24,6 +25,7 @@ interface EchoPromptProps {
 
 export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
   const { markEchoPromptSeen } = useEchoesStore();
+  const { t, isRTL } = useTranslation();
 
   const handleDecline = () => {
     markEchoPromptSeen();
@@ -42,6 +44,7 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-6"
       style={{ backgroundColor: 'rgba(12, 10, 9, 0.9)' }}
+      dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Backdrop glow */}
       <div
@@ -62,7 +65,7 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
         {/* Close button */}
         <button
           onClick={handleDecline}
-          className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-300 transition-colors"
+          className={`absolute top-4 p-2 text-stone-500 hover:text-stone-300 transition-colors ${isRTL ? 'left-4' : 'right-4'}`}
         >
           <X size={20} />
         </button>
@@ -96,7 +99,7 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
           transition={{ delay: 0.3 }}
           className="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 mb-4"
         >
-          The Best Way to Learn
+          {t('echoes.bestWayToLearn')}
         </motion.h2>
 
         {/* Description */}
@@ -107,11 +110,10 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
           className="text-center mb-8"
         >
           <p className="text-stone-300 leading-relaxed mb-4">
-            ...is to take on the role of a teacher.
+            {t('echoes.roleOfTeacher')}
           </p>
           <p className="text-stone-400 text-sm leading-relaxed">
-            Would you like to reflect on another student&apos;s journey
-            and offer them encouragement?
+            {t('echoes.reflectOnJourney')}
           </p>
         </motion.div>
 
@@ -123,10 +125,10 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
           className="mb-8 p-4 rounded-xl bg-stone-800/50 border border-stone-700/50"
         >
           <p className="text-stone-400 text-sm italic text-center">
-            &ldquo;By teaching others, we teach ourselves.&rdquo;
+            &ldquo;{t('echoes.byTeachingOthers')}&rdquo;
           </p>
           <p className="text-stone-500 text-xs text-center mt-2">
-            — Proverb
+            — {t('echoes.proverb')}
           </p>
         </motion.div>
 
@@ -143,15 +145,15 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
             glow
             className="w-full group"
           >
-            <Heart size={18} className="mr-2 group-hover:scale-110 transition-transform" />
-            Let&apos;s do that
+            <Heart size={18} className={`${isRTL ? 'ml-2' : 'mr-2'} group-hover:scale-110 transition-transform`} />
+            {t('echoes.letsDoThat')}
           </Button>
 
           <button
             onClick={handleDecline}
             className="w-full py-3 text-stone-500 hover:text-stone-400 text-sm transition-colors"
           >
-            Not right now
+            {t('echoes.notRightNow')}
           </button>
         </motion.div>
       </motion.div>
