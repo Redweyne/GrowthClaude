@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, BookOpen, Target, Flame, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -29,6 +30,7 @@ const springs = {
 };
 
 export function WelcomeStep({ onNext }: WelcomeStepProps) {
+  const { t, isRTL } = useTranslation();
   const [phase, setPhase] = useState<'opening' | 'question' | 'invitation'>('opening');
   const [mounted, setMounted] = useState(false);
 
@@ -120,7 +122,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               transition={{ delay: 0.8, duration: 0.8 }}
               className="text-2xl sm:text-3xl text-amber-100/90 font-light tracking-wide"
             >
-              Take a breath.
+              {t('onboarding.welcome.takeBreath')}
             </motion.p>
 
             <motion.p
@@ -129,7 +131,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               transition={{ delay: 1.8, duration: 0.8 }}
               className="text-stone-400 text-lg"
             >
-              You&apos;re here for a reason.
+              {t('onboarding.welcome.hereForReason')}
             </motion.p>
           </motion.div>
         )}
@@ -153,9 +155,9 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               transition={{ delay: 0.2, duration: 0.8 }}
             >
               <p className="text-xl sm:text-2xl text-stone-300 font-light leading-relaxed">
-                Something in your life isn&apos;t working
+                {t('onboarding.welcome.notWorking')}
                 <br />
-                <span className="text-amber-200/80">the way you want it to.</span>
+                <span className="text-amber-200/80">{t('onboarding.welcome.theWayYouWant')}</span>
               </p>
             </motion.div>
 
@@ -178,7 +180,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               />
 
               <p className="text-stone-500 text-lg italic">
-                That&apos;s why you&apos;re here.
+                {t('onboarding.welcome.thatsWhy')}
               </p>
             </motion.div>
 
@@ -221,9 +223,9 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                   textShadow: '0 0 40px rgba(251, 191, 36, 0.2)',
                 }}
               >
-                What if 5 minutes a day
+                {t('onboarding.welcome.whatIf')}
                 <br />
-                could change who you are?
+                {t('onboarding.welcome.couldChange')}
               </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -231,7 +233,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 transition={{ delay: 0.6 }}
                 className="text-stone-400"
               >
-                Ancient wisdom. Modern practice. Real transformation.
+                {t('onboarding.welcome.ancientWisdom')}
               </motion.p>
             </motion.div>
 
@@ -242,14 +244,14 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               transition={{ delay: 0.8, duration: 0.6 }}
               className="py-8 border-t border-b border-stone-800/50"
             >
-              <div className="flex justify-center gap-10">
+              <div className={`flex justify-center gap-10 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 {[
-                  { icon: BookOpen, label: 'Learn', color: 'text-purple-400' },
-                  { icon: Target, label: 'Practice', color: 'text-amber-400' },
-                  { icon: Sparkles, label: 'Transform', color: 'text-emerald-400' },
+                  { icon: BookOpen, label: t('onboarding.welcome.learn'), color: 'text-purple-400' },
+                  { icon: Target, label: t('onboarding.welcome.practice'), color: 'text-amber-400' },
+                  { icon: Sparkles, label: t('onboarding.welcome.transform'), color: 'text-emerald-400' },
                 ].map((item, index) => (
                   <motion.div
-                    key={item.label}
+                    key={index}
                     className="flex flex-col items-center gap-3"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -278,13 +280,13 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 size="lg"
                 glow
                 onClick={onNext}
-                className="w-full group"
+                className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
               >
-                <Flame size={20} className="mr-2 text-amber-300" />
-                I&apos;m ready to begin
+                <Flame size={20} className={`${isRTL ? 'ml-2' : 'mr-2'} text-amber-300`} />
+                {t('onboarding.welcome.readyToBegin')}
                 <ChevronRight
                   size={18}
-                  className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  className={`${isRTL ? 'mr-2 rotate-180 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 group-hover:opacity-100 transition-all`}
                 />
               </Button>
 
@@ -294,7 +296,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 transition={{ delay: 2 }}
                 className="mt-5 text-xs text-stone-600"
               >
-                No account needed. Takes 2 minutes.
+                {t('onboarding.welcome.noAccount')}
               </motion.p>
             </motion.div>
           </motion.div>

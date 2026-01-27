@@ -18,6 +18,7 @@ import { ChevronLeft, ChevronRight, Check, Compass } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { TRANSFORMATION_GOALS, type TransformationGoal } from '@/types';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 interface GoalStepProps {
   onNext: () => void;
@@ -30,35 +31,29 @@ const springs = {
   bouncy: { type: 'spring' as const, stiffness: 500, damping: 15 },
 };
 
-// Deeper descriptions and colors for each goal
-const GOAL_DEPTHS: Record<string, { description: string; color: string; glow: string }> = {
+// Colors and glow for each goal (descriptions are translated in component)
+const GOAL_DEPTHS: Record<string, { color: string; glow: string }> = {
   calmer: {
-    description: 'To respond instead of react. To find stillness in chaos. To be unshaken.',
     color: '#22d3ee',
     glow: 'rgba(34, 211, 238, 0.3)',
   },
   disciplined: {
-    description: 'To follow through on every commitment. To become someone you can trust.',
     color: '#f97316',
     glow: 'rgba(249, 115, 22, 0.3)',
   },
   confident: {
-    description: 'To stop second-guessing. To trust your own judgment. To act decisively.',
     color: '#fbbf24',
     glow: 'rgba(251, 191, 36, 0.3)',
   },
   leader: {
-    description: 'To take responsibility. To inspire through action. To serve others.',
     color: '#a78bfa',
     glow: 'rgba(167, 139, 250, 0.3)',
   },
   focused: {
-    description: 'To protect your attention. To do what matters. To finish what you start.',
     color: '#3b82f6',
     glow: 'rgba(59, 130, 246, 0.3)',
   },
   resilient: {
-    description: 'To bend without breaking. To grow stronger through every adversity.',
     color: '#ef4444',
     glow: 'rgba(239, 68, 68, 0.3)',
   },
@@ -67,6 +62,12 @@ const GOAL_DEPTHS: Record<string, { description: string; color: string; glow: st
 export function GoalStep({ onNext, onBack }: GoalStepProps) {
   const { name, transformationGoal, setTransformationGoal } = useStore();
   const [mounted, setMounted] = useState(false);
+  const { t, isRTL } = useTranslation();
+
+  // Get translated description for a goal
+  const getGoalDescription = (goalId: string): string => {
+    return t(`onboarding.goal.goals.${goalId}.description` as any);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -94,13 +95,13 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
       {/* Back button */}
       <motion.button
         onClick={onBack}
-        initial={{ opacity: 0, x: -10 }}
+        initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 self-start group"
+        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
-        <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-        <span className="text-sm">Back</span>
+        <ChevronLeft size={20} className={`transition-transform ${isRTL ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
+        <span className="text-sm">{t('common.back')}</span>
       </motion.button>
 
       {/* The question - personalized */}
@@ -120,9 +121,9 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
         </motion.div>
 
         <p className="text-2xl sm:text-3xl text-amber-100 font-light mb-2">
-          {name ? `${name}, who do you` : 'Who do you'} want to become?
+          {name ? `${name}, ` : ''}{t('onboarding.goal.whoDoYouWant')}
         </p>
-        <p className="text-stone-500">Choose the transformation that calls to you</p>
+        <p className="text-stone-500">{t('onboarding.goal.chooseTransformation')}</p>
       </motion.div>
 
       {/* Goal options - beautiful cards with depth */}
@@ -254,7 +255,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
                 transition={{ delay: 0.3 }}
                 className="text-stone-400 text-sm leading-relaxed italic"
               >
-                &ldquo;{selectedDepth.description}&rdquo;
+                &ldquo;{getGoalDescription(transformationGoal)}&rdquo;
               </motion.p>
             </div>
           </motion.div>
@@ -275,18 +276,18 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
           onClick={handleContinue}
           disabled={!transformationGoal}
           glow={!!transformationGoal}
-          className="w-full group"
+          className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           {transformationGoal ? (
             <>
-              This is my path
+              {t('onboarding.goal.thisIsMyPath')}
               <ChevronRight
                 size={18}
-                className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                className={`opacity-60 group-hover:opacity-100 transition-all ${isRTL ? 'mr-2 rotate-180 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'}`}
               />
             </>
           ) : (
-            'Choose your transformation'
+            t('onboarding.goal.chooseYour')
           )}
         </Button>
       </motion.div>

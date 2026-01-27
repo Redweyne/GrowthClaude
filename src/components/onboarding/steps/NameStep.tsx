@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, User, Sparkles } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 interface NameStepProps {
   onNext: () => void;
@@ -29,6 +30,7 @@ const springs = {
 };
 
 export function NameStep({ onNext, onBack }: NameStepProps) {
+  const { t, isRTL } = useTranslation();
   const { name, setName } = useStore();
   const [localName, setLocalName] = useState(name || '');
   const [isFocused, setIsFocused] = useState(false);
@@ -72,13 +74,13 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
       {/* Back button */}
       <motion.button
         onClick={onBack}
-        initial={{ opacity: 0, x: -10 }}
+        initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className="flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-8 self-start group"
+        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-8 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'} group`}
       >
-        <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-        <span className="text-sm">Back</span>
+        <ChevronLeft size={20} className={`${isRTL ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'} transition-transform`} />
+        <span className="text-sm">{t('common.back')}</span>
       </motion.button>
 
       <div className="flex-1 flex flex-col justify-center">
@@ -99,10 +101,10 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
           </motion.div>
 
           <p className="text-2xl sm:text-3xl text-amber-100 font-light mb-3">
-            Before we begin...
+            {t('onboarding.name.beforeWeBegin')}
           </p>
           <p className="text-xl text-stone-400">
-            What shall I call you?
+            {t('onboarding.name.whatShallICall')}
           </p>
         </motion.div>
 
@@ -134,7 +136,8 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Your first name"
+            placeholder={t('onboarding.name.placeholder')}
+            dir={isRTL ? 'rtl' : 'ltr'}
             className={`
               relative w-full p-5 rounded-2xl
               bg-stone-900/60 backdrop-blur-sm
@@ -177,7 +180,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
               className="text-center mb-10"
             >
               <p className="text-stone-400 text-lg">
-                It's an honor to meet you,{' '}
+                {t('onboarding.name.honorToMeet')}{' '}
                 <motion.span
                   key={localName}
                   initial={{ opacity: 0 }}
@@ -205,18 +208,18 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
             onClick={handleContinue}
             disabled={!isValid}
             glow={isValid}
-            className="w-full group"
+            className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
           >
             {isValid ? (
               <>
-                Continue
+                {t('common.continue')}
                 <ChevronRight
                   size={18}
-                  className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  className={`${isRTL ? 'mr-2 rotate-180 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 group-hover:opacity-100 transition-all`}
                 />
               </>
             ) : (
-              'Enter your name'
+              t('onboarding.name.enterName')
             )}
           </Button>
         </motion.div>
@@ -229,7 +232,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
         transition={{ delay: 1 }}
         className="text-center text-xs text-stone-600 mt-6"
       >
-        This stays private. It's just between us.
+        {t('onboarding.name.staysPrivate')}
       </motion.p>
     </div>
   );

@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Heart, Dumbbell, ChevronRight, ChevronLeft, Sparkles, Users } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 
 interface PathStepProps {
   onNext: () => void;
@@ -29,14 +30,10 @@ const springs = {
   bouncy: { type: 'spring' as const, stiffness: 300, damping: 20 },
 };
 
-// Phase data for the three-step loop
-const phases = [
+// Phase configuration (static parts only - translations applied in component)
+const phaseConfigs = [
   {
     number: 1,
-    title: 'The Lesson',
-    subtitle: 'Ancient wisdom made real',
-    description: 'Each day, learn a powerful principle that can transform how you see the world.',
-    duration: '~3 min',
     icon: BookOpen,
     color: 'purple',
     gradient: 'from-purple-500 to-violet-600',
@@ -44,10 +41,6 @@ const phases = [
   },
   {
     number: 2,
-    title: 'The Echo',
-    subtitle: 'Teach what you learn',
-    description: 'Respond to another traveler\'s reflection. Teaching deepens your own understanding.',
-    duration: '~1 min',
     icon: Heart,
     color: 'rose',
     gradient: 'from-rose-500 to-pink-600',
@@ -55,10 +48,6 @@ const phases = [
   },
   {
     number: 3,
-    title: 'The Practice',
-    subtitle: 'Apply it to your life',
-    description: 'Five exercises to make today\'s wisdom real. This is where transformation happens.',
-    duration: '~3 min',
     icon: Dumbbell,
     color: 'amber',
     gradient: 'from-amber-500 to-orange-600',
@@ -67,9 +56,19 @@ const phases = [
 ];
 
 export function PathStep({ onNext, onBack }: PathStepProps) {
+  const { t, isRTL } = useTranslation();
   const [mounted, setMounted] = useState(false);
   const [activePhase, setActivePhase] = useState<number | null>(null);
   const [showCommunity, setShowCommunity] = useState(false);
+
+  // Build phases with translations
+  const phases = phaseConfigs.map((config, index) => ({
+    ...config,
+    title: t(`onboarding.path.phase${index + 1}.title`),
+    subtitle: t(`onboarding.path.phase${index + 1}.subtitle`),
+    description: t(`onboarding.path.phase${index + 1}.description`),
+    duration: t(`onboarding.path.phase${index + 1}.duration`),
+  }));
 
   useEffect(() => {
     setMounted(true);
@@ -93,10 +92,10 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 self-start"
+        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
-        <ChevronLeft size={20} />
-        <span className="text-sm">Back</span>
+        {isRTL ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        <span className="text-sm">{t('common.back')}</span>
       </button>
 
       {/* Header */}
@@ -112,7 +111,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          Here&apos;s How It Works
+          {t('onboarding.path.heresHow')}
         </motion.p>
         <motion.h2
           className="text-2xl sm:text-3xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200"
@@ -120,7 +119,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          Your Daily Path
+          {t('onboarding.path.yourDailyPath')}
         </motion.h2>
       </motion.div>
 
@@ -129,7 +128,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
         <div className="relative">
           {/* Connecting Line */}
           <motion.div
-            className="absolute left-[27px] top-8 bottom-8 w-0.5 bg-gradient-to-b from-purple-500/50 via-rose-500/50 to-amber-500/50"
+            className={`absolute ${isRTL ? 'right-[27px]' : 'left-[27px]'} top-8 bottom-8 w-0.5 bg-gradient-to-b from-purple-500/50 via-rose-500/50 to-amber-500/50`}
             initial={{ scaleY: 0, opacity: 0 }}
             animate={{ scaleY: 1, opacity: 1 }}
             transition={{ delay: 0.5, duration: 1.5, ease: 'easeOut' }}
@@ -146,7 +145,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
               return (
                 <motion.div
                   key={phase.number}
-                  initial={{ opacity: 0, x: -30 }}
+                  initial={{ opacity: 0, x: isRTL ? 30 : -30 }}
                   animate={{
                     opacity: isActive ? 1 : 0.3,
                     x: 0,
@@ -157,7 +156,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                     duration: 0.5,
                     scale: { duration: 0.3 }
                   }}
-                  className="relative flex items-start gap-4"
+                  className={`relative flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
                   {/* Phase Icon */}
                   <motion.div
@@ -182,7 +181,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
 
                     {/* Phase number badge */}
                     <motion.div
-                      className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                      className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                         isActive
                           ? 'bg-stone-950 text-white border-2 border-stone-800'
                           : 'bg-stone-800 text-stone-600'
@@ -196,8 +195,8 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                   </motion.div>
 
                   {/* Phase Content */}
-                  <div className="flex-1 pt-1">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className={`flex-1 pt-1 ${isRTL ? 'text-right' : ''}`}>
+                    <div className={`flex items-center gap-2 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <h3 className={`font-semibold transition-colors duration-500 ${
                         isActive ? 'text-stone-100' : 'text-stone-600'
                       }`}>
@@ -247,14 +246,14 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
               transition={{ duration: 0.6 }}
               className="mt-8 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20"
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className={`flex items-center gap-3 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
                   <Users size={16} className="text-amber-400" />
                 </div>
-                <p className="text-stone-300 font-medium">Same lesson. Same day. Together.</p>
+                <p className="text-stone-300 font-medium">{t('onboarding.path.sameLesson')}</p>
               </div>
-              <p className="text-stone-500 text-sm pl-11">
-                Everyone learns the same wisdom on the same day. You&apos;re never alone on this journey.
+              <p className={`text-stone-500 text-sm ${isRTL ? 'pr-11 text-right' : 'pl-11'}`}>
+                {t('onboarding.path.neverAlone')}
               </p>
             </motion.div>
           )}
@@ -269,7 +268,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
         className="text-center my-6"
       >
         <p className="text-stone-500 text-sm">
-          Total: <span className="text-amber-400 font-medium">~7 minutes</span> of intentional growth, every day
+          {t('onboarding.path.totalTime')}
         </p>
       </motion.div>
 
@@ -283,14 +282,21 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
           size="lg"
           glow
           onClick={onNext}
-          className="w-full group"
+          className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
         >
-          <Sparkles size={18} className="mr-2 text-amber-300" />
-          I understand the path
-          <ChevronRight
-            size={18}
-            className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
-          />
+          <Sparkles size={18} className={`${isRTL ? 'ml-2' : 'mr-2'} text-amber-300`} />
+          {t('onboarding.path.iUnderstand')}
+          {isRTL ? (
+            <ChevronLeft
+              size={18}
+              className="mr-2 opacity-60 group-hover:-translate-x-1 group-hover:opacity-100 transition-all"
+            />
+          ) : (
+            <ChevronRight
+              size={18}
+              className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+            />
+          )}
         </Button>
       </motion.div>
     </div>

@@ -6,6 +6,7 @@ import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
+import { LanguageSelector } from '@/components/language';
 import { DailyFlowHome } from '@/components/daily/DailyFlowHome';
 import { MandatoryEchoFlow } from '@/components/daily/MandatoryEchoFlow';
 import { DashboardNew } from '@/components/dashboard/DashboardNew';
@@ -52,6 +53,7 @@ type AppView =
 
 export default function Home() {
   const {
+    languageSelected,
     onboardingComplete,
     completedLessons,
     isCheckinDue,
@@ -390,6 +392,11 @@ export default function Home() {
 
   // Calculate total unread count for inbox
   const totalUnreadCount = getUnreadEchoCount() + getUnreadInvitationCount() + getUnreadMessageCount();
+
+  // Language selection - FIRST, before anything else
+  if (!languageSelected) {
+    return <LanguageSelector />;
+  }
 
   // Onboarding flow
   if (!onboardingComplete) {

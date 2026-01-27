@@ -104,6 +104,10 @@ export interface PendingLessonAction {
 }
 
 interface UserState {
+  // Language settings
+  language: 'en' | 'fr' | 'ar';
+  languageSelected: boolean;
+
   // User identity
   userId: string | null;
   name: string | null;
@@ -170,6 +174,10 @@ interface UserState {
 }
 
 interface UserActions {
+  // Language
+  setLanguage: (language: 'en' | 'fr' | 'ar') => void;
+  markLanguageSelected: () => void;
+
   // Onboarding
   setOnboardingStep: (step: number) => void;
   setTransformationGoal: (goal: TransformationGoal) => void;
@@ -269,6 +277,10 @@ interface UserActions {
 }
 
 const initialState: UserState = {
+  // Language
+  language: 'en',
+  languageSelected: false,
+
   userId: null,
   name: null,
   transformationGoal: null,
@@ -334,6 +346,12 @@ export const useStore = create<UserState & UserActions>()(
   persist(
     (set, get) => ({
       ...initialState,
+
+      // ============================================
+      // LANGUAGE ACTIONS
+      // ============================================
+      setLanguage: (language) => set({ language, languageSelected: true }),
+      markLanguageSelected: () => set({ languageSelected: true }),
 
       // ============================================
       // ONBOARDING ACTIONS

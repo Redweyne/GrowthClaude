@@ -7,6 +7,7 @@
 import { ReactNode } from 'react';
 import { AudioProvider } from '@/providers/AudioProvider';
 import { AudioDebugPanel } from '@/components/ui/AudioDebugPanel';
+import { TranslationProvider } from '@/i18n';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -14,10 +15,12 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <AudioProvider>
-      {children}
-      <AudioDebugPanel />
-    </AudioProvider>
+    <TranslationProvider>
+      <AudioProvider>
+        {children}
+        <AudioDebugPanel />
+      </AudioProvider>
+    </TranslationProvider>
   );
 }
 

@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useTranslation } from '@/i18n';
 import type { GenderIdentity } from '@/types/echoes';
 
 interface IdentityStepProps {
@@ -22,39 +23,40 @@ interface IdentityStepProps {
   onBack: () => void;
 }
 
-const IDENTITY_OPTIONS: {
-  id: GenderIdentity;
-  label: string;
-  description: string;
-  pronoun: string;
-  icon: string;
-}[] = [
-  {
-    id: 'brother',
-    label: 'Brother',
-    description: 'He/Him',
-    pronoun: 'A fellow brother',
-    icon: '👤',
-  },
-  {
-    id: 'sister',
-    label: 'Sister',
-    description: 'She/Her',
-    pronoun: 'A fellow sister',
-    icon: '👤',
-  },
-  {
-    id: 'traveler',
-    label: 'Traveler',
-    description: 'They/Them',
-    pronoun: 'A fellow traveler',
-    icon: '🌟',
-  },
-];
-
 export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
+  const { t, isRTL } = useTranslation();
   const { genderIdentity, setGenderIdentity } = useEchoesStore();
   const [selected, setSelected] = useState<GenderIdentity | null>(genderIdentity);
+
+  const IDENTITY_OPTIONS: {
+    id: GenderIdentity;
+    label: string;
+    description: string;
+    pronoun: string;
+    icon: string;
+  }[] = [
+    {
+      id: 'brother',
+      label: t('onboarding.identity.brother'),
+      description: t('onboarding.identity.heHim'),
+      pronoun: t('onboarding.identity.fellowBrother'),
+      icon: '👤',
+    },
+    {
+      id: 'sister',
+      label: t('onboarding.identity.sister'),
+      description: t('onboarding.identity.sheHer'),
+      pronoun: t('onboarding.identity.fellowSister'),
+      icon: '👤',
+    },
+    {
+      id: 'traveler',
+      label: t('onboarding.identity.traveler'),
+      description: t('onboarding.identity.theyThem'),
+      pronoun: t('onboarding.identity.fellowTraveler'),
+      icon: '🌟',
+    },
+  ];
 
   const handleSelect = (identity: GenderIdentity) => {
     setSelected(identity);
@@ -98,7 +100,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        Your Anonymous Identity
+        {t('onboarding.identity.title')}
       </motion.h1>
 
       {/* Subtitle */}
@@ -108,9 +110,9 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        When you share reflections with fellow travelers,
+        {t('onboarding.identity.subtitle')}
         <br />
-        how would you like to be referred to?
+        {t('onboarding.identity.subtitleLine2')}
       </motion.p>
 
       {/* Identity options */}
@@ -124,18 +126,20 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
           <motion.button
             key={option.id}
             onClick={() => handleSelect(option.id)}
-            className={`w-full p-4 rounded-2xl border text-left transition-all duration-300 ${
+            className={`w-full p-4 rounded-2xl border transition-all duration-300 ${
+              isRTL ? 'text-right' : 'text-left'
+            } ${
               selected === option.id
                 ? 'bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10'
                 : 'bg-stone-900/50 border-stone-800 hover:border-stone-700 hover:bg-stone-900/80'
             }`}
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 + index * 0.1 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               {/* Selection indicator */}
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -155,7 +159,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
 
               {/* Content */}
               <div className="flex-1">
-                <div className="flex items-center gap-2">
+                <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                   <span
                     className={`font-semibold ${
                       selected === option.id ? 'text-amber-200' : 'text-stone-200'
@@ -166,7 +170,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
                   <span className="text-stone-500 text-sm">({option.description})</span>
                 </div>
                 <p className="text-stone-500 text-sm mt-1">
-                  Others will see: &quot;{option.pronoun} reflected...&quot;
+                  {t('onboarding.identity.othersWillSee')} &quot;{option.pronoun} {t('onboarding.identity.reflected')}&quot;
                 </p>
               </div>
             </div>
@@ -181,30 +185,30 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
       >
-        Your name and identity are never revealed.
+        {t('onboarding.identity.privacyNote')}
         <br />
-        Only this label is shown when you share anonymously.
+        {t('onboarding.identity.privacyNote2')}
       </motion.p>
 
       {/* Buttons */}
       <motion.div
-        className="flex gap-3"
+        className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9 }}
       >
-        <Button variant="ghost" onClick={onBack} className="flex-1">
-          <ChevronLeft size={18} className="mr-1" />
-          Back
+        <Button variant="ghost" onClick={onBack} className={`flex-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          {isRTL ? <ChevronRight size={18} className="ml-1" /> : <ChevronLeft size={18} className="mr-1" />}
+          {t('common.back')}
         </Button>
         <Button
           onClick={handleContinue}
           disabled={!selected}
           glow={!!selected}
-          className="flex-1"
+          className={`flex-1 ${isRTL ? 'flex-row-reverse' : ''}`}
         >
-          Continue
-          <ChevronRight size={18} className="ml-1" />
+          {t('common.continue')}
+          {isRTL ? <ChevronLeft size={18} className="mr-1" /> : <ChevronRight size={18} className="ml-1" />}
         </Button>
       </motion.div>
     </div>
