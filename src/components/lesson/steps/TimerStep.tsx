@@ -1,17 +1,13 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TIMER STEP - THE PRACTICE
+// TIMER STEP - THE PRACTICE (FIXED VERSION)
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Timed practices: breathing, focus, presence.
-// This is where wisdom becomes embodied experience.
-//
-// Different timer styles for different practices:
-// - Breathing: Guided inhale/hold/exhale cycles
-// - Focus: Countdown with gentle progress
-// - Presence: Minimal, just time passing
-// - Countdown: Clear timer display
+// FIXED: All timers now properly tracked with refs to prevent page refresh
+// - Main timer uses ref-based state tracking
+// - Breathing cycle properly cleans up all timeouts
+// - No state updates inside other state updates
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -29,7 +25,6 @@ interface TimerStepProps {
   onComplete: (completed: boolean) => void;
 }
 
-// Format seconds as MM:SS
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -41,92 +36,171 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
   const [timeRemaining, setTimeRemaining] = useState(step.durationSeconds);
   const [breathPhase, setBreathPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Audio hooks for meditation experience
+  // Use refs to track all timers for proper cleanup
+  const mainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const breathIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const breathTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const messageIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const phaseRef = useRef(phase);
+  const timeRemainingRef = useRef(timeRemaining);
+
+  // Keep refs in sync
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+
+  useEffect(() => {
+    timeRemainingRef.current = timeRemaining;
+  }, [timeRemaining]);
+
   const { startMusic, stopMusic, playComplete, playSingingBowl, playGong } = useAudio();
   const { start: startBreathingGuide, stop: stopBreathingGuide } = useBreathingGuide({
-    pattern: '4-7-8', // Relaxation breathing pattern: 4s in, 7s hold, 8s out
-    playBowlOnStart: false, // We play it manually
+    pattern: '4-7-8',
+    playBowlOnStart: false,
     playBowlOnEnd: false,
   });
 
   const progress = 1 - (timeRemaining / step.durationSeconds);
   const messages = step.guidanceMessages || [];
 
-  // START PRACTICE - Only when user clicks the button
+  // Cleanup all timers
+  const cleanupAllTimers = useCallback(() => {
+    if (mainTimerRef.current) {
+      clearInterval(mainTimerRef.current);
+      mainTimerRef.current = null;
+    }
+    if (breathIntervalRef.current) {
+      clearInterval(breathIntervalRef.current);
+      breathIntervalRef.current = null;
+    }
+    breathTimeoutsRef.current.forEach(t => clearTimeout(t));
+    breathTimeoutsRef.current = [];
+    if (messageIntervalRef.current) {
+      clearInterval(messageIntervalRef.current);
+      messageIntervalRef.current = null;
+    }
+  }, []);
+
+  // Handle completion
+  const handleTimerComplete = useCallback(() => {
+    cleanupAllTimers();
+    setPhase('complete');
+  }, [cleanupAllTimers]);
+
+  // START PRACTICE
   const handleStartPractice = useCallback(() => {
     setPhase('practicing');
-
-    // Play singing bowl to signal start
     playSingingBowl();
 
-    // Start appropriate audio based on timer style
     if (step.timerStyle === 'breathing') {
       startBreathingGuide();
     } else {
-      // Start ambient music for focus/presence/countdown
       startMusic('lessonDeep', 2);
     }
   }, [playSingingBowl, startBreathingGuide, startMusic, step.timerStyle]);
 
-  // Handle completion audio (no cleanup - that kills audio on phase changes)
+  // Handle completion audio
   useEffect(() => {
     if (phase === 'complete') {
       stopBreathingGuide();
       stopMusic(1);
-      playGong(); // Signal completion
+      playGong();
       playComplete();
     }
-    // NO cleanup - React StrictMode and phase changes were killing audio
   }, [phase, stopBreathingGuide, stopMusic, playGong, playComplete]);
 
-  // Main timer
+  // Main timer - uses refs to avoid stale closures
   useEffect(() => {
-    if (phase !== 'practicing' || isPaused) return;
+    if (phase !== 'practicing') return;
 
-    intervalRef.current = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          setPhase('complete');
-          return 0;
-        }
-        return prev - 1;
-      });
+    mainTimerRef.current = setInterval(() => {
+      // Read from ref for current value
+      const current = timeRemainingRef.current;
+      if (current <= 1) {
+        // Don't call setPhase inside setTimeRemaining
+        setTimeRemaining(0);
+        // Use setTimeout to break out of the state update cycle
+        setTimeout(() => handleTimerComplete(), 0);
+      } else {
+        setTimeRemaining(current - 1);
+      }
     }, 1000);
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (mainTimerRef.current) {
+        clearInterval(mainTimerRef.current);
+        mainTimerRef.current = null;
+      }
     };
-  }, [phase, isPaused]);
+  }, [phase, handleTimerComplete]);
 
-  // Breathing cycle (for breathing style)
+  // Breathing cycle - properly tracks all timeouts
   useEffect(() => {
     if (phase !== 'practicing' || step.timerStyle !== 'breathing') return;
 
-    // 4s inhale, 4s hold, 6s exhale = 14s cycle
-    const breathCycle = () => {
+    const runBreathCycle = () => {
+      // Check if we're still in practicing phase
+      if (phaseRef.current !== 'practicing') return;
+
       setBreathPhase('inhale');
-      setTimeout(() => setBreathPhase('hold'), 4000);
-      setTimeout(() => setBreathPhase('exhale'), 8000);
+
+      const holdTimeout = setTimeout(() => {
+        if (phaseRef.current === 'practicing') {
+          setBreathPhase('hold');
+        }
+      }, 4000);
+      breathTimeoutsRef.current.push(holdTimeout);
+
+      const exhaleTimeout = setTimeout(() => {
+        if (phaseRef.current === 'practicing') {
+          setBreathPhase('exhale');
+        }
+      }, 8000);
+      breathTimeoutsRef.current.push(exhaleTimeout);
     };
 
-    breathCycle();
-    const interval = setInterval(breathCycle, 14000);
-    return () => clearInterval(interval);
+    // Start first cycle
+    runBreathCycle();
+
+    // Set up interval for subsequent cycles
+    breathIntervalRef.current = setInterval(() => {
+      // Clear old timeouts before starting new cycle
+      breathTimeoutsRef.current.forEach(t => clearTimeout(t));
+      breathTimeoutsRef.current = [];
+      runBreathCycle();
+    }, 14000);
+
+    return () => {
+      if (breathIntervalRef.current) {
+        clearInterval(breathIntervalRef.current);
+        breathIntervalRef.current = null;
+      }
+      breathTimeoutsRef.current.forEach(t => clearTimeout(t));
+      breathTimeoutsRef.current = [];
+    };
   }, [phase, step.timerStyle]);
 
   // Rotate guidance messages
   useEffect(() => {
     if (phase !== 'practicing' || messages.length === 0) return;
 
-    const interval = setInterval(() => {
+    messageIntervalRef.current = setInterval(() => {
       setCurrentMessageIndex(prev => (prev + 1) % messages.length);
     }, 8000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (messageIntervalRef.current) {
+        clearInterval(messageIntervalRef.current);
+        messageIntervalRef.current = null;
+      }
+    };
   }, [phase, messages.length]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanupAllTimers;
+  }, [cleanupAllTimers]);
 
   const handleComplete = useCallback((completed: boolean) => {
     onComplete(completed);
@@ -138,7 +212,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
       case 'breathing':
         return (
           <div className="relative w-48 h-48 mx-auto">
-            {/* Breathing circle */}
             <motion.div
               className="absolute inset-0 rounded-full border-2 border-amber-500/30"
               animate={{
@@ -153,8 +226,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 ease: 'easeInOut',
               }}
             />
-
-            {/* Inner glow */}
             <motion.div
               className="absolute inset-4 rounded-full bg-gradient-to-br from-amber-500/20 to-transparent"
               animate={{
@@ -170,8 +241,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 ease: 'easeInOut',
               }}
             />
-
-            {/* Breath instruction */}
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.span
                 key={breathPhase}
@@ -191,9 +260,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
       case 'countdown':
         return (
           <div className="relative w-48 h-48 mx-auto">
-            {/* Progress ring */}
             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              {/* Background ring */}
               <circle
                 cx="50"
                 cy="50"
@@ -202,7 +269,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 stroke="rgba(68, 64, 60, 0.3)"
                 strokeWidth="3"
               />
-              {/* Progress ring */}
               <motion.circle
                 cx="50"
                 cy="50"
@@ -223,8 +289,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 </linearGradient>
               </defs>
             </svg>
-
-            {/* Time display */}
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-4xl font-light text-stone-100 tabular-nums">
                 {formatTime(timeRemaining)}
@@ -237,7 +301,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
       default:
         return (
           <div className="relative w-48 h-48 mx-auto">
-            {/* Gentle pulsing circle */}
             <motion.div
               className="absolute inset-0 rounded-full border border-purple-500/20"
               animate={{
@@ -250,11 +313,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 ease: 'easeInOut',
               }}
             />
-
-            {/* Inner static circle */}
             <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20" />
-
-            {/* Time display */}
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-3xl font-light text-stone-300 tabular-nums">
                 {formatTime(timeRemaining)}
@@ -267,7 +326,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
-      {/* Atmospheric glow */}
       <motion.div
         className="fixed inset-0 pointer-events-none"
         initial={{ opacity: 0 }}
@@ -282,9 +340,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
 
       <div className="max-w-lg w-full relative z-10">
         <AnimatePresence mode="wait">
-          {/* ─────────────────────────────────────────────────────────────────
-              Preparing Phase - Wait for user to click Start
-          ───────────────────────────────────────────────────────────────── */}
           {phase === 'preparing' && (
             <motion.div
               key="preparing"
@@ -293,7 +348,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
               exit={{ opacity: 0 }}
               className="text-center space-y-6"
             >
-              {/* Title */}
               <motion.h2
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -302,7 +356,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 {step.title}
               </motion.h2>
 
-              {/* Duration indicator */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -314,7 +367,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 </span>
               </motion.div>
 
-              {/* Instruction preview */}
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -324,7 +376,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 {step.instruction}
               </motion.p>
 
-              {/* Start Button - User must click to begin */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -348,9 +399,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
             </motion.div>
           )}
 
-          {/* ─────────────────────────────────────────────────────────────────
-              Practicing Phase
-          ───────────────────────────────────────────────────────────────── */}
           {phase === 'practicing' && (
             <motion.div
               key="practicing"
@@ -358,15 +406,12 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
               animate={{ opacity: 1 }}
               className="text-center space-y-8"
             >
-              {/* Title */}
               <h2 className="text-xl text-stone-300 font-light">
                 {step.title}
               </h2>
 
-              {/* Timer visualization */}
               {renderTimerVisualization()}
 
-              {/* Guidance message */}
               <AnimatePresence mode="wait">
                 {messages.length > 0 && (
                   <motion.p
@@ -381,16 +426,12 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 )}
               </AnimatePresence>
 
-              {/* Main instruction */}
               <p className="text-stone-500 text-sm">
                 {step.instruction}
               </p>
             </motion.div>
           )}
 
-          {/* ─────────────────────────────────────────────────────────────────
-              Complete Phase
-          ───────────────────────────────────────────────────────────────── */}
           {phase === 'complete' && (
             <motion.div
               key="complete"
@@ -398,7 +439,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center space-y-8"
             >
-              {/* Success indicator */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -417,7 +457,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 Practice complete
               </motion.p>
 
-              {/* Completion question if provided */}
               {step.completionQuestion && (
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -429,7 +468,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 </motion.p>
               )}
 
-              {/* Completion buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -467,7 +505,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
         </AnimatePresence>
       </div>
 
-      {/* Music control - visible during practicing phase */}
       {phase === 'practicing' && <MusicControl currentTrack="lessonDeep" />}
     </div>
   );

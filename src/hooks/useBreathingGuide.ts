@@ -4,18 +4,12 @@
 // USE BREATHING GUIDE - Synchronized breathing with audio and visuals
 // ============================================================================
 //
-// A hook that provides breathing exercise functionality with:
-// - Customizable breath patterns (inhale, hold, exhale, hold)
-// - Audio tones synced to each phase
-// - Visual animation sync values (0-1 for each phase)
-// - Singing bowl sounds at start/end
-// - Haptic feedback on phase changes
+// FIXED VERSION - Removed circular dependencies that caused infinite loops
 //
-// Example usage:
-//   const { 
-//     phase, progress, isActive, 
-//     start, pause, stop 
-//   } = useBreathingGuide({ pattern: '4-7-8' });
+// Key changes:
+// 1. Use refs for all values accessed in animation loop
+// 2. Single animation loop that reads from refs, not state
+// 3. State updates batched and controlled
 // ============================================================================
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -23,41 +17,29 @@ import { useAudio } from './useAudio';
 
 export type BreathingPattern = {
   name: string;
-  inhale: number;    // seconds
-  holdIn: number;    // seconds (hold after inhale)
-  exhale: number;    // seconds
-  holdOut: number;   // seconds (hold after exhale)
+  inhale: number;
+  holdIn: number;
+  exhale: number;
+  holdOut: number;
 };
 
 export type BreathPhase = 'idle' | 'inhale' | 'holdIn' | 'exhale' | 'holdOut';
 
-// Common breathing patterns
 export const BREATHING_PATTERNS: Record<string, BreathingPattern> = {
-  // Box breathing - equal phases, great for focus
   'box': { name: 'Box Breathing', inhale: 4, holdIn: 4, exhale: 4, holdOut: 4 },
-  
-  // 4-7-8 technique - relaxation and sleep
   '4-7-8': { name: '4-7-8 Relaxation', inhale: 4, holdIn: 7, exhale: 8, holdOut: 0 },
-  
-  // Coherent breathing - 5 breaths per minute, heart coherence
   'coherent': { name: 'Coherent Breathing', inhale: 5, holdIn: 0, exhale: 5, holdOut: 0 },
-  
-  // Energizing breath - quick inhale, slow exhale
   'energize': { name: 'Energizing', inhale: 2, holdIn: 1, exhale: 4, holdOut: 0 },
-  
-  // Calming breath - slow and extended exhale
   'calm': { name: 'Calming', inhale: 4, holdIn: 2, exhale: 6, holdOut: 2 },
-  
-  // Simple for beginners
   'simple': { name: 'Simple Breath', inhale: 4, holdIn: 0, exhale: 4, holdOut: 0 },
 };
 
 interface UseBreathingGuideOptions {
   pattern?: keyof typeof BREATHING_PATTERNS | BreathingPattern;
-  cycles?: number;           // Number of breath cycles (0 = infinite)
-  playSounds?: boolean;      // Play breathing tones
-  playBowlOnStart?: boolean; // Play singing bowl at start
-  playBowlOnEnd?: boolean;   // Play singing bowl at end
+  cycles?: number;
+  playSounds?: boolean;
+  playBowlOnStart?: boolean;
+  playBowlOnEnd?: boolean;
   onCycleComplete?: () => void;
   onComplete?: () => void;
   onPhaseChange?: (phase: BreathPhase) => void;
@@ -65,12 +47,12 @@ interface UseBreathingGuideOptions {
 
 interface BreathingGuideState {
   phase: BreathPhase;
-  progress: number;           // 0-1 progress within current phase
-  cycleCount: number;         // Current cycle number
-  totalDuration: number;      // Duration of current phase in seconds
+  progress: number;
+  cycleCount: number;
+  totalDuration: number;
   isActive: boolean;
   isPaused: boolean;
-  instruction: string;        // e.g., "Breathe in...", "Hold..."
+  instruction: string;
 }
 
 export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
@@ -86,7 +68,7 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
   } = options;
 
   const audio = useAudio();
-  
+
   const [state, setState] = useState<BreathingGuideState>({
     phase: 'idle',
     progress: 0,
@@ -97,10 +79,25 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
     instruction: 'Ready to begin',
   });
 
+  // ALL animation state stored in refs to avoid dependency issues
   const animationRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
   const phaseStartRef = useRef<number>(0);
+  const isActiveRef = useRef(false);
+  const isPausedRef = useRef(false);
+  const currentPhaseRef = useRef<BreathPhase>('idle');
+  const cycleCountRef = useRef(0);
   const pauseTimeRef = useRef<number>(0);
+
+  // Store callbacks in refs
+  const onCompleteRef = useRef(onComplete);
+  const onCycleCompleteRef = useRef(onCycleComplete);
+  const onPhaseChangeRef = useRef(onPhaseChange);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    onCycleCompleteRef.current = onCycleComplete;
+    onPhaseChangeRef.current = onPhaseChange;
+  }, [onComplete, onCycleComplete, onPhaseChange]);
 
   // Get the pattern config
   const getPattern = useCallback((): BreathingPattern => {
@@ -110,7 +107,6 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
     return pattern;
   }, [pattern]);
 
-  // Get instruction text for phase
   const getInstruction = (phase: BreathPhase): string => {
     switch (phase) {
       case 'inhale': return 'Breathe in...';
@@ -121,8 +117,7 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
     }
   };
 
-  // Get the next phase in sequence
-  const getNextPhase = useCallback((currentPhase: BreathPhase, patternConfig: BreathingPattern): BreathPhase => {
+  const getNextPhase = (currentPhase: BreathPhase, patternConfig: BreathingPattern): BreathPhase => {
     switch (currentPhase) {
       case 'inhale':
         return patternConfig.holdIn > 0 ? 'holdIn' : 'exhale';
@@ -135,9 +130,8 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
       default:
         return 'inhale';
     }
-  }, []);
+  };
 
-  // Get duration for a phase
   const getPhaseDuration = (phase: BreathPhase, patternConfig: BreathingPattern): number => {
     switch (phase) {
       case 'inhale': return patternConfig.inhale;
@@ -148,10 +142,9 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
     }
   };
 
-  // Play sound for phase
   const playSoundForPhase = useCallback((phase: BreathPhase, duration: number) => {
     if (!playSounds) return;
-    
+
     switch (phase) {
       case 'inhale':
         audio.playBreathingTone('inhale', duration);
@@ -168,75 +161,100 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
     }
   }, [audio, playSounds]);
 
-  // Animation loop
+  // Animation loop - reads ONLY from refs, never from state
   const animate = useCallback((timestamp: number) => {
-    if (!state.isActive || state.isPaused) return;
+    // Read from refs, not state
+    if (!isActiveRef.current || isPausedRef.current) {
+      animationRef.current = null;
+      return;
+    }
 
     const patternConfig = getPattern();
     const elapsed = (timestamp - phaseStartRef.current) / 1000;
-    const phaseDuration = getPhaseDuration(state.phase, patternConfig);
-    
+    const currentPhase = currentPhaseRef.current;
+    const phaseDuration = getPhaseDuration(currentPhase, patternConfig);
+
     if (elapsed >= phaseDuration) {
       // Phase complete - move to next
-      const nextPhase = getNextPhase(state.phase, patternConfig);
-      const isNewCycle = nextPhase === 'inhale' && state.phase !== 'idle';
-      const newCycleCount = isNewCycle ? state.cycleCount + 1 : state.cycleCount;
+      const nextPhase = getNextPhase(currentPhase, patternConfig);
+      const isNewCycle = nextPhase === 'inhale' && currentPhase !== 'idle';
+
+      if (isNewCycle) {
+        cycleCountRef.current += 1;
+        onCycleCompleteRef.current?.();
+      }
 
       // Check if we've completed all cycles
-      if (cycles > 0 && newCycleCount >= cycles && nextPhase === 'inhale') {
+      if (cycles > 0 && cycleCountRef.current >= cycles && nextPhase === 'inhale') {
         // Complete!
         if (playBowlOnEnd) {
           audio.playSingingBowl();
         }
-        onComplete?.();
-        setState(prev => ({
-          ...prev,
+
+        isActiveRef.current = false;
+        currentPhaseRef.current = 'idle';
+        animationRef.current = null;
+
+        setState({
           phase: 'idle',
           progress: 0,
+          cycleCount: cycleCountRef.current,
+          totalDuration: 0,
           isActive: false,
+          isPaused: false,
           instruction: 'Complete',
-        }));
-        return;
-      }
+        });
 
-      // Cycle callback
-      if (isNewCycle) {
-        onCycleComplete?.();
+        onCompleteRef.current?.();
+        return;
       }
 
       // Start new phase
       const nextDuration = getPhaseDuration(nextPhase, patternConfig);
       phaseStartRef.current = timestamp;
-      playSoundForPhase(nextPhase, nextDuration);
-      onPhaseChange?.(nextPhase);
+      currentPhaseRef.current = nextPhase;
 
-      setState(prev => ({
-        ...prev,
+      playSoundForPhase(nextPhase, nextDuration);
+      onPhaseChangeRef.current?.(nextPhase);
+
+      setState({
         phase: nextPhase,
         progress: 0,
-        cycleCount: newCycleCount,
+        cycleCount: cycleCountRef.current,
         totalDuration: nextDuration,
+        isActive: true,
+        isPaused: false,
         instruction: getInstruction(nextPhase),
-      }));
+      });
     } else {
-      // Update progress
+      // Just update progress - use functional update to avoid stale state
+      const progress = Math.min(elapsed / phaseDuration, 1);
       setState(prev => ({
         ...prev,
-        progress: Math.min(elapsed / phaseDuration, 1),
+        progress,
       }));
     }
 
+    // Continue animation loop
     animationRef.current = requestAnimationFrame(animate);
-  }, [
-    state.isActive, state.isPaused, state.phase, state.cycleCount,
-    getPattern, getNextPhase, playSoundForPhase, cycles,
-    playBowlOnEnd, audio, onComplete, onCycleComplete, onPhaseChange
-  ]);
+  }, [getPattern, cycles, playBowlOnEnd, audio, playSoundForPhase]);
 
   // Start the breathing exercise
   const start = useCallback(() => {
+    // Cancel any existing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+
     const patternConfig = getPattern();
     const firstDuration = getPhaseDuration('inhale', patternConfig);
+
+    // Reset refs
+    isActiveRef.current = false;
+    isPausedRef.current = false;
+    currentPhaseRef.current = 'inhale';
+    cycleCountRef.current = 0;
 
     // Play singing bowl
     if (playBowlOnStart) {
@@ -244,13 +262,15 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
     }
 
     // Small delay then start
+    const startDelay = playBowlOnStart ? 1500 : 100;
+
     setTimeout(() => {
       const now = performance.now();
-      startTimeRef.current = now;
       phaseStartRef.current = now;
+      isActiveRef.current = true;
 
       playSoundForPhase('inhale', firstDuration);
-      onPhaseChange?.('inhale');
+      onPhaseChangeRef.current?.('inhale');
 
       setState({
         phase: 'inhale',
@@ -263,34 +283,46 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
       });
 
       animationRef.current = requestAnimationFrame(animate);
-    }, playBowlOnStart ? 1500 : 100);
-  }, [getPattern, playBowlOnStart, audio, playSoundForPhase, onPhaseChange, animate]);
+    }, startDelay);
+  }, [getPattern, playBowlOnStart, audio, playSoundForPhase, animate]);
 
   // Pause
   const pause = useCallback(() => {
     pauseTimeRef.current = performance.now();
-    setState(prev => ({ ...prev, isPaused: true }));
+    isPausedRef.current = true;
+
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
+
+    setState(prev => ({ ...prev, isPaused: true }));
   }, []);
 
   // Resume
   const resume = useCallback(() => {
-    if (!state.isPaused) return;
-    
+    if (!isPausedRef.current) return;
+
     const pauseDuration = performance.now() - pauseTimeRef.current;
     phaseStartRef.current += pauseDuration;
-    
+    isPausedRef.current = false;
+
     setState(prev => ({ ...prev, isPaused: false }));
     animationRef.current = requestAnimationFrame(animate);
-  }, [state.isPaused, animate]);
+  }, [animate]);
 
   // Stop
   const stop = useCallback(() => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
+
+    isActiveRef.current = false;
+    isPausedRef.current = false;
+    currentPhaseRef.current = 'idle';
+    cycleCountRef.current = 0;
+
     setState({
       phase: 'idle',
       progress: 0,
@@ -304,44 +336,33 @@ export function useBreathingGuide(options: UseBreathingGuideOptions = {}) {
 
   // Toggle between start/pause/resume
   const toggle = useCallback(() => {
-    if (!state.isActive) {
+    if (!isActiveRef.current) {
       start();
-    } else if (state.isPaused) {
+    } else if (isPausedRef.current) {
       resume();
     } else {
       pause();
     }
-  }, [state.isActive, state.isPaused, start, resume, pause]);
+  }, [start, resume, pause]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
     };
   }, []);
 
-  // Re-start animation when state changes
-  useEffect(() => {
-    if (state.isActive && !state.isPaused && !animationRef.current) {
-      animationRef.current = requestAnimationFrame(animate);
-    }
-  }, [state.isActive, state.isPaused, animate]);
-
   return {
-    // State
     ...state,
     patternName: getPattern().name,
-    
-    // Controls
     start,
     pause,
     resume,
     stop,
     toggle,
-    
-    // Utilities
     patterns: BREATHING_PATTERNS,
     getPattern,
   };
