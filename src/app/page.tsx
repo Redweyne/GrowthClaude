@@ -8,7 +8,8 @@ import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { DailyFlowHome } from '@/components/daily/DailyFlowHome';
 import { MandatoryEchoFlow } from '@/components/daily/MandatoryEchoFlow';
-import { Dashboard } from '@/components/dashboard/Dashboard';
+import { DashboardNew } from '@/components/dashboard/DashboardNew';
+import { CoachModal, CoachingStep } from '@/components/coaching';
 import { ExerciseExperience } from '@/components/exercises/ExerciseExperience';
 import { WorldMap, WorldSwitcher } from '@/components/world';
 import { FlexibleLessonExperience } from '@/components/lesson/FlexibleLessonExperience';
@@ -60,7 +61,15 @@ export default function Home() {
     setCurrentWorld,
     totalXp,
     currentStreak,
+    longestStreak,
     name: userName,
+    transformationGoal,
+    identityStatements: userIdentityStatements,
+    getProgressStats,
+    isFirstSession,
+    isCoachingStepSeen,
+    markCoachingStepSeen,
+    completeFirstSession,
   } = useStore();
   const {
     shouldShowEchoPrompt,
@@ -99,6 +108,16 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const { generateStory, canGenerateStory, generateDemoStory } = useTransformationStory();
+
+  // Coaching modal state (first-session guidance)
+  const [coachingModal, setCoachingModal] = useState<CoachingStep | null>(null);
+
+  // Show coaching modal if appropriate
+  const showCoaching = useCallback((step: CoachingStep) => {
+    if (isFirstSession() && !isCoachingStepSeen(step)) {
+      setCoachingModal(step);
+    }
+  }, [isFirstSession, isCoachingStepSeen]);
 
   // Handle opening the story
   const handleOpenStory = useCallback(() => {
@@ -188,8 +207,49 @@ export default function Home() {
 
   const nextFlexibleLesson = getNextFlexibleLesson();
 
+  // Dismiss coaching modal and navigate appropriately
+  const dismissCoaching = useCallback(() => {
+    if (coachingModal) {
+      const currentStep = coachingModal;
+      markCoachingStepSeen(currentStep);
+      setCoachingModal(null);
+
+      // Navigate based on which coaching step was dismissed
+      switch (currentStep) {
+        case 'beforeFirstLesson':
+          // Now actually start the lesson
+          if (nextFlexibleLesson) {
+            setSelectedFlexibleLesson(nextFlexibleLesson);
+            setFlexibleLessonProgress(null);
+            setCurrentView('lesson');
+          }
+          break;
+        case 'afterLessonBeforeEcho':
+          // Continue to mandatory echo
+          setCurrentView('mandatory-echo');
+          break;
+        case 'afterEchoBeforeExercises':
+          // Continue to exercises
+          setCurrentView('exercises');
+          break;
+        case 'afterFirstDayComplete':
+          // Celebration done, mark first session complete and go home
+          completeFirstSession();
+          setCurrentView('home');
+          break;
+      }
+    }
+  }, [coachingModal, markCoachingStepSeen, completeFirstSession, nextFlexibleLesson]);
+
   // Handle lesson start from home
   const handleStartLesson = () => {
+    // Show first-lesson coaching if this is their first session
+    const lessonCount = Object.keys(completedLessons).length;
+    if (lessonCount === 0 && isFirstSession() && !isCoachingStepSeen('beforeFirstLesson')) {
+      showCoaching('beforeFirstLesson');
+      return;
+    }
+
     // Check for pending action first (user returning from GoDoIt)
     if (pendingAction) {
       const lesson = getFlexibleLessonById(pendingAction.lessonId);
@@ -215,6 +275,7 @@ export default function Home() {
       setCurrentView('lesson');
     }
   };
+
 
   // Handle lesson select from map
   const handleSelectLesson = (lessonId: string) => {
@@ -247,6 +308,13 @@ export default function Home() {
     setSelectedFlexibleLesson(null);
     setFlexibleLessonProgress(null);
 
+    // Show coaching before echo if first session
+    if (isFirstSession() && !isCoachingStepSeen('afterLessonBeforeEcho')) {
+      showCoaching('afterLessonBeforeEcho');
+      // Don't navigate yet - will navigate when coaching is dismissed
+      return;
+    }
+
     // Go to mandatory echo (no skipping!)
     setCurrentView('mandatory-echo');
   };
@@ -254,6 +322,13 @@ export default function Home() {
   // Handle mandatory echo completion
   const handleMandatoryEchoComplete = (reflectionId: string) => {
     completeMandatoryEcho(reflectionId);
+
+    // Show coaching before exercises if first session
+    if (isFirstSession() && !isCoachingStepSeen('afterEchoBeforeExercises')) {
+      showCoaching('afterEchoBeforeExercises');
+      return;
+    }
+
     setCurrentView('exercises');
   };
 
@@ -264,6 +339,13 @@ export default function Home() {
 
   // Handle all exercises done
   const handleExercisesComplete = () => {
+    // Show celebration coaching if first session
+    if (isFirstSession() && !isCoachingStepSeen('afterFirstDayComplete')) {
+      showCoaching('afterFirstDayComplete');
+      // Will navigate to home when coaching is dismissed
+      return;
+    }
+
     setCurrentView('home');
   };
 
@@ -493,29 +575,39 @@ export default function Home() {
     );
   }
 
-  // Dashboard - navigation hub
+  // Dashboard - navigation hub (NEW REDESIGNED VERSION)
   if (currentView === 'dashboard') {
+    const progressStats = getProgressStats();
+    const latestIdentity = userIdentityStatements.length > 0
+      ? userIdentityStatements[userIdentityStatements.length - 1]?.statement
+      : undefined;
+
     return (
       <>
         <AchievementCelebration />
-        <Dashboard
+        <DashboardNew
           name={userName || 'Friend'}
           totalXp={totalXp}
           currentStreak={currentStreak}
+          longestStreak={longestStreak}
           level={level}
+          transformationGoal={transformationGoal || undefined}
+          latestIdentityStatement={latestIdentity}
           todayLessonCompleted={dailyFlowState.canAccessEcho}
           todayEchoCompleted={dailyFlowState.canAccessPractice}
           exercisesCompleted={exercisesCompletedToday.length}
           totalExercises={todaysLesson?.exercises?.length || 5}
           todaysLessonTitle={todaysLesson?.title}
+          currentWorld={activeWorld.name}
+          dayInWorld={dayNumber}
+          totalDaysInWorld={totalDaysInWorld}
           isWeeklyCheckinDue={isCheckinDue()}
           isMonthlyAssessmentDue={isAssessmentDue()}
-          daysUntilAssessment={30}
           unreadEchoCount={totalUnreadCount}
-          yourEchoCount={0}
           totalLessons={Object.keys(completedLessons).length}
-          totalMilestones={0}
-          identityStatements={0}
+          totalMilestones={progressStats.totalAchievements}
+          identityStatements={progressStats.totalIdentityStatements}
+          daysSinceStart={progressStats.daysSinceStart}
           onClose={() => setCurrentView('home')}
           onOpenTodayPractice={() => setCurrentView('home')}
           onOpenWeeklyCheckin={() => setCurrentView('checkin')}
@@ -600,6 +692,15 @@ export default function Home() {
         onRedoPastLesson={() => setCurrentView('map')}
         onOpenDashboard={() => setCurrentView('dashboard')}
       />
+
+      {/* First-Session Coaching Modal */}
+      {coachingModal && (
+        <CoachModal
+          step={coachingModal}
+          onDismiss={dismissCoaching}
+          userName={userName || 'Friend'}
+        />
+      )}
     </>
   );
 }

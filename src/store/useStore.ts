@@ -110,10 +110,23 @@ interface UserState {
   transformationGoal: TransformationGoal | null;
   whyStatement: string | null;
   dailyCommitmentMinutes: number;
+  communityIdentity: 'brother' | 'sister' | 'traveler' | null;
 
   // Onboarding
   onboardingComplete: boolean;
   onboardingStep: number;
+
+  // First session coaching (only shown once)
+  firstSessionComplete: boolean;
+  coachingStepsSeen: {
+    beforeFirstLesson: boolean;
+    afterLessonBeforeEcho: boolean;
+    afterEchoBeforeExercises: boolean;
+    afterFirstDayComplete: boolean;
+  };
+
+  // Help system
+  helpDismissed: Record<string, boolean>; // Track which help tooltips user has dismissed
 
   // Gamification
   totalXp: number;
@@ -163,7 +176,19 @@ interface UserActions {
   setWhyStatement: (statement: string) => void;
   setDailyCommitment: (minutes: number) => void;
   setName: (name: string) => void;
+  setCommunityIdentity: (identity: 'brother' | 'sister' | 'traveler') => void;
   completeOnboarding: () => void;
+
+  // First session coaching
+  markCoachingStepSeen: (step: keyof UserState['coachingStepsSeen']) => void;
+  isCoachingStepSeen: (step: keyof UserState['coachingStepsSeen']) => boolean;
+  completeFirstSession: () => void;
+  isFirstSession: () => boolean;
+
+  // Help system
+  dismissHelp: (helpId: string) => void;
+  isHelpDismissed: (helpId: string) => boolean;
+  resetHelpDismissals: () => void;
 
   // Lesson completion
   completeLesson: (lessonId: string, xpEarned: number) => void;
@@ -249,8 +274,19 @@ const initialState: UserState = {
   transformationGoal: null,
   whyStatement: null,
   dailyCommitmentMinutes: 5,
+  communityIdentity: null,
   onboardingComplete: false,
   onboardingStep: 0,
+  // First session coaching
+  firstSessionComplete: false,
+  coachingStepsSeen: {
+    beforeFirstLesson: false,
+    afterLessonBeforeEcho: false,
+    afterEchoBeforeExercises: false,
+    afterFirstDayComplete: false,
+  },
+  // Help system
+  helpDismissed: {},
   totalXp: 0,
   currentStreak: 0,
   longestStreak: 0,
@@ -307,10 +343,60 @@ export const useStore = create<UserState & UserActions>()(
       setWhyStatement: (statement) => set({ whyStatement: statement }),
       setDailyCommitment: (minutes) => set({ dailyCommitmentMinutes: minutes }),
       setName: (name) => set({ name }),
+      setCommunityIdentity: (identity) => set({ communityIdentity: identity }),
       completeOnboarding: () => set({
         onboardingComplete: true,
         userId: crypto.randomUUID(),
       }),
+
+      // ============================================
+      // FIRST SESSION COACHING
+      // ============================================
+      markCoachingStepSeen: (step) => {
+        const state = get();
+        set({
+          coachingStepsSeen: {
+            ...state.coachingStepsSeen,
+            [step]: true,
+          },
+        });
+      },
+
+      isCoachingStepSeen: (step) => {
+        const state = get();
+        return state.coachingStepsSeen[step] || state.firstSessionComplete;
+      },
+
+      completeFirstSession: () => {
+        set({ firstSessionComplete: true });
+      },
+
+      isFirstSession: () => {
+        const state = get();
+        return !state.firstSessionComplete;
+      },
+
+      // ============================================
+      // HELP SYSTEM
+      // ============================================
+      dismissHelp: (helpId) => {
+        const state = get();
+        set({
+          helpDismissed: {
+            ...state.helpDismissed,
+            [helpId]: true,
+          },
+        });
+      },
+
+      isHelpDismissed: (helpId) => {
+        const state = get();
+        return state.helpDismissed[helpId] || false;
+      },
+
+      resetHelpDismissals: () => {
+        set({ helpDismissed: {} });
+      },
 
       // ============================================
       // LESSON ACTIONS

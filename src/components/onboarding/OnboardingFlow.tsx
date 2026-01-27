@@ -25,18 +25,21 @@ import { NameStep } from './steps/NameStep';
 import { IdentityStep } from './steps/IdentityStep';
 import { GoalStep } from './steps/GoalStep';
 import { WhyStep } from './steps/WhyStep';
+import { PathStep } from './steps/PathStep';
 import { CommitmentStep } from './steps/CommitmentStep';
 import { ReadyStep } from './steps/ReadyStep';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 // Step titles for context
+// Order: Welcome → Name → Identity → Goal → Why → Path → Commitment → Ready
 const STEP_LABELS = [
   'Welcome',
   'Your Name',
   'Community',
   'Vision',
   'Purpose',
+  'The Path',
   'Commitment',
   'Begin',
 ];
@@ -162,8 +165,10 @@ export function OnboardingFlow() {
       case 4:
         return <WhyStep onNext={nextStep} onBack={prevStep} />;
       case 5:
-        return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
+        return <PathStep onNext={nextStep} onBack={prevStep} />;
       case 6:
+        return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
+      case 7:
         return <ReadyStep onNext={nextStep} onBack={prevStep} />;
       default:
         return null;
@@ -200,7 +205,7 @@ export function OnboardingFlow() {
 
             {/* Dots */}
             <div className="flex items-center gap-3">
-              {[1, 2, 3, 4, 5].map((step) => (
+              {[1, 2, 3, 4, 5, 6].map((step) => (
                 <motion.div
                   key={step}
                   className="relative"
