@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Heart, BookOpen, Dumbbell, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from '@/i18n';
 
 export type CoachingStep =
   | 'beforeFirstLesson'
@@ -33,71 +34,89 @@ interface CoachModalProps {
   userName?: string;
 }
 
-// Coaching content for each step
-const coachingContent: Record<CoachingStep, {
+// Icon mapping (static, no translations needed)
+const STEP_ICONS: Record<CoachingStep, {
   icon: typeof Sparkles;
   iconColor: string;
   iconBg: string;
-  title: string;
-  message: string | ((name: string) => string);
-  subMessage?: string;
-  buttonText: string;
   celebration?: boolean;
 }> = {
   beforeFirstLesson: {
     icon: BookOpen,
     iconColor: 'text-purple-400',
     iconBg: 'bg-purple-500/20',
-    title: 'Your First Lesson',
-    message: (name: string) => `${name}, today thousands of people are learning this same wisdom alongside you.`,
-    subMessage: 'Take your time. Let the words sink in. This is where transformation begins.',
-    buttonText: 'Begin My Journey',
   },
   afterLessonBeforeEcho: {
     icon: Heart,
     iconColor: 'text-rose-400',
     iconBg: 'bg-rose-500/20',
-    title: 'The Power of Teaching',
-    message: 'You\'ve learned something powerful. Now, deepen it by helping someone else.',
-    subMessage: 'Responding to another\'s reflection isn\'t just connection - it\'s how wisdom becomes wisdom. When you teach, you truly understand.',
-    buttonText: 'I\'m Ready to Connect',
   },
   afterEchoBeforeExercises: {
     icon: Dumbbell,
     iconColor: 'text-amber-400',
     iconBg: 'bg-amber-500/20',
-    title: 'Make It Real',
-    message: 'Knowledge without practice is just information. Now it\'s time to apply today\'s wisdom to YOUR life.',
-    subMessage: 'Five short exercises. Each one brings the lesson into your world, your challenges, your growth.',
-    buttonText: 'Let\'s Practice',
   },
   afterFirstDayComplete: {
     icon: Trophy,
     iconColor: 'text-emerald-400',
     iconBg: 'bg-emerald-500/20',
-    title: 'Day One Complete',
-    message: (name: string) => `${name}, you did it. This is how transformation begins.`,
-    subMessage: 'One day at a time. One lesson at a time. One choice at a time. Come back tomorrow - your next lesson will be waiting.',
-    buttonText: 'I\'ll Be Back',
     celebration: true,
   },
 };
 
 export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalProps) {
   const [mounted, setMounted] = useState(false);
-  const content = coachingContent[step];
-  const Icon = content.icon;
+  const { t, isRTL } = useTranslation();
+
+  const iconConfig = STEP_ICONS[step];
+  const Icon = iconConfig.icon;
+
+  // Get translated content for each step
+  const getContent = () => {
+    switch (step) {
+      case 'beforeFirstLesson':
+        return {
+          title: t('coaching.beforeFirstLesson.title'),
+          message: t('coaching.beforeFirstLesson.message').replace('{name}', userName),
+          subMessage: t('coaching.beforeFirstLesson.subMessage'),
+          buttonText: t('coaching.beforeFirstLesson.button'),
+        };
+      case 'afterLessonBeforeEcho':
+        return {
+          title: t('coaching.afterLessonBeforeEcho.title'),
+          message: t('coaching.afterLessonBeforeEcho.message'),
+          subMessage: t('coaching.afterLessonBeforeEcho.subMessage'),
+          buttonText: t('coaching.afterLessonBeforeEcho.button'),
+        };
+      case 'afterEchoBeforeExercises':
+        return {
+          title: t('coaching.afterEchoBeforeExercises.title'),
+          message: t('coaching.afterEchoBeforeExercises.message'),
+          subMessage: t('coaching.afterEchoBeforeExercises.subMessage'),
+          buttonText: t('coaching.afterEchoBeforeExercises.button'),
+        };
+      case 'afterFirstDayComplete':
+        return {
+          title: t('coaching.afterFirstDayComplete.title'),
+          message: t('coaching.afterFirstDayComplete.message').replace('{name}', userName),
+          subMessage: t('coaching.afterFirstDayComplete.subMessage'),
+          buttonText: t('coaching.afterFirstDayComplete.button'),
+        };
+      default:
+        return {
+          title: '',
+          message: '',
+          subMessage: '',
+          buttonText: '',
+        };
+    }
+  };
+
+  const content = getContent();
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const getMessage = () => {
-    if (typeof content.message === 'function') {
-      return content.message(userName);
-    }
-    return content.message;
-  };
 
   if (!mounted) return null;
 
@@ -124,10 +143,11 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-          className="relative z-10 w-full max-w-md"
+          className={`relative z-10 w-full max-w-md ${isRTL ? 'rtl' : ''}`}
+          dir={isRTL ? 'rtl' : 'ltr'}
         >
           {/* Glow effect for celebration */}
-          {content.celebration && (
+          {iconConfig.celebration && (
             <motion.div
               className="absolute inset-0 rounded-3xl"
               animate={{
@@ -157,13 +177,13 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', bounce: 0.5, delay: 0.1 }}
-                className={`w-20 h-20 rounded-2xl ${content.iconBg} mx-auto mb-6 flex items-center justify-center`}
+                className={`w-20 h-20 rounded-2xl ${iconConfig.iconBg} mx-auto mb-6 flex items-center justify-center`}
               >
-                <Icon size={36} className={content.iconColor} />
+                <Icon size={36} className={iconConfig.iconColor} />
               </motion.div>
 
               {/* Celebration sparkles */}
-              {content.celebration && (
+              {iconConfig.celebration && (
                 <motion.div
                   className="absolute inset-0 pointer-events-none"
                   initial={{ opacity: 0 }}
@@ -215,7 +235,7 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
                 transition={{ delay: 0.3 }}
                 className="text-stone-300 text-lg leading-relaxed mb-3"
               >
-                {getMessage()}
+                {content.message}
               </motion.p>
 
               {/* Sub-message */}
@@ -238,7 +258,7 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
               >
                 <Button
                   size="lg"
-                  glow={content.celebration}
+                  glow={iconConfig.celebration}
                   onClick={onDismiss}
                   className="w-full"
                 >
@@ -252,7 +272,7 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
               className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
               style={{
                 background: `linear-gradient(to top, ${
-                  content.celebration
+                  iconConfig.celebration
                     ? 'rgba(52, 211, 153, 0.1)'
                     : 'rgba(251, 191, 36, 0.05)'
                 }, transparent)`,

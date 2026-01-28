@@ -6,16 +6,23 @@ import { Sparkles, Plus, ChevronRight, Calendar } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui';
 import { IdentityPromptModal } from './IdentityPromptModal';
+import { useTranslation } from '@/i18n';
 
 export function IdentityJourney() {
   const { getIdentityStatements, name } = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { t, isRTL, locale } = useTranslation();
 
   const statements = getIdentityStatements();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
+    const localeMap: Record<string, string> = {
+      en: 'en-US',
+      fr: 'fr-FR',
+      ar: 'ar-SA',
+    };
+    return date.toLocaleDateString(localeMap[locale] || 'en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -27,27 +34,27 @@ export function IdentityJourney() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+      <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className={isRTL ? 'text-right' : ''}>
+          <h2 className={`text-xl font-bold text-white flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Sparkles className="w-5 h-5 text-amber-400" />
-            Identity Journey
+            {t('identity.title')}
           </h2>
           <p className="text-sm text-zinc-400 mt-1">
             {statements.length === 0
-              ? 'Define who you are becoming'
-              : `${statements.length} identity statement${statements.length === 1 ? '' : 's'} claimed`}
+              ? t('identity.defineWhoYouAre')
+              : t('identity.statementsCount').replace('{count}', statements.length.toString())}
           </p>
         </div>
         <Button
           onClick={() => setIsModalOpen(true)}
           variant="secondary"
-          className="flex items-center gap-2"
+          className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           <Plus size={16} />
-          Add
+          {t('common.add')}
         </Button>
       </div>
 
@@ -62,15 +69,14 @@ export function IdentityJourney() {
             <Sparkles className="w-8 h-8 text-amber-400" />
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">
-            Who are you becoming?
+            {t('identity.whoAreYouBecoming')}
           </h3>
           <p className="text-zinc-400 text-sm mb-6 max-w-xs mx-auto">
-            Identity statements help you define and reinforce who you want to be.
-            The person you claim to be today shapes who you become tomorrow.
+            {t('identity.emptyStateDescription')}
           </p>
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Sparkles size={16} className="mr-2" />
-            Create Your First Statement
+          <Button onClick={() => setIsModalOpen(true)} className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <Sparkles size={16} className={isRTL ? 'ml-2' : 'mr-2'} />
+            {t('identity.createFirstStatement')}
           </Button>
         </motion.div>
       )}
@@ -110,7 +116,7 @@ export function IdentityJourney() {
 
                     {/* Statement */}
                     <p className="text-white leading-relaxed">
-                      <span className="text-amber-400 font-medium">I am someone who </span>
+                      <span className="text-amber-400 font-medium">{t('identity.iAmSomeoneWho')} </span>
                       {statement.statement.replace(/^I am someone who\s*/i, '')}
                     </p>
 
@@ -139,16 +145,16 @@ export function IdentityJourney() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 ml-14 bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20 rounded-xl p-4"
+              className={`mt-6 ${isRTL ? 'mr-14' : 'ml-14'} bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20 rounded-xl p-4`}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <ChevronRight className="w-4 h-4 text-amber-400" />
-                <span className="text-sm font-medium text-amber-400">Your Evolution</span>
+              <div className={`flex items-center gap-2 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <ChevronRight className={`w-4 h-4 text-amber-400 ${isRTL ? 'rotate-180' : ''}`} />
+                <span className="text-sm font-medium text-amber-400">{t('identity.yourEvolution')}</span>
               </div>
-              <p className="text-sm text-zinc-300">
-                {name ? `${name}, you` : 'You'}&apos;ve claimed {statements.length} identities.
-                Each statement is a promise to yourself - a declaration of who you are becoming.
-                Keep showing up as this person.
+              <p className={`text-sm text-zinc-300 ${isRTL ? 'text-right' : ''}`}>
+                {t('identity.evolutionMessage')
+                  .replace('{name}', name || '')
+                  .replace('{count}', statements.length.toString())}
               </p>
             </motion.div>
           )}
@@ -162,7 +168,7 @@ export function IdentityJourney() {
         context={{
           type: 'manual',
           trigger: 'manual',
-          description: 'Self-initiated',
+          description: t('identity.selfInitiated'),
         }}
       />
     </div>

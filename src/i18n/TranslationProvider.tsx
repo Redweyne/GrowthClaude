@@ -14,7 +14,8 @@ import en from './locales/en';
 import fr from './locales/fr';
 import ar from './locales/ar';
 
-type TranslationsType = typeof en;
+// Use a more flexible type that allows different string values
+type TranslationsType = Record<string, unknown>;
 
 // Nested key path type for type-safe translations
 type NestedKeyOf<T, K = keyof T> = K extends keyof T & string

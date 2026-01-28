@@ -25,6 +25,7 @@ const ar = {
     submit: 'إرسال',
     delete: 'حذف',
     edit: 'تعديل',
+    add: 'إضافة',
     settings: 'الإعدادات',
     profile: 'الملف الشخصي',
     complete: 'مكتمل',
@@ -594,6 +595,15 @@ const ar = {
       contemplate: 'تأمل',
       timeRemaining: 'الوقت المتبقي',
     },
+    // Stage labels for LessonExperience progress indicator
+    stages: {
+      receivingWisdom: 'تلقي الحكمة',
+      practicing: 'الممارسة',
+      reflecting: 'التأمل',
+      celebrating: 'الاحتفال',
+      integration: 'التكامل',
+    },
+    // Step labels for FlexibleLessonExperience
     steps: {
       scenario: 'السيناريو',
       choice: 'الاختيار',
@@ -605,6 +615,16 @@ const ar = {
       insight: 'البصيرة',
       mentor: 'المرشد',
       reward: 'مكتمل',
+      // Additional step labels
+      theSituation: 'الموقف',
+      yourChoice: 'اختيارك',
+      yourCommitment: 'التزامك',
+      takeAction: 'اتخذ إجراء',
+      welcomeBack: 'مرحباً بعودتك',
+      innerVision: 'الرؤية الداخلية',
+      practice: 'الممارسة',
+      sageWisdom: 'حكمة الحكيم',
+      celebration: 'الاحتفال',
     },
     // Wisdom Step
     wisdom: {
@@ -781,7 +801,7 @@ const ar = {
   // IDENTITY
   // ─────────────────────────────────────────────────────────────────────────
   identity: {
-    title: 'الهوية',
+    title: 'رحلة الهوية',
     journey: 'رحلة الهوية',
     whoYoureBecoming: 'من تصبح',
     statements: 'بيانات الهوية',
@@ -791,12 +811,54 @@ const ar = {
     addStatement: 'أضف بياناً',
     yourStatement: 'أنا شخص...',
     save: 'حفظ البيان',
+    // IdentityJourney.tsx
+    defineWhoYouAre: 'حدد من تصبح',
+    statementsCount: '{count} بيان(ات) هوية مُدّعاة',
+    whoAreYouBecoming: 'من تصبح؟',
+    emptyStateDescription: 'بيانات الهوية تساعدك على تحديد وتعزيز من تريد أن تكون. الشخص الذي تدعيه اليوم يشكل من ستصبح غداً.',
+    createFirstStatement: 'أنشئ بيانك الأول',
+    iAmSomeoneWho: 'أنا شخص',
+    yourEvolution: 'تطورك',
+    evolutionMessage: '{name}، لقد ادعيت {count} هويات. كل بيان هو وعد لنفسك - إعلان عن من تصبح. استمر في الظهور كهذا الشخص.',
+    selfInitiated: 'بدأ ذاتياً',
+    // IdentityPromptModal.tsx
+    completeStatement: '{name}، أكمل هذا البيان للمطالبة بهويتك.',
+    promptInspiration: 'إلهام',
+    tapForAnother: 'انقر لآخر',
+    yourIdentityStatement: 'بيان هويتك',
+    statementPlaceholder: 'يحضر كل يوم...',
+    example: 'مثال',
+    identityClaimed: 'تم المطالبة بالهوية',
+    claiming: 'جارٍ المطالبة...',
+    claimThisIdentity: 'طالب بهذه الهوية',
+    minCharacters: 'يرجى كتابة 10 أحرف على الأقل',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
   // CHECKIN & ASSESSMENT
   // ─────────────────────────────────────────────────────────────────────────
   checkin: {
+    title: 'المراجعة الأسبوعية',
+    weekCheckin: 'مراجعة الأسبوع {week}',
+    introMessage: 'خذ بضع دقائق للتأمل في رحلتك هذا الأسبوع. رؤاك تشكل نموك.',
+    reflectionsCount: '{count} تأملات',
+    duration: '~5 دقائق',
+    completedCount: 'لقد أكملت {count} مراجعة(ات) حتى الآن',
+    beginReflection: 'ابدأ التأمل',
+    categories: {
+      yourProgress: 'تقدمك',
+      challengesFaced: 'التحديات المواجهة',
+      keyInsights: 'الرؤى الرئيسية',
+      lookingAhead: 'النظر للأمام',
+      reflection: 'التأمل',
+    },
+    takeYourTime: 'خذ وقتك للتأمل...',
+    yourReflection: 'تأملك',
+    digDeeper: 'تعمق قليلاً...',
+    nextReflection: 'التأمل التالي',
+    completeCheckin: 'أكمل المراجعة',
+    checkinComplete: 'اكتملت المراجعة!',
+    completeMessage: 'تم التقاط تأمل الأسبوع {week}. وعيك الذاتي ينمو.',
     weekly: {
       title: 'المراجعة الأسبوعية',
       subtitle: 'تأمل في أسبوعك',
@@ -824,23 +886,31 @@ const ar = {
   // ─────────────────────────────────────────────────────────────────────────
   coaching: {
     beforeFirstLesson: {
-      title: 'مرحباً بك في درسك الأول، {name}!',
-      message: 'هنا يبدأ تحولك. خذ وقتك في كل خطوة. لا داعي للاستعجال.',
+      title: 'درسك الأول',
+      message: '{name}، اليوم الآلاف من الناس يتعلمون نفس الحكمة إلى جانبك.',
+      subMessage: 'خذ وقتك. دع الكلمات تتغلغل. هنا يبدأ التحول.',
+      button: 'ابدأ رحلتي',
       cta: 'أنا جاهز',
     },
     afterLessonBeforeEcho: {
-      title: 'تأمل جميل!',
-      message: 'الآن ستتواصل مع مسافر آخر بالرد على تأمله. هذا هو الصدى - حيث التعليم يعمق تعلمك.',
+      title: 'قوة التعليم',
+      message: 'لقد تعلمت شيئاً قوياً. الآن، عمّقه بمساعدة شخص آخر.',
+      subMessage: 'الرد على تأمل آخر ليس مجرد اتصال - هكذا تصبح الحكمة حكمة. عندما تُعلّم، تفهم حقاً.',
+      button: 'أنا مستعد للتواصل',
       cta: 'متابعة إلى الصدى',
     },
     afterEchoBeforeExercises: {
-      title: 'لقد تواصلت مع مسافر آخر!',
-      message: 'الآن حان وقت تمرين اليوم - 5 تمارين قصيرة لتجسيد ما تعلمته.',
+      title: 'اجعلها حقيقية',
+      message: 'المعرفة بدون ممارسة مجرد معلومات. حان الوقت لتطبيق حكمة اليوم في حياتك.',
+      subMessage: 'خمسة تمارين قصيرة. كل منها يجلب الدرس إلى عالمك، تحدياتك، نموك.',
+      button: 'هيا نمارس',
       cta: 'ابدأ التمرين',
     },
     afterFirstDayComplete: {
-      title: 'تهانينا، {name}!',
-      message: 'لقد أكملت يومك الأول من التحول. هذه مجرد البداية. عُد غداً لدرسك التالي.',
+      title: 'اكتمل اليوم الأول',
+      message: '{name}، لقد فعلتها. هكذا يبدأ التحول.',
+      subMessage: 'يوم واحد في كل مرة. درس واحد في كل مرة. اختيار واحد في كل مرة. عُد غداً - درسك التالي سينتظرك.',
+      button: 'سأعود',
       cta: 'احتفل!',
     },
   },
@@ -862,6 +932,16 @@ const ar = {
       modernWisdom: 'الحكمة الحديثة',
       stoicism: 'الفلسفة الرواقية',
     },
+    // WorldMap.tsx
+    lessonsProgress: '{completed} من {total} درساً مكتملاً',
+    complete: 'مكتمل!',
+    summit: 'القمة',
+    // WorldSwitcher.tsx
+    chooseYourPath: 'اختر طريقك',
+    switchBetweenWorlds: 'انتقل بين عوالم الحكمة',
+    active: 'نشط',
+    lessonsCount: '{completed}/{total} دروس',
+    progressSaved: 'يتم حفظ تقدمك في جميع العوالم',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

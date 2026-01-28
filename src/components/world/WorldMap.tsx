@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Lock, CheckCircle, Star, Flame } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 // Generic world type for the map - works with both legacy and Modern Wisdom
 interface MapWorld {
@@ -24,6 +25,7 @@ interface WorldMapProps {
 
 export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
   const { completedLessons } = useStore();
+  const { t, isRTL } = useTranslation();
 
   // Flatten all lessons in order
   const allLessons = world.chapters.flatMap((ch) => ch.lessons);
@@ -42,7 +44,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className={`min-h-screen bg-zinc-950 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur border-b border-zinc-800">
         <div className="p-4">
@@ -66,7 +68,9 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
             />
           </div>
           <p className="text-xs text-zinc-500 mt-2 text-center">
-            {completedCount} of {allLessons.length} lessons complete
+            {t('world.lessonsProgress')
+              .replace('{completed}', completedCount.toString())
+              .replace('{total}', allLessons.length.toString())}
           </p>
         </div>
       </div>
@@ -131,7 +135,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
                       <p className={`text-xs ${
                         accessible ? 'text-zinc-500' : 'text-zinc-700'
                       }`}>
-                        {isCompleted ? '✓ Completed' : `${lesson.xpReward} XP`}
+                        {isCompleted ? `✓ ${t('world.completed')}` : `${lesson.xpReward} XP`}
                       </p>
                     </button>
 
@@ -211,7 +215,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
                 <span className="text-3xl">⭐</span>
               </motion.div>
               <p className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-sm font-medium text-amber-400 whitespace-nowrap">
-                {completedCount === allLessons.length ? 'Complete!' : 'Summit'}
+                {completedCount === allLessons.length ? t('world.complete') : t('world.summit')}
               </p>
             </div>
           </motion.div>

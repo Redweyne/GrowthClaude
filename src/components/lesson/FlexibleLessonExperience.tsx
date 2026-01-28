@@ -23,6 +23,7 @@ import { AmbientBackground } from '@/components/ambient';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { useLessonAmbience } from '@/hooks/useLessonAmbience';
+import { useTranslation } from '@/i18n';
 
 // Step components
 import { ScenarioStep } from './steps/ScenarioStep';
@@ -64,22 +65,21 @@ interface FlexibleLessonExperienceProps {
   resumeProgress?: LessonProgress;
 }
 
-// Step type to theme mapping
+// Step type to theme mapping (glow only, labels are translated)
 const STEP_THEMES: Record<string, {
   glow: string;
-  label: string;
 }> = {
-  scenario: { glow: 'rgba(244, 63, 94, 0.12)', label: 'The Situation' },
-  choice: { glow: 'rgba(251, 191, 36, 0.12)', label: 'Your Choice' },
-  commitment: { glow: 'rgba(16, 185, 129, 0.12)', label: 'Your Commitment' },
-  goDoIt: { glow: 'rgba(168, 85, 247, 0.15)', label: 'Take Action' },
-  returnConfirm: { glow: 'rgba(251, 191, 36, 0.12)', label: 'Welcome Back' },
-  insight: { glow: 'rgba(167, 139, 250, 0.12)', label: 'Insight' },
-  visualization: { glow: 'rgba(99, 102, 241, 0.12)', label: 'Inner Vision' },
-  reflection: { glow: 'rgba(34, 211, 238, 0.10)', label: 'Reflection' },
-  timer: { glow: 'rgba(251, 191, 36, 0.12)', label: 'Practice' },
-  mentor: { glow: 'rgba(168, 85, 247, 0.12)', label: 'Sage Wisdom' },
-  reward: { glow: 'rgba(251, 191, 36, 0.20)', label: 'Celebration' },
+  scenario: { glow: 'rgba(244, 63, 94, 0.12)' },
+  choice: { glow: 'rgba(251, 191, 36, 0.12)' },
+  commitment: { glow: 'rgba(16, 185, 129, 0.12)' },
+  goDoIt: { glow: 'rgba(168, 85, 247, 0.15)' },
+  returnConfirm: { glow: 'rgba(251, 191, 36, 0.12)' },
+  insight: { glow: 'rgba(167, 139, 250, 0.12)' },
+  visualization: { glow: 'rgba(99, 102, 241, 0.12)' },
+  reflection: { glow: 'rgba(34, 211, 238, 0.10)' },
+  timer: { glow: 'rgba(251, 191, 36, 0.12)' },
+  mentor: { glow: 'rgba(168, 85, 247, 0.12)' },
+  reward: { glow: 'rgba(251, 191, 36, 0.20)' },
 };
 
 export function FlexibleLessonExperience({
@@ -130,6 +130,25 @@ export function FlexibleLessonExperience({
     playCompletionChime,
     initAudio: initAmbienceAudio,
   } = useLessonAmbience();
+  const { t, isRTL } = useTranslation();
+
+  // Get translated step labels
+  const getStepLabel = (stepType: string): string => {
+    switch (stepType) {
+      case 'scenario': return t('lessons.steps.theSituation');
+      case 'choice': return t('lessons.steps.yourChoice');
+      case 'commitment': return t('lessons.steps.yourCommitment');
+      case 'goDoIt': return t('lessons.steps.takeAction');
+      case 'returnConfirm': return t('lessons.steps.welcomeBack');
+      case 'insight': return t('lessons.steps.insight');
+      case 'visualization': return t('lessons.steps.innerVision');
+      case 'reflection': return t('lessons.steps.reflection');
+      case 'timer': return t('lessons.steps.practice');
+      case 'mentor': return t('lessons.steps.sageWisdom');
+      case 'reward': return t('lessons.steps.celebration');
+      default: return '';
+    }
+  };
 
   // ─────────────────────────────────────────────────────────────────────────
   // Derived State
@@ -493,7 +512,7 @@ export function FlexibleLessonExperience({
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+    <div className={`min-h-screen bg-stone-950 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Ambient background */}
       <AmbientBackground
         intensity="subtle"
@@ -536,7 +555,7 @@ export function FlexibleLessonExperience({
             animate={{ opacity: 1, y: 0 }}
             className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
           >
-            {currentTheme.label}
+            {currentStep ? getStepLabel(currentStep.type) : getStepLabel('scenario')}
           </motion.span>
         </motion.div>
       </div>

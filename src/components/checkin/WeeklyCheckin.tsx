@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { getWeeklyCheckinPrompts, getRandomCheckinMessage, type CheckinPrompt } from '@/content/weeklyCheckin';
 import { MENTOR } from '@/content/mentor';
+import { useTranslation } from '@/i18n';
 
 interface WeeklyCheckinProps {
   onComplete: () => void;
@@ -25,6 +26,7 @@ interface ResponseData {
 export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
   const { name, completeWeeklyCheckin, getWeekNumber, weeklyCheckins } = useStore();
   const { playComplete, playSuccess, playReward } = useSound();
+  const { t, isRTL } = useTranslation();
 
   const [stage, setStage] = useState<CheckinStage>('intro');
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
@@ -54,11 +56,11 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
 
   const getCategoryLabel = (category: CheckinPrompt['category']) => {
     switch (category) {
-      case 'progress': return 'Your Progress';
-      case 'challenges': return 'Challenges Faced';
-      case 'insights': return 'Key Insights';
-      case 'intentions': return 'Looking Ahead';
-      default: return 'Reflection';
+      case 'progress': return t('checkin.categories.yourProgress');
+      case 'challenges': return t('checkin.categories.challengesFaced');
+      case 'insights': return t('checkin.categories.keyInsights');
+      case 'intentions': return t('checkin.categories.lookingAhead');
+      default: return t('checkin.categories.reflection');
     }
   };
 
@@ -112,18 +114,18 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className={`min-h-screen bg-zinc-950 flex flex-col ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div className="p-4 flex items-center justify-between border-b border-zinc-800">
+      <div className={`p-4 flex items-center justify-between border-b border-zinc-800 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <button
           onClick={onSkip}
           className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-zinc-700 transition-colors"
         >
           <X size={20} className="text-zinc-400" />
         </button>
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Calendar size={20} className="text-rose-400" />
-          <span className="font-medium text-white">Weekly Check-in</span>
+          <span className="font-medium text-white">{t('checkin.title')}</span>
         </div>
         <div className="w-10" /> {/* Spacer for alignment */}
       </div>
@@ -160,18 +162,18 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
               </motion.div>
 
               <h2 className="text-2xl font-bold text-white mb-4">
-                Week {weekNumber} Check-in
+                {t('checkin.weekCheckin').replace('{week}', weekNumber.toString())}
               </h2>
 
               <p className="text-zinc-400 mb-6">
-                Take a few minutes to reflect on your journey this week. Your insights shape your growth.
+                {t('checkin.introMessage')}
               </p>
 
               <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-8">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-400">{prompts.length} reflections</span>
-                  <span className="text-zinc-400">~5 min</span>
-                  <span className="flex items-center gap-1 text-amber-400">
+                <div className={`flex items-center justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <span className="text-zinc-400">{t('checkin.reflectionsCount').replace('{count}', prompts.length.toString())}</span>
+                  <span className="text-zinc-400">{t('checkin.duration')}</span>
+                  <span className={`flex items-center gap-1 text-amber-400 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Zap size={14} />
                     {xpReward} XP
                   </span>
@@ -180,12 +182,12 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
 
               {weeklyCheckins.length > 0 && (
                 <p className="text-sm text-zinc-500 mb-6">
-                  You&apos;ve completed {weeklyCheckins.length} check-in{weeklyCheckins.length > 1 ? 's' : ''} so far
+                  {t('checkin.completedCount').replace('{count}', weeklyCheckins.length.toString())}
                 </p>
               )}
 
               <Button size="lg" onClick={handleStartCheckin} className="w-full">
-                Begin Reflection
+                {t('checkin.beginReflection')}
               </Button>
             </motion.div>
           )}
@@ -217,9 +219,10 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                   <textarea
                     value={mainResponse}
                     onChange={(e) => setMainResponse(e.target.value)}
-                    placeholder="Take your time to reflect..."
-                    className="w-full h-40 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4"
+                    placeholder={t('checkin.takeYourTime')}
+                    className={`w-full h-40 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4 ${isRTL ? 'text-right' : ''}`}
                     autoFocus
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   />
 
                   <Button
@@ -228,14 +231,14 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                     disabled={mainResponse.trim().length < 10}
                     className="w-full"
                   >
-                    <ChevronRight size={20} className="mr-2" />
-                    {currentPrompt.followUp ? 'Continue' : (currentPromptIndex < prompts.length - 1 ? 'Next' : 'Complete')}
+                    <ChevronRight size={20} className={isRTL ? 'ml-2 rotate-180' : 'mr-2'} />
+                    {currentPrompt.followUp ? t('common.continue') : (currentPromptIndex < prompts.length - 1 ? t('common.next') : t('common.complete'))}
                   </Button>
                 </>
               ) : (
                 <>
-                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-zinc-400 mb-2">Your reflection:</p>
+                  <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-4 ${isRTL ? 'text-right' : ''}`}>
+                    <p className="text-sm text-zinc-400 mb-2">{t('checkin.yourReflection')}:</p>
                     <p className="text-zinc-300 italic">&ldquo;{mainResponse}&rdquo;</p>
                   </div>
 
@@ -248,9 +251,10 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                   <textarea
                     value={followUpResponse}
                     onChange={(e) => setFollowUpResponse(e.target.value)}
-                    placeholder="Dig a little deeper..."
-                    className="w-full h-32 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4"
+                    placeholder={t('checkin.digDeeper')}
+                    className={`w-full h-32 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4 ${isRTL ? 'text-right' : ''}`}
                     autoFocus
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   />
 
                   <Button
@@ -259,7 +263,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                     disabled={followUpResponse.trim().length < 5}
                     className="w-full"
                   >
-                    {currentPromptIndex < prompts.length - 1 ? 'Next Reflection' : 'Complete Check-in'}
+                    {currentPromptIndex < prompts.length - 1 ? t('checkin.nextReflection') : t('checkin.completeCheckin')}
                   </Button>
                 </>
               )}
@@ -284,11 +288,11 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
               </motion.div>
 
               <h2 className="text-2xl font-bold text-white mb-2">
-                Check-in Complete!
+                {t('checkin.checkinComplete')}
               </h2>
 
               <p className="text-zinc-400 mb-6">
-                Week {weekNumber} reflection captured. Your self-awareness is growing.
+                {t('checkin.completeMessage').replace('{week}', weekNumber.toString())}
               </p>
 
               <motion.div
@@ -297,7 +301,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 transition={{ delay: 0.3 }}
                 className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-8"
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className={`flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <Zap size={24} className="text-amber-400" />
                   <span className="text-2xl font-bold text-amber-400">+{xpReward} XP</span>
                 </div>
@@ -308,7 +312,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-8 text-left"
+                className={`bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-8 ${isRTL ? 'text-right' : 'text-left'}`}
               >
                 <p className="text-sm text-rose-400 mb-2">{MENTOR.name}</p>
                 <p className="text-zinc-300 italic">
@@ -317,7 +321,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
               </motion.div>
 
               <Button size="lg" onClick={handleComplete} className="w-full">
-                Continue
+                {t('common.continue')}
               </Button>
             </motion.div>
           )}

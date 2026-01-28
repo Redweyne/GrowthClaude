@@ -25,6 +25,7 @@ const fr = {
     submit: 'Soumettre',
     delete: 'Supprimer',
     edit: 'Modifier',
+    add: 'Ajouter',
     settings: 'Paramètres',
     profile: 'Profil',
     complete: 'Terminé',
@@ -594,6 +595,15 @@ const fr = {
       contemplate: 'Contemplez',
       timeRemaining: 'Temps restant',
     },
+    // Stage labels for LessonExperience progress indicator
+    stages: {
+      receivingWisdom: 'Réception de la Sagesse',
+      practicing: 'Pratique',
+      reflecting: 'Réflexion',
+      celebrating: 'Célébration',
+      integration: 'Intégration',
+    },
+    // Step labels for FlexibleLessonExperience
     steps: {
       scenario: 'Scénario',
       choice: 'Choix',
@@ -605,6 +615,16 @@ const fr = {
       insight: 'Aperçu',
       mentor: 'Mentor',
       reward: 'Terminé',
+      // Additional step labels
+      theSituation: 'La Situation',
+      yourChoice: 'Votre Choix',
+      yourCommitment: 'Votre Engagement',
+      takeAction: 'Passez à l\'Action',
+      welcomeBack: 'Bon Retour',
+      innerVision: 'Vision Intérieure',
+      practice: 'Pratique',
+      sageWisdom: 'Sagesse du Sage',
+      celebration: 'Célébration',
     },
     // Wisdom Step
     wisdom: {
@@ -781,7 +801,7 @@ const fr = {
   // IDENTITY
   // ─────────────────────────────────────────────────────────────────────────
   identity: {
-    title: 'Identité',
+    title: 'Voyage d\'Identité',
     journey: 'Voyage d\'Identité',
     whoYoureBecoming: 'Qui Vous Devenez',
     statements: 'Déclarations d\'Identité',
@@ -791,12 +811,54 @@ const fr = {
     addStatement: 'Ajouter une Déclaration',
     yourStatement: 'Je suis quelqu\'un qui...',
     save: 'Enregistrer la Déclaration',
+    // IdentityJourney.tsx
+    defineWhoYouAre: 'Définissez qui vous devenez',
+    statementsCount: '{count} déclaration(s) d\'identité revendiquée(s)',
+    whoAreYouBecoming: 'Qui devenez-vous ?',
+    emptyStateDescription: 'Les déclarations d\'identité vous aident à définir et renforcer qui vous voulez être. La personne que vous revendiquez aujourd\'hui façonne qui vous deviendrez demain.',
+    createFirstStatement: 'Créez Votre Première Déclaration',
+    iAmSomeoneWho: 'Je suis quelqu\'un qui',
+    yourEvolution: 'Votre Évolution',
+    evolutionMessage: '{name}, vous avez revendiqué {count} identités. Chaque déclaration est une promesse à vous-même - une déclaration de qui vous devenez. Continuez à incarner cette personne.',
+    selfInitiated: 'Auto-initié',
+    // IdentityPromptModal.tsx
+    completeStatement: '{name}, complétez cette déclaration pour revendiquer votre identité.',
+    promptInspiration: 'Inspiration',
+    tapForAnother: 'touchez pour une autre',
+    yourIdentityStatement: 'Votre déclaration d\'identité',
+    statementPlaceholder: 'se montre chaque jour...',
+    example: 'Exemple',
+    identityClaimed: 'Identité Revendiquée',
+    claiming: 'Revendication...',
+    claimThisIdentity: 'Revendiquer Cette Identité',
+    minCharacters: 'Veuillez écrire au moins 10 caractères',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
   // CHECKIN & ASSESSMENT
   // ─────────────────────────────────────────────────────────────────────────
   checkin: {
+    title: 'Bilan Hebdomadaire',
+    weekCheckin: 'Bilan Semaine {week}',
+    introMessage: 'Prenez quelques minutes pour réfléchir à votre parcours cette semaine. Vos réflexions façonnent votre croissance.',
+    reflectionsCount: '{count} réflexions',
+    duration: '~5 min',
+    completedCount: 'Vous avez complété {count} bilan(s) jusqu\'à présent',
+    beginReflection: 'Commencer la Réflexion',
+    categories: {
+      yourProgress: 'Vos Progrès',
+      challengesFaced: 'Défis Rencontrés',
+      keyInsights: 'Aperçus Clés',
+      lookingAhead: 'Regarder Vers l\'Avant',
+      reflection: 'Réflexion',
+    },
+    takeYourTime: 'Prenez votre temps pour réfléchir...',
+    yourReflection: 'Votre réflexion',
+    digDeeper: 'Creusez un peu plus...',
+    nextReflection: 'Réflexion Suivante',
+    completeCheckin: 'Terminer le Bilan',
+    checkinComplete: 'Bilan Terminé !',
+    completeMessage: 'Réflexion semaine {week} capturée. Votre conscience de soi grandit.',
     weekly: {
       title: 'Bilan Hebdomadaire',
       subtitle: 'Réfléchissez à votre semaine',
@@ -824,23 +886,31 @@ const fr = {
   // ─────────────────────────────────────────────────────────────────────────
   coaching: {
     beforeFirstLesson: {
-      title: 'Bienvenue à votre première leçon, {name} !',
-      message: 'C\'est ici que commence votre transformation. Prenez votre temps à chaque étape. Il n\'y a pas d\'urgence.',
+      title: 'Votre Première Leçon',
+      message: '{name}, aujourd\'hui des milliers de personnes apprennent cette même sagesse à vos côtés.',
+      subMessage: 'Prenez votre temps. Laissez les mots s\'imprégner. C\'est ici que commence la transformation.',
+      button: 'Commencer Mon Voyage',
       cta: 'Je suis prêt',
     },
     afterLessonBeforeEcho: {
-      title: 'Belle réflexion !',
-      message: 'Maintenant, vous allez vous connecter avec un autre voyageur en répondant à sa réflexion. C\'est l\'Écho - où enseigner approfondit votre propre apprentissage.',
+      title: 'Le Pouvoir d\'Enseigner',
+      message: 'Vous avez appris quelque chose de puissant. Maintenant, approfondissez-le en aidant quelqu\'un d\'autre.',
+      subMessage: 'Répondre à la réflexion d\'un autre n\'est pas seulement une connexion - c\'est ainsi que la sagesse devient sagesse. Quand vous enseignez, vous comprenez vraiment.',
+      button: 'Je Suis Prêt à Me Connecter',
       cta: 'Continuer vers l\'Écho',
     },
     afterEchoBeforeExercises: {
-      title: 'Vous vous êtes connecté avec un voyageur !',
-      message: 'Maintenant, c\'est l\'heure de la pratique du jour - 5 courts exercices pour incarner ce que vous avez appris.',
+      title: 'Rendez-le Réel',
+      message: 'La connaissance sans pratique n\'est que de l\'information. Il est temps d\'appliquer la sagesse du jour à VOTRE vie.',
+      subMessage: 'Cinq courts exercices. Chacun amène la leçon dans votre monde, vos défis, votre croissance.',
+      button: 'Pratiquons',
       cta: 'Commencer la Pratique',
     },
     afterFirstDayComplete: {
-      title: 'Félicitations, {name} !',
-      message: 'Vous avez terminé votre premier jour de transformation. Ce n\'est que le début. Revenez demain pour votre prochaine leçon.',
+      title: 'Premier Jour Terminé',
+      message: '{name}, vous l\'avez fait. C\'est ainsi que commence la transformation.',
+      subMessage: 'Un jour à la fois. Une leçon à la fois. Un choix à la fois. Revenez demain - votre prochaine leçon vous attend.',
+      button: 'Je Reviendrai',
       cta: 'Célébrer !',
     },
   },
@@ -862,6 +932,16 @@ const fr = {
       modernWisdom: 'Sagesse Moderne',
       stoicism: 'Philosophie Stoïque',
     },
+    // WorldMap.tsx
+    lessonsProgress: '{completed} sur {total} leçons terminées',
+    complete: 'Terminé !',
+    summit: 'Sommet',
+    // WorldSwitcher.tsx
+    chooseYourPath: 'Choisissez Votre Chemin',
+    switchBetweenWorlds: 'Passez d\'un monde de sagesse à l\'autre',
+    active: 'Actif',
+    lessonsCount: '{completed}/{total} leçons',
+    progressSaved: 'Votre progression est sauvegardée dans tous les mondes',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

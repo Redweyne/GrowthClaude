@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import type { IdentityContext } from '@/types/identity';
 import { IDENTITY_PROMPTS, getRandomIdentityPrompt } from '@/types/identity';
+import { useTranslation } from '@/i18n';
 
 interface IdentityPromptModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function IdentityPromptModal({
 }: IdentityPromptModalProps) {
   const { saveIdentityStatement, name } = useStore();
   const { playTap, playSparkle } = useSound();
+  const { t, isRTL } = useTranslation();
 
   const [statement, setStatement] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState(getRandomIdentityPrompt());
@@ -85,7 +87,8 @@ export function IdentityPromptModal({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', damping: 25 }}
-          className="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+          className={`bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl ${isRTL ? 'rtl' : ''}`}
+          dir={isRTL ? 'rtl' : 'ltr'}
         >
           {/* Header */}
           <div className="relative px-6 pt-6 pb-4">
@@ -106,7 +109,7 @@ export function IdentityPromptModal({
             </motion.div>
 
             <h2 className="text-xl font-bold text-white text-center mb-2">
-              Define Who You Are
+              {t('identity.defineWhoYouAre')}
             </h2>
 
             {milestoneMessage && (
@@ -121,7 +124,7 @@ export function IdentityPromptModal({
             )}
 
             <p className="text-zinc-400 text-center text-sm">
-              {name ? `${name}, complete` : 'Complete'} this statement to claim your identity.
+              {t('identity.completeStatement').replace('{name}', name || '')}
             </p>
           </div>
 
@@ -136,12 +139,12 @@ export function IdentityPromptModal({
             >
               <button
                 onClick={cyclePrompt}
-                className="w-full text-left p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 hover:border-amber-500/30 transition-colors group"
+                className={`w-full p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50 hover:border-amber-500/30 transition-colors group ${isRTL ? 'text-right' : 'text-left'}`}
               >
-                <p className="text-xs text-zinc-500 mb-1 flex items-center justify-between">
-                  <span>Prompt inspiration</span>
+                <p className={`text-xs text-zinc-500 mb-1 flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <span>{t('identity.promptInspiration')}</span>
                   <span className="text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs">
-                    tap for another
+                    {t('identity.tapForAnother')}
                   </span>
                 </p>
                 <p className="text-sm text-zinc-300 italic">
@@ -157,23 +160,24 @@ export function IdentityPromptModal({
               transition={{ delay: 0.4 }}
               className="mb-4"
             >
-              <label className="block text-sm text-zinc-400 mb-2">
-                Your identity statement
+              <label className={`block text-sm text-zinc-400 mb-2 ${isRTL ? 'text-right' : ''}`}>
+                {t('identity.yourIdentityStatement')}
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-4 text-amber-400 font-medium">
-                  I am someone who
+                <span className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-4 text-amber-400 font-medium`}>
+                  {t('identity.iAmSomeoneWho')}
                 </span>
                 <textarea
                   value={statement}
                   onChange={(e) => setStatement(e.target.value)}
-                  placeholder="shows up every day..."
-                  className="w-full h-32 bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 pt-12 pb-4 text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 resize-none"
+                  placeholder={t('identity.statementPlaceholder')}
+                  className={`w-full h-32 bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 pt-12 pb-4 text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 resize-none ${isRTL ? 'text-right' : ''}`}
                   disabled={isSubmitting}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 />
               </div>
-              <p className="text-xs text-zinc-500 mt-2">
-                Example: &ldquo;{suggestedPrompt || selectedPrompt.example}&rdquo;
+              <p className={`text-xs text-zinc-500 mt-2 ${isRTL ? 'text-right' : ''}`}>
+                {t('identity.example')}: &ldquo;{suggestedPrompt || selectedPrompt.example}&rdquo;
               </p>
             </motion.div>
 
@@ -195,7 +199,7 @@ export function IdentityPromptModal({
                     >
                       🦋
                     </motion.div>
-                    <p className="text-xl font-bold text-white">Identity Claimed</p>
+                    <p className="text-xl font-bold text-white">{t('identity.identityClaimed')}</p>
                     <p className="text-amber-400 text-sm mt-1">+25 XP</p>
                   </div>
                 </motion.div>
@@ -210,25 +214,25 @@ export function IdentityPromptModal({
               size="lg"
             >
               {isSubmitting ? (
-                <span className="flex items-center gap-2">
+                <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                   />
-                  Claiming...
+                  {t('identity.claiming')}
                 </span>
               ) : (
-                <span className="flex items-center gap-2">
+                <span className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <Send size={18} />
-                  Claim This Identity
+                  {t('identity.claimThisIdentity')}
                 </span>
               )}
             </Button>
 
             {statement.trim().length > 0 && statement.trim().length < 10 && (
               <p className="text-xs text-red-400 text-center mt-2">
-                Please write at least 10 characters
+                {t('identity.minCharacters')}
               </p>
             )}
           </div>

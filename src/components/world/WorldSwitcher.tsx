@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Flame, ChevronRight, CheckCircle, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import type { FlexibleWorld } from '@/types/lessons';
+import { useTranslation } from '@/i18n';
 
 interface WorldSwitcherProps {
     worlds: FlexibleWorld[];
@@ -24,6 +25,7 @@ export function WorldSwitcher({
     onClose,
 }: WorldSwitcherProps) {
     const { completedLessons } = useStore();
+    const { t, isRTL } = useTranslation();
 
     // Calculate progress for each world
     const getWorldProgress = (world: FlexibleWorld) => {
@@ -58,14 +60,15 @@ export function WorldSwitcher({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="relative w-full max-w-md bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-2xl"
+                className={`relative w-full max-w-md bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-2xl ${isRTL ? 'rtl' : ''}`}
+                dir={isRTL ? 'rtl' : 'ltr'}
             >
                 {/* Header */}
                 <div className="p-6 pb-4 border-b border-zinc-800">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-xl font-bold text-white">Choose Your Path</h2>
-                            <p className="text-sm text-zinc-500 mt-1">Switch between wisdom worlds</p>
+                    <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <div className={isRTL ? 'text-right' : ''}>
+                            <h2 className="text-xl font-bold text-white">{t('world.chooseYourPath')}</h2>
+                            <p className="text-sm text-zinc-500 mt-1">{t('world.switchBetweenWorlds')}</p>
                         </div>
                         <button
                             onClick={onClose}
@@ -116,7 +119,7 @@ export function WorldSwitcher({
                                             <h3 className="font-semibold text-white truncate">{world.name}</h3>
                                             {isActive && (
                                                 <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-full">
-                                                    Active
+                                                    {t('world.active')}
                                                 </span>
                                             )}
                                             {progress.percentage === 100 && (
@@ -127,8 +130,8 @@ export function WorldSwitcher({
 
                                         {/* Progress bar */}
                                         <div className="mt-3">
-                                            <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                                                <span>{progress.completed}/{progress.total} lessons</span>
+                                            <div className={`flex items-center justify-between text-xs text-zinc-500 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                                <span>{t('world.lessonsCount').replace('{completed}', progress.completed.toString()).replace('{total}', progress.total.toString())}</span>
                                                 <span>{progress.percentage}%</span>
                                             </div>
                                             <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
@@ -160,7 +163,7 @@ export function WorldSwitcher({
                 {/* Footer hint */}
                 <div className="p-4 pt-2 text-center">
                     <p className="text-xs text-zinc-600">
-                        Your progress is saved across all worlds
+                        {t('world.progressSaved')}
                     </p>
                 </div>
             </motion.div>

@@ -27,6 +27,7 @@ import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { useLessonAmbience } from '@/hooks/useLessonAmbience';
+import { useTranslation } from '@/i18n';
 
 interface LessonExperienceProps {
   lesson: Lesson;
@@ -39,37 +40,31 @@ type LessonStage = 'wisdom' | 'action' | 'reflection' | 'reward' | 'mentor';
 const STAGE_THEMES: Record<LessonStage, {
   primary: string;
   glow: string;
-  label: string;
   intensity: 'subtle' | 'normal' | 'vivid';
 }> = {
   wisdom: {
     primary: 'from-purple-500 to-amber-500',
     glow: 'rgba(167, 139, 250, 0.15)',
-    label: 'Receiving Wisdom',
     intensity: 'normal',
   },
   action: {
     primary: 'from-amber-500 to-orange-500',
     glow: 'rgba(251, 191, 36, 0.12)',
-    label: 'Practicing',
     intensity: 'subtle',
   },
   reflection: {
     primary: 'from-cyan-500 to-purple-500',
     glow: 'rgba(34, 211, 238, 0.10)',
-    label: 'Reflecting',
     intensity: 'subtle',
   },
   reward: {
     primary: 'from-amber-400 to-amber-600',
     glow: 'rgba(251, 191, 36, 0.20)',
-    label: 'Celebrating',
     intensity: 'vivid',
   },
   mentor: {
     primary: 'from-purple-500 to-amber-500',
     glow: 'rgba(167, 139, 250, 0.12)',
-    label: 'Integration',
     intensity: 'normal',
   },
 };
@@ -102,8 +97,21 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     playCompletionChime,
     initAudio: initAmbienceAudio
   } = useLessonAmbience();
+  const { t, isRTL } = useTranslation();
 
   const currentTheme = STAGE_THEMES[stage];
+
+  // Get translated stage labels
+  const getStageLabel = (s: LessonStage): string => {
+    switch (s) {
+      case 'wisdom': return t('lessons.stages.receivingWisdom');
+      case 'action': return t('lessons.stages.practicing');
+      case 'reflection': return t('lessons.stages.reflecting');
+      case 'reward': return t('lessons.stages.celebrating');
+      case 'mentor': return t('lessons.stages.integration');
+      default: return '';
+    }
+  };
 
   // Initialize on first user interaction
   const handleInitializeAudio = useCallback(() => {
@@ -271,7 +279,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+    <div className={`min-h-screen bg-stone-950 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Ambient background - minimal for performance */}
       <AmbientBackground
         intensity="subtle"
@@ -321,7 +329,7 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
             >
               <span className="text-lg">{STAGE_ICONS[stage]}</span>
               <span className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium">
-                {currentTheme.label}
+                {getStageLabel(stage)}
               </span>
             </motion.div>
 

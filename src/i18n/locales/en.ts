@@ -25,6 +25,7 @@ const en = {
     submit: 'Submit',
     delete: 'Delete',
     edit: 'Edit',
+    add: 'Add',
     settings: 'Settings',
     profile: 'Profile',
     complete: 'Complete',
@@ -502,8 +503,6 @@ const en = {
     pronounShe: 'she',
     pronounThey: 'they',
     yourReflectionFor: 'Your reflection for {pronoun}:',
-    whatDoesTheirJourney: 'What does their journey make you think about?',
-    whatEncouragement: 'What encouragement can you offer?',
     writeYourThoughts: 'Write your thoughts...',
     word: 'word',
     wordsPlural: 'words',
@@ -596,6 +595,15 @@ const en = {
       contemplate: 'Contemplate',
       timeRemaining: 'Time remaining',
     },
+    // Stage labels for LessonExperience progress indicator
+    stages: {
+      receivingWisdom: 'Receiving Wisdom',
+      practicing: 'Practicing',
+      reflecting: 'Reflecting',
+      celebrating: 'Celebrating',
+      integration: 'Integration',
+    },
+    // Step labels for FlexibleLessonExperience
     steps: {
       scenario: 'Scenario',
       choice: 'Choice',
@@ -607,6 +615,16 @@ const en = {
       insight: 'Insight',
       mentor: 'Mentor',
       reward: 'Complete',
+      // Additional step labels
+      theSituation: 'The Situation',
+      yourChoice: 'Your Choice',
+      yourCommitment: 'Your Commitment',
+      takeAction: 'Take Action',
+      welcomeBack: 'Welcome Back',
+      innerVision: 'Inner Vision',
+      practice: 'Practice',
+      sageWisdom: 'Sage Wisdom',
+      celebration: 'Celebration',
     },
     // Wisdom Step
     wisdom: {
@@ -783,7 +801,7 @@ const en = {
   // IDENTITY
   // ─────────────────────────────────────────────────────────────────────────
   identity: {
-    title: 'Identity',
+    title: 'Identity Journey',
     journey: 'Identity Journey',
     whoYoureBecoming: "Who You're Becoming",
     statements: 'Identity Statements',
@@ -793,12 +811,54 @@ const en = {
     addStatement: 'Add Statement',
     yourStatement: 'I am someone who...',
     save: 'Save Statement',
+    // IdentityJourney.tsx
+    defineWhoYouAre: 'Define who you are becoming',
+    statementsCount: '{count} identity statement(s) claimed',
+    whoAreYouBecoming: 'Who are you becoming?',
+    emptyStateDescription: 'Identity statements help you define and reinforce who you want to be. The person you claim to be today shapes who you become tomorrow.',
+    createFirstStatement: 'Create Your First Statement',
+    iAmSomeoneWho: 'I am someone who',
+    yourEvolution: 'Your Evolution',
+    evolutionMessage: "{name}, you've claimed {count} identities. Each statement is a promise to yourself - a declaration of who you are becoming. Keep showing up as this person.",
+    selfInitiated: 'Self-initiated',
+    // IdentityPromptModal.tsx
+    completeStatement: '{name}, complete this statement to claim your identity.',
+    promptInspiration: 'Prompt inspiration',
+    tapForAnother: 'tap for another',
+    yourIdentityStatement: 'Your identity statement',
+    statementPlaceholder: 'shows up every day...',
+    example: 'Example',
+    identityClaimed: 'Identity Claimed',
+    claiming: 'Claiming...',
+    claimThisIdentity: 'Claim This Identity',
+    minCharacters: 'Please write at least 10 characters',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
   // CHECKIN & ASSESSMENT
   // ─────────────────────────────────────────────────────────────────────────
   checkin: {
+    title: 'Weekly Check-in',
+    weekCheckin: 'Week {week} Check-in',
+    introMessage: 'Take a few minutes to reflect on your journey this week. Your insights shape your growth.',
+    reflectionsCount: '{count} reflections',
+    duration: '~5 min',
+    completedCount: "You've completed {count} check-in(s) so far",
+    beginReflection: 'Begin Reflection',
+    categories: {
+      yourProgress: 'Your Progress',
+      challengesFaced: 'Challenges Faced',
+      keyInsights: 'Key Insights',
+      lookingAhead: 'Looking Ahead',
+      reflection: 'Reflection',
+    },
+    takeYourTime: 'Take your time to reflect...',
+    yourReflection: 'Your reflection',
+    digDeeper: 'Dig a little deeper...',
+    nextReflection: 'Next Reflection',
+    completeCheckin: 'Complete Check-in',
+    checkinComplete: 'Check-in Complete!',
+    completeMessage: 'Week {week} reflection captured. Your self-awareness is growing.',
     weekly: {
       title: 'Weekly Check-in',
       subtitle: 'Reflect on your week',
@@ -826,23 +886,31 @@ const en = {
   // ─────────────────────────────────────────────────────────────────────────
   coaching: {
     beforeFirstLesson: {
-      title: "Welcome to your first lesson, {name}!",
-      message: "This is where your transformation begins. Take your time with each step. There's no rush.",
+      title: 'Your First Lesson',
+      message: '{name}, today thousands of people are learning this same wisdom alongside you.',
+      subMessage: 'Take your time. Let the words sink in. This is where transformation begins.',
+      button: 'Begin My Journey',
       cta: "I'm ready",
     },
     afterLessonBeforeEcho: {
-      title: 'Beautiful reflection!',
-      message: "Now you'll connect with another traveler by responding to their reflection. This is the Echo - where teaching deepens your own learning.",
+      title: 'The Power of Teaching',
+      message: "You've learned something powerful. Now, deepen it by helping someone else.",
+      subMessage: "Responding to another's reflection isn't just connection - it's how wisdom becomes wisdom. When you teach, you truly understand.",
+      button: "I'm Ready to Connect",
       cta: 'Continue to Echo',
     },
     afterEchoBeforeExercises: {
-      title: "You've connected with a fellow traveler!",
-      message: "Now it's time for today's practice - 5 short exercises to embody what you've learned.",
+      title: 'Make It Real',
+      message: "Knowledge without practice is just information. Now it's time to apply today's wisdom to YOUR life.",
+      subMessage: 'Five short exercises. Each one brings the lesson into your world, your challenges, your growth.',
+      button: "Let's Practice",
       cta: 'Begin Practice',
     },
     afterFirstDayComplete: {
-      title: 'Congratulations, {name}!',
-      message: "You've completed your first day of transformation. This is just the beginning. Come back tomorrow for your next lesson.",
+      title: 'Day One Complete',
+      message: '{name}, you did it. This is how transformation begins.',
+      subMessage: 'One day at a time. One lesson at a time. One choice at a time. Come back tomorrow - your next lesson will be waiting.',
+      button: "I'll Be Back",
       cta: 'Celebrate!',
     },
   },
@@ -864,6 +932,16 @@ const en = {
       modernWisdom: 'Modern Wisdom',
       stoicism: 'Stoic Philosophy',
     },
+    // WorldMap.tsx
+    lessonsProgress: '{completed} of {total} lessons complete',
+    complete: 'Complete!',
+    summit: 'Summit',
+    // WorldSwitcher.tsx
+    chooseYourPath: 'Choose Your Path',
+    switchBetweenWorlds: 'Switch between wisdom worlds',
+    active: 'Active',
+    lessonsCount: '{completed}/{total} lessons',
+    progressSaved: 'Your progress is saved across all worlds',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
