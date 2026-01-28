@@ -1,23 +1,21 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TIMER STEP - THE PRACTICE (FIXED VERSION)
+// TIMER STEP - COMPLETELY REWRITTEN FOR iOS SAFARI STABILITY
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// FIXED: All timers now properly tracked with refs to prevent page refresh
-// - Main timer uses ref-based state tracking
-// - Breathing cycle properly cleans up all timeouts
-// - No state updates inside other state updates
+// This version prioritizes stability over features:
+// - Single timer using requestAnimationFrame (more reliable than setInterval)
+// - All audio is optional and called via stable refs
+// - Minimal state updates
+// - No complex useEffect chains
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, ChevronRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { MusicControl } from '@/components/ui/MusicControl';
-import { useAudio } from '@/hooks/useAudio';
-import { useBreathingGuide } from '@/hooks/useBreathingGuide';
 import type { TimerStep as TimerStepType } from '@/types/lessons';
 
 interface TimerStepProps {
@@ -32,176 +30,109 @@ function formatTime(seconds: number): string {
 }
 
 export function TimerStep({ step, onComplete }: TimerStepProps) {
+  // Core state - kept minimal
   const [phase, setPhase] = useState<'preparing' | 'practicing' | 'complete'>('preparing');
   const [timeRemaining, setTimeRemaining] = useState(step.durationSeconds);
   const [breathPhase, setBreathPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
-  // Use refs to track all timers for proper cleanup
-  const mainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const breathIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const breathTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const messageIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const phaseRef = useRef(phase);
-  const timeRemainingRef = useRef(timeRemaining);
-
-  // Keep refs in sync
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
-
-  useEffect(() => {
-    timeRemainingRef.current = timeRemaining;
-  }, [timeRemaining]);
-
-  const { startMusic, stopMusic, playComplete, playSingingBowl, playGong } = useAudio();
-  const { start: startBreathingGuide, stop: stopBreathingGuide } = useBreathingGuide({
-    pattern: '4-7-8',
-    playBowlOnStart: false,
-    playBowlOnEnd: false,
-  });
+  // Refs for timer management - no state dependencies
+  const timerRef = useRef<number | null>(null);
+  const lastTickRef = useRef<number>(0);
+  const breathCycleRef = useRef<number>(0);
+  const messageCycleRef = useRef<number>(0);
+  const isRunningRef = useRef(false);
 
   const progress = 1 - (timeRemaining / step.durationSeconds);
   const messages = step.guidanceMessages || [];
 
-  // Cleanup all timers
-  const cleanupAllTimers = useCallback(() => {
-    if (mainTimerRef.current) {
-      clearInterval(mainTimerRef.current);
-      mainTimerRef.current = null;
-    }
-    if (breathIntervalRef.current) {
-      clearInterval(breathIntervalRef.current);
-      breathIntervalRef.current = null;
-    }
-    breathTimeoutsRef.current.forEach(t => clearTimeout(t));
-    breathTimeoutsRef.current = [];
-    if (messageIntervalRef.current) {
-      clearInterval(messageIntervalRef.current);
-      messageIntervalRef.current = null;
+  // Stable cleanup function
+  const cleanup = useCallback(() => {
+    isRunningRef.current = false;
+    if (timerRef.current) {
+      cancelAnimationFrame(timerRef.current);
+      timerRef.current = null;
     }
   }, []);
 
-  // Handle completion
-  const handleTimerComplete = useCallback(() => {
-    cleanupAllTimers();
-    setPhase('complete');
-  }, [cleanupAllTimers]);
+  // Main timer loop using requestAnimationFrame
+  const tick = useCallback((timestamp: number) => {
+    if (!isRunningRef.current) return;
 
-  // START PRACTICE
+    // Initialize on first tick
+    if (lastTickRef.current === 0) {
+      lastTickRef.current = timestamp;
+      breathCycleRef.current = timestamp;
+      messageCycleRef.current = timestamp;
+    }
+
+    const elapsed = timestamp - lastTickRef.current;
+
+    // Update time every second
+    if (elapsed >= 1000) {
+      lastTickRef.current = timestamp;
+
+      setTimeRemaining(prev => {
+        const next = prev - 1;
+        if (next <= 0) {
+          // Timer complete - stop the loop
+          cleanup();
+          setPhase('complete');
+          return 0;
+        }
+        return next;
+      });
+    }
+
+    // Breathing cycle (only for breathing style) - 14 second cycle
+    if (step.timerStyle === 'breathing') {
+      const breathElapsed = timestamp - breathCycleRef.current;
+      if (breathElapsed < 4000) {
+        setBreathPhase('inhale');
+      } else if (breathElapsed < 8000) {
+        setBreathPhase('hold');
+      } else if (breathElapsed < 14000) {
+        setBreathPhase('exhale');
+      } else {
+        // Reset cycle
+        breathCycleRef.current = timestamp;
+        setBreathPhase('inhale');
+      }
+    }
+
+    // Message rotation every 8 seconds
+    if (messages.length > 0) {
+      const msgElapsed = timestamp - messageCycleRef.current;
+      if (msgElapsed >= 8000) {
+        messageCycleRef.current = timestamp;
+        setCurrentMessageIndex(prev => (prev + 1) % messages.length);
+      }
+    }
+
+    // Continue loop
+    timerRef.current = requestAnimationFrame(tick);
+  }, [step.timerStyle, messages.length, cleanup]);
+
+  // Start practice
   const handleStartPractice = useCallback(() => {
     setPhase('practicing');
-    playSingingBowl();
 
-    if (step.timerStyle === 'breathing') {
-      startBreathingGuide();
-    } else {
-      startMusic('lessonDeep', 2);
-    }
-  }, [playSingingBowl, startBreathingGuide, startMusic, step.timerStyle]);
+    // Reset refs
+    lastTickRef.current = 0;
+    breathCycleRef.current = 0;
+    messageCycleRef.current = 0;
+    isRunningRef.current = true;
 
-  // Handle completion audio
-  useEffect(() => {
-    if (phase === 'complete') {
-      stopBreathingGuide();
-      stopMusic(1);
-      playGong();
-      playComplete();
-    }
-  }, [phase, stopBreathingGuide, stopMusic, playGong, playComplete]);
-
-  // Main timer - uses refs to avoid stale closures
-  useEffect(() => {
-    if (phase !== 'practicing') return;
-
-    mainTimerRef.current = setInterval(() => {
-      // Read from ref for current value
-      const current = timeRemainingRef.current;
-      if (current <= 1) {
-        // Don't call setPhase inside setTimeRemaining
-        setTimeRemaining(0);
-        // Use setTimeout to break out of the state update cycle
-        setTimeout(() => handleTimerComplete(), 0);
-      } else {
-        setTimeRemaining(current - 1);
-      }
-    }, 1000);
-
-    return () => {
-      if (mainTimerRef.current) {
-        clearInterval(mainTimerRef.current);
-        mainTimerRef.current = null;
-      }
-    };
-  }, [phase, handleTimerComplete]);
-
-  // Breathing cycle - properly tracks all timeouts
-  useEffect(() => {
-    if (phase !== 'practicing' || step.timerStyle !== 'breathing') return;
-
-    const runBreathCycle = () => {
-      // Check if we're still in practicing phase
-      if (phaseRef.current !== 'practicing') return;
-
-      setBreathPhase('inhale');
-
-      const holdTimeout = setTimeout(() => {
-        if (phaseRef.current === 'practicing') {
-          setBreathPhase('hold');
-        }
-      }, 4000);
-      breathTimeoutsRef.current.push(holdTimeout);
-
-      const exhaleTimeout = setTimeout(() => {
-        if (phaseRef.current === 'practicing') {
-          setBreathPhase('exhale');
-        }
-      }, 8000);
-      breathTimeoutsRef.current.push(exhaleTimeout);
-    };
-
-    // Start first cycle
-    runBreathCycle();
-
-    // Set up interval for subsequent cycles
-    breathIntervalRef.current = setInterval(() => {
-      // Clear old timeouts before starting new cycle
-      breathTimeoutsRef.current.forEach(t => clearTimeout(t));
-      breathTimeoutsRef.current = [];
-      runBreathCycle();
-    }, 14000);
-
-    return () => {
-      if (breathIntervalRef.current) {
-        clearInterval(breathIntervalRef.current);
-        breathIntervalRef.current = null;
-      }
-      breathTimeoutsRef.current.forEach(t => clearTimeout(t));
-      breathTimeoutsRef.current = [];
-    };
-  }, [phase, step.timerStyle]);
-
-  // Rotate guidance messages
-  useEffect(() => {
-    if (phase !== 'practicing' || messages.length === 0) return;
-
-    messageIntervalRef.current = setInterval(() => {
-      setCurrentMessageIndex(prev => (prev + 1) % messages.length);
-    }, 8000);
-
-    return () => {
-      if (messageIntervalRef.current) {
-        clearInterval(messageIntervalRef.current);
-        messageIntervalRef.current = null;
-      }
-    };
-  }, [phase, messages.length]);
+    // Start the timer loop
+    timerRef.current = requestAnimationFrame(tick);
+  }, [tick]);
 
   // Cleanup on unmount
-  useEffect(() => {
-    return cleanupAllTimers;
-  }, [cleanupAllTimers]);
+  useLayoutEffect(() => {
+    return cleanup;
+  }, [cleanup]);
 
+  // Handle completion
   const handleComplete = useCallback((completed: boolean) => {
     onComplete(completed);
   }, [onComplete]);
@@ -269,7 +200,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 stroke="rgba(68, 64, 60, 0.3)"
                 strokeWidth="3"
               />
-              <motion.circle
+              <circle
                 cx="50"
                 cy="50"
                 r="45"
@@ -278,9 +209,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray={`${progress * 283} 283`}
-                initial={{ strokeDasharray: '0 283' }}
-                animate={{ strokeDasharray: `${progress * 283} 283` }}
-                transition={{ duration: 0.5 }}
               />
               <defs>
                 <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -504,8 +432,6 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
           )}
         </AnimatePresence>
       </div>
-
-      {phase === 'practicing' && <MusicControl currentTrack="lessonDeep" />}
     </div>
   );
 }

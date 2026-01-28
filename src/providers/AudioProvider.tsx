@@ -19,7 +19,6 @@
 // ============================================================================
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { Howler } from 'howler';
 import { useStore } from '@/store/useStore';
 import {
   initAudioEngine,
@@ -207,31 +206,13 @@ export function AudioProvider({ children }: AudioProviderProps) {
     };
   }, []);
 
-  // Resume audio on visibility change (tab switching)
-  // CRITICAL FIX: Skip unlock when audio is already playing to prevent iOS Safari crashes
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // IMPORTANT: Don't try to unlock if audio is already playing
-        // On iOS Safari, calling tryUnlock() while music/ambience is playing
-        // creates a new Howl instance that can conflict with active audio
-        // and cause page crashes/reloads
-        if (state.isMusicPlaying || state.isAmbiencePlaying) {
-          // Audio is already playing, no need to unlock - just resume context if needed
-          if (typeof Howler !== 'undefined' && Howler.ctx && Howler.ctx.state === 'suspended') {
-            Howler.ctx.resume().catch(() => {
-              // Ignore - context will be resumed on next user interaction
-            });
-          }
-          return;
-        }
-        tryUnlock();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [state.isMusicPlaying, state.isAmbiencePlaying]);
+  // DISABLED: Visibility change listener was causing iOS Safari page crashes
+  // The tryUnlock() call on visibility change was creating audio context conflicts
+  // that caused the page to restart. Audio will resume automatically when the
+  // user interacts with the page again.
+  //
+  // If audio needs to be resumed after returning to the tab, the user can
+  // tap anywhere on the screen to trigger the audio unlock sequence.
 
   // Sync sound enabled state to stop audio when disabled
   useEffect(() => {

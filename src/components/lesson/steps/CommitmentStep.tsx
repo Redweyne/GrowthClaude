@@ -1,24 +1,21 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// COMMITMENT STEP - THE VOW
+// COMMITMENT STEP - COMPLETELY REWRITTEN FOR iOS SAFARI STABILITY
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Words have power. Writing a commitment transforms intention into reality.
-// This isn't a casual note - it's a sacred contract with yourself.
-//
-// "What specifically will you do in the next 5 minutes?"
-// Be precise. Be honest. Be accountable.
+// This version prioritizes stability over features:
+// - NO audio hooks - audio was causing iOS Safari crashes
+// - Minimal useEffects
+// - Simple state management
+// - No complex cleanup chains
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Target } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { MusicControl } from '@/components/ui/MusicControl';
-import { useAudio } from '@/hooks/useAudio';
-import { useTypingAmbience } from '@/hooks/useTypingAmbience';
 import type { CommitmentStep as CommitmentStepType } from '@/types/lessons';
 
 interface CommitmentStepProps {
@@ -40,93 +37,80 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Track if we've already started the phase transition to prevent re-runs
-  const hasStartedTransitionRef = useRef(false);
-
-  // Audio hooks for commitment experience
-  const { playSuccessBig, startWritingAmbience, stopWritingAmbience, playBell } = useAudio();
-  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false }); // Disabled - silence is better
-
-  // Store audio functions in refs to prevent useEffect re-runs when soundEnabled changes
-  const startAmbienceRef = useRef(startWritingAmbience);
-  const stopAmbienceRef = useRef(stopWritingAmbience);
-  useEffect(() => {
-    startAmbienceRef.current = startWritingAmbience;
-    stopAmbienceRef.current = stopWritingAmbience;
-  }, [startWritingAmbience, stopWritingAmbience]);
+  // Refs for timers
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hintIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const submitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasMountedRef = useRef(false);
 
   const minimumWords = step.minimumWords || 3;
   const wordCount = commitment.trim().split(/\s+/).filter(Boolean).length;
   const isReady = wordCount >= minimumWords;
   const hints = step.guidanceHints || DEFAULT_GUIDANCE;
 
-  // Phase transitions with audio
-  // CRITICAL FIX: Use ref for startWritingAmbience to prevent re-runs
-  // when soundEnabled changes (which would restart the phase transition)
-  useEffect(() => {
-    // Prevent re-running this effect if we've already started the transition
-    if (hasStartedTransitionRef.current) return;
-    hasStartedTransitionRef.current = true;
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    if (hintIntervalRef.current) {
+      clearInterval(hintIntervalRef.current);
+      hintIntervalRef.current = null;
+    }
+    if (submitTimerRef.current) {
+      clearTimeout(submitTimerRef.current);
+      submitTimerRef.current = null;
+    }
+  }, []);
 
-    const timer = setTimeout(() => {
+  // Single useLayoutEffect for all setup - runs once
+  useLayoutEffect(() => {
+    if (hasMountedRef.current) return;
+    hasMountedRef.current = true;
+
+    // Transition from entering to writing after 1.5s
+    transitionTimerRef.current = setTimeout(() => {
       setPhase('writing');
-      startAmbienceRef.current('forest'); // Forest sounds for commitment
+      // Focus textarea after transition
       setTimeout(() => textareaRef.current?.focus(), 100);
     }, 1500);
-    return () => clearTimeout(timer);
-  }, []); // No dependencies - runs once on mount
 
-  // Stop ambience ONLY when confirming (not on cleanup - that kills audio on phase changes)
-  useEffect(() => {
-    if (phase === 'confirming') {
-      stopAmbienceRef.current();
-    }
-    // NO cleanup - React StrictMode and phase changes were killing audio
-  }, [phase]);
-
-  // Rotate hints
-  useEffect(() => {
-    if (phase !== 'writing' || commitment.length > 0) return;
-
-    const interval = setInterval(() => {
+    // Hint rotation
+    hintIntervalRef.current = setInterval(() => {
       setCurrentHintIndex(prev => (prev + 1) % hints.length);
     }, 4000);
 
-    return () => clearInterval(interval);
-  }, [phase, commitment.length, hints.length]);
+    return cleanup;
+  }, [hints.length, cleanup]);
 
-  // Handle text change with typing sounds
+  // Handle text change
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCommitment(e.target.value);
     onKeystroke?.();
-    handleKeystroke(); // Trigger typing sound
-  }, [onKeystroke, handleKeystroke]);
+  }, [onKeystroke]);
 
-  // Handle submit with commitment sealed sound
+  // Handle submit
   const handleSubmit = useCallback(() => {
     if (!isReady) return;
     setPhase('confirming');
-    playBell(); // Bell to seal the commitment
-    playSuccessBig(); // Big success for the important moment
-    setTimeout(() => {
+
+    // Complete after brief confirmation
+    submitTimerRef.current = setTimeout(() => {
       onComplete(commitment.trim());
     }, 800);
-  }, [isReady, commitment, onComplete, playBell, playSuccessBig]);
+  }, [isReady, commitment, onComplete]);
 
-  // Keyboard shortcut
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && isReady) {
-        e.preventDefault();
-        handleSubmit();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+  // Keyboard shortcut - using native event listener to avoid useEffect deps
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && isReady) {
+      e.preventDefault();
+      handleSubmit();
+    }
   }, [isReady, handleSubmit]);
 
   return (
-    <div className="min-h-[70vh] flex flex-col px-4 py-8">
+    <div className="min-h-[70vh] flex flex-col px-4 py-8" onKeyDown={handleKeyDown}>
       {/* Atmospheric glow */}
       <motion.div
         className="fixed inset-0 pointer-events-none"
@@ -140,9 +124,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
 
       <div className="flex-1 flex flex-col max-w-lg mx-auto w-full relative z-10">
         <AnimatePresence mode="wait">
-          {/* ─────────────────────────────────────────────────────────────────
-              Entering Phase
-          ───────────────────────────────────────────────────────────────── */}
+          {/* Entering Phase */}
           {phase === 'entering' && (
             <motion.div
               key="entering"
@@ -185,9 +167,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
             </motion.div>
           )}
 
-          {/* ─────────────────────────────────────────────────────────────────
-              Writing Phase
-          ───────────────────────────────────────────────────────────────── */}
+          {/* Writing Phase */}
           {phase === 'writing' && (
             <motion.div
               key="writing"
@@ -243,7 +223,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     style={{ caretColor: '#10b981' }}
                   />
 
-                  {/* Word count - always at bottom */}
+                  {/* Word count */}
                   <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
                     <span className={`text-sm transition-colors ${
                       isReady ? 'text-emerald-400' : 'text-stone-500'
@@ -259,7 +239,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   </div>
                 </div>
 
-                {/* Hint rotation - fixed height container to prevent layout shifts */}
+                {/* Hint rotation */}
                 <div className="mt-3 h-6 text-center">
                   <AnimatePresence mode="wait">
                     {commitment.length === 0 && !isFocused && (
@@ -270,7 +250,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                         exit={{ opacity: 0 }}
                         className="text-stone-600 text-sm italic"
                       >
-                        💡 {hints[currentHintIndex]}
+                        {hints[currentHintIndex]}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -298,7 +278,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   />
                 </Button>
 
-                {/* Fixed height for keyboard hint to prevent layout shift */}
+                {/* Keyboard hint */}
                 <div className="h-5 text-center">
                   <AnimatePresence>
                     {isReady && (
@@ -317,9 +297,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
             </motion.div>
           )}
 
-          {/* ─────────────────────────────────────────────────────────────────
-              Confirming Phase
-          ───────────────────────────────────────────────────────────────── */}
+          {/* Confirming Phase */}
           {phase === 'confirming' && (
             <motion.div
               key="confirming"
@@ -349,9 +327,6 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
           )}
         </AnimatePresence>
       </div>
-
-      {/* Music control - visible during writing phase */}
-      {phase === 'writing' && <MusicControl currentTrack="forest" />}
     </div>
   );
 }
