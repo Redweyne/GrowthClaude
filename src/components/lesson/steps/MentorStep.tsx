@@ -22,6 +22,7 @@ import { Button } from '@/components/ui';
 import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useSound } from '@/hooks/useSound';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 import { MENTOR, getStreakMilestoneMessage } from '@/content/mentor';
 import { isLowEffortReflection } from '@/lib/reflection';
 import type { Lesson } from '@/types';
@@ -84,6 +85,7 @@ const springs = {
 export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
   const { name, currentStreak } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
+  const { t, isRTL } = useTranslation();
 
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
@@ -318,7 +320,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               className="mt-5 pt-4 border-t border-red-900/30"
             >
               <p className="text-sm text-red-400/70 text-center">
-                Your reflection needs more depth
+                {t('lessons.mentor.reflectionNeedsDepth')}
               </p>
             </motion.div>
           )}
@@ -374,10 +376,10 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
             <Button
               size="lg"
               onClick={handleRetry}
-              className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500"
+              className={`w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 ${isRTL ? 'flex-row-reverse' : ''}`}
             >
-              <RotateCcw size={18} className="mr-2" />
-              Try Again
+              <RotateCcw size={18} className={isRTL ? 'ml-2' : 'mr-2'} />
+              {t('lessons.mentor.tryAgain')}
             </Button>
           ) : (
             <Button
@@ -396,14 +398,14 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
                   animate={{ opacity: [0.5, 1, 0.5] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  Sage is speaking...
+                  {t('lessons.mentor.sageIsSpeaking')}
                 </motion.span>
               ) : (
                 <>
-                  Complete Lesson
+                  {t('lessons.mentor.completeLesson')}
                   <ChevronRight
                     size={18}
-                    className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                    className={`${isRTL ? 'mr-2 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 group-hover:opacity-100 transition-all`}
                   />
                 </>
               )}
@@ -419,7 +421,9 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
             transition={{ delay: 1 }}
             className="text-xs text-stone-700 mt-5"
           >
-            {7 - currentStreak} more {7 - currentStreak === 1 ? 'day' : 'days'} to your first week streak
+            {t('lessons.mentor.daysToStreak')
+              .replace('{days}', String(7 - currentStreak))
+              .replace('{dayWord}', (7 - currentStreak) === 1 ? t('lessons.mentor.day') : t('lessons.mentor.days'))}
           </motion.p>
         )}
       </div>

@@ -23,6 +23,7 @@ import { MusicControl } from '@/components/ui/MusicControl';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTypingAmbience } from '@/hooks/useTypingAmbience';
+import { useTranslation } from '@/i18n';
 import type { Lesson } from '@/types';
 
 interface ReflectionStepProps {
@@ -83,6 +84,8 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastKeystrokeRef = useRef<number>(0);
   const promptShownRef = useRef<Set<number>>(new Set());
+
+  const { t, isRTL } = useTranslation();
 
   // Audio hooks for immersive experience
   const { playSuccess, startWritingAmbience, stopWritingAmbience, playChime } = useAudio();
@@ -215,7 +218,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   }, [isSubstantial, handleSubmit]);
 
   return (
-    <div className="min-h-[75vh] flex flex-col">
+    <div className={`min-h-[75vh] flex flex-col ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <AnimatePresence mode="wait">
         {/* ─────────────────────────────────────────────────────────────────
             Entering Phase - The Transition
@@ -248,7 +251,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               transition={{ delay: 0.6 }}
               className="text-xl text-stone-300 font-light"
             >
-              Now, reflect...
+              {t('lessons.reflection.nowReflect')}
             </motion.p>
 
             {/* Progress bar */}
@@ -287,7 +290,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               className="text-center mb-8"
             >
               <p className="text-sm font-medium text-cyan-400 mb-4 tracking-[0.2em] uppercase">
-                Your Reflection
+                {t('lessons.reflection.yourReflection')}
               </p>
               <p className="text-xl sm:text-2xl text-stone-100 leading-relaxed max-w-lg mx-auto font-light">
                 {lesson.reflectionPrompt}
@@ -318,14 +321,16 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   onChange={handleChange}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
-                  placeholder="Begin writing..."
-                  className="
+                  placeholder={t('lessons.reflection.beginWriting')}
+                  className={`
                     w-full h-full min-h-[180px] p-5
                     bg-transparent text-lg text-stone-200
                     placeholder-stone-600 leading-relaxed
                     focus:outline-none resize-none
                     font-light tracking-wide
-                  "
+                    ${isRTL ? 'text-right' : ''}
+                  `}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                   style={{ caretColor: '#22d3ee' }}
                 />
 
@@ -348,14 +353,14 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 </AnimatePresence>
 
                 {/* Word count and status */}
-                <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center">
+                <div className={`absolute bottom-4 left-6 right-6 flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                   {/* Word count */}
                   <motion.div
-                    className="flex items-center gap-3"
+                    className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}
                     animate={{ opacity: reflection.length > 0 ? 1 : 0.5 }}
                   >
                     <span className="text-stone-500 text-sm">
-                      {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                      {wordCount} {wordCount === 1 ? t('lessons.reflection.word') : t('lessons.reflection.words')}
                     </span>
 
                     {/* Progress dots */}
@@ -391,7 +396,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                       opacity: reflection.length > 0 ? 1 : 0,
                     }}
                   >
-                    {isReady ? 'Ready to continue' : isSubstantial ? 'A bit more depth...' : 'Keep writing...'}
+                    {isReady ? t('lessons.reflection.readyToContinue') : isSubstantial ? t('lessons.reflection.aBitMoreDepth') : t('lessons.reflection.keepWriting')}
                   </motion.span>
                 </div>
               </div>
@@ -436,27 +441,27 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   {/* Private option */}
                   <button
                     onClick={() => setIsPublic(false)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
                       !isPublic
                         ? 'bg-stone-800 text-stone-200 shadow-lg'
                         : 'text-stone-500 hover:text-stone-400'
                     }`}
                   >
                     <Lock size={16} />
-                    <span className="text-sm font-medium">Private</span>
+                    <span className="text-sm font-medium">{t('lessons.reflection.private')}</span>
                   </button>
 
                   {/* Public option */}
                   <button
                     onClick={() => setIsPublic(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
                       isPublic
                         ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
                         : 'text-stone-500 hover:text-stone-400'
                     }`}
                   >
                     <Globe size={16} />
-                    <span className="text-sm font-medium">Share Anonymously</span>
+                    <span className="text-sm font-medium">{t('lessons.reflection.shareAnonymously')}</span>
                   </button>
                 </motion.div>
               )}
@@ -465,8 +470,8 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               <div className="text-center">
                 <p className="text-xs text-stone-600">
                   {isPublic
-                    ? 'Others can read and reflect on your words. You may receive thoughtful responses.'
-                    : 'This reflection is just for you. No one else will see it.'}
+                    ? t('lessons.reflection.publicDesc')
+                    : t('lessons.reflection.privateDesc')}
                 </p>
               </div>
 
@@ -480,16 +485,16 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               >
                 {isReady ? (
                   <>
-                    Complete Reflection
+                    {t('lessons.reflection.completeReflection')}
                     <ChevronRight
                       size={18}
-                      className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                      className={`${isRTL ? 'mr-2 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 group-hover:opacity-100 transition-all`}
                     />
                   </>
                 ) : isSubstantial ? (
-                  'Continue (or write more)'
+                  t('lessons.reflection.continueOrWriteMore')
                 ) : (
-                  'Keep writing...'
+                  t('lessons.reflection.keepWriting')
                 )}
               </Button>
 
@@ -503,7 +508,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                       exit={{ opacity: 0 }}
                       className="text-xs text-stone-600"
                     >
-                      Press ⌘+Enter to continue
+                      {t('lessons.reflection.pressToSubmit')}
                     </motion.p>
                   )}
                 </AnimatePresence>
@@ -555,7 +560,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 transition={{ delay: 0.2 }}
                 className="text-stone-400 text-lg"
               >
-                Reflection complete
+                {t('lessons.reflection.reflectionComplete')}
               </motion.p>
             </div>
           </motion.div>

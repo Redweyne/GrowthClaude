@@ -25,6 +25,7 @@ import { Button } from '@/components/ui';
 import { Confetti } from '@/components/effects';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import {
   getGrowthLevel,
   getGrowthProgress,
@@ -46,6 +47,7 @@ type Phase = 'breathing' | 'acknowledgment' | 'growth' | 'wisdom';
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { totalXp, currentStreak, lastLessonDate, name } = useStore();
   const audio = useAudio();
+  const { t, isRTL } = useTranslation();
 
   const [phase, setPhase] = useState<Phase>('breathing');
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -216,7 +218,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               transition={{ delay: 0.5 }}
               className="text-zinc-500 text-lg font-light tracking-wide"
             >
-              Take a breath.
+              {t('lessons.reward.takeABreath')}
             </motion.p>
 
             <motion.p
@@ -225,7 +227,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               transition={{ delay: 1.2 }}
               className="text-zinc-600 text-sm mt-2"
             >
-              You showed up today.
+              {t('lessons.reward.youShowedUp')}
             </motion.p>
           </motion.div>
         )}
@@ -280,7 +282,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               transition={{ delay: 1.2 }}
               className="text-sm text-zinc-600 mt-8"
             >
-              +{safeXpEarned} growth
+              +{safeXpEarned} {t('lessons.reward.growth')}
             </motion.p>
           </motion.div>
         )}
@@ -321,7 +323,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                     </motion.div>
 
                     <p className="text-amber-400 text-sm font-medium tracking-widest uppercase mb-3">
-                      You&apos;ve grown
+                      {t('lessons.reward.youveGrown')}
                     </p>
                     <h3 className="text-4xl font-bold text-white mb-2 tracking-tight">
                       {newLevel.title}
@@ -468,17 +470,17 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             disabled={!canAdvance}
             className="group"
           >
-            Continue to Mentor
-            <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            {t('lessons.reward.continueToMentor')}
+            <ChevronRight className={`w-4 h-4 ${isRTL ? 'mr-1 group-hover:-translate-x-1' : 'ml-1 group-hover:translate-x-1'} transition-transform`} />
           </Button>
         ) : (
           <button
             onClick={advancePhase}
             disabled={!canAdvance}
-            className="flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors py-3 px-6"
+            className={`flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors py-3 px-6 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
-            <span className="text-sm">Continue</span>
-            <ArrowRight className="w-4 h-4" />
+            <span className="text-sm">{t('common.continue')}</span>
+            <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
         )}
       </motion.div>
