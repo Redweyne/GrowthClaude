@@ -20,6 +20,7 @@ import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { getGenderLabel } from '@/types/echoes';
 import type { PublicReflection } from '@/types/echoes';
+import { useTranslation } from '@/i18n';
 
 interface EchoReviewProps {
   reflection: PublicReflection;
@@ -34,6 +35,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const { t, isRTL } = useTranslation();
   const { sendEchoResponse, markReflectionResponded, genderIdentity } = useEchoesStore();
 
   // Word count
@@ -82,7 +84,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
   }, [isSubstantial, handleSend]);
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+    <div className={`min-h-screen bg-stone-950 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Ambient background */}
       <AmbientBackground intensity="subtle" particleCount={6} orbCount={2} />
 
@@ -95,21 +97,21 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
       />
 
       {/* Header */}
-      <div className="relative z-10 p-4 flex justify-between items-center">
+      <div className={`relative z-10 p-4 flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
         >
-          Reflecting on Another&apos;s Journey
+          {t('echoes.reflectingOnJourney')}
         </motion.span>
 
         <button
           onClick={onSkip}
-          className="flex items-center gap-1 text-stone-500 hover:text-stone-400 text-sm transition-colors"
+          className={`flex items-center gap-1 text-stone-500 hover:text-stone-400 text-sm transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           <SkipForward size={16} />
-          Skip
+          {t('common.skip')}
         </button>
       </div>
 
@@ -134,9 +136,9 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="text-amber-400 text-sm mb-2"
+                    className={`text-amber-400 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}
                   >
-                    A fellow {genderLabel} reflected on &ldquo;{reflection.lessonTitle}&rdquo;:
+                    {t('echoes.fellowReflectedOn').replace('{gender}', genderLabel).replace('{title}', reflection.lessonTitle)}
                   </motion.p>
                 </div>
 
@@ -147,7 +149,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   transition={{ delay: 0.3 }}
                   className="p-6 rounded-2xl bg-stone-900/80 border border-stone-800"
                 >
-                  <p className="text-stone-200 text-lg leading-relaxed font-light">
+                  <p className={`text-stone-200 text-lg leading-relaxed font-light ${isRTL ? 'text-right' : ''}`}>
                     &ldquo;{reflection.content}&rdquo;
                   </p>
                 </motion.div>
@@ -159,7 +161,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   transition={{ delay: 0.5 }}
                   className="text-center text-stone-400 text-sm"
                 >
-                  Take a moment to absorb their words...
+                  {t('echoes.absorbWords')}
                 </motion.p>
 
                 {/* Continue button */}
@@ -174,9 +176,9 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                     glow
                     className="w-full group"
                   >
-                    <Feather size={18} className="mr-2" />
-                    Write Your Reflection
-                    <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
+                    <Feather size={18} className={isRTL ? 'ml-2' : 'mr-2'} />
+                    {t('echoes.writeYourReflection')}
+                    <ChevronRight size={18} className={`${isRTL ? 'mr-2 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 transition-transform`} />
                   </Button>
                 </motion.div>
               </motion.div>
@@ -199,10 +201,10 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   animate={{ opacity: 1 }}
                   className="p-4 rounded-xl bg-stone-900/50 border border-stone-800/50"
                 >
-                  <p className="text-stone-500 text-sm mb-2">
-                    A fellow {genderLabel} wrote:
+                  <p className={`text-stone-500 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}>
+                    {t('echoes.fellowWrote').replace('{gender}', genderLabel)}
                   </p>
-                  <p className="text-stone-400 text-sm leading-relaxed line-clamp-3">
+                  <p className={`text-stone-400 text-sm leading-relaxed line-clamp-3 ${isRTL ? 'text-right' : ''}`}>
                     &ldquo;{reflection.content}&rdquo;
                   </p>
                 </motion.div>
@@ -215,12 +217,15 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   className="text-center"
                 >
                   <p className="text-amber-400 text-sm mb-2 tracking-wide">
-                    Your reflection for {reflection.authorGender === 'brother' ? 'him' : reflection.authorGender === 'sister' ? 'her' : 'them'}:
+                    {t('echoes.yourReflectionFor').replace('{pronoun}',
+                      reflection.authorGender === 'brother' ? t('echoes.pronounHim') :
+                      reflection.authorGender === 'sister' ? t('echoes.pronounHer') : t('echoes.pronounThem')
+                    )}
                   </p>
                   <p className="text-stone-300">
-                    What does their journey make you think about?
+                    {t('echoes.whatDoesTheirJourney')}
                     <br />
-                    What encouragement can you offer?
+                    {t('echoes.whatEncouragement')}
                   </p>
                 </motion.div>
 
@@ -244,24 +249,26 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                       onChange={(e) => setResponse(e.target.value)}
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
-                      placeholder="Write your thoughts..."
-                      className="
+                      placeholder={t('echoes.writeYourThoughts')}
+                      className={`
                         w-full min-h-[160px] p-5
                         bg-transparent text-lg text-stone-200
                         placeholder-stone-600 leading-relaxed
                         focus:outline-none resize-none
                         font-light tracking-wide
-                      "
+                        ${isRTL ? 'text-right' : ''}
+                      `}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                       style={{ caretColor: '#fbbf24' }}
                     />
 
                     {/* Word count */}
-                    <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
+                    <div className={`absolute bottom-4 left-5 right-5 flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <span className="text-stone-500 text-sm">
-                        {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                        {wordCount} {wordCount === 1 ? t('common.word') : t('common.words')}
                       </span>
                       <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600'}`}>
-                        {isSubstantial ? 'Ready to send' : 'A bit more...'}
+                        {isSubstantial ? t('echoes.readyToSend') : t('echoes.aBitMore')}
                       </span>
                     </div>
                   </div>
@@ -275,7 +282,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                     transition={{ delay: 0.4 }}
                     className="flex items-center justify-center"
                   >
-                    <label className="flex items-center gap-3 cursor-pointer group">
+                    <label className={`flex items-center gap-3 cursor-pointer group ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <div
                         className={`
                           w-5 h-5 rounded border-2 flex items-center justify-center transition-all
@@ -299,7 +306,10 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                         )}
                       </div>
                       <span className="text-stone-400 text-sm">
-                        I&apos;m open to connecting if {reflection.authorGender === 'brother' ? 'he' : reflection.authorGender === 'sister' ? 'she' : 'they'}&apos;d like to
+                        {t('echoes.openToConnecting').replace('{pronoun}',
+                          reflection.authorGender === 'brother' ? t('echoes.pronounHe') :
+                          reflection.authorGender === 'sister' ? t('echoes.pronounShe') : t('echoes.pronounThey')
+                        )}
                       </span>
                     </label>
                   </motion.div>
@@ -319,14 +329,14 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                     glow={isSubstantial}
                     className="w-full group"
                   >
-                    <Heart size={18} className="mr-2" />
-                    Send Reflection
-                    <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
+                    <Heart size={18} className={isRTL ? 'ml-2' : 'mr-2'} />
+                    {t('echoes.sendReflection')}
+                    <ChevronRight size={18} className={`${isRTL ? 'mr-2 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 transition-transform`} />
                   </Button>
 
                   {isSubstantial && (
                     <p className="text-center text-xs text-stone-600">
-                      Press ⌘+Enter to send
+                      {t('echoes.pressToSend')}
                     </p>
                   )}
                 </motion.div>
@@ -354,7 +364,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                 >
                   <Heart size={28} className="text-amber-400" />
                 </motion.div>
-                <p className="text-stone-400">Sending your reflection...</p>
+                <p className="text-stone-400">{t('echoes.sendingReflection')}</p>
               </motion.div>
             )}
 
@@ -397,7 +407,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   transition={{ delay: 0.2 }}
                   className="text-xl font-semibold text-stone-200 mb-2"
                 >
-                  Reflection Sent
+                  {t('echoes.reflectionSent')}
                 </motion.h3>
 
                 <motion.p
@@ -406,7 +416,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   transition={{ delay: 0.3 }}
                   className="text-stone-400"
                 >
-                  Your words will reach them.
+                  {t('echoes.yourWordsWillReach')}
                 </motion.p>
               </motion.div>
             )}

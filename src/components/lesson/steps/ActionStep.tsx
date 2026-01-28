@@ -19,6 +19,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Check, Minus } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import type { Lesson } from '@/types';
 
 interface ActionStepProps {
@@ -104,10 +105,27 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
   const [guidanceIndex, setGuidanceIndex] = useState(0);
   const [integrationMessage, setIntegrationMessage] = useState('');
   const hasStartedRef = useRef(false);
+  const { t, isRTL } = useTranslation();
 
   const actionType = (lesson.actionType as ActionType) || 'reflect';
   const totalDuration = lesson.actionDurationSeconds;
   const progress = ((totalDuration - timeRemaining) / totalDuration) * 100;
+
+  // Get guidance messages from translations
+  const getGuidanceMessages = useCallback((type: ActionType): string[] => {
+    const guidanceKey = `lessons.action.guidance.${type}`;
+    const messages = t(guidanceKey);
+    if (Array.isArray(messages)) return messages;
+    // Fallback to hardcoded if translation returns string
+    return GUIDANCE_MESSAGES[type];
+  }, [t]);
+
+  // Get integration messages from translations
+  const getIntegrationMessages = useCallback((): string[] => {
+    const messages = t('lessons.action.integration');
+    if (Array.isArray(messages)) return messages;
+    return INTEGRATION_MESSAGES;
+  }, [t]);
 
   // Start ambience
   useEffect(() => {
@@ -237,12 +255,12 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
 
   const getActionLabel = () => {
     switch (actionType) {
-      case 'breathe': return 'Breathing Practice';
-      case 'reflect': return 'Inner Reflection';
-      case 'observe': return 'Mindful Observation';
-      case 'write': return 'Free Writing';
-      case 'act': return 'Mindful Action';
-      default: return 'Practice';
+      case 'breathe': return t('lessons.action.breathingPractice');
+      case 'reflect': return t('lessons.action.innerReflection');
+      case 'observe': return t('lessons.action.mindfulObservation');
+      case 'write': return t('lessons.action.freeWriting');
+      case 'act': return t('lessons.action.mindfulAction');
+      default: return t('lessons.action.practice');
     }
   };
 
@@ -253,7 +271,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
   };
 
   return (
-    <div className="min-h-[75vh] flex flex-col items-center justify-center px-4">
+    <div className={`min-h-[75vh] flex flex-col items-center justify-center px-4 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <AnimatePresence mode="wait">
         {/* ─────────────────────────────────────────────────────────────────
             Preparing Phase - Build anticipation
@@ -362,7 +380,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
 
             {/* Visualization based on action type */}
             {actionType === 'breathe' ? (
-              <BreathingVisualization breathPhase={breathPhase} breathCount={breathCount} />
+              <BreathingVisualization breathPhase={breathPhase} breathCount={breathCount} t={t} />
             ) : actionType === 'observe' ? (
               <ObservationVisualization />
             ) : actionType === 'reflect' ? (
@@ -403,7 +421,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
 
               {/* Time remaining */}
               <p className="text-stone-600 text-xs">
-                {formatTime(timeRemaining)} remaining
+                {formatTime(timeRemaining)} {t('lessons.action.remaining')}
               </p>
 
               {/* Skip option */}
@@ -411,7 +429,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
                 onClick={handleSkip}
                 className="text-stone-700 hover:text-stone-500 text-xs transition-colors"
               >
-                I&apos;m ready to continue
+                {t('lessons.action.readyToContinue')}
               </button>
             </motion.div>
           </motion.div>
@@ -517,7 +535,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
               transition={{ delay: 0.2 }}
               className="text-xl text-stone-200 mb-10"
             >
-              Practice complete
+              {t('lessons.action.practiceComplete')}
             </motion.p>
 
             {/* Completion options */}
@@ -533,24 +551,24 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
                 onClick={() => handleComplete(true)}
                 className="w-full group"
               >
-                <Check size={18} className="mr-2 text-emerald-400" />
-                I practiced fully
+                <Check size={18} className={`${isRTL ? 'ml-2' : 'mr-2'} text-emerald-400`} />
+                {t('lessons.action.iPracticedFully')}
                 <ChevronRight
                   size={18}
-                  className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  className={`${isRTL ? 'mr-2 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 group-hover:opacity-100 transition-all`}
                 />
               </Button>
 
               <button
                 onClick={() => handleComplete(false)}
-                className="w-full py-3 text-stone-500 hover:text-stone-400 text-sm transition-colors flex items-center justify-center gap-2"
+                className={`w-full py-3 text-stone-500 hover:text-stone-400 text-sm transition-colors flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
               >
                 <Minus size={14} />
-                I struggled with this one
+                {t('lessons.action.iStruggled')}
               </button>
 
               <p className="text-xs text-stone-600 mt-4">
-                Honesty is part of the practice
+                {t('lessons.action.honestyIsPractice')}
               </p>
             </motion.div>
           </motion.div>
@@ -567,14 +585,15 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
 interface BreathingVisualizationProps {
   breathPhase: 'inhale' | 'hold' | 'exhale' | 'rest';
   breathCount: number;
+  t: (key: string) => string;
 }
 
-function BreathingVisualization({ breathPhase, breathCount }: BreathingVisualizationProps) {
+function BreathingVisualization({ breathPhase, breathCount, t }: BreathingVisualizationProps) {
   const getPhaseInstruction = () => {
     switch (breathPhase) {
-      case 'inhale': return 'Breathe in...';
-      case 'hold': return 'Hold...';
-      case 'exhale': return 'Release...';
+      case 'inhale': return t('lessons.action.breatheIn');
+      case 'hold': return t('lessons.action.hold');
+      case 'exhale': return t('lessons.action.release');
       case 'rest': return '...';
     }
   };
@@ -637,7 +656,7 @@ function BreathingVisualization({ breathPhase, breathCount }: BreathingVisualiza
 
       {/* Breath count */}
       <p className="text-stone-600 text-sm mt-4">
-        {breathCount} {breathCount === 1 ? 'breath' : 'breaths'} complete
+        {breathCount} {breathCount === 1 ? t('lessons.action.breath') : t('lessons.action.breaths')} {t('lessons.action.breathsComplete')}
       </p>
     </div>
   );

@@ -19,6 +19,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import type { Lesson } from '@/types';
 
 interface WisdomStepProps {
@@ -39,6 +40,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
   const [phase, setPhase] = useState<Phase>('settling');
   const [visibleWords, setVisibleWords] = useState(0);
   const [breathCount, setBreathCount] = useState(0);
+  const { t, isRTL } = useTranslation();
 
   // Split wisdom text into words for reveal
   const wisdomWords = lesson.wisdomText.split(' ');
@@ -109,13 +111,13 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
 
   // Breathing messages
   const breathMessages = [
-    'Settle into this moment...',
-    'Let go of what came before...',
-    'Open to receive...',
+    t('lessons.wisdom.settleInto'),
+    t('lessons.wisdom.letGo'),
+    t('lessons.wisdom.openToReceive'),
   ];
 
   return (
-    <div className="min-h-[75vh] flex flex-col items-center justify-center text-center px-4">
+    <div className={`min-h-[75vh] flex flex-col items-center justify-center text-center px-4 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <AnimatePresence mode="wait">
         {/* ─────────────────────────────────────────────────────────────────
             Settling Phase - Sacred Preparation
@@ -233,7 +235,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
               transition={{ delay: 0.4 }}
               className="text-sm font-medium text-purple-400 mb-5 tracking-[0.2em] uppercase"
             >
-              Today&apos;s Wisdom
+              {t('lessons.wisdom.todaysWisdom')}
             </motion.p>
 
             {/* Title with glow */}
@@ -353,11 +355,11 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                     onClick={handleContinue}
                     className="w-full max-w-md mx-auto group"
                   >
-                    <Sparkles size={18} className="mr-2 text-amber-300" />
-                    I receive this wisdom. What is the practice?
+                    <Sparkles size={18} className={`${isRTL ? 'ml-2' : 'mr-2'} text-amber-300`} />
+                    {t('lessons.wisdom.iReceiveWisdom')}
                     <ChevronRight
                       size={18}
-                      className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                      className={`${isRTL ? 'mr-2 group-hover:-translate-x-1' : 'ml-2 group-hover:translate-x-1'} opacity-60 group-hover:opacity-100 transition-all`}
                     />
                   </Button>
 
@@ -368,7 +370,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                     transition={{ delay: 2 }}
                     className="text-stone-600 text-xs"
                   >
-                    Press Enter to continue
+                    {t('lessons.wisdom.pressEnter')}
                   </motion.p>
                 </motion.div>
               )}
