@@ -3,11 +3,12 @@
 import { forwardRef, type ReactNode, type MouseEvent, useState, useCallback } from 'react';
 import { motion, type HTMLMotionProps, AnimatePresence } from 'framer-motion';
 import { useAudio } from '@/hooks/useAudio';
+import { useHaptics } from '@/hooks/useHaptics';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BUTTON COMPONENT
 // A tactile, luminous button that feels satisfying to interact with
-// Now with audio feedback for every interaction!
+// Now with audio AND haptic feedback for every interaction!
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'children'> {
@@ -53,22 +54,27 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const [ripples, setRipples] = useState<Ripple[]>([]);
     const audio = useAudio();
+    const { hapticMedium, hapticSuccess, hapticCelebration, hapticTap } = useHaptics();
 
-    // Create ripple on click with sound
+    // Create ripple on click with sound AND haptic feedback
     const handleClick = useCallback(
       (e: MouseEvent<HTMLButtonElement>) => {
         if (disabled || isLoading) return;
 
-        // Play sound based on sound prop
+        // Play sound AND haptic based on sound prop
         if (sound !== 'none') {
           if (sound === 'celebrate') {
             audio.playCelebrate();
+            hapticCelebration();
           } else if (sound === 'success') {
             audio.playSuccess();
+            hapticSuccess();
           } else if (sound === 'tapConfirm' || variant === 'primary' || glow) {
             audio.playTapConfirm();
+            hapticMedium();
           } else {
             audio.playTap();
+            hapticTap();
           }
         }
 
@@ -93,7 +99,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         onClick?.(e);
       },
-      [disabled, isLoading, onClick, audio, sound, variant, glow]
+      [disabled, isLoading, onClick, audio, sound, variant, glow, hapticMedium, hapticSuccess, hapticCelebration, hapticTap]
     );
 
     // Base styles

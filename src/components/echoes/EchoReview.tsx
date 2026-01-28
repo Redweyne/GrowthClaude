@@ -15,9 +15,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, SkipForward, Feather, Heart } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, WisdomText } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useHaptics } from '@/hooks/useHaptics';
 import { getGenderLabel } from '@/types/echoes';
 import type { PublicReflection } from '@/types/echoes';
 import { useTranslation } from '@/i18n';
@@ -36,7 +37,15 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { t, isRTL } = useTranslation();
-  const { sendEchoResponse, markReflectionResponded, genderIdentity } = useEchoesStore();
+  const { sendEchoResponse, markReflectionResponded, genderIdentity, setGenderIdentity } = useEchoesStore();
+  const { hapticLight, hapticMedium, hapticSuccess } = useHaptics();
+
+  // Ensure gender identity is set (fallback to 'traveler' if not set during onboarding)
+  useEffect(() => {
+    if (!genderIdentity) {
+      setGenderIdentity('traveler');
+    }
+  }, [genderIdentity, setGenderIdentity]);
 
   // Word count
   const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
@@ -50,6 +59,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
 
   // Transition to writing phase
   const handleStartWriting = () => {
+    hapticMedium();
     setPhase('writing');
     setTimeout(() => textareaRef.current?.focus(), 300);
   };
@@ -64,12 +74,13 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
     sendEchoResponse(reflection, response.trim(), isOpenToConnect);
     markReflectionResponded(reflection.id);
 
-    // Brief pause, then complete
+    // Brief pause, then complete with celebration haptic
     setTimeout(() => {
       setPhase('complete');
+      hapticSuccess();
       setTimeout(onComplete, 1000);
     }, 800);
-  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, onComplete]);
+  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, onComplete, hapticSuccess]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -142,16 +153,28 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   </motion.p>
                 </div>
 
-                {/* Their reflection */}
+                {/* Their reflection - breathable typography */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="p-6 rounded-2xl bg-stone-900/80 border border-stone-800"
+                  className="p-6 sm:p-5 rounded-2xl bg-stone-900/80 border border-stone-800"
                 >
-                  <p className={`text-stone-200 text-lg leading-relaxed font-light ${isRTL ? 'text-right' : ''}`}>
-                    &ldquo;{reflection.content}&rdquo;
-                  </p>
+                  <div className={`text-5xl text-amber-400/20 font-serif leading-none mb-3 ${isRTL ? 'text-right' : ''}`}>
+                    &ldquo;
+                  </div>
+                  <WisdomText
+                    variant="insight"
+                    animate={true}
+                    staggerDelay={0.18}
+                    maxWordsPerStanza={15}
+                    className={isRTL ? 'text-right' : ''}
+                  >
+                    {reflection.content}
+                  </WisdomText>
+                  <div className={`text-5xl text-amber-400/20 font-serif leading-none mt-3 ${isRTL ? 'text-left' : 'text-right'}`}>
+                    &rdquo;
+                  </div>
                 </motion.div>
 
                 {/* Prompt */}
@@ -285,12 +308,15 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                     <label className={`flex items-center gap-3 cursor-pointer group ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <div
                         className={`
-                          w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                          w-6 h-6 rounded border-2 flex items-center justify-center transition-all
                           ${isOpenToConnect
                             ? 'bg-amber-500 border-amber-500'
                             : 'border-stone-600 group-hover:border-stone-500'}
                         `}
-                        onClick={() => setIsOpenToConnect(!isOpenToConnect)}
+                        onClick={() => {
+                          hapticLight();
+                          setIsOpenToConnect(!isOpenToConnect);
+                        }}
                       >
                         {isOpenToConnect && (
                           <motion.svg

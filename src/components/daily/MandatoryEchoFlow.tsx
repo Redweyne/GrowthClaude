@@ -17,10 +17,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Feather, Heart, Users } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, WisdomText } from '@/components/ui';
 import { Card } from '@/components/ui/Card';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useHaptics } from '@/hooks/useHaptics';
 import { getGenderLabel } from '@/types/echoes';
 import type { PublicReflection } from '@/types/echoes';
 
@@ -41,7 +42,15 @@ export function MandatoryEchoFlow({
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { sendEchoResponse, markReflectionResponded, genderIdentity } = useEchoesStore();
+  const { sendEchoResponse, markReflectionResponded, genderIdentity, setGenderIdentity } = useEchoesStore();
+  const { hapticLight, hapticMedium, hapticSuccess } = useHaptics();
+
+  // Ensure gender identity is set (fallback to 'traveler' if not set during onboarding)
+  useEffect(() => {
+    if (!genderIdentity) {
+      setGenderIdentity('traveler');
+    }
+  }, [genderIdentity, setGenderIdentity]);
 
   // Word count
   const wordCount = response.trim().split(/\s+/).filter(Boolean).length;
@@ -55,11 +64,13 @@ export function MandatoryEchoFlow({
 
   // Transition to reading phase
   const handleContinue = () => {
+    hapticLight();
     setPhase('reading');
   };
 
   // Transition to writing phase
   const handleStartWriting = () => {
+    hapticMedium();
     setPhase('writing');
     setTimeout(() => textareaRef.current?.focus(), 300);
   };
@@ -74,12 +85,13 @@ export function MandatoryEchoFlow({
     sendEchoResponse(reflection, response.trim(), isOpenToConnect);
     markReflectionResponded(reflection.id);
 
-    // Brief pause, then complete
+    // Brief pause, then complete with celebration haptic
     setTimeout(() => {
       setPhase('complete');
+      hapticSuccess();
       setTimeout(() => onComplete(reflection.id), 1500);
     }, 800);
-  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, onComplete]);
+  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, onComplete, hapticSuccess]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -222,16 +234,27 @@ export function MandatoryEchoFlow({
                   </motion.p>
                 </div>
 
-                {/* Their reflection */}
+                {/* Their reflection - breathable typography */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="p-6 rounded-2xl bg-stone-900/80 border border-stone-800"
+                  className="p-6 sm:p-5 rounded-2xl bg-stone-900/80 border border-stone-800"
                 >
-                  <p className="text-stone-200 text-lg leading-relaxed font-light">
-                    &ldquo;{reflection.content}&rdquo;
-                  </p>
+                  <div className="text-5xl text-amber-400/20 font-serif leading-none mb-3">
+                    &ldquo;
+                  </div>
+                  <WisdomText
+                    variant="insight"
+                    animate={true}
+                    staggerDelay={0.18}
+                    maxWordsPerStanza={15}
+                  >
+                    {reflection.content}
+                  </WisdomText>
+                  <div className="text-5xl text-amber-400/20 font-serif leading-none text-right mt-3">
+                    &rdquo;
+                  </div>
                 </motion.div>
 
                 {/* Prompt */}
@@ -358,12 +381,15 @@ export function MandatoryEchoFlow({
                     <label className="flex items-center gap-3 cursor-pointer group">
                       <div
                         className={`
-                          w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                          w-6 h-6 rounded border-2 flex items-center justify-center transition-all
                           ${isOpenToConnect
                             ? 'bg-amber-500 border-amber-500'
                             : 'border-stone-600 group-hover:border-stone-500'}
                         `}
-                        onClick={() => setIsOpenToConnect(!isOpenToConnect)}
+                        onClick={() => {
+                          hapticLight();
+                          setIsOpenToConnect(!isOpenToConnect);
+                        }}
                       >
                         {isOpenToConnect && (
                           <motion.svg

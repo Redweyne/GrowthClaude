@@ -12,7 +12,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Quote, Lightbulb, Sparkles, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
 import type { InsightStep as InsightStepType } from '@/types/lessons';
 
@@ -119,15 +119,25 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             </div>
           )}
 
-          {/* The wisdom text - all at once, readable */}
-          <p className="text-xl sm:text-2xl text-stone-100 leading-relaxed">
+          {/* The wisdom text - breathable, readable stanzas */}
+          <WisdomText
+            variant="insight"
+            animate={true}
+            staggerDelay={0.25}
+            maxWordsPerStanza={14}
+          >
             {step.text}
-          </p>
+          </WisdomText>
 
           {/* Source attribution */}
           {step.source && (
-            <div className="space-y-1 pt-2">
-              <p className={`${config.accent} font-medium`}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="space-y-1 pt-3"
+            >
+              <p className={`${config.accent} font-medium text-lg`}>
                 — {step.source}
               </p>
               {step.sourceBook && (
@@ -135,14 +145,24 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
                   {step.sourceBook}
                 </p>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Follow up text */}
           {step.followUp && (
-            <p className="text-stone-400 text-lg pt-6 border-t border-stone-800 leading-relaxed">
-              {step.followUp}
-            </p>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.0 }}
+              className="pt-6 border-t border-stone-800"
+            >
+              <WisdomText
+                variant="instruction"
+                animate={false}
+              >
+                {step.followUp}
+              </WisdomText>
+            </motion.div>
           )}
 
           {/* Continue button */}

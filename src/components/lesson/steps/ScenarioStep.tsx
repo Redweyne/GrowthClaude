@@ -12,7 +12,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, WisdomText } from '@/components/ui';
 import type { ScenarioStep as ScenarioStepType } from '@/types/lessons';
 
 interface ScenarioStepProps {
@@ -71,26 +71,49 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <div className="space-y-6">
-          {/* The narrative - clean and readable */}
-          <p className="text-xl sm:text-2xl leading-relaxed text-stone-100">
+        <div className="space-y-6 sm:space-y-5">
+          {/* The narrative - breathable, readable stanzas */}
+          <WisdomText
+            variant="narrative"
+            animate={true}
+            staggerDelay={0.2}
+            maxWordsPerStanza={16}
+          >
             {step.narrative}
-          </p>
+          </WisdomText>
 
           {/* Subtext */}
           {step.subtext && (
-            <p className="text-stone-400 text-lg leading-relaxed">
-              {step.subtext}
-            </p>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <WisdomText
+                variant="instruction"
+                animate={false}
+              >
+                {step.subtext}
+              </WisdomText>
+            </motion.div>
           )}
 
           {/* Bridge question */}
           {step.bridgeQuestion && (
-            <div className={`pt-6 border-t ${colors.border}`}>
-              <p className={`text-lg ${colors.accent} font-medium`}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className={`pt-6 border-t ${colors.border}`}
+            >
+              <WisdomText
+                variant="question"
+                animate={false}
+                className="font-medium"
+              >
                 {step.bridgeQuestion}
-              </p>
-            </div>
+              </WisdomText>
+            </motion.div>
           )}
 
           {/* Continue button */}
