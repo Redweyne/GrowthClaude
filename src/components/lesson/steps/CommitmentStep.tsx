@@ -12,7 +12,7 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Target } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -40,9 +40,20 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Track if we've already started the phase transition to prevent re-runs
+  const hasStartedTransitionRef = useRef(false);
+
   // Audio hooks for commitment experience
   const { playSuccessBig, startWritingAmbience, stopWritingAmbience, playBell } = useAudio();
   const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false }); // Disabled - silence is better
+
+  // Store audio functions in refs to prevent useEffect re-runs when soundEnabled changes
+  const startAmbienceRef = useRef(startWritingAmbience);
+  const stopAmbienceRef = useRef(stopWritingAmbience);
+  useEffect(() => {
+    startAmbienceRef.current = startWritingAmbience;
+    stopAmbienceRef.current = stopWritingAmbience;
+  }, [startWritingAmbience, stopWritingAmbience]);
 
   const minimumWords = step.minimumWords || 3;
   const wordCount = commitment.trim().split(/\s+/).filter(Boolean).length;
@@ -50,22 +61,28 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
   const hints = step.guidanceHints || DEFAULT_GUIDANCE;
 
   // Phase transitions with audio
+  // CRITICAL FIX: Use ref for startWritingAmbience to prevent re-runs
+  // when soundEnabled changes (which would restart the phase transition)
   useEffect(() => {
+    // Prevent re-running this effect if we've already started the transition
+    if (hasStartedTransitionRef.current) return;
+    hasStartedTransitionRef.current = true;
+
     const timer = setTimeout(() => {
       setPhase('writing');
-      startWritingAmbience('forest'); // Forest sounds for commitment
+      startAmbienceRef.current('forest'); // Forest sounds for commitment
       setTimeout(() => textareaRef.current?.focus(), 100);
     }, 1500);
     return () => clearTimeout(timer);
-  }, [startWritingAmbience]);
+  }, []); // No dependencies - runs once on mount
 
   // Stop ambience ONLY when confirming (not on cleanup - that kills audio on phase changes)
   useEffect(() => {
     if (phase === 'confirming') {
-      stopWritingAmbience();
+      stopAmbienceRef.current();
     }
     // NO cleanup - React StrictMode and phase changes were killing audio
-  }, [phase, stopWritingAmbience]);
+  }, [phase]);
 
   // Rotate hints
   useEffect(() => {

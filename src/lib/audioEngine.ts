@@ -16,7 +16,7 @@
 //
 // ============================================================================
 
-import { Howl, Howler } from 'howler';
+import { Howl, Howler, HowlOptions } from 'howler';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEBUG LOGGING
@@ -224,6 +224,8 @@ function shouldPlay(sound: string): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 let unlockPromise: Promise<boolean> | null = null;
+let lastUnlockAttempt = 0;
+const UNLOCK_THROTTLE_MS = 1000; // Minimum time between unlock attempts
 
 async function unlockAudioAsync(): Promise<boolean> {
   // Already unlocked
@@ -231,6 +233,31 @@ async function unlockAudioAsync(): Promise<boolean> {
     log('Already unlocked');
     return true;
   }
+
+  // CRITICAL FIX: Don't try to unlock if audio is already playing
+  // This can cause iOS Safari to crash when creating new Howl instances
+  // while other audio is active
+  if (engineState.isMusicPlaying || engineState.isAmbiencePlaying) {
+    log('Audio is playing, skipping unlock to prevent iOS conflicts');
+    // Just try to resume the context without creating new Howl instances
+    if (Howler.ctx && Howler.ctx.state === 'suspended') {
+      try {
+        await Howler.ctx.resume();
+        log('✓ Audio context resumed while audio was playing');
+      } catch (e) {
+        logWarn('Failed to resume context while audio playing:', e);
+      }
+    }
+    return true;
+  }
+
+  // Throttle unlock attempts to prevent rapid-fire calls on iOS
+  const now = Date.now();
+  if (now - lastUnlockAttempt < UNLOCK_THROTTLE_MS) {
+    log(`Throttled unlock attempt (${now - lastUnlockAttempt}ms since last)`);
+    return engineState.isUnlocked;
+  }
+  lastUnlockAttempt = now;
 
   // Already unlocking - wait for that to complete
   if (unlockPromise) {
@@ -320,8 +347,9 @@ async function unlockAudioAsync(): Promise<boolean> {
 
 // Synchronous unlock attempt (for event handlers)
 export function tryUnlock(): void {
-  unlockAudioAsync().catch(() => {
-    // Ignore - will retry
+  unlockAudioAsync().catch((e) => {
+    // Log the error in debug mode instead of silently ignoring
+    logWarn('Unlock attempt failed:', e);
   });
 }
 
@@ -520,6 +548,48 @@ export const playCelebration = (volume?: number) => {
 
 const MIN_CLEANUP_DELAY = 300; // Minimum delay for iOS cleanup
 
+// iOS Safari detection - used for additional safeguards
+function isIOSSafari(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+  return isIOS && isSafari;
+}
+
+// Safe Howl creation wrapper to prevent iOS Safari crashes
+function createSafeHowl(options: HowlOptions): Howl | null {
+  try {
+    return new Howl(options);
+  } catch (e) {
+    logError('Failed to create Howl instance:', e);
+    return null;
+  }
+}
+
+// Safe unload with iOS delay
+function safeUnload(howl: Howl, id?: number): void {
+  try {
+    if (id !== undefined && id !== null) {
+      howl.stop(id);
+    }
+    // iOS Safari needs a delay before unload to prevent crashes
+    if (isIOSSafari()) {
+      setTimeout(() => {
+        try {
+          howl.unload();
+        } catch (e) {
+          logWarn('Safe unload failed:', e);
+        }
+      }, MIN_CLEANUP_DELAY);
+    } else {
+      howl.unload();
+    }
+  } catch (e) {
+    logWarn('Unload failed:', e);
+  }
+}
+
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
 
@@ -551,10 +621,13 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     const oldHowl = activeMusicHowl;
     const oldId = activeMusicId;
     log(`Stopping previous track: ${engineState.currentMusicTrack}`);
-    oldHowl.fade(oldHowl.volume(oldId) as number, 0, MIN_CLEANUP_DELAY, oldId);
+    try {
+      oldHowl.fade(oldHowl.volume(oldId) as number, 0, MIN_CLEANUP_DELAY, oldId);
+    } catch (e) {
+      logWarn('Failed to fade old track:', e);
+    }
     setTimeout(() => {
-      oldHowl.stop(oldId);
-      oldHowl.unload();
+      safeUnload(oldHowl, oldId);
     }, MIN_CLEANUP_DELAY);
   }
 
@@ -580,7 +653,8 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     ? Math.random() * (config.duration * 0.8)
     : 0;
 
-  const howl = new Howl({
+  // CRITICAL: Use safe Howl creation to prevent iOS Safari crashes
+  const howl = createSafeHowl({
     src: [config.path],
     volume: 0,
     loop: true,
@@ -590,12 +664,20 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
 
       // Seek to random position BEFORE playing
       if (randomStartPosition > 0) {
-        howl.seek(randomStartPosition);
-        log(`Starting at ${Math.floor(randomStartPosition)}s`);
+        try {
+          howl!.seek(randomStartPosition);
+          log(`Starting at ${Math.floor(randomStartPosition)}s`);
+        } catch (e) {
+          logWarn('Failed to seek:', e);
+        }
       }
 
-      activeMusicId = howl.play();
-      howl.fade(0, engineState.settings.musicVolume * engineState.settings.masterVolume, fadeInDuration * 1000, activeMusicId!);
+      try {
+        activeMusicId = howl!.play();
+        howl!.fade(0, engineState.settings.musicVolume * engineState.settings.masterVolume, fadeInDuration * 1000, activeMusicId!);
+      } catch (e) {
+        logError('Failed to start music playback:', e);
+      }
 
       engineState.isMusicPlaying = true;
       notifyStateChange();
@@ -610,18 +692,34 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
     onplayerror: (id, error) => {
       logError(`Failed to play music: ${type}`, error);
 
-      // Queue retry
-      retryQueue.push(() => startAmbientMusic(type, fadeInDuration));
+      // Queue retry (but only if not already retrying)
+      if (retryQueue.length < 3) {
+        retryQueue.push(() => startAmbientMusic(type, fadeInDuration));
+      }
 
-      howl.once('unlock', () => {
-        log(`🔓 Retrying music after unlock: ${type}`);
-        activeMusicId = howl.play();
-        howl.fade(0, engineState.settings.musicVolume * engineState.settings.masterVolume, fadeInDuration * 1000, activeMusicId!);
-        engineState.isMusicPlaying = true;
-        notifyStateChange();
-      });
+      if (howl) {
+        howl.once('unlock', () => {
+          log(`🔓 Retrying music after unlock: ${type}`);
+          try {
+            activeMusicId = howl.play();
+            howl.fade(0, engineState.settings.musicVolume * engineState.settings.masterVolume, fadeInDuration * 1000, activeMusicId!);
+            engineState.isMusicPlaying = true;
+            notifyStateChange();
+          } catch (e) {
+            logError('Failed to retry music after unlock:', e);
+          }
+        });
+      }
     },
   });
+
+  if (!howl) {
+    logError('Failed to create Howl for music:', type);
+    engineState.currentMusicTrack = null;
+    engineState.isMusicPlaying = false;
+    notifyStateChange();
+    return;
+  }
 
   activeMusicHowl = howl;
 }
@@ -653,16 +751,18 @@ export function stopAmbientMusic(fadeOutDuration: number = 2, immediate: boolean
   notifyStateChange();
 
   if (immediate) {
-    howl.stop(id);
-    howl.unload();
+    safeUnload(howl, id);
   } else {
     // Use minimum cleanup delay
     pendingMusicStop = setTimeout(() => {
       pendingMusicStop = null;
-      howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
+      try {
+        howl.fade(howl.volume(id) as number, 0, fadeOutDuration * 1000, id);
+      } catch (e) {
+        logWarn('Failed to fade music:', e);
+      }
       setTimeout(() => {
-        howl.stop(id);
-        howl.unload();
+        safeUnload(howl, id);
       }, fadeOutDuration * 1000);
     }, MIN_CLEANUP_DELAY);
   }
@@ -712,10 +812,13 @@ export function startWritingAmbience(type?: WritingAmbience): void {
   if (activeAmbienceHowl && activeAmbienceId !== null) {
     const oldHowl = activeAmbienceHowl;
     const oldId = activeAmbienceId;
-    oldHowl.fade(oldHowl.volume(oldId) as number, 0, MIN_CLEANUP_DELAY, oldId);
+    try {
+      oldHowl.fade(oldHowl.volume(oldId) as number, 0, MIN_CLEANUP_DELAY, oldId);
+    } catch (e) {
+      logWarn('Failed to fade old ambience:', e);
+    }
     setTimeout(() => {
-      oldHowl.stop(oldId);
-      oldHowl.unload();
+      safeUnload(oldHowl, oldId);
     }, MIN_CLEANUP_DELAY);
   }
 
@@ -736,7 +839,8 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     ? Math.random() * (config.duration * 0.8)
     : 0;
 
-  const howl = new Howl({
+  // CRITICAL: Use safe Howl creation to prevent iOS Safari crashes
+  const howl = createSafeHowl({
     src: [config.path],
     volume: 0,
     loop: true,
@@ -745,11 +849,19 @@ export function startWritingAmbience(type?: WritingAmbience): void {
       log(`✓ Ambience loaded: ${ambienceType}`);
 
       if (randomStartPosition > 0) {
-        howl.seek(randomStartPosition);
+        try {
+          howl!.seek(randomStartPosition);
+        } catch (e) {
+          logWarn('Failed to seek ambience:', e);
+        }
       }
 
-      activeAmbienceId = howl.play();
-      howl.fade(0, engineState.settings.ambienceVolume * engineState.settings.masterVolume, 2000, activeAmbienceId!);
+      try {
+        activeAmbienceId = howl!.play();
+        howl!.fade(0, engineState.settings.ambienceVolume * engineState.settings.masterVolume, 2000, activeAmbienceId!);
+      } catch (e) {
+        logError('Failed to start ambience playback:', e);
+      }
 
       engineState.isAmbiencePlaying = true;
       notifyStateChange();
@@ -762,9 +874,20 @@ export function startWritingAmbience(type?: WritingAmbience): void {
     },
     onplayerror: (id, error) => {
       logError(`Failed to play ambience: ${ambienceType}`, error);
-      retryQueue.push(() => startWritingAmbience(ambienceType));
+      // Limit retry queue size
+      if (retryQueue.length < 3) {
+        retryQueue.push(() => startWritingAmbience(ambienceType));
+      }
     },
   });
+
+  if (!howl) {
+    logError('Failed to create Howl for ambience:', ambienceType);
+    engineState.currentAmbienceTrack = null;
+    engineState.isAmbiencePlaying = false;
+    notifyStateChange();
+    return;
+  }
 
   activeAmbienceHowl = howl;
 }
@@ -794,15 +917,17 @@ export function stopWritingAmbience(immediate: boolean = false): void {
   notifyStateChange();
 
   if (immediate) {
-    howl.stop(id);
-    howl.unload();
+    safeUnload(howl, id);
   } else {
     pendingAmbienceStop = setTimeout(() => {
       pendingAmbienceStop = null;
-      howl.fade(howl.volume(id) as number, 0, 1000, id);
+      try {
+        howl.fade(howl.volume(id) as number, 0, 1000, id);
+      } catch (e) {
+        logWarn('Failed to fade ambience:', e);
+      }
       setTimeout(() => {
-        howl.stop(id);
-        howl.unload();
+        safeUnload(howl, id);
       }, 1000);
     }, MIN_CLEANUP_DELAY);
   }
