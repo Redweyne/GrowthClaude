@@ -411,6 +411,15 @@ export function DashboardNew({
   const { t, isRTL } = useTranslation();
   const xpProgress = getXpProgress(totalXp);
   const todayComplete = todayLessonCompleted && todayEchoCompleted && exercisesCompleted === totalExercises;
+
+  // Get daily quote index (rotates through 10 quotes based on day of year)
+  const getDailyQuoteIndex = (): number => {
+    const today = new Date();
+    const dayOfYear = Math.floor(
+      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+    );
+    return dayOfYear % 10;
+  };
   const phasesCompleted = (todayLessonCompleted ? 1 : 0) + (todayEchoCompleted ? 1 : 0) + (exercisesCompleted === totalExercises ? 1 : 0);
 
   // Goal display text
@@ -512,6 +521,36 @@ export function DashboardNew({
               </p>
             )}
           </motion.div>
+        </motion.div>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            QUOTE OF THE DAY - Daily Wisdom
+        ═══════════════════════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="relative"
+        >
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-900/20 via-stone-900/40 to-amber-900/20 border border-purple-500/20 overflow-hidden">
+            {/* Decorative quote mark */}
+            <div className="absolute top-2 left-4 text-6xl text-purple-500/10 font-serif leading-none select-none">&ldquo;</div>
+
+            <div className="relative z-10">
+              <p className={`text-stone-300 text-base leading-relaxed italic ${isRTL ? 'text-right' : ''}`}>
+                {t(`home.wisdomQuotes.${getDailyQuoteIndex()}.text` as any) || "The obstacle is the way."}
+              </p>
+              <p className={`text-purple-400/80 text-sm mt-3 font-medium ${isRTL ? 'text-right' : ''}`}>
+                — {t(`home.wisdomQuotes.${getDailyQuoteIndex()}.author` as any) || "Marcus Aurelius"}
+              </p>
+            </div>
+
+            {/* Subtle label */}
+            <div className={`absolute bottom-2 ${isRTL ? 'left-3' : 'right-3'} flex items-center gap-1.5`}>
+              <Sparkles size={10} className="text-purple-500/40" />
+              <span className="text-[10px] text-purple-500/40 uppercase tracking-wider">{t('dashboard.quoteOfTheDay')}</span>
+            </div>
+          </div>
         </motion.div>
 
         {/* ═══════════════════════════════════════════════════════════════════

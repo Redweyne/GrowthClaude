@@ -94,7 +94,7 @@ export default function Home() {
     completeLesson,
     completeMandatoryEcho,
     completeExercise,
-    globalCalendar,
+    markDailyComplete,
   } = useDailyPracticeStore();
 
   const [currentView, setCurrentView] = useState<AppView>('home');
@@ -341,6 +341,9 @@ export default function Home() {
 
   // Handle all exercises done
   const handleExercisesComplete = () => {
+    // Mark the daily practice as complete - this is critical!
+    markDailyComplete();
+
     // Show celebration coaching if first session
     if (isFirstSession() && !isCoachingStepSeen('afterFirstDayComplete')) {
       showCoaching('afterFirstDayComplete');
@@ -645,12 +648,14 @@ export default function Home() {
     );
   }
 
-  // If no reflection available for mandatory echo, skip to exercises
-  if (currentView === 'mandatory-echo' && !reflectionForReview) {
-    // Mark echo as complete with dummy ID and go to exercises
-    completeMandatoryEcho('no-reflection-available');
-    setCurrentView('exercises');
-  }
+  // Handle missing reflection for mandatory echo (move to useEffect for proper React patterns)
+  useEffect(() => {
+    if (currentView === 'mandatory-echo' && !reflectionForReview) {
+      // No reflection available, skip echo phase
+      completeMandatoryEcho('no-reflection-available');
+      setCurrentView('exercises');
+    }
+  }, [currentView, reflectionForReview, completeMandatoryEcho]);
 
   // Exercise experience - 5 exercises after echo
   if (currentView === 'exercises' && todaysLesson?.exercises) {

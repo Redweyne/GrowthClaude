@@ -326,6 +326,9 @@ const ar = {
       transforming: 'يتحول',
     },
 
+    // Quote of the day
+    quoteOfTheDay: 'حكمة اليوم',
+
     // Sections
     sections: {
       today: 'اليوم',
@@ -417,6 +420,14 @@ const ar = {
     appName: 'مركز التحول',
     appDesc: 'رحلتك اليومية نحو النمو',
     version: 'الإصدار',
+
+    // Danger Zone
+    dangerZone: 'منطقة الخطر',
+    resetProgress: 'إعادة تعيين كل شيء',
+    resetDesc: 'حذف جميع البيانات والبدء من جديد',
+    resetWarning: 'سيؤدي هذا إلى حذف جميع تقدمك وتأملاتك وأصدائك نهائياً. لا يمكن التراجع عن هذا الإجراء.',
+    resetConfirm: 'نعم، إعادة تعيين الكل',
+    resetCancel: 'إلغاء',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

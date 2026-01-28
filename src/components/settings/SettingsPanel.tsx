@@ -9,9 +9,12 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Globe, Check } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Globe, Check, AlertTriangle, Trash2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useEchoesStore } from '@/store/useEchoesStore';
+import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation, languageConfig, type Locale } from '@/i18n';
 
@@ -21,8 +24,20 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ onBack }: SettingsPanelProps) {
   const { t, isRTL, locale, setLocale } = useTranslation();
-  const { soundEnabled, hapticEnabled, toggleSound, toggleHaptic, name, setLanguage } = useStore();
+  const { soundEnabled, hapticEnabled, toggleSound, toggleHaptic, name, setLanguage, resetUser } = useStore();
+  const { resetEchoes } = useEchoesStore();
+  const { resetDailyPractice } = useDailyPracticeStore();
   const { playTap, playSuccess, startMusic, stopMusic, playSingingBowl } = useAudio();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Handle complete app reset
+  const handleResetAll = () => {
+    resetUser();
+    resetEchoes();
+    resetDailyPractice();
+    // Reload the page to ensure clean state
+    window.location.reload();
+  };
 
   // Handle language change
   const handleLanguageChange = (newLocale: Locale) => {
@@ -251,7 +266,87 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
             </div>
           </div>
         </motion.section>
+
+        {/* Danger Zone - Reset Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <h2 className={`text-sm font-medium text-red-500/70 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.dangerZone') || 'Danger Zone'}
+          </h2>
+          <div className="bg-red-950/20 rounded-2xl border border-red-900/30 p-4">
+            <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <Trash2 size={20} className="text-red-400" />
+              </div>
+              <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
+                <p className="text-white font-medium">{t('settings.resetProgress') || 'Reset All Progress'}</p>
+                <p className="text-sm text-stone-400 mt-1">
+                  {t('settings.resetDesc') || 'Delete all your progress and start fresh. This cannot be undone.'}
+                </p>
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="mt-4 px-4 py-2 rounded-lg bg-red-600/30 border border-red-600/50 text-red-300 hover:bg-red-600/50 transition-colors text-sm font-medium"
+                >
+                  {t('settings.resetButton') || 'Reset Everything'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Bottom spacing */}
+        <div className="h-8" />
       </div>
+
+      {/* Reset Confirmation Modal */}
+      <AnimatePresence>
+        {showResetConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowResetConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-stone-900 rounded-2xl border border-red-900/50 p-6 max-w-sm w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
+                  <AlertTriangle size={32} className="text-red-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white">
+                  {t('settings.confirmResetTitle') || 'Reset All Progress?'}
+                </h3>
+                <p className="text-stone-400">
+                  {t('settings.confirmResetDesc') || 'This will permanently delete all your lessons, reflections, streak, and identity statements. You will start completely fresh.'}
+                </p>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 px-4 py-3 rounded-xl bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors font-medium"
+                  >
+                    {t('common.cancel') || 'Cancel'}
+                  </button>
+                  <button
+                    onClick={handleResetAll}
+                    className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white hover:bg-red-500 transition-colors font-medium"
+                  >
+                    {t('settings.confirmReset') || 'Yes, Reset'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

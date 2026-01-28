@@ -326,6 +326,9 @@ const fr = {
       transforming: 'se transforme',
     },
 
+    // Quote of the day
+    quoteOfTheDay: 'Sagesse du Jour',
+
     // Sections
     sections: {
       today: "Aujourd'hui",
@@ -417,6 +420,14 @@ const fr = {
     appName: 'Transformation Hub',
     appDesc: 'Votre voyage quotidien vers la croissance',
     version: 'Version',
+
+    // Danger Zone
+    dangerZone: 'Zone Dangereuse',
+    resetProgress: 'Réinitialiser Tout',
+    resetDesc: 'Supprimer toutes les données et recommencer',
+    resetWarning: 'Cela supprimera définitivement tous vos progrès, réflexions et échos. Cette action est irréversible.',
+    resetConfirm: 'Oui, Tout Réinitialiser',
+    resetCancel: 'Annuler',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

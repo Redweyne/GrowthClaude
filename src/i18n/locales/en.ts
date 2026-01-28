@@ -326,6 +326,9 @@ const en = {
       transforming: 'transforming',
     },
 
+    // Quote of the day
+    quoteOfTheDay: 'Daily Wisdom',
+
     // Sections
     sections: {
       today: 'Today',
@@ -417,6 +420,14 @@ const en = {
     appName: 'Transformation Hub',
     appDesc: 'Your daily journey to growth',
     version: 'Version',
+
+    // Danger Zone
+    dangerZone: 'Danger Zone',
+    resetProgress: 'Reset All Progress',
+    resetDesc: 'Delete all data and start fresh',
+    resetWarning: 'This will permanently delete all your progress, reflections, and echoes. This action cannot be undone.',
+    resetConfirm: 'Yes, Reset Everything',
+    resetCancel: 'Cancel',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

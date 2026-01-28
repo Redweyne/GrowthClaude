@@ -206,7 +206,8 @@ export function FlexibleLessonExperience({
 
     // Default: go to next step in array
     const currentIndex = lesson.steps.findIndex(s => s.id === currentStepId);
-    if (currentIndex < lesson.steps.length - 1) {
+    // Ensure valid index before navigating
+    if (currentIndex >= 0 && currentIndex < lesson.steps.length - 1) {
       goToStep(lesson.steps[currentIndex + 1].id);
     }
   }, [currentStep, currentStepId, lesson.steps, goToStep]);
