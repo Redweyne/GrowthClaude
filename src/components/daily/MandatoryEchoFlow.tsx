@@ -29,16 +29,21 @@ interface MandatoryEchoFlowProps {
   reflection: PublicReflection;
   onComplete: (reflectionId: string) => void;
   todaysLessonTitle: string;
+  skipIntroPhase?: boolean; // Skip intro if coaching modal was shown
 }
 
 export function MandatoryEchoFlow({
   reflection,
   onComplete,
   todaysLessonTitle,
+  skipIntroPhase = false,
 }: MandatoryEchoFlowProps) {
   const [response, setResponse] = useState('');
   const [isOpenToConnect, setIsOpenToConnect] = useState(false);
-  const [phase, setPhase] = useState<'intro' | 'reading' | 'writing' | 'sending' | 'complete'>('intro');
+  // Skip intro phase if coaching modal was already shown (prevents double popup)
+  const [phase, setPhase] = useState<'intro' | 'reading' | 'writing' | 'sending' | 'complete'>(
+    skipIntroPhase ? 'reading' : 'intro'
+  );
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -247,8 +252,9 @@ export function MandatoryEchoFlow({
                   <WisdomText
                     variant="insight"
                     animate={true}
-                    staggerDelay={0.18}
-                    maxWordsPerStanza={15}
+                    staggerDelay={0.7}
+                    maxWordsPerStanza={12}
+                    initialDelay={0.4}
                   >
                     {reflection.content}
                   </WisdomText>

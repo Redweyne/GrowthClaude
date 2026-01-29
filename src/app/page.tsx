@@ -105,6 +105,7 @@ export default function Home() {
   const [showEchoPrompt, setShowEchoPrompt] = useState(false);
   const [reflectionForReview, setReflectionForReview] = useState<PublicReflection | null>(null);
   const [completedLessonInfo, setCompletedLessonInfo] = useState<{ id: string; title: string } | null>(null);
+  const [skipEchoIntro, setSkipEchoIntro] = useState(false); // Track if coaching was shown to skip echo intro
 
   // Story state
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
@@ -320,12 +321,16 @@ export default function Home() {
     setFlexibleLessonProgress(null);
 
     // Show coaching before echo if first session
+    // Set skipEchoIntro to true so MandatoryEchoFlow skips its own intro (prevents double popup)
     if (isFirstSession() && !isCoachingStepSeen('afterLessonBeforeEcho')) {
+      setSkipEchoIntro(true);
       showCoaching('afterLessonBeforeEcho');
       // Don't navigate yet - will navigate when coaching is dismissed
       return;
     }
 
+    // No coaching shown, so show the echo intro
+    setSkipEchoIntro(false);
     // Go to mandatory echo (no skipping!)
     setCurrentView('mandatory-echo');
   };
@@ -652,6 +657,7 @@ export default function Home() {
           reflection={reflectionForReview}
           todaysLessonTitle={completedLessonInfo?.title || todaysLesson?.title || ''}
           onComplete={handleMandatoryEchoComplete}
+          skipIntroPhase={skipEchoIntro}
         />
       </>
     );

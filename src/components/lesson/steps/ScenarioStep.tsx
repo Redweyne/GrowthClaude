@@ -72,12 +72,13 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="space-y-6 sm:space-y-5">
-          {/* The narrative - breathable, readable stanzas */}
+          {/* The narrative - breathable, readable stanzas with slow reveal */}
           <WisdomText
             variant="narrative"
             animate={true}
-            staggerDelay={0.2}
-            maxWordsPerStanza={16}
+            staggerDelay={0.7}
+            maxWordsPerStanza={10}
+            initialDelay={0.5}
           >
             {step.narrative}
           </WisdomText>

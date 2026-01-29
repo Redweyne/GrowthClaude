@@ -23,8 +23,9 @@ interface WisdomTextProps {
   className?: string;
   variant?: 'narrative' | 'insight' | 'question' | 'instruction';
   animate?: boolean;
-  staggerDelay?: number;
-  maxWordsPerStanza?: number;
+  staggerDelay?: number; // Time between stanzas (default 0.7s for slow contemplative pace)
+  maxWordsPerStanza?: number; // Maximum words per chunk (default 10 for readability)
+  initialDelay?: number; // Delay before first stanza appears (default 0.4s)
   onComplete?: () => void;
 }
 
@@ -102,8 +103,9 @@ export function WisdomText({
   className = '',
   variant = 'narrative',
   animate = true,
-  staggerDelay = 0.15,
-  maxWordsPerStanza = 18,
+  staggerDelay = 0.7, // Slow, contemplative pace (700ms between stanzas)
+  maxWordsPerStanza = 10, // Smaller chunks for better readability
+  initialDelay = 0.4, // 400ms pause before first stanza
   onComplete,
 }: WisdomTextProps) {
   const [visibleStanzas, setVisibleStanzas] = useState(animate ? 0 : Infinity);
@@ -115,7 +117,7 @@ export function WisdomText({
 
   const styles = variantStyles[variant];
 
-  // Progressive reveal effect
+  // Progressive reveal effect with initial delay for contemplative reading
   useEffect(() => {
     if (!animate) {
       setVisibleStanzas(stanzas.length);
@@ -127,20 +129,23 @@ export function WisdomText({
     const timers: NodeJS.Timeout[] = [];
 
     stanzas.forEach((_, index) => {
+      // Add initial delay before first stanza, then stagger subsequent ones
+      const delay = (initialDelay * 1000) + (index * staggerDelay * 1000);
+      
       const timer = setTimeout(() => {
         setVisibleStanzas(index + 1);
 
         // Call onComplete when all stanzas are visible
         if (index === stanzas.length - 1 && onComplete) {
-          setTimeout(onComplete, 200);
+          setTimeout(onComplete, 300);
         }
-      }, (index + 1) * staggerDelay * 1000);
+      }, delay);
 
       timers.push(timer);
     });
 
     return () => timers.forEach(clearTimeout);
-  }, [children, animate, stanzas.length, staggerDelay, onComplete]);
+  }, [children, animate, stanzas.length, staggerDelay, initialDelay, onComplete]);
 
   // If just one short sentence, render simply
   if (stanzas.length === 1 && stanzas[0].split(/\s+/).length <= 10) {

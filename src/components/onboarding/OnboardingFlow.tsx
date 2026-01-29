@@ -74,6 +74,14 @@ export function OnboardingFlow() {
     };
   }, [initializeAudio]);
 
+  // Cleanup audio when component unmounts (fallback safety)
+  useEffect(() => {
+    return () => {
+      // Ensure all audio stops when leaving onboarding
+      audio.stopAllAudio();
+    };
+  }, [audio]);
+
   // Play sounds on step changes
   useEffect(() => {
     if (mounted && prevStepRef.current !== onboardingStep) {
@@ -105,8 +113,9 @@ export function OnboardingFlow() {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      // Completing onboarding - stop ALL music immediately
-      // No transition music - just silence for dashboard
+      // Completing onboarding - properly exit the audio scene and stop ALL music
+      // This ensures no audio continues into the dashboard
+      contextualAudio.exitScene({ immediate: true });
       audio.stopAllAudio();
 
       // Small delay for clean transition
@@ -114,7 +123,7 @@ export function OnboardingFlow() {
         completeOnboarding();
       }, 300);
     }
-  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio]);
+  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio, contextualAudio]);
 
   const prevStep = useCallback(() => {
     if (onboardingStep > 0) {
@@ -176,27 +185,27 @@ export function OnboardingFlow() {
       {/* Atmospheric background - deeper for onboarding */}
       <AmbientBackground intensity="vivid" particleCount={20} orbCount={4} />
 
-      {/* Progress indicator - elegant arc of dots */}
+      {/* Progress indicator - elegant arc of dots (mobile-optimized) */}
       {onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 && (
         <motion.div
-          className="fixed top-6 left-1/2 -translate-x-1/2 z-50"
+          className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-xs sm:max-w-none sm:w-auto"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="flex flex-col items-center gap-3">
-            {/* Current step label */}
+          <div className="flex flex-col items-center gap-2 sm:gap-3">
+            {/* Current step label - smaller on mobile, truncated if needed */}
             <motion.span
               key={onboardingStep}
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
+              className="text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase text-stone-500 font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-2"
             >
               {t(`onboarding.steps.${STEP_KEYS[onboardingStep]}`)}
             </motion.span>
 
-            {/* Dots */}
-            <div className="flex items-center gap-3">
+            {/* Dots - smaller gap and size on mobile */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {[1, 2, 3, 4, 5, 6].map((step) => (
                 <motion.div
                   key={step}
@@ -222,9 +231,9 @@ export function OnboardingFlow() {
                     />
                   )}
 
-                  {/* Dot */}
+                  {/* Dot - smaller on mobile */}
                   <motion.div
-                    className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
+                    className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all duration-500 ${
                       onboardingStep > step
                         ? 'bg-amber-500'
                         : onboardingStep === step
@@ -251,7 +260,7 @@ export function OnboardingFlow() {
                       className="absolute inset-0 flex items-center justify-center"
                     >
                       <svg
-                        className="w-2 h-2 text-stone-950"
+                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-stone-950"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -272,8 +281,8 @@ export function OnboardingFlow() {
         </motion.div>
       )}
 
-      {/* Step content */}
-      <div className={`relative z-10 flex-1 flex justify-center p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-24' : 'items-center'}`}>
+      {/* Step content - adjusted padding for mobile */}
+      <div className={`relative z-10 flex-1 flex justify-center p-4 sm:p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-20 sm:pt-24' : 'items-center'}`}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={onboardingStep}
