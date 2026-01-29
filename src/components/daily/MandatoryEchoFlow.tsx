@@ -22,6 +22,7 @@ import { Card } from '@/components/ui/Card';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useTranslation } from '@/i18n';
 import { getGenderLabel } from '@/types/echoes';
 import type { PublicReflection } from '@/types/echoes';
 
@@ -49,6 +50,7 @@ export function MandatoryEchoFlow({
 
   const { sendEchoResponse, markReflectionResponded, genderIdentity, setGenderIdentity } = useEchoesStore();
   const { hapticLight, hapticMedium, hapticSuccess } = useHaptics();
+  const { t } = useTranslation();
 
   // Ensure gender identity is set (fallback to 'traveler' if not set during onboarding)
   useEffect(() => {
@@ -90,13 +92,12 @@ export function MandatoryEchoFlow({
     sendEchoResponse(reflection, response.trim(), isOpenToConnect);
     markReflectionResponded(reflection.id);
 
-    // Brief pause, then complete with celebration haptic
+    // Brief pause, then show completion phase (user will click button to proceed)
     setTimeout(() => {
       setPhase('complete');
       hapticSuccess();
-      setTimeout(() => onComplete(reflection.id), 1500);
     }, 800);
-  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, onComplete, hapticSuccess]);
+  }, [isSubstantial, genderIdentity, sendEchoResponse, reflection, response, isOpenToConnect, markReflectionResponded, hapticSuccess]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -130,13 +131,13 @@ export function MandatoryEchoFlow({
           animate={{ opacity: 1 }}
           className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
         >
-          Phase 2: The Echo
+          {t('echoes.mandatory.phaseLabel')}
         </motion.span>
 
         {/* Phase indicator instead of skip */}
         <div className="flex items-center gap-2 text-amber-500">
           <Users size={16} />
-          <span className="text-xs font-medium">Community Connection</span>
+          <span className="text-xs font-medium">{t('echoes.mandatory.communityConnection')}</span>
         </div>
       </div>
 
@@ -171,7 +172,7 @@ export function MandatoryEchoFlow({
                     transition={{ delay: 0.2 }}
                     className="text-2xl font-semibold text-stone-100 mb-3"
                   >
-                    Connect Before You Practice
+                    {t('echoes.mandatory.connectBeforePractice')}
                   </motion.h2>
 
                   <motion.p
@@ -180,8 +181,7 @@ export function MandatoryEchoFlow({
                     transition={{ delay: 0.3 }}
                     className="text-stone-400 mb-6"
                   >
-                    Before your exercises, take a moment to encourage a fellow traveler.
-                    Your words might be exactly what they need today.
+                    {t('echoes.mandatory.encourageTraveler')}
                   </motion.p>
                 </div>
 
@@ -192,7 +192,7 @@ export function MandatoryEchoFlow({
                     </div>
                     <div>
                       <p className="text-stone-300 text-sm">
-                        <strong className="text-amber-400">Why this matters:</strong> When you reflect on someone else&apos;s journey, you deepen your own understanding. Teaching is the highest form of learning.
+                        <strong className="text-amber-400">{t('echoes.mandatory.whyMatters')}</strong> {t('echoes.mandatory.whyMattersDesc')}
                       </p>
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export function MandatoryEchoFlow({
                     glow
                     className="w-full group"
                   >
-                    Read a Fellow Traveler&apos;s Reflection
+                    {t('echoes.mandatory.readReflection')}
                     <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </motion.div>
@@ -252,9 +252,9 @@ export function MandatoryEchoFlow({
                   <WisdomText
                     variant="insight"
                     animate={true}
-                    staggerDelay={0.7}
-                    maxWordsPerStanza={12}
-                    initialDelay={0.4}
+                    staggerDelay={1.5}
+                    maxWordsPerStanza={5}
+                    initialDelay={0.6}
                   >
                     {reflection.content}
                   </WisdomText>
@@ -270,7 +270,7 @@ export function MandatoryEchoFlow({
                   transition={{ delay: 0.5 }}
                   className="text-center text-stone-400 text-sm"
                 >
-                  Take a moment to really absorb their words...
+                  {t('echoes.mandatory.absorbWords')}
                 </motion.p>
 
                 {/* Continue button */}
@@ -286,7 +286,7 @@ export function MandatoryEchoFlow({
                     className="w-full group"
                   >
                     <Feather size={18} className="mr-2" />
-                    Write Your Echo
+                    {t('echoes.mandatory.writeYourEcho')}
                     <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </motion.div>
@@ -326,10 +326,10 @@ export function MandatoryEchoFlow({
                   className="text-center"
                 >
                   <p className="text-amber-400 text-sm mb-2 tracking-wide">
-                    Your echo for {reflection.authorGender === 'brother' ? 'him' : reflection.authorGender === 'sister' ? 'her' : 'them'}:
+                    {t('echoes.mandatory.yourEchoFor', { pronoun: reflection.authorGender === 'brother' ? t('echoes.pronounHim') : reflection.authorGender === 'sister' ? t('echoes.pronounHer') : t('echoes.pronounThem') })}
                   </p>
                   <p className="text-stone-300">
-                    Share an insight, word of encouragement, or connection to your own journey.
+                    {t('echoes.mandatory.shareInsight')}
                   </p>
                 </motion.div>
 
@@ -353,7 +353,7 @@ export function MandatoryEchoFlow({
                       onChange={(e) => setResponse(e.target.value)}
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
-                      placeholder="Write your thoughts..."
+                      placeholder={t('echoes.mandatory.writeThoughts')}
                       className="
                         w-full min-h-[160px] p-5
                         bg-transparent text-lg text-stone-200
@@ -367,10 +367,10 @@ export function MandatoryEchoFlow({
                     {/* Word count */}
                     <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
                       <span className="text-stone-500 text-sm">
-                        {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                        {wordCount} {wordCount === 1 ? t('common.word') : t('common.words')}
                       </span>
                       <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600'}`}>
-                        {isSubstantial ? 'Ready to send' : `${10 - wordCount} more words`}
+                        {isSubstantial ? t('echoes.mandatory.readyToSend') : t('echoes.mandatory.moreWords', { count: 10 - wordCount })}
                       </span>
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export function MandatoryEchoFlow({
                         )}
                       </div>
                       <span className="text-stone-400 text-sm">
-                        I&apos;m open to connecting further
+                        {t('echoes.mandatory.openToConnect')}
                       </span>
                     </label>
                   </motion.div>
@@ -432,13 +432,13 @@ export function MandatoryEchoFlow({
                     className="w-full group"
                   >
                     <Heart size={18} className="mr-2" />
-                    Send Echo & Unlock Exercises
+                    {t('echoes.mandatory.sendAndUnlock')}
                     <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
                   </Button>
 
                   {isSubstantial && (
                     <p className="text-center text-xs text-stone-600">
-                      Press Cmd+Enter to send
+                      {t('echoes.mandatory.cmdEnterToSend')}
                     </p>
                   )}
                 </motion.div>
@@ -466,7 +466,7 @@ export function MandatoryEchoFlow({
                 >
                   <Heart size={28} className="text-amber-400" />
                 </motion.div>
-                <p className="text-stone-400">Sending your echo...</p>
+                <p className="text-stone-400">{t('echoes.mandatory.sendingEcho')}</p>
               </motion.div>
             )}
 
@@ -509,31 +509,33 @@ export function MandatoryEchoFlow({
                   transition={{ delay: 0.2 }}
                   className="text-xl font-semibold text-stone-200 mb-2"
                 >
-                  Echo Sent!
+                  {t('echoes.mandatory.echoSent')}
                 </motion.h3>
 
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-stone-400 mb-4"
+                  className="text-stone-400 mb-6"
                 >
-                  Your words will brighten someone&apos;s journey.
+                  {t('echoes.mandatory.wordsWillBrighten')}
                 </motion.p>
 
+                {/* Proceed button - always visible so user can proceed */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="flex items-center gap-2 text-amber-400"
                 >
-                  <span className="text-sm font-medium">Unlocking exercises...</span>
-                  <motion.div
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ duration: 0.8, repeat: Infinity }}
+                  <Button
+                    onClick={() => onComplete(reflection.id)}
+                    size="lg"
+                    glow
+                    className="group"
                   >
-                    →
-                  </motion.div>
+                    {t('echoes.mandatory.continueToExercises')}
+                    <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />
+                  </Button>
                 </motion.div>
               </motion.div>
             )}

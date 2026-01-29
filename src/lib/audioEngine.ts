@@ -941,12 +941,62 @@ export const stopAmbience = stopWritingAmbience;
 // STOP ALL AUDIO
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function stopAllAudio(): void {
-  log('⏹ Stopping all audio');
-  // iOS FIX: Don't use immediate=true as it calls unload() right after stop()
-  // which can crash iOS WebKit. Use a very short fade instead.
-  stopAmbientMusic(0.1, false); // 100ms fade
-  stopWritingAmbience(false);   // Uses default fade
+export function stopAllAudio(immediate: boolean = false): void {
+  log('⏹ Stopping all audio', { immediate });
+  
+  if (immediate) {
+    // IMMEDIATE STOP - Cancel all pending operations and stop NOW
+    // Clear any pending stop timeouts
+    if (pendingMusicStop) {
+      clearTimeout(pendingMusicStop);
+      pendingMusicStop = null;
+    }
+    if (pendingAmbienceStop) {
+      clearTimeout(pendingAmbienceStop);
+      pendingAmbienceStop = null;
+    }
+    
+    // Stop music immediately
+    if (activeMusicHowl && activeMusicId !== null) {
+      try {
+        activeMusicHowl.stop(activeMusicId);
+        // Don't unload on iOS Safari to prevent crashes - just stop
+        if (!isIOSSafari()) {
+          activeMusicHowl.unload();
+        }
+      } catch (e) {
+        logWarn('Error stopping music:', e);
+      }
+      activeMusicHowl = null;
+      activeMusicId = null;
+    }
+    
+    // Stop ambience immediately
+    if (activeAmbienceHowl && activeAmbienceId !== null) {
+      try {
+        activeAmbienceHowl.stop(activeAmbienceId);
+        if (!isIOSSafari()) {
+          activeAmbienceHowl.unload();
+        }
+      } catch (e) {
+        logWarn('Error stopping ambience:', e);
+      }
+      activeAmbienceHowl = null;
+      activeAmbienceId = null;
+    }
+    
+    // Update state
+    engineState.currentMusicTrack = null;
+    engineState.currentAmbienceTrack = null;
+    engineState.isMusicPlaying = false;
+    engineState.isAmbiencePlaying = false;
+    notifyStateChange();
+  } else {
+    // iOS FIX: Don't use immediate=true as it calls unload() right after stop()
+    // which can crash iOS WebKit. Use a very short fade instead.
+    stopAmbientMusic(0.1, false); // 100ms fade
+    stopWritingAmbience(false);   // Uses default fade
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

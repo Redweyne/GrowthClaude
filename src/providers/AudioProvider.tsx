@@ -85,7 +85,7 @@ interface AudioContextValue {
   stopWritingAmbience: () => void;
 
   // Stop all
-  stopAllAudio: () => void;
+  stopAllAudio: (immediate?: boolean) => void;
 
   // Meditation
   playSingingBowl: () => void;
@@ -280,8 +280,8 @@ export function AudioProvider({ children }: AudioProviderProps) {
   }, []);
 
   // Stop all
-  const stopAllAudio = useCallback(() => {
-    engineStopAll();
+  const stopAllAudio = useCallback((immediate?: boolean) => {
+    engineStopAll(immediate);
   }, []);
 
   // Meditation

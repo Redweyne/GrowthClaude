@@ -77,8 +77,8 @@ export function OnboardingFlow() {
   // Cleanup audio when component unmounts (fallback safety)
   useEffect(() => {
     return () => {
-      // Ensure all audio stops when leaving onboarding
-      audio.stopAllAudio();
+      // Ensure all audio stops IMMEDIATELY when leaving onboarding
+      audio.stopAllAudio(true);
     };
   }, [audio]);
 
@@ -113,17 +113,16 @@ export function OnboardingFlow() {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      // Completing onboarding - properly exit the audio scene and stop ALL music
-      // This ensures no audio continues into the dashboard
-      contextualAudio.exitScene({ immediate: true });
-      audio.stopAllAudio();
+      // Completing onboarding - IMMEDIATELY stop ALL audio
+      // Use immediate=true to ensure no audio continues into the dashboard
+      audio.stopAllAudio(true);
 
-      // Small delay for clean transition
+      // Small delay for clean transition, then complete
       setTimeout(() => {
         completeOnboarding();
-      }, 300);
+      }, 100);
     }
-  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio, contextualAudio]);
+  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio]);
 
   const prevStep = useCallback(() => {
     if (onboardingStep > 0) {
@@ -188,12 +187,12 @@ export function OnboardingFlow() {
       {/* Progress indicator - elegant arc of dots (mobile-optimized) */}
       {onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 && (
         <motion.div
-          className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-xs sm:max-w-none sm:w-auto"
+          className="fixed top-2 sm:top-6 left-1/2 -translate-x-1/2 z-50 px-4 w-full max-w-xs sm:max-w-none sm:w-auto"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <div className="flex flex-col items-center gap-2 sm:gap-3">
+          <div className="flex flex-col items-center gap-1 sm:gap-3">
             {/* Current step label - smaller on mobile, truncated if needed */}
             <motion.span
               key={onboardingStep}
@@ -281,8 +280,8 @@ export function OnboardingFlow() {
         </motion.div>
       )}
 
-      {/* Step content - adjusted padding for mobile */}
-      <div className={`relative z-10 flex-1 flex justify-center p-4 sm:p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-20 sm:pt-24' : 'items-center'}`}>
+      {/* Step content - adjusted padding for mobile to avoid overlap with indicator */}
+      <div className={`relative z-10 flex-1 flex justify-center p-4 sm:p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-24 sm:pt-24' : 'items-center'}`}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={onboardingStep}

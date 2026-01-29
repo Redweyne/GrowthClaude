@@ -119,13 +119,13 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             </div>
           )}
 
-          {/* The wisdom text - breathable, readable stanzas with slow reveal */}
+          {/* The wisdom text - breathable, readable stanzas with SLOW contemplative reveal */}
           <WisdomText
             variant="insight"
             animate={true}
-            staggerDelay={0.7}
-            maxWordsPerStanza={10}
-            initialDelay={0.5}
+            staggerDelay={1.5}
+            maxWordsPerStanza={5}
+            initialDelay={0.8}
           >
             {step.text}
           </WisdomText>
