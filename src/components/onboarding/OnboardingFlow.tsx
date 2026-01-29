@@ -20,6 +20,7 @@ import { useStore } from '@/store/useStore';
 import { AmbientBackground } from '@/components/ambient';
 import { useContextualAudio } from '@/hooks/useContextualAudio';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { NameStep } from './steps/NameStep';
 import { IdentityStep } from './steps/IdentityStep';
@@ -31,21 +32,12 @@ import { ReadyStep } from './steps/ReadyStep';
 
 const TOTAL_STEPS = 8;
 
-// Step titles for context
-// Order: Welcome → Name → Identity → Goal → Why → Path → Commitment → Ready
-const STEP_LABELS = [
-  'Welcome',
-  'Your Name',
-  'Community',
-  'Vision',
-  'Purpose',
-  'The Path',
-  'Commitment',
-  'Begin',
-];
+// Step translation keys (order: Welcome → Name → Identity → Goal → Why → Path → Commitment → Ready)
+const STEP_KEYS = ['welcome', 'yourName', 'community', 'vision', 'purpose', 'thePath', 'commitment', 'begin'];
 
 export function OnboardingFlow() {
   const { onboardingStep, setOnboardingStep, completeOnboarding } = useStore();
+  const { t } = useTranslation();
   const [direction, setDirection] = useState(1);
   const [mounted, setMounted] = useState(false);
   
@@ -200,7 +192,7 @@ export function OnboardingFlow() {
               animate={{ opacity: 1, y: 0 }}
               className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
             >
-              {STEP_LABELS[onboardingStep]}
+              {t(`onboarding.steps.${STEP_KEYS[onboardingStep]}`)}
             </motion.span>
 
             {/* Dots */}
@@ -281,7 +273,7 @@ export function OnboardingFlow() {
       )}
 
       {/* Step content */}
-      <div className={`relative z-10 flex-1 flex items-center justify-center p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'pt-24' : ''}`}>
+      <div className={`relative z-10 flex-1 flex justify-center p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-24' : 'items-center'}`}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={onboardingStep}

@@ -64,10 +64,10 @@ export interface DailyCommitment {
 }
 
 export const DAILY_COMMITMENTS: DailyCommitment[] = [
-  { minutes: 3, label: '3 min', description: 'Quick daily reflection' },
-  { minutes: 5, label: '5 min', description: 'Balanced growth' },
-  { minutes: 10, label: '10 min', description: 'Deeper practice' },
-  { minutes: 15, label: '15 min', description: 'Intensive transformation' },
+  { minutes: 5, label: '5 min', description: 'Just start' },
+  { minutes: 10, label: '10 min', description: 'Recommended' },
+  { minutes: 15, label: '15 min', description: 'Go deeper' },
+  { minutes: 20, label: '20 min', description: 'Transform' },
 ];
 
 // Lesson Types

@@ -162,6 +162,15 @@ export default function Home() {
     initializeToday(allWorlds);
   }, []);
 
+  // Handle missing reflection for mandatory echo
+  // (must be declared here with all other hooks, before any conditional returns)
+  useEffect(() => {
+    if (currentView === 'mandatory-echo' && !reflectionForReview) {
+      completeMandatoryEcho('no-reflection-available');
+      setCurrentView('exercises');
+    }
+  }, [currentView, reflectionForReview, completeMandatoryEcho]);
+
   // Get daily practice state
   const todaysLesson = getTodaysLesson(allWorlds);
   const tomorrowsLesson = getTomorrowsLesson(allWorlds);
@@ -647,15 +656,6 @@ export default function Home() {
       </>
     );
   }
-
-  // Handle missing reflection for mandatory echo (move to useEffect for proper React patterns)
-  useEffect(() => {
-    if (currentView === 'mandatory-echo' && !reflectionForReview) {
-      // No reflection available, skip echo phase
-      completeMandatoryEcho('no-reflection-available');
-      setCurrentView('exercises');
-    }
-  }, [currentView, reflectionForReview, completeMandatoryEcho]);
 
   // Exercise experience - 5 exercises after echo
   if (currentView === 'exercises' && todaysLesson?.exercises) {
