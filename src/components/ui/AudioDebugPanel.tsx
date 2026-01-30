@@ -40,24 +40,9 @@ function formatData(data?: Record<string, unknown>): string {
 export function AudioDebugPanel() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(false);
-  const [isAudioDebugEnabled, setIsAudioDebugEnabled] = useState(false);
   const [logs, setLogs] = useState<DebugLogEntry[]>([]);
   const [copyStatus, setCopyStatus] = useState('');
-  const { state, playTap, startMusic, stopAllAudio } = useAudio();
-
-  // Check if audio debug is enabled
-  useEffect(() => {
-    const checkDebug = () => {
-      const enabled = localStorage.getItem('AUDIO_DEBUG') === 'true';
-      setIsAudioDebugEnabled(enabled);
-    };
-    
-    checkDebug();
-    
-    // Re-check periodically
-    const interval = setInterval(checkDebug, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  const { state } = useAudio();
 
   // Enable app debug via query param or localStorage
   useEffect(() => {
@@ -66,6 +51,7 @@ export function AudioDebugPanel() {
     const debugParam = params.get('debug');
     if (debugParam === '1') {
       localStorage.setItem('APP_DEBUG', 'true');
+      localStorage.setItem('AUDIO_DEBUG', 'true');
       setDebugEnabled(true);
       setIsVisible(true);
       logDebug('Debug enabled via query param', {
@@ -73,6 +59,7 @@ export function AudioDebugPanel() {
         query: window.location.search,
       });
     } else if (localStorage.getItem('APP_DEBUG') === 'true') {
+      localStorage.setItem('AUDIO_DEBUG', 'true');
       setDebugEnabled(true);
       setIsVisible(true);
     }
@@ -171,12 +158,6 @@ export function AudioDebugPanel() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const toggleAudioDebug = useCallback(() => {
-    const newValue = localStorage.getItem('AUDIO_DEBUG') !== 'true';
-    localStorage.setItem('AUDIO_DEBUG', String(newValue));
-    setIsAudioDebugEnabled(newValue);
-  }, []);
-
   const visibleLogs = useMemo(() => logs.slice(-MAX_VISIBLE), [logs]);
 
   const handleCopy = useCallback(async () => {
@@ -212,19 +193,18 @@ export function AudioDebugPanel() {
     logDebug('Logs cleared');
   }, []);
 
-  const handleToggle = useCallback(() => {
-    const next = !isDebugEnabled();
-    localStorage.setItem('APP_DEBUG', String(next));
-    setDebugEnabled(next);
-    if (next) {
-      setIsVisible(true);
-      logDebug('Debug enabled via toggle');
-    } else {
-      setIsVisible(false);
-    }
-  }, []);
-
-  if (!isVisible || !isDebugEnabled()) return null;
+  if (!isDebugEnabled()) return null;
+  if (!isVisible) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsVisible(true)}
+        className="fixed top-4 right-4 z-[9999] rounded-full bg-amber-500/30 text-amber-100 px-3 py-2 text-xs font-semibold shadow-lg"
+      >
+        Logs
+      </button>
+    );
+  }
 
   return (
     <div className="fixed top-4 right-4 z-[9999] w-80 bg-black/90 border border-amber-500/40 rounded-lg p-4 text-xs font-mono text-white shadow-2xl">
@@ -234,7 +214,7 @@ export function AudioDebugPanel() {
           onClick={() => setIsVisible(false)}
           className="text-stone-500 hover:text-white"
         >
-          ✕
+          Minimize
         </button>
       </div>
 
@@ -252,13 +232,6 @@ export function AudioDebugPanel() {
           className="px-2 py-1 rounded bg-stone-700/60 text-stone-200 hover:bg-stone-600/70"
         >
           Clear
-        </button>
-        <button
-          type="button"
-          onClick={handleToggle}
-          className="ml-auto px-2 py-1 rounded bg-stone-800 text-stone-300 hover:bg-stone-700"
-        >
-          Disable
         </button>
       </div>
 
@@ -353,43 +326,8 @@ export function AudioDebugPanel() {
         </div>
       )}
 
-      {/* Test buttons */}
-      <div className="space-y-2 border-t border-stone-700 pt-3">
-        <div className="flex gap-2">
-          <button
-            onClick={() => playTap()}
-            className="flex-1 px-2 py-1 bg-stone-700 hover:bg-stone-600 rounded text-xs"
-          >
-            Test Tap
-          </button>
-          <button
-            onClick={() => startMusic('reflection', 1)}
-            className="flex-1 px-2 py-1 bg-stone-700 hover:bg-stone-600 rounded text-xs"
-          >
-            Test Music
-          </button>
-        </div>
-        <button
-          onClick={() => stopAllAudio()}
-          className="w-full px-2 py-1 bg-red-900/50 hover:bg-red-800/50 rounded text-xs text-red-300"
-        >
-          Stop All Audio
-        </button>
-      </div>
-
-      {/* Debug toggle */}
       <div className="mt-3 pt-3 border-t border-stone-700">
-        <button
-          onClick={toggleAudioDebug}
-          className={`w-full px-2 py-1 rounded text-xs ${
-            isAudioDebugEnabled 
-              ? 'bg-cyan-900/50 text-cyan-300' 
-              : 'bg-stone-700 text-stone-400'
-          }`}
-        >
-          Audio Console Logging: {isAudioDebugEnabled ? 'ON' : 'OFF'}
-        </button>
-        <p className="mt-2 text-stone-500 text-center">
+        <p className="text-stone-500 text-center">
           Press Ctrl+Shift+A to toggle panel
         </p>
       </div>

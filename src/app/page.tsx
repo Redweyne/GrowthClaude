@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
@@ -25,6 +25,7 @@ import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
 import { SettingsPanel } from '@/components/settings';
 import { useTransformationStory } from '@/hooks';
+import { useAudio } from '@/hooks/useAudio';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
 import { getLevelFromXp } from '@/types';
 import type { PublicReflection } from '@/types/echoes';
@@ -111,6 +112,8 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const { generateStory, canGenerateStory, generateDemoStory } = useTransformationStory();
+  const { stopAllAudio } = useAudio();
+  const prevOnboardingCompleteRef = useRef(onboardingComplete);
 
   // Coaching modal state (first-session guidance)
   const [coachingModal, setCoachingModal] = useState<CoachingStep | null>(null);
@@ -121,6 +124,13 @@ export default function Home() {
       setCoachingModal(step);
     }
   }, [isFirstSession, isCoachingStepSeen]);
+
+  useEffect(() => {
+    if (!prevOnboardingCompleteRef.current && onboardingComplete) {
+      stopAllAudio(true);
+    }
+    prevOnboardingCompleteRef.current = onboardingComplete;
+  }, [onboardingComplete, stopAllAudio]);
 
   // Handle opening the story
   const handleOpenStory = useCallback(() => {
