@@ -252,9 +252,7 @@ export function MandatoryEchoFlow({
                   <WisdomText
                     variant="insight"
                     animate={true}
-                    staggerDelay={1.5}
-                    maxWordsPerStanza={5}
-                    initialDelay={0.6}
+                    speed="slow"
                   >
                     {reflection.content}
                   </WisdomText>

@@ -112,7 +112,7 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const { generateStory, canGenerateStory, generateDemoStory } = useTransformationStory();
-  const { stopMusic, stopAmbience } = useAudio();
+  const { stopAllAudio } = useAudio();
   const prevOnboardingCompleteRef = useRef(onboardingComplete);
 
   // Coaching modal state (first-session guidance)
@@ -127,11 +127,12 @@ export default function Home() {
 
   useEffect(() => {
     if (!prevOnboardingCompleteRef.current && onboardingComplete) {
-      stopMusic(0.1);
-      stopAmbience();
+      // Onboarding just completed - ensure all audio is stopped
+      // The debounce in audioEngine handles if this was already called by OnboardingFlow
+      stopAllAudio(true);
     }
     prevOnboardingCompleteRef.current = onboardingComplete;
-  }, [onboardingComplete, stopMusic, stopAmbience]);
+  }, [onboardingComplete, stopAllAudio]);
 
   // Handle opening the story
   const handleOpenStory = useCallback(() => {

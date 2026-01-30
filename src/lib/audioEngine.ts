@@ -201,6 +201,11 @@ let pendingAmbienceStop: ReturnType<typeof setTimeout> | null = null;
 // Retry queue for failed audio
 const retryQueue: Array<() => void> = [];
 
+// Stop lock - prevents multiple concurrent stop attempts
+let isStoppingAll = false;
+let lastStopAllTime = 0;
+const STOP_DEBOUNCE_MS = 500;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // DEBOUNCE - Prevent double-plays
 // ─────────────────────────────────────────────────────────────────────────────
@@ -951,6 +956,16 @@ export const stopAmbience = stopWritingAmbience;
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function stopAllAudio(immediate: boolean = false): void {
+  // Debounce multiple stop calls to prevent race conditions
+  const now = Date.now();
+  if (isStoppingAll || (now - lastStopAllTime < STOP_DEBOUNCE_MS)) {
+    log('Debounced stopAllAudio call');
+    return;
+  }
+  
+  isStoppingAll = true;
+  lastStopAllTime = now;
+  
   log('⏹ Stopping all audio', { immediate });
 
   // Clear any pending retries that could restart audio after stop
@@ -1005,12 +1020,26 @@ export function stopAllAudio(immediate: boolean = false): void {
     engineState.isMusicPlaying = false;
     engineState.isAmbiencePlaying = false;
     notifyStateChange();
+    
+    // Release lock after immediate stop
+    isStoppingAll = false;
   } else {
     // iOS FIX: Don't use immediate=true as it calls unload() right after stop()
     // which can crash iOS WebKit. Use a very short fade instead.
     stopAmbientMusic(0.1, false); // 100ms fade
     stopWritingAmbience(false);   // Uses default fade
+    
+    // Release lock after a short delay
+    setTimeout(() => {
+      isStoppingAll = false;
+    }, 200);
   }
+}
+
+// Exit onboarding - a dedicated function for clean transition out of onboarding
+export function exitOnboarding(): void {
+  log('🚪 Exiting onboarding audio');
+  stopAllAudio(true); // Immediate stop
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1159,6 +1188,7 @@ export default {
   startWritingAmbience,
   stopWritingAmbience,
   stopAllAudio,
+  exitOnboarding,
   playSingingBowl,
   playGong,
   playBreathingTone,

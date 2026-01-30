@@ -1,15 +1,15 @@
 'use client';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// INSIGHT STEP - THE REVELATION
-// ═══════════════════════════════════════════════════════════════════════════
+// ==============================================================================
+// INSIGHT STEP - The Revelation
+// ==============================================================================
 //
 // Wisdom delivered cleanly and readably.
-// No word-by-word reveals that feel buggy.
+// Button only appears after text finishes animating.
 //
-// ═══════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Quote, Lightbulb, Sparkles, RefreshCw } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
@@ -53,6 +53,7 @@ const STYLE_CONFIG = {
 };
 
 export function InsightStep({ step, onComplete }: InsightStepProps) {
+  // Button only shows AFTER text animation completes
   const [showButton, setShowButton] = useState(false);
 
   // Audio for revelation moments
@@ -62,21 +63,23 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
   const config = STYLE_CONFIG[style];
   const Icon = config.icon;
 
-  // Play revelation sound when insight appears
-  useEffect(() => {
-    // Different sounds for different insight styles
+  // Called when the main text animation finishes
+  const handleTextComplete = useCallback(() => {
+    // Play sound when wisdom is revealed
     if (style === 'quote') {
-      playBell(); // Gentle bell for quotes
+      playBell();
     } else {
-      playReveal(); // Revelation sound for principles/insights
+      playReveal();
     }
+    // Now show the button
+    setShowButton(true);
   }, [style, playBell, playReveal]);
 
-  // Simple delay before showing button
-  useEffect(() => {
-    const timer = setTimeout(() => setShowButton(true), 600);
-    return () => clearTimeout(timer);
-  }, []);
+  // Handle continue button click
+  const handleContinue = useCallback(() => {
+    playSuccess();
+    onComplete();
+  }, [playSuccess, onComplete]);
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
@@ -119,23 +122,22 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             </div>
           )}
 
-          {/* The wisdom text - breathable, readable stanzas with SLOW contemplative reveal */}
+          {/* The wisdom text - clean sentence-by-sentence reveal */}
           <WisdomText
             variant="insight"
             animate={true}
-            staggerDelay={0.9}
-            maxWordsPerStanza={12}
-            initialDelay={0.6}
+            speed="slow"
+            onComplete={handleTextComplete}
           >
             {step.text}
           </WisdomText>
 
           {/* Source attribution */}
-          {step.source && (
+          {step.source && showButton && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.2 }}
               className="space-y-1 pt-3"
             >
               <p className={`${config.accent} font-medium text-lg`}>
@@ -150,11 +152,11 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
           )}
 
           {/* Follow up text */}
-          {step.followUp && (
+          {step.followUp && showButton && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.0 }}
+              transition={{ delay: 0.3 }}
               className="pt-6 border-t border-stone-800"
             >
               <WisdomText
@@ -166,20 +168,17 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             </motion.div>
           )}
 
-          {/* Continue button */}
+          {/* Continue button - only shows after text is complete */}
           {showButton && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
               className="pt-4"
             >
               <Button
                 size="lg"
-                onClick={() => {
-                  playSuccess();
-                  onComplete();
-                }}
+                onClick={handleContinue}
                 glow
                 className="w-full group"
               >

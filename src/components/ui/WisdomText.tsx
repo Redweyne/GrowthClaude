@@ -1,22 +1,21 @@
 'use client';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// WISDOM TEXT - BREATHABLE TYPOGRAPHY FOR MOBILE
-// ═══════════════════════════════════════════════════════════════════════════
+// ==============================================================================
+// WISDOM TEXT - Clean, Reliable Text Display for Lessons
+// ==============================================================================
 //
-// This component transforms dense blocks of text into beautiful, readable
-// "stanzas" that breathe on mobile screens. Like poetry for wisdom.
+// This component displays text in a clean, readable way with optional animation.
+// Inspired by the onboarding's phase-based approach which is smooth and reliable.
 //
-// Features:
-// - Automatic sentence/phrase splitting for visual breathing room
-// - Progressive reveal animation (optional)
-// - Word-by-word reveal mode for slower, contemplative reading
-// - Mobile-optimized line heights and spacing
-// - Haptic feedback on key phrases (optional)
+// Key principles:
+// - Simple sentence-by-sentence reveal (not word-by-word which is buggy)
+// - Clear callback when text is complete (for button timing)
+// - Proper cleanup to prevent memory leaks or weird behavior
+// - Clean typography optimized for mobile
 //
-// ═══════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface WisdomTextProps {
@@ -24,79 +23,35 @@ interface WisdomTextProps {
   className?: string;
   variant?: 'narrative' | 'insight' | 'question' | 'instruction';
   animate?: boolean;
-  staggerDelay?: number; // Time between chunks (default 1.2s for slow contemplative pace)
-  maxWordsPerStanza?: number; // Maximum words per chunk (default 6 for very small chunks)
-  initialDelay?: number; // Delay before first chunk appears (default 0.5s)
-  wordByWord?: boolean; // Enable word-by-word reveal mode (even slower)
+  speed?: 'slow' | 'normal' | 'fast'; // Control overall reveal speed
   onComplete?: () => void;
 }
 
-// Split text into natural reading chunks (stanzas)
-function splitIntoStanzas(text: string, maxWords: number = 20): string[] {
-  // First, try to split by sentence endings
-  const sentences = text.split(/(?<=[.!?])\s+/);
-
-  const stanzas: string[] = [];
-  let currentStanza = '';
-  let currentWordCount = 0;
-
-  for (const sentence of sentences) {
-    const sentenceWords = sentence.trim().split(/\s+/).length;
-
-    // If a single sentence is longer than maxWords, try splitting by clauses
-    if (sentenceWords > maxWords) {
-      const clauses = sentence.split(/(?<=[,;:—–])\s+/);
-      if (clauses.length > 1) {
-        for (const clause of clauses) {
-          const clauseWords = clause.trim().split(/\s+/).length;
-          if (currentWordCount + clauseWords > maxWords && currentStanza) {
-            stanzas.push(currentStanza.trim());
-            currentStanza = clause;
-            currentWordCount = clauseWords;
-          } else {
-            currentStanza = currentStanza ? `${currentStanza} ${clause}` : clause;
-            currentWordCount += clauseWords;
-          }
-        }
-        continue;
-      }
-    }
-
-    // If adding this sentence would exceed limit and we have content,
-    // push current stanza and start new one
-    if (currentWordCount + sentenceWords > maxWords && currentStanza) {
-      stanzas.push(currentStanza.trim());
-      currentStanza = sentence;
-      currentWordCount = sentenceWords;
-    } else {
-      // Add to current stanza
-      currentStanza = currentStanza ? `${currentStanza} ${sentence}` : sentence;
-      currentWordCount += sentenceWords;
+// Split text into natural sentences
+function splitIntoSentences(text: string): string[] {
+  // Split on sentence boundaries but keep the punctuation
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  
+  // If no sentence boundaries found, split by clauses or return as-is
+  if (sentences.length === 1 && sentences[0].length > 100) {
+    // Try splitting by semicolons, colons, or long dashes
+    const clauses = text
+      .split(/(?<=[;:—–])\s+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+    
+    if (clauses.length > 1) {
+      return clauses;
     }
   }
-
-  // Push any remaining content
-  if (currentStanza.trim()) {
-    stanzas.push(currentStanza.trim());
-  }
-
-  // If we only got one stanza and it's long, try splitting by commas/semicolons
-  if (stanzas.length === 1 && stanzas[0].split(/\s+/).length > maxWords) {
-    const parts = stanzas[0].split(/(?<=[,;—–])\s+/);
-    if (parts.length > 1) {
-      return parts.map(p => p.trim()).filter(Boolean);
-    }
-  }
-
-  return stanzas;
+  
+  return sentences.length > 0 ? sentences : [text];
 }
 
-// Split text into individual words for word-by-word mode
-function splitIntoWords(text: string): string[] {
-  return text.split(/\s+/).filter(Boolean);
-}
-
-// Variant styles
+// Variant styles - clean, readable typography
 const variantStyles = {
   narrative: {
     base: 'text-stone-200',
@@ -124,116 +79,126 @@ const variantStyles = {
   },
 };
 
+// Timing configurations based on speed
+const speedConfigs = {
+  slow: { initialDelay: 600, sentenceDelay: 1200 },
+  normal: { initialDelay: 400, sentenceDelay: 800 },
+  fast: { initialDelay: 200, sentenceDelay: 500 },
+};
+
 export function WisdomText({
   children,
   className = '',
   variant = 'narrative',
   animate = true,
-  staggerDelay = 0.9, // Balanced pace between chunks
-  maxWordsPerStanza = 12, // Keep sentences intact while still chunking
-  initialDelay = 0.6, // Brief pause before first chunk
-  wordByWord = false, // Word-by-word mode for maximum slowness
+  speed = 'normal',
   onComplete,
 }: WisdomTextProps) {
-  const [visibleCount, setVisibleCount] = useState(animate ? 0 : Infinity);
-
-  // For word-by-word mode, split into individual words
-  // Otherwise, split into stanzas
-  const chunks = useMemo(() => {
-    if (wordByWord) {
-      return splitIntoWords(children);
-    }
-    return splitIntoStanzas(children, maxWordsPerStanza);
-  }, [children, maxWordsPerStanza, wordByWord]);
-
+  // Split text into sentences once
+  const sentences = useMemo(() => splitIntoSentences(children), [children]);
+  
+  // Track which sentences are visible (by count, not by index array)
+  const [visibleCount, setVisibleCount] = useState(animate ? 0 : sentences.length);
+  
+  // Use ref for mounted check and timer tracking
+  const mountedRef = useRef(true);
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const hasCompletedRef = useRef(false);
+  
   const styles = variantStyles[variant];
-
-  // Progressive reveal effect with initial delay for contemplative reading
+  const timing = speedConfigs[speed];
+  
+  // Stable onComplete callback
+  const handleComplete = useCallback(() => {
+    if (!hasCompletedRef.current && onComplete) {
+      hasCompletedRef.current = true;
+      onComplete();
+    }
+  }, [onComplete]);
+  
+  // Progressive reveal effect
   useEffect(() => {
+    // Reset state for new text
+    hasCompletedRef.current = false;
+    mountedRef.current = true;
+    
+    // Clear any existing timers
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    
+    // If not animating, show all immediately
     if (!animate) {
-      setVisibleCount(chunks.length);
+      setVisibleCount(sentences.length);
+      // Call onComplete after a brief delay
+      const completeTimer = setTimeout(handleComplete, 100);
+      timersRef.current.push(completeTimer);
       return;
     }
-
+    
+    // Start fresh
     setVisibleCount(0);
-
-    const timers: NodeJS.Timeout[] = [];
-
-    // For word-by-word mode, use faster interval between words but still slow overall
-    const actualStagger = wordByWord ? 0.25 : staggerDelay; // 250ms between words, or full stagger for stanzas
-
-    chunks.forEach((_, index) => {
-      // Add initial delay before first chunk, then stagger subsequent ones
-      const delay = (initialDelay * 1000) + (index * actualStagger * 1000);
+    
+    // Schedule each sentence to appear
+    sentences.forEach((_, index) => {
+      const delay = timing.initialDelay + (index * timing.sentenceDelay);
       
       const timer = setTimeout(() => {
+        if (!mountedRef.current) return;
+        
         setVisibleCount(index + 1);
-
-        // Call onComplete when all chunks are visible
-        if (index === chunks.length - 1 && onComplete) {
-          setTimeout(onComplete, 500);
+        
+        // If this is the last sentence, call onComplete after animation settles
+        if (index === sentences.length - 1) {
+          const completeTimer = setTimeout(() => {
+            if (mountedRef.current) {
+              handleComplete();
+            }
+          }, 400); // Wait for animation to complete
+          timersRef.current.push(completeTimer);
         }
       }, delay);
-
-      timers.push(timer);
+      
+      timersRef.current.push(timer);
     });
-
-    return () => timers.forEach(clearTimeout);
-  }, [children, animate, chunks.length, staggerDelay, initialDelay, wordByWord, onComplete]);
-
-  // Word-by-word mode: render as flowing text with words appearing
-  if (wordByWord) {
-    return (
-      <p className={`${styles.base} ${styles.size} ${styles.leading} ${className}`}>
-        <AnimatePresence mode="popLayout">
-          {chunks.slice(0, visibleCount).map((word, index) => (
-            <motion.span
-              key={`${index}-${word}`}
-              initial={animate ? { opacity: 0, y: 4 } : false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: 'easeOut',
-              }}
-              className="inline"
-            >
-              {word}{index < chunks.length - 1 ? ' ' : ''}
-            </motion.span>
-          ))}
-        </AnimatePresence>
-      </p>
-    );
-  }
-
-  // If just one short sentence, render simply
-  if (chunks.length === 1 && chunks[0].split(/\s+/).length <= 10) {
+    
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
+  }, [children, animate, sentences.length, timing.initialDelay, timing.sentenceDelay, handleComplete]);
+  
+  // For very short text (one short sentence), render simply
+  if (sentences.length === 1 && sentences[0].length < 60) {
     return (
       <motion.p
-        initial={animate ? { opacity: 0, y: 8 } : false}
+        initial={animate ? { opacity: 0, y: 12 } : false}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut', delay: initialDelay }}
+        transition={{ duration: 0.5, ease: 'easeOut', delay: animate ? timing.initialDelay / 1000 : 0 }}
         className={`${styles.base} ${styles.size} ${styles.leading} ${className}`}
       >
-        {chunks[0]}
+        {sentences[0]}
       </motion.p>
     );
   }
-
+  
+  // Multiple sentences - reveal one at a time
   return (
     <div className={`${styles.spacing} ${className}`}>
-      <AnimatePresence mode="popLayout">
-        {chunks.slice(0, visibleCount).map((stanza, index) => (
+      <AnimatePresence mode="sync">
+        {sentences.slice(0, visibleCount).map((sentence, index) => (
           <motion.p
-            key={`${index}-${stanza.slice(0, 20)}`}
+            key={`sentence-${index}`}
             initial={animate ? { opacity: 0, y: 12 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.6,
+              duration: 0.5,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
             className={`${styles.base} ${styles.size} ${styles.leading}`}
           >
-            {stanza}
+            {sentence}
           </motion.p>
         ))}
       </AnimatePresence>
@@ -241,28 +206,23 @@ export function WisdomText({
   );
 }
 
-// Simple non-animated version for performance-critical areas
+// Simple non-animated version for static display
 export function WisdomTextStatic({
   children,
   className = '',
   variant = 'narrative',
-  maxWordsPerStanza = 18,
-}: Omit<WisdomTextProps, 'animate' | 'staggerDelay' | 'onComplete' | 'wordByWord'>) {
-  const stanzas = useMemo(
-    () => splitIntoStanzas(children, maxWordsPerStanza),
-    [children, maxWordsPerStanza]
-  );
-
+}: Omit<WisdomTextProps, 'animate' | 'speed' | 'onComplete'>) {
+  const sentences = useMemo(() => splitIntoSentences(children), [children]);
   const styles = variantStyles[variant];
-
+  
   return (
     <div className={`${styles.spacing} ${className}`}>
-      {stanzas.map((stanza, index) => (
+      {sentences.map((sentence, index) => (
         <p
           key={index}
           className={`${styles.base} ${styles.size} ${styles.leading}`}
         >
-          {stanza}
+          {sentence}
         </p>
       ))}
     </div>

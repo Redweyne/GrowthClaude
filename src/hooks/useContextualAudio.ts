@@ -275,15 +275,20 @@ export function useContextualAudio(options: UseContextualAudioOptions = {}) {
     audio.playReveal();
   }, [audio]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount - only clear pending transitions, DON'T stop music
+  // The explicit stopMusic calls should handle cleanup
+  // Automatic cleanup on unmount was causing race conditions and double-stops
   useEffect(() => {
     return () => {
       if (transitionTimeoutRef.current) {
         clearTimeout(transitionTimeoutRef.current);
       }
-      audio.stopMusic(0.5);
+      // NOTE: We intentionally do NOT stop music here
+      // The component using this hook should explicitly call stopMusic when needed
+      // This prevents race conditions when onboarding completes and multiple
+      // cleanup handlers all try to stop music at the same time
     };
-  }, [audio]);
+  }, []);
 
   // Sync with sound enabled setting
   useEffect(() => {

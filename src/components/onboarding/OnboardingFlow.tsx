@@ -75,11 +75,13 @@ export function OnboardingFlow() {
   }, [initializeAudio]);
 
   // Cleanup audio when component unmounts (fallback safety)
+  // NOTE: We use stopAllAudio with immediate=true for a clean exit
   useEffect(() => {
     return () => {
-      // Ensure all audio stops IMMEDIATELY when leaving onboarding
-      audio.stopMusic(0.1);
-      audio.stopAmbience();
+      // Only stop if audio was actually started during onboarding
+      if (audioStartedRef.current) {
+        audio.stopAllAudio(true);
+      }
     };
   }, [audio]);
 
@@ -115,9 +117,8 @@ export function OnboardingFlow() {
       setOnboardingStep(onboardingStep + 1);
     } else {
       // Completing onboarding - IMMEDIATELY stop ALL audio
-      // Use immediate=true to ensure no audio continues into the dashboard
-      audio.stopMusic(0.1);
-      audio.stopAmbience();
+      // Use stopAllAudio with immediate=true for clean exit
+      audio.stopAllAudio(true);
 
       // Small delay for clean transition, then complete
       setTimeout(() => {

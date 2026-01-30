@@ -1,15 +1,16 @@
 'use client';
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SCENARIO STEP - THE HOOK
-// ═══════════════════════════════════════════════════════════════════════════
+// ==============================================================================
+// SCENARIO STEP - The Hook
+// ==============================================================================
 //
 // This is where transformation begins - with recognition.
 // Clean, readable, engaging - no unnecessary animation tricks.
+// Button only appears after text finishes animating.
 //
-// ═══════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
@@ -44,15 +45,15 @@ const MOOD_COLORS = {
 };
 
 export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
+  // Button only shows AFTER text animation completes
   const [showButton, setShowButton] = useState(false);
 
   const mood = step.mood || 'tension';
   const colors = MOOD_COLORS[mood];
 
-  // Simple delay before showing button
-  useEffect(() => {
-    const timer = setTimeout(() => setShowButton(true), 500);
-    return () => clearTimeout(timer);
+  // Called when the narrative text animation finishes
+  const handleTextComplete = useCallback(() => {
+    setShowButton(true);
   }, []);
 
   return (
@@ -72,23 +73,22 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="space-y-6 sm:space-y-5">
-          {/* The narrative - breathable, readable stanzas with SLOW contemplative reveal */}
+          {/* The narrative - clean sentence-by-sentence reveal */}
           <WisdomText
             variant="narrative"
             animate={true}
-            staggerDelay={0.9}
-            maxWordsPerStanza={12}
-            initialDelay={0.6}
+            speed="slow"
+            onComplete={handleTextComplete}
           >
             {step.narrative}
           </WisdomText>
 
-          {/* Subtext */}
-          {step.subtext && (
+          {/* Subtext - only shows after main text */}
+          {step.subtext && showButton && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
             >
               <WisdomText
                 variant="instruction"
@@ -99,12 +99,12 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
             </motion.div>
           )}
 
-          {/* Bridge question */}
-          {step.bridgeQuestion && (
+          {/* Bridge question - only shows after main text */}
+          {step.bridgeQuestion && showButton && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
               className={`pt-6 border-t ${colors.border}`}
             >
               <WisdomText
@@ -117,12 +117,12 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
             </motion.div>
           )}
 
-          {/* Continue button */}
+          {/* Continue button - only shows after text is complete */}
           {showButton && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
               className="pt-4"
             >
               <Button

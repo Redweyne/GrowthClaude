@@ -166,8 +166,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   <WisdomText
                     variant="insight"
                     animate={true}
-                    staggerDelay={0.18}
-                    maxWordsPerStanza={15}
+                    speed="normal"
                     className={isRTL ? 'text-right' : ''}
                   >
                     {reflection.content}
