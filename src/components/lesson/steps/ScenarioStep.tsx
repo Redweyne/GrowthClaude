@@ -5,12 +5,12 @@
 // ==============================================================================
 //
 // This is where transformation begins - with recognition.
-// Clean, readable, engaging - no unnecessary animation tricks.
-// Button only appears after text finishes animating.
+// All text appears with consistent, clean animations.
+// Sequenced reveal: narrative -> subtext -> bridge question -> button
 //
 // ==============================================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
@@ -44,17 +44,58 @@ const MOOD_COLORS = {
   },
 };
 
+// Phases for sequenced reveal
+type Phase = 'narrative' | 'subtext' | 'bridgeQuestion' | 'ready';
+
 export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
-  // Button only shows AFTER text animation completes
-  const [showButton, setShowButton] = useState(false);
+  const [phase, setPhase] = useState<Phase>('narrative');
+  const mountedRef = useRef(true);
 
   const mood = step.mood || 'tension';
   const colors = MOOD_COLORS[mood];
 
-  // Called when the narrative text animation finishes
-  const handleTextComplete = useCallback(() => {
-    setShowButton(true);
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
+
+  // Called when the narrative text animation finishes
+  const handleNarrativeComplete = useCallback(() => {
+    if (!mountedRef.current) return;
+    
+    // Determine next phase
+    if (step.subtext) {
+      setPhase('subtext');
+    } else if (step.bridgeQuestion) {
+      setPhase('bridgeQuestion');
+    } else {
+      setPhase('ready');
+    }
+  }, [step.subtext, step.bridgeQuestion]);
+
+  // Called when subtext animation finishes
+  const handleSubtextComplete = useCallback(() => {
+    if (!mountedRef.current) return;
+    
+    if (step.bridgeQuestion) {
+      setPhase('bridgeQuestion');
+    } else {
+      setPhase('ready');
+    }
+  }, [step.bridgeQuestion]);
+
+  // Called when bridge question animation finishes
+  const handleBridgeComplete = useCallback(() => {
+    if (!mountedRef.current) return;
+    setPhase('ready');
+  }, []);
+
+  const showSubtext = phase === 'subtext' || phase === 'bridgeQuestion' || phase === 'ready';
+  const showBridge = phase === 'bridgeQuestion' || phase === 'ready';
+  const showButton = phase === 'ready';
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
@@ -78,38 +119,42 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
             variant="narrative"
             animate={true}
             speed="slow"
-            onComplete={handleTextComplete}
+            onComplete={handleNarrativeComplete}
           >
             {step.narrative}
           </WisdomText>
 
-          {/* Subtext - only shows after main text */}
-          {step.subtext && showButton && (
+          {/* Subtext - animated with same style, appears after narrative */}
+          {step.subtext && showSubtext && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ duration: 0.4 }}
             >
               <WisdomText
                 variant="instruction"
-                animate={false}
+                animate={true}
+                speed="normal"
+                onComplete={handleSubtextComplete}
               >
                 {step.subtext}
               </WisdomText>
             </motion.div>
           )}
 
-          {/* Bridge question - only shows after main text */}
-          {step.bridgeQuestion && showButton && (
+          {/* Bridge question - animated with same style, appears after subtext */}
+          {step.bridgeQuestion && showBridge && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ duration: 0.4 }}
               className={`pt-6 border-t ${colors.border}`}
             >
               <WisdomText
                 variant="question"
-                animate={false}
+                animate={true}
+                speed="normal"
+                onComplete={handleBridgeComplete}
                 className="font-medium"
               >
                 {step.bridgeQuestion}
@@ -117,12 +162,12 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
             </motion.div>
           )}
 
-          {/* Continue button - only shows after text is complete */}
+          {/* Continue button - only shows after ALL text is complete */}
           {showButton && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
               className="pt-4"
             >
               <Button

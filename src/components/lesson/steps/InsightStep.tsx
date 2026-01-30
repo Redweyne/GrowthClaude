@@ -5,11 +5,12 @@
 // ==============================================================================
 //
 // Wisdom delivered cleanly and readably.
-// Button only appears after text finishes animating.
+// All text appears with consistent, clean animations.
+// Sequenced reveal: main text -> source -> follow-up -> button
 //
 // ==============================================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Quote, Lightbulb, Sparkles, RefreshCw } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
@@ -52,9 +53,13 @@ const STYLE_CONFIG = {
   },
 };
 
+// Phases for sequenced reveal
+type Phase = 'text' | 'source' | 'followUp' | 'ready';
+
 export function InsightStep({ step, onComplete }: InsightStepProps) {
-  // Button only shows AFTER text animation completes
-  const [showButton, setShowButton] = useState(false);
+  const [phase, setPhase] = useState<Phase>('text');
+  const [soundPlayed, setSoundPlayed] = useState(false);
+  const mountedRef = useRef(true);
 
   // Audio for revelation moments
   const { playReveal, playSuccess, playBell } = useAudio();
@@ -63,23 +68,69 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
   const config = STYLE_CONFIG[style];
   const Icon = config.icon;
 
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // Called when the main text animation finishes
   const handleTextComplete = useCallback(() => {
-    // Play sound when wisdom is revealed
-    if (style === 'quote') {
-      playBell();
-    } else {
-      playReveal();
+    if (!mountedRef.current) return;
+    
+    // Play sound when wisdom is revealed (only once)
+    if (!soundPlayed) {
+      setSoundPlayed(true);
+      if (style === 'quote') {
+        playBell();
+      } else {
+        playReveal();
+      }
     }
-    // Now show the button
-    setShowButton(true);
-  }, [style, playBell, playReveal]);
+    
+    // Determine next phase
+    if (step.source) {
+      setPhase('source');
+    } else if (step.followUp) {
+      setPhase('followUp');
+    } else {
+      setPhase('ready');
+    }
+  }, [step.source, step.followUp, style, playBell, playReveal, soundPlayed]);
+
+  // Called when source is shown (source doesn't animate, just triggers next phase after delay)
+  useEffect(() => {
+    if (phase === 'source') {
+      const timer = setTimeout(() => {
+        if (!mountedRef.current) return;
+        
+        if (step.followUp) {
+          setPhase('followUp');
+        } else {
+          setPhase('ready');
+        }
+      }, 800); // Brief pause on source
+      return () => clearTimeout(timer);
+    }
+  }, [phase, step.followUp]);
+
+  // Called when follow-up animation finishes
+  const handleFollowUpComplete = useCallback(() => {
+    if (!mountedRef.current) return;
+    setPhase('ready');
+  }, []);
 
   // Handle continue button click
   const handleContinue = useCallback(() => {
     playSuccess();
     onComplete();
   }, [playSuccess, onComplete]);
+
+  const showSource = phase === 'source' || phase === 'followUp' || phase === 'ready';
+  const showFollowUp = phase === 'followUp' || phase === 'ready';
+  const showButton = phase === 'ready';
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
@@ -132,12 +183,12 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             {step.text}
           </WisdomText>
 
-          {/* Source attribution */}
-          {step.source && showButton && (
+          {/* Source attribution - fades in after main text */}
+          {step.source && showSource && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
               className="space-y-1 pt-3"
             >
               <p className={`${config.accent} font-medium text-lg`}>
@@ -151,29 +202,31 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             </motion.div>
           )}
 
-          {/* Follow up text */}
-          {step.followUp && showButton && (
+          {/* Follow up text - animated like main text */}
+          {step.followUp && showFollowUp && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
               className="pt-6 border-t border-stone-800"
             >
               <WisdomText
                 variant="instruction"
-                animate={false}
+                animate={true}
+                speed="normal"
+                onComplete={handleFollowUpComplete}
               >
                 {step.followUp}
               </WisdomText>
             </motion.div>
           )}
 
-          {/* Continue button - only shows after text is complete */}
+          {/* Continue button - only shows after ALL text is complete */}
           {showButton && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
               className="pt-4"
             >
               <Button

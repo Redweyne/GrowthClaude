@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
-import { useLessonAmbience } from '@/hooks/useLessonAmbience';
+import { useContextualAudio } from '@/hooks/useContextualAudio';
 import { useTranslation } from '@/i18n';
 
 // Step components
@@ -122,14 +122,18 @@ export function FlexibleLessonExperience({
     clearPendingLessonAction,
   } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
-  const {
-    transitionTo,
-    stopAmbience,
-    playBell,
-    playKeystroke,
-    playCompletionChime,
-    initAudio: initAmbienceAudio,
-  } = useLessonAmbience();
+  
+  // Use contextual audio for lessons - starts music immediately
+  const contextualAudio = useContextualAudio({ 
+    initialScene: 'silent',
+    autoStartMusic: true,
+  });
+  
+  // No-op keystroke handler - silence during typing is more calming
+  const handleKeystroke = useCallback(() => {
+    // Intentionally silent
+  }, []);
+  
   const { t, isRTL } = useTranslation();
 
   // Get translated step labels
@@ -166,22 +170,26 @@ export function FlexibleLessonExperience({
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Audio Initialization
+  // Audio Initialization - Start lesson music on mount
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleInitializeAudio = useCallback(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
     initAudio();
-    initAmbienceAudio();
-    playBell('deep');
-  }, [initAudio, initAmbienceAudio, playBell]);
+    // Start lesson music immediately
+    contextualAudio.enterScene('lesson');
+    contextualAudio.playStepTransition();
+  }, [initAudio, contextualAudio]);
 
-  // Initialize on mount (no cleanup - step components manage their own audio)
+  // Initialize on mount
   useEffect(() => {
     handleInitializeAudio();
-    // NO cleanup here - child step components handle their own audio lifecycle
-  }, [handleInitializeAudio]);
+    // Cleanup: stop music when leaving the lesson
+    return () => {
+      contextualAudio.stopMusic(1);
+    };
+  }, [handleInitializeAudio, contextualAudio]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Navigation Helpers
@@ -189,12 +197,12 @@ export function FlexibleLessonExperience({
 
   const goToStep = useCallback((stepId: string) => {
     setIsTransitioning(true);
-    playBell('soft');
+    contextualAudio.playStepTransition();
     setTimeout(() => {
       setCurrentStepId(stepId);
       setIsTransitioning(false);
     }, 500);
-  }, [playBell]);
+  }, [contextualAudio]);
 
   const goToNextStep = useCallback(() => {
     if (!currentStep) return;
@@ -249,7 +257,7 @@ export function FlexibleLessonExperience({
     });
 
     // Stop any active music before leaving the lesson
-    stopAmbience();
+    contextualAudio.stopMusic(1);
 
 
     // Close the lesson (user goes to do their action)
@@ -260,7 +268,7 @@ export function FlexibleLessonExperience({
     } else {
       onComplete();
     }
-  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction, stopAmbience]);
+  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction, contextualAudio]);
 
   const handleReturnConfirmComplete = useCallback((completed: boolean) => {
     setActionCompleted(completed);
@@ -278,9 +286,9 @@ export function FlexibleLessonExperience({
   }, [goToNextStep]);
 
   const handleTimerComplete = useCallback(() => {
-    playBell('soft');
+    contextualAudio.playStepTransition();
     goToNextStep();
-  }, [playBell, goToNextStep]);
+  }, [contextualAudio, goToNextStep]);
 
   const handleReflectionComplete = useCallback((text: string) => {
     setWritings(prev => ({ ...prev, reflection: text }));
@@ -315,26 +323,26 @@ export function FlexibleLessonExperience({
     setXpEarned(xp);
     xpEarnedRef.current = xp;
 
-    playBell('bright');
-    playCompletionChime();
+    contextualAudio.playStepComplete();
+    contextualAudio.playLessonComplete();
     goToNextStep();
   }, [
     lesson, actionCompleted, currentStreak, saveReflection,
-    playBell, playCompletionChime, goToNextStep
+    contextualAudio, goToNextStep
   ]);
 
   const handleRewardComplete = useCallback(() => {
-    transitionTo('completion');
+    contextualAudio.transitionTo('reward');
     playReward();
     goToNextStep();
-  }, [transitionTo, playReward, goToNextStep]);
+  }, [contextualAudio, playReward, goToNextStep]);
 
   const handleMentorComplete = useCallback(() => {
-    stopAmbience();
+    contextualAudio.stopMusic(1);
     completeLesson(lesson.id, xpEarnedRef.current);
     playComplete();
     setTimeout(onComplete, 300);
-  }, [stopAmbience, completeLesson, lesson.id, playComplete, onComplete]);
+  }, [contextualAudio, completeLesson, lesson.id, playComplete, onComplete]);
 
   const handleRetry = useCallback(() => {
     // Find the reflection step and go back to it
@@ -374,7 +382,7 @@ export function FlexibleLessonExperience({
           <CommitmentStep
             step={currentStep as CommitmentStepType}
             onComplete={handleCommitmentComplete}
-            onKeystroke={playKeystroke}
+            onKeystroke={handleKeystroke}
           />
         );
 
@@ -438,7 +446,7 @@ export function FlexibleLessonExperience({
               coreConceptTag: lesson.coreConceptTag,
             }}
             onComplete={handleReflectionComplete}
-            onKeystroke={playKeystroke}
+            onKeystroke={handleKeystroke}
           />
         );
 

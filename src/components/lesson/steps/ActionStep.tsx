@@ -163,51 +163,65 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
   }, [phase, timeRemaining]);
 
   // Breathing rhythm (4-4-6 pattern for better UX)
+  // Using a simple interval-based approach for better iOS compatibility
   useEffect(() => {
     if (phase !== 'practicing' || actionType !== 'breathe') return;
 
+    // Breath cycle durations in milliseconds
+    const INHALE_MS = 4000;
+    const HOLD_MS = 4000;
+    const EXHALE_MS = 6000;
+    const REST_MS = 800;
+    const TOTAL_CYCLE_MS = INHALE_MS + HOLD_MS + EXHALE_MS + REST_MS;
+
+    let cycleStartTime = Date.now();
+    let animationFrameId: number | null = null;
     let mounted = true;
-    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    const clearAllTimers = () => {
-      timers.forEach(t => clearTimeout(t));
-      timers.length = 0;
-    };
-
-    const breathCycle = () => {
+    const updateBreathPhase = () => {
       if (!mounted) return;
-      setBreathPhase('inhale');
 
-      const t1 = setTimeout(() => {
-        if (!mounted) return;
-        setBreathPhase('hold');
+      const elapsed = Date.now() - cycleStartTime;
+      const cyclePosition = elapsed % TOTAL_CYCLE_MS;
 
-        const t2 = setTimeout(() => {
-          if (!mounted) return;
-          setBreathPhase('exhale');
+      let newPhase: 'inhale' | 'hold' | 'exhale' | 'rest';
+      
+      if (cyclePosition < INHALE_MS) {
+        newPhase = 'inhale';
+      } else if (cyclePosition < INHALE_MS + HOLD_MS) {
+        newPhase = 'hold';
+      } else if (cyclePosition < INHALE_MS + HOLD_MS + EXHALE_MS) {
+        newPhase = 'exhale';
+      } else {
+        newPhase = 'rest';
+      }
 
-          const t3 = setTimeout(() => {
-            if (!mounted) return;
-            setBreathPhase('rest');
-            setBreathCount(prev => prev + 1);
+      // Only update state when phase changes to reduce re-renders
+      setBreathPhase(prev => {
+        if (prev !== newPhase) {
+          // Increment breath count when completing a cycle (entering rest)
+          if (newPhase === 'rest' && prev === 'exhale') {
+            setBreathCount(c => c + 1);
+          }
+          return newPhase;
+        }
+        return prev;
+      });
 
-            const t4 = setTimeout(() => {
-              if (mounted) breathCycle();
-            }, 800);
-            timers.push(t4);
-          }, 6000); // Exhale
-          timers.push(t3);
-        }, 4000); // Hold
-        timers.push(t2);
-      }, 4000); // Inhale
-      timers.push(t1);
+      // Continue the animation loop
+      if (mounted) {
+        animationFrameId = requestAnimationFrame(updateBreathPhase);
+      }
     };
 
-    breathCycle();
+    // Start the animation loop
+    animationFrameId = requestAnimationFrame(updateBreathPhase);
 
     return () => {
       mounted = false;
-      clearAllTimers();
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, [phase, actionType]);
 
