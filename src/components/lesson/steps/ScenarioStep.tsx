@@ -76,9 +76,9 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
           <WisdomText
             variant="narrative"
             animate={true}
-            staggerDelay={1.5}
-            maxWordsPerStanza={5}
-            initialDelay={0.8}
+            staggerDelay={0.9}
+            maxWordsPerStanza={12}
+            initialDelay={0.6}
           >
             {step.narrative}
           </WisdomText>

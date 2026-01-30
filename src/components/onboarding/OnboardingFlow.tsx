@@ -78,7 +78,8 @@ export function OnboardingFlow() {
   useEffect(() => {
     return () => {
       // Ensure all audio stops IMMEDIATELY when leaving onboarding
-      audio.stopAllAudio(true);
+      audio.stopMusic(0.1);
+      audio.stopAmbience();
     };
   }, [audio]);
 
@@ -115,7 +116,8 @@ export function OnboardingFlow() {
     } else {
       // Completing onboarding - IMMEDIATELY stop ALL audio
       // Use immediate=true to ensure no audio continues into the dashboard
-      audio.stopAllAudio(true);
+      audio.stopMusic(0.1);
+      audio.stopAmbience();
 
       // Small delay for clean transition, then complete
       setTimeout(() => {

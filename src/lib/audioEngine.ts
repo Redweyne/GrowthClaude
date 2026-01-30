@@ -17,7 +17,6 @@
 // ============================================================================
 
 import { Howl, Howler, HowlOptions } from 'howler';
-import { logDebug } from '@/lib';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEBUG LOGGING
@@ -593,8 +592,6 @@ function safeUnload(howl: Howl, id?: number): void {
 
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
-
-  logDebug('Start ambient music', { type, fadeInDuration });
   log(`🎵 Starting music: ${type}`);
 
   // Try to unlock
@@ -727,11 +724,15 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
 }
 
 export function stopAmbientMusic(fadeOutDuration: number = 2, immediate: boolean = false): void {
-  logDebug('Stop ambient music', { fadeOutDuration, immediate });
   // Cancel any pending stop
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
     pendingMusicStop = null;
+  }
+
+  // Clear pending retries to avoid restarting music after stop
+  if (retryQueue.length > 0) {
+    retryQueue.length = 0;
   }
 
   if (!activeMusicHowl || activeMusicId === null) {
@@ -782,7 +783,6 @@ export const stopSceneMusic = stopAmbientMusic;
 export function startWritingAmbience(type?: WritingAmbience): void {
   if (!ensureInitialized()) return;
 
-  logDebug('Start writing ambience', { type });
   // Try to unlock
   tryUnlock();
 
@@ -897,10 +897,14 @@ export function startWritingAmbience(type?: WritingAmbience): void {
 }
 
 export function stopWritingAmbience(immediate: boolean = false): void {
-  logDebug('Stop writing ambience', { immediate });
   if (pendingAmbienceStop) {
     clearTimeout(pendingAmbienceStop);
     pendingAmbienceStop = null;
+  }
+
+  // Clear pending retries to avoid restarting ambience after stop
+  if (retryQueue.length > 0) {
+    retryQueue.length = 0;
   }
 
   if (!activeAmbienceHowl || activeAmbienceId === null) {
@@ -947,8 +951,12 @@ export const stopAmbience = stopWritingAmbience;
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function stopAllAudio(immediate: boolean = false): void {
-  logDebug('Stop all audio', { immediate });
   log('⏹ Stopping all audio', { immediate });
+
+  // Clear any pending retries that could restart audio after stop
+  if (retryQueue.length > 0) {
+    retryQueue.length = 0;
+  }
   
   if (immediate) {
     // IMMEDIATE STOP - Cancel all pending operations and stop NOW

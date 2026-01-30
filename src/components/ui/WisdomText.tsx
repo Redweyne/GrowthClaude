@@ -43,19 +43,23 @@ function splitIntoStanzas(text: string, maxWords: number = 20): string[] {
   for (const sentence of sentences) {
     const sentenceWords = sentence.trim().split(/\s+/).length;
 
-    // If a single sentence is longer than maxWords, split it into chunks
+    // If a single sentence is longer than maxWords, try splitting by clauses
     if (sentenceWords > maxWords) {
-      if (currentStanza) {
-        stanzas.push(currentStanza.trim());
-        currentStanza = '';
-        currentWordCount = 0;
+      const clauses = sentence.split(/(?<=[,;:—–])\s+/);
+      if (clauses.length > 1) {
+        for (const clause of clauses) {
+          const clauseWords = clause.trim().split(/\s+/).length;
+          if (currentWordCount + clauseWords > maxWords && currentStanza) {
+            stanzas.push(currentStanza.trim());
+            currentStanza = clause;
+            currentWordCount = clauseWords;
+          } else {
+            currentStanza = currentStanza ? `${currentStanza} ${clause}` : clause;
+            currentWordCount += clauseWords;
+          }
+        }
+        continue;
       }
-
-      const words = sentence.trim().split(/\s+/);
-      for (let i = 0; i < words.length; i += maxWords) {
-        stanzas.push(words.slice(i, i + maxWords).join(' '));
-      }
-      continue;
     }
 
     // If adding this sentence would exceed limit and we have content,
@@ -125,9 +129,9 @@ export function WisdomText({
   className = '',
   variant = 'narrative',
   animate = true,
-  staggerDelay = 1.2, // Slow, contemplative pace (1.2s between chunks)
-  maxWordsPerStanza = 6, // Very small chunks for better readability
-  initialDelay = 0.5, // 500ms pause before first chunk
+  staggerDelay = 0.9, // Balanced pace between chunks
+  maxWordsPerStanza = 12, // Keep sentences intact while still chunking
+  initialDelay = 0.6, // Brief pause before first chunk
   wordByWord = false, // Word-by-word mode for maximum slowness
   onComplete,
 }: WisdomTextProps) {
