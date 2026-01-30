@@ -9,19 +9,48 @@
 //
 // ============================================================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAudio } from '@/hooks/useAudio';
+import {
+  logDebug,
+  setDebugEnabled,
+  subscribeDebugLogs,
+  clearDebugLogs,
+  isDebugEnabled,
+  type DebugLogEntry,
+} from '@/lib';
+
+const MAX_VISIBLE = 200;
+
+function formatTimestamp(ts: number): string {
+  const date = new Date(ts);
+  return date.toLocaleTimeString();
+}
+
+function formatData(data?: Record<string, unknown>): string {
+  if (!data || Object.keys(data).length === 0) return '';
+  try {
+    return JSON.stringify(data);
+  } catch {
+    return '[unserializable]';
+  }
+}
 
 export function AudioDebugPanel() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isAudioDebugEnabled, setIsAudioDebugEnabled] = useState(false);
+  const [logs, setLogs] = useState<DebugLogEntry[]>([]);
+  const [copyStatus, setCopyStatus] = useState('');
   const { state, playTap, startMusic, stopAllAudio } = useAudio();
 
-  // Check if debug is enabled
+  // Check if audio debug is enabled
   useEffect(() => {
     const checkDebug = () => {
       const enabled = localStorage.getItem('AUDIO_DEBUG') === 'true';
-      setIsEnabled(enabled);
+      setIsAudioDebugEnabled(enabled);
     };
     
     checkDebug();
@@ -30,6 +59,103 @@ export function AudioDebugPanel() {
     const interval = setInterval(checkDebug, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  // Enable app debug via query param or localStorage
+  useEffect(() => {
+    const debugParam = searchParams?.get('debug');
+    if (debugParam === '1') {
+      localStorage.setItem('APP_DEBUG', 'true');
+      setDebugEnabled(true);
+      setIsVisible(true);
+      logDebug('Debug enabled via query param', {
+        path: pathname,
+        query: searchParams?.toString() || '',
+      });
+    } else if (localStorage.getItem('APP_DEBUG') === 'true') {
+      setDebugEnabled(true);
+      setIsVisible(true);
+    }
+  }, [pathname, searchParams]);
+
+  // Subscribe to debug logs
+  useEffect(() => {
+    if (!isDebugEnabled()) return;
+    const unsubscribe = subscribeDebugLogs((entries) => setLogs(entries));
+    return unsubscribe;
+  }, []);
+
+  // Global app lifecycle logging
+  useEffect(() => {
+    if (!isDebugEnabled()) return;
+
+    logDebug('App mounted', {
+      path: pathname,
+      url: typeof window !== 'undefined' ? window.location.href : '',
+      ua: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+      viewport: typeof window !== 'undefined'
+        ? `${window.innerWidth}x${window.innerHeight}`
+        : '',
+      dpr: typeof window !== 'undefined' ? window.devicePixelRatio : 1,
+    });
+
+    const handleVisibility = () => {
+      logDebug('Visibility change', { state: document.visibilityState });
+    };
+
+    const handlePageHide = (event: PageTransitionEvent) => {
+      logDebug('Page hide', { persisted: event.persisted });
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      logDebug('Page show', { persisted: event.persisted });
+    };
+
+    const handleResize = () => {
+      logDebug('Viewport resize', {
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        orientation: (screen.orientation && screen.orientation.type) || 'unknown',
+      });
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      logDebug('Window error', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      }, 'error');
+    };
+
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      logDebug('Unhandled rejection', {
+        reason: String(event.reason),
+      }, 'error');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleRejection);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isDebugEnabled()) return;
+    logDebug('Route change', {
+      path: pathname,
+      query: searchParams?.toString() || '',
+    });
+  }, [pathname, searchParams]);
 
   // Keyboard shortcut: Ctrl+Shift+A
   useEffect(() => {
@@ -44,23 +170,94 @@ export function AudioDebugPanel() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const toggleDebug = useCallback(() => {
+  const toggleAudioDebug = useCallback(() => {
     const newValue = localStorage.getItem('AUDIO_DEBUG') !== 'true';
     localStorage.setItem('AUDIO_DEBUG', String(newValue));
-    setIsEnabled(newValue);
+    setIsAudioDebugEnabled(newValue);
   }, []);
 
-  if (!isVisible) return null;
+  const visibleLogs = useMemo(() => logs.slice(-MAX_VISIBLE), [logs]);
+
+  const handleCopy = useCallback(async () => {
+    const payload = visibleLogs
+      .map(entry => {
+        const line = `${formatTimestamp(entry.ts)} [${entry.level.toUpperCase()}] ${entry.message}`;
+        const data = formatData(entry.data);
+        return data ? `${line} ${data}` : line;
+      })
+      .join('\n');
+
+    try {
+      await navigator.clipboard.writeText(payload);
+      setCopyStatus('Copied');
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = payload;
+      textarea.setAttribute('readonly', 'true');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopyStatus('Copied');
+    }
+
+    setTimeout(() => setCopyStatus(''), 2000);
+  }, [visibleLogs]);
+
+  const handleClear = useCallback(() => {
+    clearDebugLogs();
+    logDebug('Logs cleared');
+  }, []);
+
+  const handleToggle = useCallback(() => {
+    const next = !isDebugEnabled();
+    localStorage.setItem('APP_DEBUG', String(next));
+    setDebugEnabled(next);
+    if (next) {
+      setIsVisible(true);
+      logDebug('Debug enabled via toggle');
+    } else {
+      setIsVisible(false);
+    }
+  }, []);
+
+  if (!isVisible || !isDebugEnabled()) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] w-80 bg-black/90 border border-cyan-500/50 rounded-lg p-4 text-xs font-mono text-white shadow-2xl">
+    <div className="fixed top-4 right-4 z-[9999] w-80 bg-black/90 border border-amber-500/40 rounded-lg p-4 text-xs font-mono text-white shadow-2xl">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-cyan-400 font-bold">🔊 Audio Debug</h3>
+        <h3 className="text-amber-300 font-bold">Debug Panel</h3>
         <button
           onClick={() => setIsVisible(false)}
           className="text-stone-500 hover:text-white"
         >
           ✕
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 mb-3">
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="px-2 py-1 rounded bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
+        >
+          {copyStatus ? copyStatus : 'Copy Logs'}
+        </button>
+        <button
+          type="button"
+          onClick={handleClear}
+          className="px-2 py-1 rounded bg-stone-700/60 text-stone-200 hover:bg-stone-600/70"
+        >
+          Clear
+        </button>
+        <button
+          type="button"
+          onClick={handleToggle}
+          className="ml-auto px-2 py-1 rounded bg-stone-800 text-stone-300 hover:bg-stone-700"
+        >
+          Disable
         </button>
       </div>
 
@@ -102,6 +299,34 @@ export function AudioDebugPanel() {
             {state.isAmbiencePlaying && ' ▶'}
           </span>
         </div>
+      </div>
+
+      {/* Recent logs */}
+      <div className="space-y-2 mb-4 border-t border-stone-700 pt-3 max-h-48 overflow-y-auto">
+        {visibleLogs.length === 0 ? (
+          <div className="text-stone-500">No logs yet.</div>
+        ) : (
+          visibleLogs.map(entry => (
+            <div key={entry.id} className="leading-snug">
+              <span className="text-stone-500">{formatTimestamp(entry.ts)}</span>{' '}
+              <span
+                className={
+                  entry.level === 'error'
+                    ? 'text-red-400'
+                    : entry.level === 'warn'
+                    ? 'text-amber-300'
+                    : 'text-emerald-300'
+                }
+              >
+                [{entry.level.toUpperCase()}]
+              </span>{' '}
+              <span>{entry.message}</span>
+              {entry.data && (
+                <span className="text-stone-500"> {formatData(entry.data)}</span>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {/* Volume levels */}
@@ -154,14 +379,14 @@ export function AudioDebugPanel() {
       {/* Debug toggle */}
       <div className="mt-3 pt-3 border-t border-stone-700">
         <button
-          onClick={toggleDebug}
+          onClick={toggleAudioDebug}
           className={`w-full px-2 py-1 rounded text-xs ${
-            isEnabled 
+            isAudioDebugEnabled 
               ? 'bg-cyan-900/50 text-cyan-300' 
               : 'bg-stone-700 text-stone-400'
           }`}
         >
-          Console Logging: {isEnabled ? 'ON' : 'OFF'}
+          Audio Console Logging: {isAudioDebugEnabled ? 'ON' : 'OFF'}
         </button>
         <p className="mt-2 text-stone-500 text-center">
           Press Ctrl+Shift+A to toggle panel

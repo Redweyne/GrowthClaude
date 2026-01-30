@@ -43,6 +43,21 @@ function splitIntoStanzas(text: string, maxWords: number = 20): string[] {
   for (const sentence of sentences) {
     const sentenceWords = sentence.trim().split(/\s+/).length;
 
+    // If a single sentence is longer than maxWords, split it into chunks
+    if (sentenceWords > maxWords) {
+      if (currentStanza) {
+        stanzas.push(currentStanza.trim());
+        currentStanza = '';
+        currentWordCount = 0;
+      }
+
+      const words = sentence.trim().split(/\s+/);
+      for (let i = 0; i < words.length; i += maxWords) {
+        stanzas.push(words.slice(i, i + maxWords).join(' '));
+      }
+      continue;
+    }
+
     // If adding this sentence would exceed limit and we have content,
     // push current stanza and start new one
     if (currentWordCount + sentenceWords > maxWords && currentStanza) {

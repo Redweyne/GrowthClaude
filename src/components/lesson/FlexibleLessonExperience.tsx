@@ -23,7 +23,9 @@ import { AmbientBackground } from '@/components/ambient';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { useLessonAmbience } from '@/hooks/useLessonAmbience';
+import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
+import { logDebug } from '@/lib';
 
 // Step components
 import { ScenarioStep } from './steps/ScenarioStep';
@@ -130,6 +132,7 @@ export function FlexibleLessonExperience({
     playCompletionChime,
     initAudio: initAmbienceAudio,
   } = useLessonAmbience();
+  const { stopAllAudio } = useAudio();
   const { t, isRTL } = useTranslation();
 
   // Get translated step labels
@@ -156,6 +159,15 @@ export function FlexibleLessonExperience({
 
   const currentStep = lesson.steps.find(s => s.id === currentStepId);
   const currentTheme = currentStep ? STEP_THEMES[currentStep.type] : STEP_THEMES.scenario;
+
+  useEffect(() => {
+    if (!currentStep) return;
+    logDebug('Lesson step entered', {
+      lessonId: lesson.id,
+      stepId: currentStep.id,
+      stepType: currentStep.type,
+    });
+  }, [lesson.id, currentStep]);
 
   // Calculate progress based on step position
   const getProgress = () => {
@@ -224,8 +236,14 @@ export function FlexibleLessonExperience({
     if (option.storeAs) {
       setChoices(prev => ({ ...prev, [option.storeAs!]: option.id }));
     }
+    logDebug('Lesson choice selected', {
+      lessonId: lesson.id,
+      stepId: currentStep?.id,
+      choiceId: option.id,
+      nextStepId: option.nextStepId,
+    });
     goToStep(option.nextStepId);
-  }, [goToStep]);
+  }, [lesson.id, currentStep, goToStep]);
 
   const handleCommitmentComplete = useCallback((commitment: string) => {
     const step = currentStep as CommitmentStepType;
@@ -234,8 +252,14 @@ export function FlexibleLessonExperience({
     }
     // Always store as 'commitment' for GoDoIt steps to access
     setWritings(prev => ({ ...prev, commitment }));
+    logDebug('Lesson commitment saved', {
+      lessonId: lesson.id,
+      stepId: currentStep?.id,
+      length: commitment.length,
+      wordCount: commitment.trim().split(/\s+/).filter(Boolean).length,
+    });
     goToNextStep();
-  }, [currentStep, goToNextStep]);
+  }, [lesson.id, currentStep, goToNextStep]);
 
   const handleGoDoItDismiss = useCallback(() => {
     // Store progress for when user returns (using Zustand store for persistence)
@@ -247,6 +271,14 @@ export function FlexibleLessonExperience({
       dismissedAt: new Date().toISOString(),
     });
 
+    // Stop any active audio to avoid iOS Safari reloads
+    stopAllAudio();
+
+    logDebug('GoDoIt dismissed', {
+      lessonId: lesson.id,
+      returnStepId: (currentStep as GoDoItStepType).returnStepId,
+    });
+
     // Close the lesson (user goes to do their action)
     // Use onDismiss if provided - this skips the Echo prompt
     // Only use onComplete if this is the actual end of the lesson
@@ -255,14 +287,18 @@ export function FlexibleLessonExperience({
     } else {
       onComplete();
     }
-  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction]);
+  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction, stopAllAudio]);
 
   const handleReturnConfirmComplete = useCallback((completed: boolean) => {
     setActionCompleted(completed);
     // Clear saved progress from store
     clearPendingLessonAction();
+    logDebug('Return confirmation', {
+      lessonId: lesson.id,
+      completed,
+    });
     goToNextStep();
-  }, [goToNextStep, clearPendingLessonAction]);
+  }, [lesson.id, goToNextStep, clearPendingLessonAction]);
 
   const handleInsightComplete = useCallback(() => {
     goToNextStep();
@@ -279,6 +315,11 @@ export function FlexibleLessonExperience({
 
   const handleReflectionComplete = useCallback((text: string) => {
     setWritings(prev => ({ ...prev, reflection: text }));
+    logDebug('Reflection completed', {
+      lessonId: lesson.id,
+      length: text.length,
+      wordCount: text.trim().split(/\s+/).filter(Boolean).length,
+    });
 
     // Save reflection to store
     saveReflection({
@@ -321,15 +362,24 @@ export function FlexibleLessonExperience({
   const handleRewardComplete = useCallback(() => {
     transitionTo('completion');
     playReward();
+    logDebug('Reward complete', {
+      lessonId: lesson.id,
+      xpEarned: xpEarnedRef.current,
+    });
     goToNextStep();
   }, [transitionTo, playReward, goToNextStep]);
 
   const handleMentorComplete = useCallback(() => {
     stopAmbience();
+    stopAllAudio();
     completeLesson(lesson.id, xpEarnedRef.current);
     playComplete();
+    logDebug('Mentor complete', {
+      lessonId: lesson.id,
+      xpEarned: xpEarnedRef.current,
+    });
     setTimeout(onComplete, 300);
-  }, [stopAmbience, completeLesson, lesson.id, playComplete, onComplete]);
+  }, [stopAmbience, stopAllAudio, completeLesson, lesson.id, playComplete, onComplete]);
 
   const handleRetry = useCallback(() => {
     // Find the reflection step and go back to it

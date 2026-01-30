@@ -17,6 +17,7 @@
 // ============================================================================
 
 import { Howl, Howler, HowlOptions } from 'howler';
+import { logDebug } from '@/lib';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEBUG LOGGING
@@ -593,6 +594,7 @@ function safeUnload(howl: Howl, id?: number): void {
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
 
+  logDebug('Start ambient music', { type, fadeInDuration });
   log(`🎵 Starting music: ${type}`);
 
   // Try to unlock
@@ -725,6 +727,7 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
 }
 
 export function stopAmbientMusic(fadeOutDuration: number = 2, immediate: boolean = false): void {
+  logDebug('Stop ambient music', { fadeOutDuration, immediate });
   // Cancel any pending stop
   if (pendingMusicStop) {
     clearTimeout(pendingMusicStop);
@@ -779,6 +782,7 @@ export const stopSceneMusic = stopAmbientMusic;
 export function startWritingAmbience(type?: WritingAmbience): void {
   if (!ensureInitialized()) return;
 
+  logDebug('Start writing ambience', { type });
   // Try to unlock
   tryUnlock();
 
@@ -893,6 +897,7 @@ export function startWritingAmbience(type?: WritingAmbience): void {
 }
 
 export function stopWritingAmbience(immediate: boolean = false): void {
+  logDebug('Stop writing ambience', { immediate });
   if (pendingAmbienceStop) {
     clearTimeout(pendingAmbienceStop);
     pendingAmbienceStop = null;
@@ -942,6 +947,7 @@ export const stopAmbience = stopWritingAmbience;
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function stopAllAudio(immediate: boolean = false): void {
+  logDebug('Stop all audio', { immediate });
   log('⏹ Stopping all audio', { immediate });
   
   if (immediate) {

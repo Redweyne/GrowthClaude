@@ -28,6 +28,7 @@ import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { useLessonAmbience } from '@/hooks/useLessonAmbience';
 import { useTranslation } from '@/i18n';
+import { logDebug } from '@/lib';
 
 interface LessonExperienceProps {
   lesson: Lesson;
@@ -101,6 +102,13 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
 
   const currentTheme = STAGE_THEMES[stage];
 
+  useEffect(() => {
+    logDebug('Lesson stage entered', {
+      lessonId: lesson.id,
+      stage,
+    });
+  }, [lesson.id, stage]);
+
   // Get translated stage labels
   const getStageLabel = (s: LessonStage): string => {
     switch (s) {
@@ -131,11 +139,12 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const handleWisdomComplete = useCallback(() => {
     setIsTransitioning(true);
     playBell('soft');
+    logDebug('Wisdom complete', { lessonId: lesson.id });
     setTimeout(() => {
       setStage('action');
       setIsTransitioning(false);
     }, 600);
-  }, [playBell]);
+  }, [lesson.id, playBell]);
 
   // Start action phase
   const handleStartActionAmbience = useCallback(() => {
@@ -147,12 +156,16 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
     setActionCompleted(completed);
     setIsTransitioning(true);
     playBell('soft');
+    logDebug('Action complete', {
+      lessonId: lesson.id,
+      completed,
+    });
     setTimeout(() => {
       transitionTo('reflection');
       setStage('reflection');
       setIsTransitioning(false);
     }, 600);
-  }, [transitionTo, playBell]);
+  }, [lesson.id, transitionTo, playBell]);
 
   // Handle keystroke sounds during reflection
   const handleReflectionKeystroke = useCallback(() => {
@@ -163,6 +176,11 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   const handleReflectionComplete = useCallback((text: string) => {
     setReflection(text);
     setIsTransitioning(true);
+    logDebug('Reflection complete', {
+      lessonId: lesson.id,
+      length: text.length,
+      wordCount: text.trim().split(/\s+/).filter(Boolean).length,
+    });
 
     // Save reflection
     saveReflection({
@@ -216,17 +234,25 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
   // Transition to mentor phase
   const handleRewardComplete = useCallback(() => {
     setIsTransitioning(true);
+    logDebug('Reward complete', {
+      lessonId: lesson.id,
+      xpEarned: xpEarnedRef.current,
+    });
     setTimeout(() => {
       setStage('mentor');
       setIsTransitioning(false);
     }, 400);
-  }, []);
+  }, [lesson.id]);
 
   // Complete the lesson
   const handleMentorComplete = useCallback(() => {
     stopAmbience();
     completeLesson(lesson.id, xpEarnedRef.current);
     playComplete();
+    logDebug('Mentor complete', {
+      lessonId: lesson.id,
+      xpEarned: xpEarnedRef.current,
+    });
     setTimeout(() => {
       onComplete();
     }, 300);
