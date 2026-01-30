@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAudio } from '@/hooks/useAudio';
 import {
   logDebug,
@@ -39,7 +39,6 @@ function formatData(data?: Record<string, unknown>): string {
 
 export function AudioDebugPanel() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isVisible, setIsVisible] = useState(false);
   const [isAudioDebugEnabled, setIsAudioDebugEnabled] = useState(false);
   const [logs, setLogs] = useState<DebugLogEntry[]>([]);
@@ -62,20 +61,22 @@ export function AudioDebugPanel() {
 
   // Enable app debug via query param or localStorage
   useEffect(() => {
-    const debugParam = searchParams?.get('debug');
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const debugParam = params.get('debug');
     if (debugParam === '1') {
       localStorage.setItem('APP_DEBUG', 'true');
       setDebugEnabled(true);
       setIsVisible(true);
       logDebug('Debug enabled via query param', {
         path: pathname,
-        query: searchParams?.toString() || '',
+        query: window.location.search,
       });
     } else if (localStorage.getItem('APP_DEBUG') === 'true') {
       setDebugEnabled(true);
       setIsVisible(true);
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   // Subscribe to debug logs
   useEffect(() => {
@@ -153,9 +154,9 @@ export function AudioDebugPanel() {
     if (!isDebugEnabled()) return;
     logDebug('Route change', {
       path: pathname,
-      query: searchParams?.toString() || '',
+      query: typeof window !== 'undefined' ? window.location.search : '',
     });
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   // Keyboard shortcut: Ctrl+Shift+A
   useEffect(() => {
