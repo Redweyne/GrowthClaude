@@ -13,13 +13,15 @@
 // - Writing space that invites depth
 // - Progress that encourages without pressuring
 // - Atmospheric responses to your journey
+//
+// NOTE: Music is now managed centrally by FlexibleLessonExperience.
+// This component no longer starts its own music to prevent double audio.
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Feather, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { MusicControl } from '@/components/ui/MusicControl';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTypingAmbience } from '@/hooks/useTypingAmbience';
@@ -87,8 +89,8 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
 
   const { t, isRTL } = useTranslation();
 
-  // Audio hooks for immersive experience
-  const { playSuccess, startWritingAmbience, stopWritingAmbience, playChime } = useAudio();
+  // Audio hooks for immersive experience - only UI sounds, music managed by parent
+  const { playSuccess, playChime } = useAudio();
   const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false }); // Disabled - silence is better
 
   // Echoes store for publishing public reflections
@@ -114,24 +116,18 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     return () => clearInterval(interval);
   }, []);
 
-  // Entering phase timing
+  // Entering phase timing - no audio starting, managed by parent
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('writing');
-      // Start ambient writing sounds
-      startWritingAmbience('rain');
+      // Music already playing from FlexibleLessonExperience
       setTimeout(() => textareaRef.current?.focus(), 100);
     }, 2200);
     return () => clearTimeout(timer);
-  }, [startWritingAmbience]);
+  }, []);
 
-  // Stop ambience ONLY when complete (not on cleanup - that kills audio on phase changes)
-  useEffect(() => {
-    if (phase === 'complete') {
-      stopWritingAmbience();
-    }
-    // NO cleanup - React StrictMode and phase changes were killing audio
-  }, [phase, stopWritingAmbience]);
+  // Phase transition - no audio to stop, managed by parent
+  // Left empty intentionally for clarity
 
   // Show encouragement prompts based on inactivity
   useEffect(() => {
@@ -566,9 +562,6 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Music control - visible during writing phase */}
-      {phase === 'writing' && <MusicControl currentTrack="rain" />}
     </div>
   );
 }

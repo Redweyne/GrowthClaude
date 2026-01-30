@@ -18,6 +18,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { AmbientBackground } from '@/components/ambient';
+import { MuteButton } from '@/components/ui/MuteButton';
 import { useContextualAudio } from '@/hooks/useContextualAudio';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
@@ -47,9 +48,8 @@ export function OnboardingFlow() {
   const audioStartedRef = useRef(false);
   const prevStepRef = useRef(onboardingStep);
 
-  // Start onboarding music on first user interaction
-  // Using audio.startMusic directly for reliability (contextualAudio.enterScene
-  // can have timing issues with store hydration)
+  // Start onboarding music immediately on first user interaction
+  // This needs to happen on interaction because browsers block autoplay
   const initializeAudio = useCallback(() => {
     if (!audioStartedRef.current) {
       audioStartedRef.current = true;
@@ -58,6 +58,7 @@ export function OnboardingFlow() {
     }
   }, [audio]);
 
+  // Start audio on very first interaction (any touch/click)
   useEffect(() => {
     setMounted(true);
     
@@ -77,8 +78,7 @@ export function OnboardingFlow() {
     };
   }, [initializeAudio]);
 
-  // Cleanup audio when component unmounts (fallback safety)
-  // NOTE: We use stopAllAudio with immediate=true for a clean exit
+  // Cleanup audio when onboarding completes
   useEffect(() => {
     return () => {
       // Only stop if audio was actually started during onboarding
@@ -306,6 +306,9 @@ export function OnboardingFlow() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Simple mute button */}
+      <MuteButton />
 
       {/* Bottom decorative gradient */}
       <div

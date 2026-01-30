@@ -20,6 +20,7 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
+import { MuteButton } from '@/components/ui/MuteButton';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { useContextualAudio } from '@/hooks/useContextualAudio';
@@ -595,6 +596,9 @@ export function FlexibleLessonExperience({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Simple mute button */}
+      <MuteButton />
 
       {/* Bottom gradient fade */}
       <div

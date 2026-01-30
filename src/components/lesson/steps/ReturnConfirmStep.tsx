@@ -70,14 +70,14 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
               exit={{ opacity: 0 }}
               className="text-center space-y-6"
             >
-              {/* Welcome icon */}
+              {/* Welcome icon - emoji with fixed dimensions for iOS */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-                className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center"
+                className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center overflow-hidden"
               >
-                <span className="text-4xl">🙏</span>
+                <span className="text-4xl leading-none flex items-center justify-center w-full h-full" style={{ fontSize: '2.5rem' }}>🙏</span>
               </motion.div>
 
               {/* Welcome message */}
@@ -197,9 +197,9 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center"
+                    className="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center overflow-hidden"
                   >
-                    <span className="text-4xl">✨</span>
+                    <span className="text-4xl leading-none flex items-center justify-center w-full h-full" style={{ fontSize: '2.5rem' }}>✨</span>
                   </motion.div>
 
                   <motion.p
@@ -218,9 +218,9 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="w-20 h-20 mx-auto rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center"
+                    className="w-20 h-20 mx-auto rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center overflow-hidden"
                   >
-                    <span className="text-4xl">🙏</span>
+                    <span className="text-4xl leading-none flex items-center justify-center w-full h-full" style={{ fontSize: '2.5rem' }}>🙏</span>
                   </motion.div>
 
                   <motion.p

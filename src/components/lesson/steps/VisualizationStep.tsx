@@ -7,13 +7,15 @@
 // Read and imagine. Let the words paint pictures in your mind.
 // No "close your eyes" - that's absurd when you need to read instructions.
 //
+// NOTE: Music is now managed centrally by FlexibleLessonExperience.
+// This component no longer starts its own music to prevent double audio.
+//
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { MusicControl } from '@/components/ui/MusicControl';
 import { useAudio } from '@/hooks/useAudio';
 import type { VisualizationStep as VisualizationStepType } from '@/types/lessons';
 
@@ -48,20 +50,16 @@ const STYLE_CONFIG = {
 export function VisualizationStep({ step, onComplete }: VisualizationStepProps) {
   const [showButton, setShowButton] = useState(false);
 
-  // Audio for immersive visualization
-  const { startMusic, stopMusic, playChime, playSuccess } = useAudio();
+  // Audio - only for UI sounds, music is managed by FlexibleLessonExperience
+  const { playChime, playSuccess } = useAudio();
 
   const style = step.style || 'cosmic';
   const config = STYLE_CONFIG[style];
 
-  // Start ambient music when visualization begins
+  // Play chime when visualization begins (music already playing from parent)
   useEffect(() => {
-    // Choose music based on style - use visualization for visuals
-    startMusic('visualization', 3);
     playChime(); // Gentle chime to signal visualization start
-    // NO cleanup - React StrictMode and phase changes were killing audio
-    // Music is stopped explicitly when user clicks Continue
-  }, [startMusic, playChime]);
+  }, [playChime]);
 
   // Show button after reading time
   useEffect(() => {
@@ -142,7 +140,7 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
                 size="lg"
                 onClick={() => {
                   playSuccess();
-                  stopMusic(1.5); // Fade out music
+                  // Music continues - managed by FlexibleLessonExperience
                   onComplete();
                 }}
                 glow
@@ -158,9 +156,6 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
           )}
         </div>
       </motion.div>
-
-      {/* Music control - always visible during visualization */}
-      <MusicControl currentTrack="visualization" />
     </div>
   );
 }
