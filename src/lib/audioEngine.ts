@@ -56,7 +56,8 @@ export type UISound =
 
 export type AmbientSound =
   | 'onboarding' | 'lessonCalm' | 'lessonDeep' | 'reflection'
-  | 'visualization' | 'reward' | 'home';
+  | 'visualization' | 'reward' | 'home'
+  | 'lessonWisdom' | 'lessonFocus' | 'lessonCalm2';
 
 export type WritingAmbience = 'rain' | 'fire' | 'forest' | 'silence';
 
@@ -170,13 +171,31 @@ const UI_SOUNDS: Record<string, string> = {
 
 const SCENE_MUSIC: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
   lessonCalm: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
-  reflection: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
+  reflection: { path: `${BASE_PATH}/audio/ambient/reflection.mp3`, randomStart: false },
   onboarding: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: false },
   reward: { path: `${BASE_PATH}/audio/writing/forest.mp3`, randomStart: false },
   home: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },
   lessonDeep: { path: `${BASE_PATH}/audio/writing/lessonDeep.mp3`, randomStart: true, duration: 6600 },
   visualization: { path: `${BASE_PATH}/audio/writing/visualization.mp3`, randomStart: true, duration: 7200 },
+  // Additional tracks for variety
+  lessonWisdom: { path: `${BASE_PATH}/audio/ambient/wisdom.mp3`, randomStart: false },
+  lessonFocus: { path: `${BASE_PATH}/audio/ambient/focus.mp3`, randomStart: false },
+  lessonCalm2: { path: `${BASE_PATH}/audio/ambient/calm.mp3`, randomStart: false },
 };
+
+// Available lesson music tracks for variety
+const LESSON_MUSIC_TRACKS: AmbientSound[] = [
+  'lessonCalm',
+  'lessonWisdom',
+  'lessonFocus',
+  'lessonCalm2',
+];
+
+// Get a random lesson music track
+export function getRandomLessonMusic(): AmbientSound {
+  const index = Math.floor(Math.random() * LESSON_MUSIC_TRACKS.length);
+  return LESSON_MUSIC_TRACKS[index];
+}
 
 const WRITING_AMBIENCE: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
   rain: { path: `${BASE_PATH}/audio/writing/rain.mp3`, randomStart: false },

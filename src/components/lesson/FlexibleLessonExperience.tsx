@@ -17,13 +17,14 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { useContextualAudio } from '@/hooks/useContextualAudio';
 import { useTranslation } from '@/i18n';
+import { getRandomLessonMusic } from '@/lib/audioEngine';
 
 // Step components
 import { ScenarioStep } from './steps/ScenarioStep';
@@ -170,17 +171,20 @@ export function FlexibleLessonExperience({
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Audio Initialization - Start lesson music on mount
+  // Audio Initialization - Start lesson music on mount with variety
   // ─────────────────────────────────────────────────────────────────────────
+  
+  // Select a random music track once per lesson (memoized)
+  const selectedMusic = useMemo(() => getRandomLessonMusic(), []);
 
   const handleInitializeAudio = useCallback(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
     initAudio();
-    // Start lesson music immediately
-    contextualAudio.enterScene('lesson');
+    // Start lesson music with variety - different track each lesson
+    contextualAudio.startMusic(selectedMusic);
     contextualAudio.playStepTransition();
-  }, [initAudio, contextualAudio]);
+  }, [initAudio, contextualAudio, selectedMusic]);
 
   // Initialize on mount
   useEffect(() => {

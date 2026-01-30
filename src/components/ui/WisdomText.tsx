@@ -12,10 +12,11 @@
 // - Clear callback when text is complete (for button timing)
 // - Proper cleanup to prevent memory leaks or weird behavior
 // - Clean typography optimized for mobile
+// - STABLE: Does not re-animate on parent re-renders
 //
 // ==============================================================================
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface WisdomTextProps {
@@ -94,32 +95,38 @@ export function WisdomText({
   speed = 'normal',
   onComplete,
 }: WisdomTextProps) {
-  // Split text into sentences once
+  // Split text into sentences once - memoized on text content
   const sentences = useMemo(() => splitIntoSentences(children), [children]);
   
   // Track which sentences are visible (by count, not by index array)
   const [visibleCount, setVisibleCount] = useState(animate ? 0 : sentences.length);
   
-  // Use ref for mounted check and timer tracking
+  // Track if animation has completed - prevents re-triggering
+  const [hasAnimated, setHasAnimated] = useState(false);
+  
+  // Use refs for stable values that don't trigger re-renders
   const mountedRef = useRef(true);
   const timersRef = useRef<NodeJS.Timeout[]>([]);
-  const hasCompletedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  const textRef = useRef(children);
+  
+  // Keep onComplete ref updated without causing effect re-runs
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
   
   const styles = variantStyles[variant];
   const timing = speedConfigs[speed];
   
-  // Stable onComplete callback
-  const handleComplete = useCallback(() => {
-    if (!hasCompletedRef.current && onComplete) {
-      hasCompletedRef.current = true;
-      onComplete();
-    }
-  }, [onComplete]);
-  
-  // Progressive reveal effect
+  // Progressive reveal effect - ONLY runs when text content changes
   useEffect(() => {
-    // Reset state for new text
-    hasCompletedRef.current = false;
+    // If text hasn't changed and we've already animated, don't re-run
+    if (textRef.current === children && hasAnimated) {
+      return;
+    }
+    
+    // Text changed - reset and re-animate
+    textRef.current = children;
     mountedRef.current = true;
     
     // Clear any existing timers
@@ -129,14 +136,20 @@ export function WisdomText({
     // If not animating, show all immediately
     if (!animate) {
       setVisibleCount(sentences.length);
+      setHasAnimated(true);
       // Call onComplete after a brief delay
-      const completeTimer = setTimeout(handleComplete, 100);
+      const completeTimer = setTimeout(() => {
+        if (mountedRef.current && onCompleteRef.current) {
+          onCompleteRef.current();
+        }
+      }, 100);
       timersRef.current.push(completeTimer);
       return;
     }
     
     // Start fresh
     setVisibleCount(0);
+    setHasAnimated(false);
     
     // Schedule each sentence to appear
     sentences.forEach((_, index) => {
@@ -149,9 +162,10 @@ export function WisdomText({
         
         // If this is the last sentence, call onComplete after animation settles
         if (index === sentences.length - 1) {
+          setHasAnimated(true);
           const completeTimer = setTimeout(() => {
-            if (mountedRef.current) {
-              handleComplete();
+            if (mountedRef.current && onCompleteRef.current) {
+              onCompleteRef.current();
             }
           }, 400); // Wait for animation to complete
           timersRef.current.push(completeTimer);
@@ -167,16 +181,25 @@ export function WisdomText({
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
-  }, [children, animate, sentences.length, timing.initialDelay, timing.sentenceDelay, handleComplete]);
+  // IMPORTANT: Only depend on children and animate to prevent re-runs on parent re-renders
+  // Using sentences.length instead of sentences array to avoid reference issues
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [children, animate]);
   
   // For very short text (one short sentence), render simply
   if (sentences.length === 1 && sentences[0].length < 60) {
     return (
       <motion.p
-        initial={animate ? { opacity: 0, y: 12 } : false}
+        initial={animate && !hasAnimated ? { opacity: 0, y: 12 } : false}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut', delay: animate ? timing.initialDelay / 1000 : 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut', delay: animate && !hasAnimated ? timing.initialDelay / 1000 : 0 }}
         className={`${styles.base} ${styles.size} ${styles.leading} ${className}`}
+        onAnimationComplete={() => {
+          if (!hasAnimated && onCompleteRef.current) {
+            setHasAnimated(true);
+            onCompleteRef.current();
+          }
+        }}
       >
         {sentences[0]}
       </motion.p>
@@ -189,8 +212,8 @@ export function WisdomText({
       <AnimatePresence mode="sync">
         {sentences.slice(0, visibleCount).map((sentence, index) => (
           <motion.p
-            key={`sentence-${index}`}
-            initial={animate ? { opacity: 0, y: 12 } : false}
+            key={`${textRef.current.slice(0, 20)}-sentence-${index}`}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.5,

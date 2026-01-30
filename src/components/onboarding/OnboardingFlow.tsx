@@ -48,12 +48,15 @@ export function OnboardingFlow() {
   const prevStepRef = useRef(onboardingStep);
 
   // Start onboarding music on first user interaction
+  // Using audio.startMusic directly for reliability (contextualAudio.enterScene
+  // can have timing issues with store hydration)
   const initializeAudio = useCallback(() => {
     if (!audioStartedRef.current) {
       audioStartedRef.current = true;
-      contextualAudio.enterScene('onboarding');
+      // Directly start music for maximum reliability
+      audio.startMusic('onboarding', 3);
     }
-  }, [contextualAudio]);
+  }, [audio]);
 
   useEffect(() => {
     setMounted(true);

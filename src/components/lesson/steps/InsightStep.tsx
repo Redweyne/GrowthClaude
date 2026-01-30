@@ -8,6 +8,8 @@
 // All text appears with consistent, clean animations.
 // Sequenced reveal: main text -> source -> follow-up -> button
 //
+// IMPORTANT: Callbacks are stabilized with refs to prevent WisdomText re-animation
+//
 // ==============================================================================
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -58,8 +60,8 @@ type Phase = 'text' | 'source' | 'followUp' | 'ready';
 
 export function InsightStep({ step, onComplete }: InsightStepProps) {
   const [phase, setPhase] = useState<Phase>('text');
-  const [soundPlayed, setSoundPlayed] = useState(false);
   const mountedRef = useRef(true);
+  const soundPlayedRef = useRef(false);
 
   // Audio for revelation moments
   const { playReveal, playSuccess, playBell } = useAudio();
@@ -76,13 +78,13 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
     };
   }, []);
 
-  // Called when the main text animation finishes
+  // Called when the main text animation finishes - STABLE callback using refs
   const handleTextComplete = useCallback(() => {
     if (!mountedRef.current) return;
     
     // Play sound when wisdom is revealed (only once)
-    if (!soundPlayed) {
-      setSoundPlayed(true);
+    if (!soundPlayedRef.current) {
+      soundPlayedRef.current = true;
       if (style === 'quote') {
         playBell();
       } else {
@@ -98,7 +100,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
     } else {
       setPhase('ready');
     }
-  }, [step.source, step.followUp, style, playBell, playReveal, soundPlayed]);
+  }, [step.source, step.followUp, style, playBell, playReveal]);
 
   // Called when source is shown (source doesn't animate, just triggers next phase after delay)
   useEffect(() => {
