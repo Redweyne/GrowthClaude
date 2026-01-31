@@ -315,6 +315,10 @@ export default function Home() {
 
   // Handle lesson completion - now goes to mandatory echo
   const handleLessonComplete = () => {
+    // CRITICAL: Stop all audio when leaving the lesson
+    // This ensures background music doesn't continue playing through echo and exercises
+    stopAllAudio(false); // false = allow fadeout for smooth transition
+
     // Save completed lesson info for Echo prompt
     if (selectedFlexibleLesson) {
       setCompletedLessonInfo({
@@ -687,6 +691,14 @@ export default function Home() {
           onComplete={handleMandatoryEchoComplete}
           skipIntroPhase={skipEchoIntro}
         />
+        {/* Coaching modal must render in all views */}
+        {coachingModal && (
+          <CoachModal
+            step={coachingModal}
+            onDismiss={dismissCoaching}
+            userName={userName || 'Friend'}
+          />
+        )}
       </>
     );
   }
@@ -711,6 +723,14 @@ export default function Home() {
             onAllComplete={handleExercisesComplete}
             onBack={() => setCurrentView('home')}
           />
+          {/* Coaching modal must render in all views */}
+          {coachingModal && (
+            <CoachModal
+              step={coachingModal}
+              onDismiss={dismissCoaching}
+              userName={userName || 'Friend'}
+            />
+          )}
         </>
       );
     } else {

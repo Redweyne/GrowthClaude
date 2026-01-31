@@ -111,6 +111,8 @@ export function FlexibleLessonExperience({
 
   const xpEarnedRef = useRef(0);
   const hasInitializedRef = useRef(false);
+  // Store ref to audio functions for stable cleanup
+  const audioCleanupRef = useRef<{ stopMusic: (fadeOut?: number) => void } | null>(null);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Store & Audio
@@ -187,30 +189,71 @@ export function FlexibleLessonExperience({
     contextualAudio.playStepTransition();
   }, [initAudio, contextualAudio, selectedMusic]);
 
+  // Store audio ref for stable cleanup
+  useEffect(() => {
+    audioCleanupRef.current = { stopMusic: contextualAudio.stopMusic };
+  }, [contextualAudio.stopMusic]);
+
   // Initialize on mount
   useEffect(() => {
     handleInitializeAudio();
     // Cleanup: stop music when leaving the lesson
+    // Use the ref for stable cleanup that won't have stale closures
     return () => {
-      contextualAudio.stopMusic(1);
+      if (audioCleanupRef.current) {
+        audioCleanupRef.current.stopMusic(0.5); // Quick fadeout on unmount
+      }
     };
-  }, [handleInitializeAudio, contextualAudio]);
+  }, [handleInitializeAudio]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Navigation Helpers
   // ─────────────────────────────────────────────────────────────────────────
 
   const goToStep = useCallback((stepId: string) => {
+    // Validate the target step exists to prevent dead-ends
+    const targetStep = lesson.steps.find(s => s.id === stepId);
+    if (!targetStep) {
+      console.error(`[FlexibleLessonExperience] Step "${stepId}" not found! Attempting fallback.`);
+      // Fallback: try to find the next step by array index or complete the lesson
+      const currentIndex = lesson.steps.findIndex(s => s.id === currentStepId);
+      if (currentIndex >= 0 && currentIndex < lesson.steps.length - 1) {
+        // Go to next step in array as fallback
+        setIsTransitioning(true);
+        contextualAudio.playStepTransition();
+        setTimeout(() => {
+          setCurrentStepId(lesson.steps[currentIndex + 1].id);
+          setIsTransitioning(false);
+        }, 500);
+      } else {
+        // At the end or can't navigate - force lesson complete
+        console.error(`[FlexibleLessonExperience] Cannot navigate, forcing lesson complete.`);
+        onComplete();
+      }
+      return;
+    }
+
     setIsTransitioning(true);
     contextualAudio.playStepTransition();
     setTimeout(() => {
       setCurrentStepId(stepId);
       setIsTransitioning(false);
     }, 500);
-  }, [contextualAudio]);
+  }, [contextualAudio, currentStepId, lesson.steps, onComplete]);
 
   const goToNextStep = useCallback(() => {
-    if (!currentStep) return;
+    if (!currentStep) {
+      console.error(`[FlexibleLessonExperience] No current step found for ID: ${currentStepId}`);
+      // Attempt to find step by ID and continue from there
+      const stepIndex = lesson.steps.findIndex(s => s.id === currentStepId);
+      if (stepIndex >= 0 && stepIndex < lesson.steps.length - 1) {
+        goToStep(lesson.steps[stepIndex + 1].id);
+      } else {
+        // Force complete if stuck
+        onComplete();
+      }
+      return;
+    }
 
     // Check for explicit next step
     if (currentStep.nextStepId) {
@@ -223,8 +266,12 @@ export function FlexibleLessonExperience({
     // Ensure valid index before navigating
     if (currentIndex >= 0 && currentIndex < lesson.steps.length - 1) {
       goToStep(lesson.steps[currentIndex + 1].id);
+    } else if (currentIndex === lesson.steps.length - 1) {
+      // At the last step with no explicit nextStepId - this is likely the mentor step
+      // The mentor step should call handleMentorComplete, but if we get here somehow, complete
+      console.warn(`[FlexibleLessonExperience] At last step "${currentStep.id}" with no nextStepId`);
     }
-  }, [currentStep, currentStepId, lesson.steps, goToStep]);
+  }, [currentStep, currentStepId, lesson.steps, goToStep, onComplete]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Step Completion Handlers
@@ -279,8 +326,19 @@ export function FlexibleLessonExperience({
     setActionCompleted(completed);
     // Clear saved progress from store
     clearPendingLessonAction();
-    goToNextStep();
-  }, [goToNextStep, clearPendingLessonAction]);
+
+    // CRITICAL: ReturnConfirmStep has different nextStepId for each option
+    // We must use the specific nextStepId based on the user's choice
+    const returnStep = currentStep as ReturnConfirmStepType;
+    if (completed && returnStep.completedOption?.nextStepId) {
+      goToStep(returnStep.completedOption.nextStepId);
+    } else if (!completed && returnStep.didNotCompleteOption?.nextStepId) {
+      goToStep(returnStep.didNotCompleteOption.nextStepId);
+    } else {
+      // Fallback to generic navigation
+      goToNextStep();
+    }
+  }, [currentStep, goToStep, goToNextStep, clearPendingLessonAction]);
 
   const handleInsightComplete = useCallback(() => {
     goToNextStep();

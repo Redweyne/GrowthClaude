@@ -109,6 +109,7 @@ const lesson1_InstantReframe: FlexibleLesson = {
       type: 'scenario',
       narrative: "Right now, something is sitting in the back of your mind. It's been there for a while. Maybe it's a conversation you keep rehearsing. A wrong that was done to you. A decision you've been avoiding. A fear about the future that won't let go.",
       mood: 'tension',
+      nextStepId: 'scenario-2', // Explicit navigation to prevent dead-ends
     },
 
     {
@@ -119,6 +120,7 @@ const lesson1_InstantReframe: FlexibleLesson = {
       bridgeQuestion: "Are you ready to face it?",
       continueLabel: "Yes, I'm ready",
       mood: 'tension',
+      nextStepId: 'name-burden', // Explicit navigation to prevent dead-ends
     },
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -293,6 +295,7 @@ const lesson1_InstantReframe: FlexibleLesson = {
       bridgeQuestion: "Are you ready to try a different way?",
       continueLabel: "Show me",
       mood: 'hope',
+      nextStepId: 'acceptance-visualization', // Explicit navigation for the acceptance path
     },
 
     {
