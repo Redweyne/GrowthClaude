@@ -60,6 +60,8 @@ export default function Home() {
     isCheckinDue,
     isAssessmentDue,
     getPendingLessonAction,
+    getInProgressLesson,
+    clearInProgressLesson,
     currentWorldSlug: storedWorldSlug,
     setCurrentWorld,
     totalXp,
@@ -171,6 +173,41 @@ export default function Home() {
 
   // All available worlds
   const allWorlds: FlexibleWorld[] = [modernWisdomWorld, stoicismWorld];
+
+  // Check for in-progress lesson on mount (page refresh resilience)
+  // This runs once on mount to restore lesson progress if the user refreshed the page
+  useEffect(() => {
+    const inProgress = getInProgressLesson();
+    if (inProgress && onboardingComplete) {
+      // Find the lesson and resume
+      const lesson = getFlexibleLessonById(inProgress.lessonId);
+      if (lesson) {
+        // Check if the lesson was updated recently (within last 4 hours)
+        // to avoid resuming very old sessions
+        const lastUpdated = new Date(inProgress.lastUpdated);
+        const hoursSinceUpdate = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
+
+        if (hoursSinceUpdate < 4) {
+          setSelectedFlexibleLesson(lesson);
+          setFlexibleLessonProgress({
+            lessonId: inProgress.lessonId,
+            currentStepId: inProgress.currentStepId,
+            choices: inProgress.choices,
+            writings: inProgress.writings,
+            hasReturned: false,
+          });
+          setCurrentView('lesson');
+        } else {
+          // Too old, clear the saved progress
+          clearInProgressLesson();
+        }
+      } else {
+        // Lesson no longer exists, clear the saved progress
+        clearInProgressLesson();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only on mount
 
   // Initialize daily practice on mount
   useEffect(() => {

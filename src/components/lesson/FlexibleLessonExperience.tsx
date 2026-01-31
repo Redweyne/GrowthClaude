@@ -124,6 +124,8 @@ export function FlexibleLessonExperience({
     saveReflection,
     savePendingLessonAction,
     clearPendingLessonAction,
+    saveInProgressLesson,
+    clearInProgressLesson,
   } = useStore();
   const { playComplete, playReward, initAudio } = useSound();
   
@@ -205,6 +207,27 @@ export function FlexibleLessonExperience({
       }
     };
   }, [handleInitializeAudio]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Persist lesson progress for page refresh resilience
+  // ─────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    // Don't save if we're at the very first step with no progress
+    // (avoid saving empty state on initial load)
+    const hasProgress = currentStepId !== (lesson.startStepId || lesson.steps[0]?.id) ||
+                        Object.keys(choices).length > 0 ||
+                        Object.keys(writings).length > 0;
+
+    if (hasProgress) {
+      saveInProgressLesson({
+        lessonId: lesson.id,
+        currentStepId,
+        choices,
+        writings,
+        lastUpdated: new Date().toISOString(),
+      });
+    }
+  }, [lesson.id, lesson.startStepId, lesson.steps, currentStepId, choices, writings, saveInProgressLesson]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Navigation Helpers
@@ -406,9 +429,11 @@ export function FlexibleLessonExperience({
   const handleMentorComplete = useCallback(() => {
     contextualAudio.stopMusic(1);
     completeLesson(lesson.id, xpEarnedRef.current);
+    // Clear saved progress since lesson is complete
+    clearInProgressLesson();
     playComplete();
     setTimeout(onComplete, 300);
-  }, [contextualAudio, completeLesson, lesson.id, playComplete, onComplete]);
+  }, [contextualAudio, completeLesson, lesson.id, clearInProgressLesson, playComplete, onComplete]);
 
   const handleRetry = useCallback(() => {
     // Find the reflection step and go back to it

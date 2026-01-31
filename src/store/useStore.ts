@@ -103,6 +103,15 @@ export interface PendingLessonAction {
   dismissedAt: string;
 }
 
+// In-progress lesson state (for persisting across page refresh)
+export interface InProgressLesson {
+  lessonId: string;
+  currentStepId: string;
+  choices: Record<string, string>;
+  writings: Record<string, string>;
+  lastUpdated: string;
+}
+
 interface UserState {
   // Language settings
   language: 'en' | 'fr' | 'ar';
@@ -167,6 +176,9 @@ interface UserState {
 
   // Pending lesson action (for GoDoIt lessons)
   pendingLessonAction: PendingLessonAction | null;
+
+  // In-progress lesson (for persisting across page refresh)
+  inProgressLesson: InProgressLesson | null;
 
   // Settings
   soundEnabled: boolean;
@@ -264,6 +276,11 @@ interface UserActions {
   clearPendingLessonAction: () => void;
   hasPendingLessonAction: (lessonId: string) => boolean;
 
+  // In-Progress Lesson (persisted across page refresh)
+  saveInProgressLesson: (lesson: InProgressLesson) => void;
+  getInProgressLesson: () => InProgressLesson | null;
+  clearInProgressLesson: () => void;
+
   // Settings
   toggleSound: () => void;
   toggleHaptic: () => void;
@@ -321,6 +338,8 @@ const initialState: UserState = {
   pendingAchievementCelebration: null,
   // Pending lesson action
   pendingLessonAction: null,
+  // In-progress lesson (for page refresh persistence)
+  inProgressLesson: null,
   // Settings
   soundEnabled: true,
   hapticEnabled: true,
@@ -956,6 +975,21 @@ export const useStore = create<UserState & UserActions>()(
       hasPendingLessonAction: (lessonId) => {
         const pending = get().pendingLessonAction;
         return pending !== null && pending.lessonId === lessonId;
+      },
+
+      // ============================================
+      // IN-PROGRESS LESSON (for page refresh persistence)
+      // ============================================
+      saveInProgressLesson: (lesson) => {
+        set({ inProgressLesson: lesson });
+      },
+
+      getInProgressLesson: () => {
+        return get().inProgressLesson;
+      },
+
+      clearInProgressLesson: () => {
+        set({ inProgressLesson: null });
       },
 
       // ============================================
