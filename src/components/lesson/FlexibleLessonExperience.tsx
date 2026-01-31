@@ -330,6 +330,8 @@ export function FlexibleLessonExperience({
 
     contextualAudio.playStepComplete();
     contextualAudio.playLessonComplete();
+    // Transition to reward music when ENTERING reward phase (not when leaving)
+    contextualAudio.transitionTo('reward');
     goToNextStep();
   }, [
     lesson, actionCompleted, currentStreak, saveReflection,
@@ -337,10 +339,11 @@ export function FlexibleLessonExperience({
   ]);
 
   const handleRewardComplete = useCallback(() => {
-    contextualAudio.transitionTo('reward');
+    // Just play celebration sound and move to mentor
+    // Music was already started when entering reward phase
     playReward();
     goToNextStep();
-  }, [contextualAudio, playReward, goToNextStep]);
+  }, [playReward, goToNextStep]);
 
   const handleMentorComplete = useCallback(() => {
     contextualAudio.stopMusic(1);

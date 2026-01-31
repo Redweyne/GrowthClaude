@@ -18,7 +18,7 @@
 //
 // ============================================================================
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import {
   initAudioEngine,
@@ -37,6 +37,7 @@ import {
   playHaptic as enginePlayHaptic,
   updateSettings,
   cleanup,
+  registerSoundEnabledGetter,
   type AudioEngineState,
   type UISound,
   type AmbientSound,
@@ -195,6 +196,10 @@ export function AudioProvider({ children }: AudioProviderProps) {
 
     initAudioEngine();
 
+    // Register soundEnabled getter for defense in depth
+    // This allows the audio engine to verify sound is enabled before playing
+    registerSoundEnabledGetter(() => useStore.getState().soundEnabled);
+
     // Subscribe to state changes
     const unsubscribe = subscribeToState((newState) => {
       setState(newState);
@@ -349,8 +354,9 @@ export function AudioProvider({ children }: AudioProviderProps) {
     playCelebrate, playUnlockSound, playNotification, playReveal, playKeystroke, playError
   ]);
 
-  // Context value
-  const contextValue: AudioContextValue = {
+  // Context value - memoized to prevent unnecessary re-renders
+  // Only recreate when state or functions actually change
+  const contextValue: AudioContextValue = useMemo(() => ({
     state,
     isReady: state.isInitialized && state.isUnlocked,
     playUI,
@@ -391,7 +397,15 @@ export function AudioProvider({ children }: AudioProviderProps) {
     playDing: playBell,
     playCorrect: playSuccess,
     updateSettings,
-  };
+  }), [
+    state,
+    playUI, playTap, playTapConfirm, playSuccess, playSuccessBig,
+    playComplete, playLevelUp, playStreak, playBell, playChime,
+    playWhoosh, playPop, playCelebrate, playUnlockSound, playNotification,
+    playReveal, playKeystroke, playError, startMusic, stopMusic,
+    startAmbience, stopAmbience, stopAllAudio, playSingingBowl, playGong,
+    playBreathingTone, playXpCounting, playHaptic, playSound
+  ]);
 
   return (
     <AudioContext.Provider value={contextValue}>

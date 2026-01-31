@@ -42,7 +42,9 @@ export function MuteButton() {
 
     try {
       if (soundEnabled) {
-        stopAllAudio();
+        // Use immediate=true for instant mute feedback
+        // This stops all audio immediately without fade delay
+        stopAllAudio(true);
       }
       setSoundEnabled(!soundEnabled);
     } catch (err) {

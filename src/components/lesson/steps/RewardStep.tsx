@@ -18,7 +18,7 @@
 // - Less text, more weight
 // ============================================================================
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, ChevronRight, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -53,6 +53,9 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [canAdvance, setCanAdvance] = useState(false);
+
+  // Guard to prevent bell from playing multiple times
+  const hasPlayedBellRef = useRef(false);
 
   // Calculate values
   const safeXpEarned = xpEarned > 0 ? xpEarned : Math.max(lesson.xpReward ?? 0, 15);
@@ -128,12 +131,17 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     }, timings[phase]);
 
     // Initial sound - a soft singing bowl to create sacred space
-    if (phase === 'breathing') {
+    // Use ref guard to prevent multiple plays due to re-renders
+    if (phase === 'breathing' && !hasPlayedBellRef.current) {
+      hasPlayedBellRef.current = true;
       audio.playSingingBowl();
     }
 
     return () => clearTimeout(timer);
-  }, [phase, leveledUp, audio]);
+    // NOTE: audio is intentionally excluded from deps to prevent re-runs
+    // when AudioProvider context changes. The ref guard provides extra safety.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, leveledUp]);
 
   // Keyboard support
   useEffect(() => {

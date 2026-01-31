@@ -23,6 +23,7 @@ import { ReflectionStep } from './steps/ReflectionStep';
 import { RewardStep } from './steps/RewardStep';
 import { MentorStep } from './steps/MentorStep';
 import { AmbientBackground } from '@/components/ambient';
+import { MuteButton } from '@/components/ui/MuteButton';
 import type { Lesson } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
@@ -420,6 +421,9 @@ export function LessonExperience({ lesson, onComplete }: LessonExperienceProps) 
           )}
         </AnimatePresence>
       </div>
+
+      {/* Simple mute button */}
+      <MuteButton />
 
       {/* Bottom gradient fade */}
       <div

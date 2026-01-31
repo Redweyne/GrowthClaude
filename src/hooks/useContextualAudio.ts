@@ -19,10 +19,13 @@
 //   }, []);
 // ============================================================================
 
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import { useAudio } from './useAudio';
 import { useStore } from '@/store/useStore';
 import type { AmbientSound } from '@/lib/audioEngine';
+
+// Get soundEnabled directly from store to avoid closure issues
+const getSoundEnabledFromStore = () => useStore.getState().soundEnabled;
 
 // Scene types with their audio configurations
 export type AudioScene = 
@@ -125,9 +128,15 @@ export function useContextualAudio(options: UseContextualAudioOptions = {}) {
   const [currentScene, setCurrentScene] = useState<AudioScene>(initialScene);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [userMutedMusic, setUserMutedMusic] = useState(false);
-  
+
   const sceneStackRef = useRef<AudioScene[]>([initialScene]);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Ref to track current soundEnabled to avoid closure issues in setTimeout
+  const soundEnabledRef = useRef(soundEnabled);
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
 
   // Check if we should play music
   const shouldPlayMusic = useCallback(() => {
@@ -195,7 +204,7 @@ export function useContextualAudio(options: UseContextualAudioOptions = {}) {
     options?: { delay?: number; crossfadeDuration?: number }
   ) => {
     const { delay = 0, crossfadeDuration = 2 } = options || {};
-    
+
     if (delay > 0) {
       transitionTimeoutRef.current = setTimeout(() => {
         enterScene(scene);
@@ -203,12 +212,15 @@ export function useContextualAudio(options: UseContextualAudioOptions = {}) {
     } else {
       // Get target config
       const config = SCENE_CONFIGS[scene];
-      
+
       // Crossfade: stop current, start new
       audio.stopMusic(crossfadeDuration / 2);
-      
+
       setTimeout(() => {
-        if (config.music && shouldPlayMusic()) {
+        // CRITICAL: Use ref/store directly to get current soundEnabled value
+        // This prevents closure issues where setTimeout captures stale shouldPlayMusic
+        const currentSoundEnabled = soundEnabledRef.current && getSoundEnabledFromStore();
+        if (config.music && currentSoundEnabled && !userMutedMusic) {
           audio.startMusic(config.music, crossfadeDuration);
           setIsMusicPlaying(true);
         }
@@ -216,7 +228,7 @@ export function useContextualAudio(options: UseContextualAudioOptions = {}) {
         sceneStackRef.current = [scene];
       }, (crossfadeDuration / 2) * 1000);
     }
-  }, [audio, enterScene, shouldPlayMusic]);
+  }, [audio, enterScene, userMutedMusic]);
 
   // Manual music controls
   const startMusic = useCallback((type?: AmbientSound) => {

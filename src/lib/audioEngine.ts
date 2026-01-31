@@ -614,8 +614,24 @@ function safeUnload(howl: Howl, id?: number): void {
   }
 }
 
+// Import soundEnabled check from store for defense in depth
+let _getSoundEnabled: (() => boolean) | null = null;
+
+// Allow store to register soundEnabled getter (called from AudioProvider)
+export function registerSoundEnabledGetter(getter: () => boolean): void {
+  _getSoundEnabled = getter;
+}
+
 export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3): void {
   if (!ensureInitialized()) return;
+
+  // Defense in depth: verify sound is enabled before starting music
+  // This catches edge cases where music might be started despite being muted
+  if (_getSoundEnabled && !_getSoundEnabled()) {
+    log(`🔇 Skipping music start (sound disabled): ${type}`);
+    return;
+  }
+
   log(`🎵 Starting music: ${type}`);
 
   // Try to unlock
