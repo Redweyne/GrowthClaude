@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { getLevelFromXp } from '@/types';
 import type { Milestone } from '@/types/achievements';
 import { getRarityColor, getVirtueColor } from '@/types/achievements';
+import { useTranslation } from '@/i18n';
 
 type CardType = 'streak' | 'achievement' | 'level' | 'journey';
 
@@ -27,6 +28,7 @@ export function ShareableCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const { name, currentStreak, totalXp, getProgressStats } = useStore();
   const [copied, setCopied] = useState(false);
+  const { t, locale } = useTranslation();
 
   const stats = getProgressStats();
   const level = getLevelFromXp(totalXp);
@@ -35,53 +37,57 @@ export function ShareableCard({
     switch (type) {
       case 'streak':
         return {
-          title: `${currentStreak} Day Streak`,
-          subtitle: 'Daily Stoic Practice',
+          title: t('share.cards.streak.title', { count: currentStreak }),
+          subtitle: t('share.cards.streak.subtitle'),
           emoji: '🔥',
-          message: customMessage || `I've practiced Stoic wisdom for ${currentStreak} days straight!`,
+          message: customMessage || t('share.cards.streak.message', { count: currentStreak }),
           gradient: 'from-orange-500 to-red-600',
           stats: [
-            { label: 'Days', value: currentStreak },
-            { label: 'Lessons', value: stats.totalLessons },
-            { label: 'XP', value: totalXp },
+            { label: t('share.cards.streak.stats.days'), value: currentStreak },
+            { label: t('share.cards.streak.stats.lessons'), value: stats.totalLessons },
+            { label: t('share.cards.streak.stats.xp'), value: totalXp },
           ],
         };
       case 'achievement':
         return {
-          title: achievement?.name || 'Milestone Reached',
+          title: achievement?.name || t('share.cards.achievement.titleFallback'),
           subtitle: achievement?.meaning || '',
           emoji: achievement?.symbol || '🏆',
-          message: achievement?.affirmation || 'I reached a new milestone on my journey!',
+          message: achievement?.affirmation || t('share.cards.achievement.messageFallback'),
           gradient: achievement ? getVirtueColor(achievement.virtue) : 'from-amber-500 to-orange-600',
           stats: [
-            { label: 'Virtue', value: achievement?.virtue || 'wisdom' },
-            { label: 'Total XP', value: totalXp },
+            { label: t('share.cards.achievement.stats.virtue'), value: achievement?.virtue || t('share.cards.achievement.stats.wisdom') },
+            { label: t('share.cards.achievement.stats.totalXp'), value: totalXp },
           ],
         };
       case 'level':
         return {
-          title: `Level ${level.level}`,
+          title: t('share.cards.level.title', { level: level.level }),
           subtitle: level.title,
           emoji: '⭐',
-          message: `I reached Level ${level.level}: ${level.title} on my journey of self-mastery!`,
+          message: t('share.cards.level.message', { level: level.level, title: level.title }),
           gradient: 'from-purple-500 to-indigo-600',
           stats: [
-            { label: 'Level', value: level.level },
-            { label: 'Title', value: level.title },
-            { label: 'XP', value: totalXp },
+            { label: t('share.cards.level.stats.level'), value: level.level },
+            { label: t('share.cards.level.stats.title'), value: level.title },
+            { label: t('share.cards.level.stats.xp'), value: totalXp },
           ],
         };
       case 'journey':
         return {
-          title: `${stats.daysSinceStart} Days of Growth`,
-          subtitle: 'My Transformation Journey',
+          title: t('share.cards.journey.title', { days: stats.daysSinceStart }),
+          subtitle: t('share.cards.journey.subtitle'),
           emoji: '🦋',
-          message: `${stats.daysSinceStart} days, ${stats.totalLessons} lessons, ${stats.totalWords.toLocaleString()} words of reflection. This is my transformation journey.`,
+          message: t('share.cards.journey.message', {
+            days: stats.daysSinceStart,
+            lessons: stats.totalLessons,
+            words: stats.totalWords.toLocaleString(),
+          }),
           gradient: 'from-emerald-500 to-teal-600',
           stats: [
-            { label: 'Days', value: stats.daysSinceStart },
-            { label: 'Lessons', value: stats.totalLessons },
-            { label: 'Words', value: stats.totalWords.toLocaleString() },
+            { label: t('share.cards.journey.stats.days'), value: stats.daysSinceStart },
+            { label: t('share.cards.journey.stats.lessons'), value: stats.totalLessons },
+            { label: t('share.cards.journey.stats.words'), value: stats.totalWords.toLocaleString() },
           ],
         };
     }
@@ -109,7 +115,7 @@ export function ShareableCard({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Transformation Hub',
+          title: t('transformation.title'),
           text: content.message,
           url: window.location.origin,
         });
@@ -154,10 +160,10 @@ export function ShareableCard({
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-2 text-white/70 text-sm font-medium">
                 <span className="w-2 h-2 bg-white/50 rounded-full" />
-                TRANSFORMATION HUB
+                {t('share.hubLabel')}
               </div>
               <div className="text-white/70 text-sm">
-                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {new Date().toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
               </div>
             </div>
 
@@ -182,7 +188,7 @@ export function ShareableCard({
             {name && (
               <div className="text-center pt-4 border-t border-white/20">
                 <p className="text-white/70 text-sm">
-                  Achieved by <span className="text-white font-semibold">{name}</span>
+                  {t('share.achievedBy')} <span className="text-white font-semibold">{name}</span>
                 </p>
               </div>
             )}
@@ -190,7 +196,7 @@ export function ShareableCard({
 
           {/* Share message preview */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4">
-            <p className="text-sm text-zinc-400 mb-2">Share message:</p>
+            <p className="text-sm text-zinc-400 mb-2">{t('share.messageLabel')}</p>
             <p className="text-white">{content.message}</p>
           </div>
 
@@ -204,12 +210,12 @@ export function ShareableCard({
               {copied ? (
                 <>
                   <Check size={18} className="mr-2" />
-                  Copied!
+                  {t('common.copied')}
                 </>
               ) : (
                 <>
                   <Copy size={18} className="mr-2" />
-                  Copy
+                  {t('common.copy')}
                 </>
               )}
             </Button>
@@ -220,7 +226,7 @@ export function ShareableCard({
                 className="flex-1"
               >
                 <Share2 size={18} className="mr-2" />
-                Share
+                {t('common.share')}
               </Button>
             )}
 
@@ -230,7 +236,7 @@ export function ShareableCard({
               className="flex-1"
             >
               <Download size={18} className="mr-2" />
-              Save
+              {t('common.save')}
             </Button>
           </div>
         </motion.div>

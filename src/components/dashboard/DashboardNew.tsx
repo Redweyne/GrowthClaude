@@ -288,7 +288,7 @@ function JourneyMapMini({ worldName, currentDay, totalDays, onPress, isRTL = fal
 
       {/* Chapter indicators */}
       <div className={`flex justify-between mt-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        {['Start', 'Ch.2', 'Mid', 'Ch.4', 'End'].map((label, index) => (
+        {[t('dashboard.chapterLabels.start'), t('dashboard.chapterLabels.chapter2'), t('dashboard.chapterLabels.mid'), t('dashboard.chapterLabels.chapter4'), t('dashboard.chapterLabels.end')].map((label, index) => (
           <span
             key={label}
             className={`text-[10px] ${

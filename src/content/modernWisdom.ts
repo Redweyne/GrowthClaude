@@ -14,6 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import type { FlexibleWorld, FlexibleLesson, FlexibleChapter } from '@/types/lessons';
+import { type Locale } from '@/i18n';
 import { chapter2_Resilience } from './modernWisdomChapter2';
 import { chapter3_Relationships } from './modernWisdomChapter3';
 
@@ -1084,12 +1085,30 @@ const chapter1_Foundations: FlexibleChapter = {
 // WORLD 1: MODERN FOUNDATIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
+const MODERN_WISDOM_WORLD_BY_LOCALE: Record<Locale, Pick<FlexibleWorld, 'name' | 'subtitle' | 'description'>> = {
+  en: {
+    name: 'Modern Wisdom',
+    subtitle: 'Ancient philosophy, modern life',
+    description: 'Fifteen transformative lessons based on the best modern books: Atomic Habits, The Obstacle Is the Way, Antifragile, and more. Build resilience, master relationships, and design an unshakeable foundation.',
+  },
+  fr: {
+    name: 'Sagesse Moderne',
+    subtitle: 'Philosophie ancienne, vie moderne',
+    description: 'Quinze leçons transformatrices inspirées des meilleurs livres modernes : Atomic Habits, The Obstacle Is the Way, Antifragile, et plus encore. Bâtissez votre résilience, maîtrisez vos relations et construisez une base inébranlable.',
+  },
+  ar: {
+    name: 'الحكمة الحديثة',
+    subtitle: 'فلسفة قديمة، حياة حديثة',
+    description: 'خمسة عشر درساً تحولياً مستندة إلى أفضل الكتب الحديثة: Atomic Habits، The Obstacle Is the Way، Antifragile، وغيرها. ابنِ المرونة، أتقن العلاقات، وصمّم أساساً لا يتزعزع.',
+  },
+};
+
 export const modernWisdomWorld: FlexibleWorld = {
   id: 'world-modern-wisdom',
   slug: 'modern-wisdom',
-  name: 'Modern Wisdom',
-  subtitle: 'Ancient philosophy, modern life',
-  description: 'Fifteen transformative lessons based on the best modern books: Atomic Habits, The Obstacle Is the Way, Antifragile, and more. Build resilience, master relationships, and design an unshakeable foundation.',
+  name: MODERN_WISDOM_WORLD_BY_LOCALE.en.name,
+  subtitle: MODERN_WISDOM_WORLD_BY_LOCALE.en.subtitle,
+  description: MODERN_WISDOM_WORLD_BY_LOCALE.en.description,
   iconName: 'Sparkles',
   color: '#f59e0b',
   order: 1,
@@ -1098,5 +1117,15 @@ export const modernWisdomWorld: FlexibleWorld = {
   totalLessons: 15,
   chapters: [chapter1_Foundations, chapter2_Resilience, chapter3_Relationships],
 };
+
+export function getModernWisdomWorld(locale: Locale): FlexibleWorld {
+  const localized = MODERN_WISDOM_WORLD_BY_LOCALE[locale] || MODERN_WISDOM_WORLD_BY_LOCALE.en;
+  return {
+    ...modernWisdomWorld,
+    name: localized.name,
+    subtitle: localized.subtitle,
+    description: localized.description,
+  };
+}
 
 export default modernWisdomWorld;

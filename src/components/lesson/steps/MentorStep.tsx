@@ -23,7 +23,12 @@ import { SageAvatar, type SageMood } from '@/components/mentor';
 import { useSound } from '@/hooks/useSound';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
-import { MENTOR, getStreakMilestoneMessage } from '@/content/mentor';
+import {
+  getFallbackWisdom,
+  getLowEffortWisdom,
+  getMentor,
+  getStreakMilestoneMessage,
+} from '@/content/mentor';
 import { isLowEffortReflection } from '@/lib/reflection';
 import type { Lesson } from '@/types';
 
@@ -34,37 +39,7 @@ interface MentorStepProps {
   onRetry: () => void;
 }
 
-// Deep wisdom for when lessons don't have specific responses
-const FALLBACK_WISDOM = [
-  {
-    wisdom: "Philosophy is not about knowing. It is about becoming. Each lesson you complete shapes who you will be tomorrow.",
-    context: "On the practice itself"
-  },
-  {
-    wisdom: "The Stoics did not study philosophy to sound clever. They studied it to live better. You are doing the same.",
-    context: "On why this matters"
-  },
-  {
-    wisdom: "What you just practiced is older than empires. Emperors and slaves alike used these same tools. They work.",
-    context: "On the tradition"
-  },
-  {
-    wisdom: "The gap between who you are and who you want to be closes one practice at a time. Today it closed a little more.",
-    context: "On transformation"
-  },
-  {
-    wisdom: "Most people read about wisdom. You are practicing it. That distinction makes all the difference.",
-    context: "On the value of practice"
-  },
-];
-
-// Low effort responses - direct, not harsh
-const LOW_EFFORT_WISDOM = [
-  "This doesn't look like genuine reflection. The practice only works if you bring yourself to it. Try again with honesty.",
-  "I see you're here, but I don't see you engaging. What did this lesson actually stir in you? Try again.",
-  "The reflection is where transformation happens. Without it, this is just going through motions. Be honest this time.",
-  "Half-hearted practice yields half-hearted results. Return and write what you actually think.",
-];
+// Localized wisdom is sourced from content/mentor
 
 // Deterministic selection helper - uses string hash instead of Math.random()
 function getStableIndex(seed: string, length: number): number {
@@ -85,7 +60,11 @@ const springs = {
 export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
   const { name, currentStreak } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
-  const { t, isRTL } = useTranslation();
+  const { t, isRTL, locale } = useTranslation();
+
+  const fallbackWisdom = useMemo(() => getFallbackWisdom(locale), [locale]);
+  const lowEffortWisdom = useMemo(() => getLowEffortWisdom(locale), [locale]);
+  const mentor = useMemo(() => getMentor(locale), [locale]);
 
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
@@ -98,8 +77,8 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
   const nextStreak = currentStreak + 1;
   const streakMilestone = useMemo(() => {
     if (isLowEffort) return null;
-    return getStreakMilestoneMessage(nextStreak);
-  }, [nextStreak, isLowEffort]);
+    return getStreakMilestoneMessage(nextStreak, locale);
+  }, [nextStreak, isLowEffort, locale]);
 
   // Get the mentor's WISDOM - using deterministic selection based on lesson and reflection
   const mentorWisdom = useMemo(() => {
@@ -107,9 +86,9 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     const seed = `${lesson.id}-${reflection.slice(0, 50)}`;
 
     if (isLowEffort) {
-      const index = getStableIndex(seed + 'low', LOW_EFFORT_WISDOM.length);
+      const index = getStableIndex(seed + 'low', lowEffortWisdom.length);
       return {
-        text: LOW_EFFORT_WISDOM[index],
+        text: lowEffortWisdom[index],
         isWisdom: false,
       };
     }
@@ -131,8 +110,8 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
     }
 
     // Fallback to philosophical wisdom
-    const fallbackIndex = getStableIndex(seed + 'fallback', FALLBACK_WISDOM.length);
-    const fallback = FALLBACK_WISDOM[fallbackIndex];
+    const fallbackIndex = getStableIndex(seed + 'fallback', fallbackWisdom.length);
+    const fallback = fallbackWisdom[fallbackIndex];
     const usePersonalization = getStableIndex(seed + 'fallback-personal', 10) > 5;
     if (name && usePersonalization) {
       return {
@@ -142,7 +121,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
       };
     }
     return { text: fallback.wisdom, isWisdom: true, context: fallback.context };
-  }, [lesson.id, lesson.mentorResponses, isLowEffort, name, reflection]);
+  }, [lesson.id, lesson.mentorResponses, isLowEffort, name, reflection, fallbackWisdom, lowEffortWisdom]);
 
   // Determine Sage's mood
   const sageMood: SageMood = useMemo(() => {
@@ -259,8 +238,8 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <h3 className="text-lg font-medium text-stone-100">{MENTOR.name}</h3>
-          <p className="text-sm text-stone-600">{MENTOR.title}</p>
+          <h3 className="text-lg font-medium text-stone-100">{mentor.name}</h3>
+          <p className="text-sm text-stone-600">{mentor.title}</p>
         </motion.div>
 
         {/* ─────────────────────────────────────────────────────────────────

@@ -6,8 +6,9 @@ import { Brain, ChevronRight, X, Sparkles, Zap } from 'lucide-react';
 import { Button, Card, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
+import { useTranslation } from '@/i18n';
 import { getPracticeScenarios } from '@/content/practiceScenarios';
-import { MENTOR, getRandomMentorResponse, MENTOR_RESPONSES } from '@/content/mentor';
+import { getMentor, getMentorResponses, getRandomMentorResponse } from '@/content/mentor';
 
 interface PracticeModeProps {
   onComplete: () => void;
@@ -19,6 +20,7 @@ type PracticeStage = 'intro' | 'scenario' | 'response' | 'reflection' | 'complet
 export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
   const { completedLessons, completeLesson } = useStore();
   const { playComplete, playSuccess, playReward } = useSound();
+  const { t, locale } = useTranslation();
 
   const [stage, setStage] = useState<PracticeStage>('intro');
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
@@ -29,8 +31,11 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
   // Get practice scenarios based on completed lessons
   const scenarios = useMemo(() => {
     const completedIds = Object.keys(completedLessons).filter(id => completedLessons[id]);
-    return getPracticeScenarios(completedIds, 3);
-  }, [completedLessons]);
+    return getPracticeScenarios(completedIds, 3, locale);
+  }, [completedLessons, locale]);
+
+  const mentor = useMemo(() => getMentor(locale), [locale]);
+  const mentorResponses = useMemo(() => getMentorResponses(locale), [locale]);
 
   const currentScenario = scenarios[currentScenarioIndex];
   const progress = ((currentScenarioIndex + 1) / scenarios.length) * 100;
@@ -83,11 +88,11 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
         <Card variant="elevated" padding="lg" className="max-w-md text-center">
           <Brain size={48} className="mx-auto text-zinc-600 mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">No Practice Available</h2>
+          <h2 className="text-xl font-bold text-white mb-2">{t('practiceMode.noPracticeAvailable')}</h2>
           <p className="text-zinc-400 mb-6">
-            Complete some lessons first, then return here to practice and reinforce what you&apos;ve learned.
+            {t('practiceMode.completeLessonsFirst')}
           </p>
-          <Button onClick={onExit}>Go Back</Button>
+          <Button onClick={onExit}>{t('common.back')}</Button>
         </Card>
       </div>
     );
@@ -105,7 +110,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
         </button>
         <div className="flex items-center gap-2">
           <Brain size={20} className="text-indigo-400" />
-          <span className="font-medium text-white">Practice Mode</span>
+          <span className="font-medium text-white">{t('practiceMode.title')}</span>
         </div>
         <div className="w-10" /> {/* Spacer for alignment */}
       </div>
@@ -115,7 +120,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
         <div className="px-4 py-2">
           <ProgressBar progress={progress} size="sm" color="indigo" />
           <p className="text-xs text-zinc-500 mt-1 text-center">
-            {currentScenarioIndex + 1} of {scenarios.length}
+            {t('practiceMode.progressOf', { current: currentScenarioIndex + 1, total: scenarios.length })}
           </p>
         </div>
       )}
@@ -142,26 +147,26 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
               </motion.div>
 
               <h2 className="text-2xl font-bold text-white mb-4">
-                Practice Session
+                {t('practiceMode.practiceSession')}
               </h2>
 
               <p className="text-zinc-400 mb-6">
-                Apply what you&apos;ve learned to real-world scenarios. This strengthens your understanding and builds lasting wisdom.
+                {t('practiceMode.applyWhatYouLearned')}
               </p>
 
               <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-8">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-400">{scenarios.length} scenarios</span>
-                  <span className="text-zinc-400">~{scenarios.length * 2} min</span>
+                  <span className="text-zinc-400">{t('practiceMode.scenarioCount', { count: scenarios.length })}</span>
+                  <span className="text-zinc-400">{t('practiceMode.estimatedTime', { minutes: scenarios.length * 2 })}</span>
                   <span className="flex items-center gap-1 text-amber-400">
                     <Zap size={14} />
-                    {scenarios.reduce((sum, s) => sum + s.xpReward, 0)} XP
+                    {scenarios.reduce((sum, s) => sum + s.xpReward, 0)} {t('common.xp')}
                   </span>
                 </div>
               </div>
 
               <Button size="lg" onClick={handleStartPractice} className="w-full">
-                Begin Practice
+                {t('practiceMode.beginPractice')}
               </Button>
             </motion.div>
           )}
@@ -176,7 +181,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
               className="w-full max-w-lg"
             >
               <p className="text-sm font-medium text-indigo-400 mb-4 text-center">
-                Scenario
+                {t('practiceMode.scenarioLabel')}
               </p>
 
               <Card variant="glass" padding="lg" className="mb-6">
@@ -192,7 +197,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
               <textarea
                 value={response}
                 onChange={(e) => setResponse(e.target.value)}
-                placeholder="Write your response..."
+                placeholder={t('practiceMode.writeResponsePlaceholder')}
                 className="w-full h-32 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition-colors resize-none mb-4"
               />
 
@@ -203,7 +208,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 className="w-full"
               >
                 <ChevronRight size={20} className="mr-2" />
-                Continue
+                {t('common.continue')}
               </Button>
             </motion.div>
           )}
@@ -218,11 +223,11 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
               className="w-full max-w-lg"
             >
               <p className="text-sm font-medium text-indigo-400 mb-4 text-center">
-                Reflection
+                {t('practiceMode.reflectionLabel')}
               </p>
 
               <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-6">
-                <p className="text-sm text-zinc-400 mb-2">Your response:</p>
+                <p className="text-sm text-zinc-400 mb-2">{t('practiceMode.yourResponseLabel')}</p>
                 <p className="text-zinc-300 italic">&ldquo;{response}&rdquo;</p>
               </div>
 
@@ -233,7 +238,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
               <textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
-                placeholder="Reflect on this..."
+                placeholder={t('practiceMode.reflectPlaceholder')}
                 className="w-full h-32 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition-colors resize-none mb-4"
               />
 
@@ -243,7 +248,9 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 disabled={reflection.trim().length < 10}
                 className="w-full"
               >
-                {currentScenarioIndex < scenarios.length - 1 ? 'Next Scenario' : 'Complete Practice'}
+                {currentScenarioIndex < scenarios.length - 1
+                  ? t('practiceMode.nextScenario')
+                  : t('practiceMode.completePractice')}
               </Button>
             </motion.div>
           )}
@@ -266,11 +273,11 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
               </motion.div>
 
               <h2 className="text-2xl font-bold text-white mb-2">
-                Practice Complete!
+                {t('practiceMode.practiceComplete')}
               </h2>
 
               <p className="text-zinc-400 mb-6">
-                You&apos;ve strengthened your understanding through application. This is how wisdom becomes instinct.
+                {t('practiceMode.practiceCompleteBody')}
               </p>
 
               <motion.div
@@ -292,14 +299,14 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 transition={{ delay: 0.5 }}
                 className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-8 text-left"
               >
-                <p className="text-sm text-indigo-400 mb-2">{MENTOR.name}</p>
+                <p className="text-sm text-indigo-400 mb-2">{mentor.name}</p>
                 <p className="text-zinc-300 italic">
-                  &ldquo;{getRandomMentorResponse(MENTOR_RESPONSES.practiceSession)}&rdquo;
+                  &ldquo;{getRandomMentorResponse(mentorResponses.practiceSession)}&rdquo;
                 </p>
               </motion.div>
 
               <Button size="lg" onClick={handlePracticeComplete} className="w-full">
-                Continue
+                {t('common.continue')}
               </Button>
             </motion.div>
           )}

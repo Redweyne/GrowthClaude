@@ -12,6 +12,7 @@ import {
   getRandomSeedReflection,
   seedToPublicReflection,
 } from '@/content/seedReflections';
+import { useStore } from '@/store/useStore';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ECHOES STORE
@@ -200,7 +201,8 @@ export const useEchoesStore = create<EchoesState & EchoesActions>()(
         }
 
         // Fall back to seed reflections
-        const seed = getRandomSeedReflection(lessonId);
+        const locale = useStore.getState().language;
+        const seed = getRandomSeedReflection(lessonId, locale);
         if (seed) {
           return seedToPublicReflection(seed, lessonTitle) as PublicReflection;
         }

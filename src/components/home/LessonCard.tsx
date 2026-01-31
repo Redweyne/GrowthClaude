@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Play, Flame, Zap, Clock, Sparkles, ChevronRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui';
 import type { DisplayLesson, DisplayWorld } from '@/types';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LESSON CARD
@@ -39,6 +40,7 @@ export function LessonCard({
   hasPendingAction = false,
   pendingCommitment,
 }: LessonCardProps) {
+  const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -223,10 +225,10 @@ export function LessonCard({
               </motion.div>
               <div>
                 <h3 className="text-xl font-bold text-amber-100">
-                  Your Action Awaits
+                  {t('home.lessonCard.actionAwaits')}
                 </h3>
                 <p className="text-amber-400/70 text-sm">
-                  Complete it, then return here
+                  {t('home.lessonCard.completeThenReturn')}
                 </p>
               </div>
             </div>
@@ -235,7 +237,7 @@ export function LessonCard({
             {pendingCommitment && (
               <div className="mb-8 p-5 rounded-2xl bg-stone-900/50 border border-stone-800">
                 <p className="text-xs text-stone-500 uppercase tracking-wide mb-2">
-                  You committed to:
+                  {t('home.lessonCard.youCommittedTo')}
                 </p>
                 <p className="text-lg text-stone-100 leading-relaxed">
                   &ldquo;{pendingCommitment}&rdquo;
@@ -245,8 +247,9 @@ export function LessonCard({
 
             {/* Message */}
             <p className="text-stone-400 mb-8 leading-relaxed">
-              Remember: <span className="text-amber-300">action is the antidote to anxiety.</span>
-              {' '}Don&apos;t just think about it. Do it. Then come back to reflect.
+              {t('home.lessonCard.rememberPrefix')}{' '}
+              <span className="text-amber-300">{t('home.lessonCard.rememberEmphasis')}</span>
+              {' '}{t('home.lessonCard.rememberSuffix')}
             </p>
 
             {/* Return button */}

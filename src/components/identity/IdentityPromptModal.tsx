@@ -200,7 +200,7 @@ export function IdentityPromptModal({
                       🦋
                     </motion.div>
                     <p className="text-xl font-bold text-white">{t('identity.identityClaimed')}</p>
-                    <p className="text-amber-400 text-sm mt-1">+25 XP</p>
+                    <p className="text-amber-400 text-sm mt-1">+25 {t('common.xp')}</p>
                   </div>
                 </motion.div>
               )}

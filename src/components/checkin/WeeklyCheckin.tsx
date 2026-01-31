@@ -7,7 +7,7 @@ import { Button, Card, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
 import { getWeeklyCheckinPrompts, getRandomCheckinMessage, type CheckinPrompt } from '@/content/weeklyCheckin';
-import { MENTOR } from '@/content/mentor';
+import { getMentor } from '@/content/mentor';
 import { useTranslation } from '@/i18n';
 
 interface WeeklyCheckinProps {
@@ -26,7 +26,7 @@ interface ResponseData {
 export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
   const { name, completeWeeklyCheckin, getWeekNumber, weeklyCheckins } = useStore();
   const { playComplete, playSuccess, playReward } = useSound();
-  const { t, isRTL } = useTranslation();
+  const { t, isRTL, locale } = useTranslation();
 
   const [stage, setStage] = useState<CheckinStage>('intro');
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
@@ -36,8 +36,9 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
   const [responses, setResponses] = useState<ResponseData[]>([]);
 
   // Get prompts once and memoize
-  const prompts = useMemo(() => getWeeklyCheckinPrompts(), []);
-  const mentorMessage = useMemo(() => getRandomCheckinMessage(), []);
+  const prompts = useMemo(() => getWeeklyCheckinPrompts(locale), [locale]);
+  const mentorMessage = useMemo(() => getRandomCheckinMessage(locale), [locale]);
+  const mentor = useMemo(() => getMentor(locale), [locale]);
 
   const currentPrompt = prompts[currentPromptIndex];
   const progress = ((currentPromptIndex + 1) / prompts.length) * 100;
@@ -314,7 +315,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 transition={{ delay: 0.5 }}
                 className={`bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-8 ${isRTL ? 'text-right' : 'text-left'}`}
               >
-                <p className="text-sm text-rose-400 mb-2">{MENTOR.name}</p>
+                <p className="text-sm text-rose-400 mb-2">{mentor.name}</p>
                 <p className="text-zinc-300 italic">
                   &ldquo;{name ? `${name}, ` : ''}{mentorMessage}&rdquo;
                 </p>

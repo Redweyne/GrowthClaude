@@ -24,6 +24,7 @@ import {
   CallToActionSlide,
 } from '@/types/story';
 import { Flame, BookOpen, Sparkles, TrendingUp, ArrowRight, Heart, Star, Sun, Moon } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 interface SlideRendererProps {
   slide: StorySlide;
@@ -127,6 +128,7 @@ const letterVariants = {
 // ============================================================================
 
 export function SlideRenderer({ slide, isActive, onAction }: SlideRendererProps) {
+  const { t } = useTranslation();
   switch (slide.type) {
     case 'opening':
       return <OpeningSlideContent slide={slide as OpeningSlide} />;
@@ -153,7 +155,7 @@ export function SlideRenderer({ slide, isActive, onAction }: SlideRendererProps)
     case 'call_to_action':
       return <CallToActionSlideContent slide={slide as CallToActionSlide} onAction={onAction} />;
     default:
-      return <div className="text-white">Unknown slide type</div>;
+      return <div className="text-white">{t('story.slides.unknownType')}</div>;
   }
 }
 
@@ -228,6 +230,7 @@ function OpeningSlideContent({ slide }: { slide: OpeningSlide }) {
 // ============================================================================
 
 function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="flex flex-col items-center justify-center text-center h-full"
@@ -259,7 +262,7 @@ function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
         variants={fadeUpVariants}
         className="mb-10"
       >
-        <p className="text-white/50 text-sm mb-2">Your first lesson was</p>
+        <p className="text-white/50 text-sm mb-2">{t('story.slides.firstLessonWas')}</p>
         <p className="text-white text-lg font-medium px-4 py-2 rounded-lg bg-white/5 border border-white/10">
           {slide.firstLessonTitle}
         </p>
@@ -283,7 +286,7 @@ function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
         >
           {slide.daysSinceStart}
         </motion.span>
-        <span className="text-white/40 text-lg mt-2">days since that moment</span>
+        <span className="text-white/40 text-lg mt-2">{t('story.slides.daysSinceMoment')}</span>
       </motion.div>
     </motion.div>
   );
@@ -448,6 +451,7 @@ function ContrastSlideContent({ slide }: { slide: ContrastSlide }) {
 // ============================================================================
 
 function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="flex flex-col items-center justify-center h-full"
@@ -459,7 +463,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
         variants={fadeUpVariants}
         className="text-2xl font-bold text-white mb-10 text-center"
       >
-        Your Mind Shifted
+        {t('story.slides.patternShift.title')}
       </motion.h2>
 
       <div className="flex items-center gap-8 mb-10">
@@ -468,7 +472,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
           variants={fadeUpVariants}
           className="flex flex-col items-center gap-3"
         >
-          <span className="text-white/30 text-xs uppercase tracking-widest mb-2">Before</span>
+          <span className="text-white/30 text-xs uppercase tracking-widest mb-2">{t('story.slides.before')}</span>
           {slide.fromPatterns.slice(0, 3).map((pattern, i) => (
             <motion.div
               key={i}
@@ -503,7 +507,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
           variants={fadeUpVariants}
           className="flex flex-col items-center gap-3"
         >
-          <span className="text-white/30 text-xs uppercase tracking-widest mb-2">After</span>
+          <span className="text-white/30 text-xs uppercase tracking-widest mb-2">{t('story.slides.after')}</span>
           {slide.toPatterns.slice(0, 3).map((pattern, i) => (
             <motion.div
               key={i}
@@ -538,6 +542,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
 // ============================================================================
 
 function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="flex flex-col items-center justify-center h-full text-center"
@@ -580,7 +585,7 @@ function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide })
         >
           {slide.currentStreak}
         </motion.span>
-        <span className="text-2xl text-white/50 font-light">days</span>
+        <span className="text-2xl text-white/50 font-light">{t('common.days')}</span>
       </motion.div>
 
       {/* Message */}
@@ -597,9 +602,9 @@ function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide })
         className="flex gap-6 text-center"
       >
         {[
-          { value: slide.longestStreak, label: 'Best' },
-          { value: slide.totalActiveDays, label: 'Total Days' },
-          { value: `${slide.consistencyScore}%`, label: 'Consistency' }
+          { value: slide.longestStreak, label: t('story.slides.streak.best') },
+          { value: slide.totalActiveDays, label: t('story.slides.streak.totalDays') },
+          { value: `${slide.consistencyScore}%`, label: t('story.slides.streak.consistency') }
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -679,6 +684,7 @@ function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
 // ============================================================================
 
 function AchievementSlideContent({ slide }: { slide: AchievementSlide }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="flex flex-col items-center justify-center h-full"
@@ -736,7 +742,10 @@ function AchievementSlideContent({ slide }: { slide: AchievementSlide }) {
       >
         <p className="text-white/60 mb-2">{slide.message}</p>
         <p className="text-white/30 text-sm">
-          {slide.totalUnlocked} of {slide.totalAvailable} unlocked
+          {t('story.slides.achievementUnlockedCount', {
+            unlocked: slide.totalUnlocked,
+            total: slide.totalAvailable,
+          })}
         </p>
       </motion.div>
     </motion.div>

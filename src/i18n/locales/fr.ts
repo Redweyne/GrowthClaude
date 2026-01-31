@@ -26,6 +26,9 @@ const fr = {
     delete: 'Supprimer',
     edit: 'Modifier',
     add: 'Ajouter',
+    copy: 'Copier',
+    copied: 'Copié !',
+    share: 'Partager',
     settings: 'Paramètres',
     profile: 'Profil',
     complete: 'Terminé',
@@ -61,6 +64,8 @@ const fr = {
     title: 'Choisissez Votre Langue',
     subtitle: 'Sélectionnez la langue de votre parcours',
     continue: 'Continuer',
+    selectPrompt: 'Sélectionnez une langue',
+    helper: 'Vous pouvez changer cela à tout moment dans les paramètres',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -81,7 +86,7 @@ const fr = {
 
     // Welcome Step
     welcome: {
-      takeBreath: 'Prenez une respiration.',
+      takeBreath: 'Respirez un instant.',
       hereForReason: 'Vous êtes ici pour une raison.',
       notWorking: 'Quelque chose dans votre vie ne fonctionne pas',
       theWayYouWant: 'comme vous le souhaitez.',
@@ -308,6 +313,30 @@ const fr = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PRACTICE MODE
+  // ─────────────────────────────────────────────────────────────────────────
+  practiceMode: {
+    noPracticeAvailable: 'Aucune pratique disponible',
+    completeLessonsFirst: 'Terminez quelques leçons, puis revenez ici pour pratiquer et renforcer ce que vous avez appris.',
+    title: 'Mode Pratique',
+    progressOf: '{current} sur {total}',
+    practiceSession: 'Session de Pratique',
+    applyWhatYouLearned: 'Appliquez ce que vous avez appris à des situations réelles. Cela renforce votre compréhension et développe une sagesse durable.',
+    scenarioCount: '{count} scénarios',
+    estimatedTime: '~{minutes} min',
+    beginPractice: 'Commencer la Pratique',
+    scenarioLabel: 'Scénario',
+    writeResponsePlaceholder: 'Écrivez votre réponse...',
+    reflectionLabel: 'Réflexion',
+    yourResponseLabel: 'Votre réponse :',
+    reflectPlaceholder: 'Réfléchissez à cela...',
+    nextScenario: 'Scénario suivant',
+    completePractice: 'Terminer la Pratique',
+    practiceComplete: 'Pratique terminée !',
+    practiceCompleteBody: 'Vous avez renforcé votre compréhension par la mise en pratique. C’est ainsi que la sagesse devient instinct.',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // DASHBOARD
   // ─────────────────────────────────────────────────────────────────────────
   dashboard: {
@@ -328,6 +357,15 @@ const fr = {
 
     // Quote of the day
     quoteOfTheDay: 'Sagesse du Jour',
+
+    // Journey map labels
+    chapterLabels: {
+      start: 'Début',
+      chapter2: 'Ch. 2',
+      mid: 'Milieu',
+      chapter4: 'Ch. 4',
+      end: 'Fin',
+    },
 
     // Sections
     sections: {
@@ -372,17 +410,78 @@ const fr = {
       evening: 'Bonsoir',
     },
     wisdomQuotes: [
-      "L'obstacle est le chemin.",
-      'Concentrez-vous sur ce que vous pouvez contrôler.',
-      'Commencez à vivre immédiatement.',
-      'La meilleure vengeance est de ne pas ressembler à votre ennemi.',
-      'Ne perdez plus de temps à discuter de ce que devrait être un homme bon. Soyez-en un.',
-      'Vous avez le pouvoir sur votre esprit - pas sur les événements extérieurs. Réalisez cela, et vous trouverez la force.',
-      "Ce n'est pas la mort qu'un homme devrait craindre, mais ne jamais commencer à vivre.",
-      'Le bonheur de votre vie dépend de la qualité de vos pensées.',
-      'Acceptez les choses auxquelles le destin vous lie.',
-      "Quand vous vous levez le matin, pensez au privilège qu'est d'être en vie.",
+      {
+        text: "L'obstacle est le chemin.",
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'Concentrez-vous sur ce que vous pouvez contrôler.',
+        author: 'Seneca',
+      },
+      {
+        text: 'Commencez à vivre immédiatement.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'La meilleure vengeance est de ne pas ressembler à votre ennemi.',
+        author: 'Seneca',
+      },
+      {
+        text: 'Ne perdez plus de temps à discuter de ce que devrait être un homme bon. Soyez-en un.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'Vous avez le pouvoir sur votre esprit - pas sur les événements extérieurs. Réalisez cela, et vous trouverez la force.',
+        author: 'Epictetus',
+      },
+      {
+        text: "Ce n'est pas la mort qu'un homme devrait craindre, mais ne jamais commencer à vivre.",
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'Le bonheur de votre vie dépend de la qualité de vos pensées.',
+        author: 'Seneca',
+      },
+      {
+        text: 'Acceptez les choses auxquelles le destin vous lie.',
+        author: 'Epictetus',
+      },
+      {
+        text: "Quand vous vous levez le matin, pensez au privilège qu'est d'être en vie.",
+        author: 'Marcus Aurelius',
+      },
     ],
+    navigation: {
+      progress: 'Progrès',
+      achievements: 'Accomplissements',
+      identity: 'Identité',
+      practice: 'Pratique',
+      growth: 'Croissance',
+      echoes: 'Échos',
+      map: 'Carte',
+      worlds: 'Mondes',
+    },
+    streakMessage: {
+      singular: '{count} jour de croissance régulière',
+      plural: '{count} jours de croissance régulière',
+      none: "Commencez votre parcours aujourd'hui",
+    },
+    level: {
+      progressToNext: '{percent}% avant le niveau suivant',
+      motivation: {
+        almostThere: 'Presque là ! Continuez à avancer.',
+        halfway: 'À mi-chemin. Chaque leçon vous rapproche.',
+        firstStep: 'Un voyage de mille lieues commence par un seul pas.',
+      },
+    },
+    lessonCard: {
+      actionAwaits: 'Votre action vous attend',
+      completeThenReturn: 'Terminez-la, puis revenez ici',
+      youCommittedTo: 'Vous vous êtes engagé à :',
+      rememberPrefix: 'Rappelez-vous :',
+      rememberEmphasis: "l'action est l'antidote à l'anxiété.",
+      rememberSuffix: "Ne vous contentez pas d'y penser. Agissez. Puis revenez pour réfléchir.",
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -477,12 +576,15 @@ const fr = {
     noReflectionsYet: 'Pas encore de réflexions',
     whenSomeoneReflects: 'Quand quelqu\'un réfléchit sur vos mots, vous le verrez ici',
     fellowReflected: 'Un(e) {gender} a réfléchi',
+    fellowReflectedOnYourWords: 'Un(e) {gender} a réfléchi à vos mots',
+    fellowLabel: 'Un(e) {gender}',
     openToConnecting: 'Ouvert à la connexion',
     yourReflectionLabel: 'Votre réflexion :',
-    theirReflection: '{possessive} réflexion pour vous :',
+    theirReflection: 'Réflexion de {gender} pour vous :',
     theyreOpenToConnect: '{subject} est ouvert(e) à la connexion',
     wouldYouLikeToConnect: 'Aimeriez-vous vous connecter avec cette personne ?',
     writeInvitationMessage: 'Écrivez un message avec votre invitation...',
+    invitationMessageLabel: 'Message de {gender} :',
     inviteToConnect: 'Inviter à Se Connecter',
     closeWithoutConnecting: 'Fermer sans se connecter',
     noPendingInvitations: 'Pas d\'invitations en attente',
@@ -514,6 +616,9 @@ const fr = {
     pronounHe: 'il',
     pronounShe: 'elle',
     pronounThey: 'ils',
+    pronounHis: 'sa',
+    pronounHerPossessive: 'sa',
+    pronounTheir: 'leur',
     writeYourThoughts: 'Écrivez vos pensées...',
     word: 'mot',
     wordsPlural: 'mots',
@@ -913,8 +1018,23 @@ const fr = {
         selfAwareness: 'Conscience de Soi',
         growth: 'Croissance',
       },
+      xpEarned: '+{xp} XP gagnés pour avoir complété l\'évaluation',
       submit: 'Terminer l\'Évaluation',
       skip: 'Passer ce mois',
+      progress: '{current} / {total}',
+      scoreTitle: 'Votre score mensuel',
+      snapshot: 'Voici votre aperçu de croissance',
+      snapshotWithName: '{name}, voici votre aperçu de croissance',
+      viewResults: 'Voir les résultats',
+      minReflectionChars: 'Écrivez au moins {count} caractères pour continuer',
+      saving: 'Enregistrement...',
+      scoreLabels: {
+        exceptional: 'Exceptionnel',
+        strong: 'Solide',
+        developing: 'En progression',
+        needsWork: 'À renforcer',
+        justStarting: 'Tout juste commencé',
+      },
     },
   },
 
@@ -991,6 +1111,84 @@ const fr = {
     wisdom: 'Journaux de Sagesse',
     assessment: 'Évaluation',
     radar: 'Radar de Croissance',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STORY
+  // ─────────────────────────────────────────────────────────────────────────
+  story: {
+    trigger: {
+      label: 'Voir votre histoire',
+      keepGrowing: 'Continuez à grandir pour débloquer',
+      tapToExperience: "Appuyez pour vivre l'expérience",
+      demoTitle: 'Essayer avec des données de démonstration',
+      demoSubtitle: 'Découvrez un aperçu de votre histoire de transformation',
+    },
+    slides: {
+      unknownType: 'Type de diapositive inconnu',
+      firstLessonWas: 'Votre première leçon était',
+      daysSinceMoment: 'jours depuis ce moment',
+      before: 'Avant',
+      after: 'Après',
+      patternShift: {
+        title: 'Votre esprit a basculé',
+      },
+      streak: {
+        best: 'Meilleur',
+        totalDays: 'Total de jours',
+        consistency: 'Régularité',
+      },
+      achievementUnlockedCount: '{unlocked} sur {total} débloqués',
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SHARE
+  // ─────────────────────────────────────────────────────────────────────────
+  share: {
+    hubLabel: 'HUB DE TRANSFORMATION',
+    achievedBy: 'Réalisé par',
+    messageLabel: 'Message de partage :',
+    cards: {
+      streak: {
+        title: 'Série de {count} jours',
+        subtitle: 'Pratique stoïcienne quotidienne',
+        message: "J'ai pratiqué la sagesse stoïcienne pendant {count} jours d'affilée !",
+        stats: {
+          days: 'Jours',
+          lessons: 'Leçons',
+          xp: 'XP',
+        },
+      },
+      achievement: {
+        titleFallback: 'Étape franchie',
+        messageFallback: "J'ai atteint une nouvelle étape dans mon parcours !",
+        stats: {
+          virtue: 'Vertu',
+          wisdom: 'sagesse',
+          totalXp: 'XP total',
+        },
+      },
+      level: {
+        title: 'Niveau {level}',
+        message: "J'ai atteint le niveau {level} : {title} dans mon parcours de maîtrise de soi !",
+        stats: {
+          level: 'Niveau',
+          title: 'Titre',
+          xp: 'XP',
+        },
+      },
+      journey: {
+        title: '{days} jours de croissance',
+        subtitle: 'Mon parcours de transformation',
+        message: '{days} jours, {lessons} leçons, {words} mots de réflexion. Voici mon parcours de transformation.',
+        stats: {
+          days: 'Jours',
+          lessons: 'Leçons',
+          words: 'Mots',
+        },
+      },
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────

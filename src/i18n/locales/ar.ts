@@ -26,6 +26,9 @@ const ar = {
     delete: 'حذف',
     edit: 'تعديل',
     add: 'إضافة',
+    copy: 'نسخ',
+    copied: 'تم النسخ!',
+    share: 'مشاركة',
     settings: 'الإعدادات',
     profile: 'الملف الشخصي',
     complete: 'مكتمل',
@@ -61,6 +64,8 @@ const ar = {
     title: 'اختر لغتك',
     subtitle: 'اختر اللغة لرحلتك',
     continue: 'متابعة',
+    selectPrompt: 'اختر لغة',
+    helper: 'يمكنك تغيير ذلك في أي وقت من الإعدادات',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -308,6 +313,30 @@ const ar = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PRACTICE MODE
+  // ─────────────────────────────────────────────────────────────────────────
+  practiceMode: {
+    noPracticeAvailable: 'لا يوجد تمرين متاح',
+    completeLessonsFirst: 'أكمل بعض الدروس أولاً، ثم عد هنا للتدرب وتعزيز ما تعلمته.',
+    title: 'وضع التمرين',
+    progressOf: '{current} من {total}',
+    practiceSession: 'جلسة تمرين',
+    applyWhatYouLearned: 'طبّق ما تعلمته على مواقف واقعية. هذا يعمّق فهمك ويبني حكمة دائمة.',
+    scenarioCount: '{count} سيناريو',
+    estimatedTime: '~{minutes} دقيقة',
+    beginPractice: 'ابدأ التمرين',
+    scenarioLabel: 'سيناريو',
+    writeResponsePlaceholder: 'اكتب ردك...',
+    reflectionLabel: 'تأمل',
+    yourResponseLabel: 'ردك:',
+    reflectPlaceholder: 'تأمل في هذا...',
+    nextScenario: 'السيناريو التالي',
+    completePractice: 'إنهاء التمرين',
+    practiceComplete: 'تم إكمال التمرين!',
+    practiceCompleteBody: 'لقد عززت فهمك بالتطبيق. هكذا تصبح الحكمة غريزة.',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // DASHBOARD
   // ─────────────────────────────────────────────────────────────────────────
   dashboard: {
@@ -328,6 +357,15 @@ const ar = {
 
     // Quote of the day
     quoteOfTheDay: 'حكمة اليوم',
+
+    // Journey map labels
+    chapterLabels: {
+      start: 'البداية',
+      chapter2: 'الفصل 2',
+      mid: 'المنتصف',
+      chapter4: 'الفصل 4',
+      end: 'النهاية',
+    },
 
     // Sections
     sections: {
@@ -372,17 +410,78 @@ const ar = {
       evening: 'مساء الخير',
     },
     wisdomQuotes: [
-      'العقبة هي الطريق.',
-      'ركز على ما تستطيع التحكم به.',
-      'ابدأ العيش فوراً.',
-      'أفضل انتقام هو ألا تكون مثل عدوك.',
-      'لا تضيع المزيد من الوقت في الجدال حول ما يجب أن يكون عليه الشخص الصالح. كن واحداً.',
-      'لديك القوة على عقلك - وليس الأحداث الخارجية. أدرك هذا، وستجد القوة.',
-      'ليس الموت ما يجب أن يخافه المرء، بل عدم البدء في العيش أبداً.',
-      'سعادة حياتك تعتمد على جودة أفكارك.',
-      'اقبل الأشياء التي يربطك بها القدر.',
-      'عندما تستيقظ في الصباح، فكر في امتياز أن تكون على قيد الحياة.',
+      {
+        text: 'العقبة هي الطريق.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'ركز على ما تستطيع التحكم به.',
+        author: 'Seneca',
+      },
+      {
+        text: 'ابدأ العيش فوراً.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'أفضل انتقام هو ألا تكون مثل عدوك.',
+        author: 'Seneca',
+      },
+      {
+        text: 'لا تضيع المزيد من الوقت في الجدال حول ما يجب أن يكون عليه الشخص الصالح. كن واحداً.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'لديك القوة على عقلك - وليس الأحداث الخارجية. أدرك هذا، وستجد القوة.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'ليس الموت ما يجب أن يخافه المرء، بل عدم البدء في العيش أبداً.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'سعادة حياتك تعتمد على جودة أفكارك.',
+        author: 'Seneca',
+      },
+      {
+        text: 'اقبل الأشياء التي يربطك بها القدر.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'عندما تستيقظ في الصباح، فكر في امتياز أن تكون على قيد الحياة.',
+        author: 'Marcus Aurelius',
+      },
     ],
+    navigation: {
+      progress: 'التقدم',
+      achievements: 'الإنجازات',
+      identity: 'الهوية',
+      practice: 'الممارسة',
+      growth: 'النمو',
+      echoes: 'الأصداء',
+      map: 'الخريطة',
+      worlds: 'العوالم',
+    },
+    streakMessage: {
+      singular: 'يوم واحد من النمو المستمر',
+      plural: '{count} أيام من النمو المستمر',
+      none: 'ابدأ رحلتك اليوم',
+    },
+    level: {
+      progressToNext: '{percent}% حتى المستوى التالي',
+      motivation: {
+        almostThere: 'اقتربت! واصل التقدم.',
+        halfway: 'في منتصف الطريق. كل درس يقربك أكثر.',
+        firstStep: 'رحلة الألف ميل تبدأ بخطوة واحدة.',
+      },
+    },
+    lessonCard: {
+      actionAwaits: 'فعلك ينتظرك',
+      completeThenReturn: 'أكملها ثم عد إلى هنا',
+      youCommittedTo: 'لقد التزمت بـ:',
+      rememberPrefix: 'تذكر:',
+      rememberEmphasis: 'الفعل هو علاج القلق.',
+      rememberSuffix: 'لا تكتفِ بالتفكير. افعل ذلك. ثم عد للتأمل.',
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -477,12 +576,15 @@ const ar = {
     noReflectionsYet: 'لا توجد تأملات بعد',
     whenSomeoneReflects: 'عندما يتأمل شخص ما في كلماتك، سترى ذلك هنا',
     fellowReflected: 'تأمل {gender} زميل',
+    fellowReflectedOnYourWords: 'تأمل {gender} زميل في كلماتك',
+    fellowLabel: '{gender} زميل',
     openToConnecting: 'منفتح للتواصل',
     yourReflectionLabel: 'تأملك:',
     theirReflection: 'تأمل{possessive} لك:',
     theyreOpenToConnect: '{subject} منفتح للتواصل',
     wouldYouLikeToConnect: 'هل تريد التواصل مع هذا الشخص؟',
     writeInvitationMessage: 'اكتب رسالة مع دعوتك...',
+    invitationMessageLabel: 'رسالت{possessive}:',
     inviteToConnect: 'دعوة للتواصل',
     closeWithoutConnecting: 'إغلاق بدون تواصل',
     noPendingInvitations: 'لا توجد دعوات معلقة',
@@ -514,6 +616,9 @@ const ar = {
     pronounHe: 'هو',
     pronounShe: 'هي',
     pronounThey: 'هم',
+    pronounHis: 'ه',
+    pronounHerPossessive: 'ها',
+    pronounTheir: 'هم',
     writeYourThoughts: 'اكتب أفكارك...',
     word: 'كلمة',
     wordsPlural: 'كلمات',
@@ -913,8 +1018,23 @@ const ar = {
         selfAwareness: 'الوعي الذاتي',
         growth: 'النمو',
       },
+      xpEarned: '+{xp} XP تم كسبها لإكمال التقييم',
       submit: 'أكمل التقييم',
       skip: 'تخطي هذا الشهر',
+      progress: '{current} / {total}',
+      scoreTitle: 'نتيجتك الشهرية',
+      snapshot: 'إليك لمحة عن نموك',
+      snapshotWithName: '{name}، إليك لمحة عن نموك',
+      viewResults: 'عرض النتائج',
+      minReflectionChars: 'اكتب ما لا يقل عن {count} حرفاً للمتابعة',
+      saving: 'جارٍ الحفظ...',
+      scoreLabels: {
+        exceptional: 'استثنائي',
+        strong: 'قوي',
+        developing: 'يتطور',
+        needsWork: 'بحاجة إلى عمل',
+        justStarting: 'في البداية',
+      },
     },
   },
 
@@ -991,6 +1111,84 @@ const ar = {
     wisdom: 'سجلات الحكمة',
     assessment: 'التقييم',
     radar: 'رادار النمو',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STORY
+  // ─────────────────────────────────────────────────────────────────────────
+  story: {
+    trigger: {
+      label: 'اعرض قصتك',
+      keepGrowing: 'واصل النمو لفتحها',
+      tapToExperience: 'اضغط لتجرب',
+      demoTitle: 'جرّب ببيانات تجريبية',
+      demoSubtitle: 'استكشف معاينة لقصة تحولك',
+    },
+    slides: {
+      unknownType: 'نوع شريحة غير معروف',
+      firstLessonWas: 'كان درسك الأول',
+      daysSinceMoment: 'أيام منذ تلك اللحظة',
+      before: 'قبل',
+      after: 'بعد',
+      patternShift: {
+        title: 'تغيرت طريقة تفكيرك',
+      },
+      streak: {
+        best: 'الأفضل',
+        totalDays: 'إجمالي الأيام',
+        consistency: 'الاتساق',
+      },
+      achievementUnlockedCount: '{unlocked} من {total} مفتوحة',
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SHARE
+  // ─────────────────────────────────────────────────────────────────────────
+  share: {
+    hubLabel: 'مركز التحول',
+    achievedBy: 'حققه',
+    messageLabel: 'رسالة المشاركة:',
+    cards: {
+      streak: {
+        title: 'سلسلة {count} يوما',
+        subtitle: 'ممارسة رواقية يومية',
+        message: 'لقد مارست الحكمة الرواقية لمدة {count} يوما متتالية!',
+        stats: {
+          days: 'أيام',
+          lessons: 'دروس',
+          xp: 'XP',
+        },
+      },
+      achievement: {
+        titleFallback: 'تم تحقيق إنجاز',
+        messageFallback: 'حققت إنجازا جديدا في رحلتي!',
+        stats: {
+          virtue: 'فضيلة',
+          wisdom: 'الحكمة',
+          totalXp: 'إجمالي XP',
+        },
+      },
+      level: {
+        title: 'المستوى {level}',
+        message: 'وصلت إلى المستوى {level}: {title} في رحلة إتقان الذات!',
+        stats: {
+          level: 'المستوى',
+          title: 'اللقب',
+          xp: 'XP',
+        },
+      },
+      journey: {
+        title: '{days} يوما من النمو',
+        subtitle: 'رحلة تحولي',
+        message: '{days} يوما، {lessons} دروس، {words} كلمة من التأمل. هذه رحلة تحولي.',
+        stats: {
+          days: 'أيام',
+          lessons: 'دروس',
+          words: 'كلمات',
+        },
+      },
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────

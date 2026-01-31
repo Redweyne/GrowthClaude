@@ -83,8 +83,9 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
     }
   };
 
-  const selectedGoalData = TRANSFORMATION_GOALS.find((g) => g.id === transformationGoal);
   const selectedDepth = transformationGoal ? GOAL_DEPTHS[transformationGoal] : null;
+
+  const getGoalTitle = (goalId: TransformationGoal) => t(`onboarding.goal.goals.${goalId}.title` as any);
 
   if (!mounted) {
     return <div className="min-h-[70vh]" />;
@@ -179,7 +180,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
                   color: isSelected ? depth.color : '#d6d3d1',
                 }}
               >
-                {goal.title}
+                {getGoalTitle(goal.id)}
               </h3>
 
               {/* Selected indicator */}
@@ -224,7 +225,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
 
       {/* Depth reveal - shows deeper meaning when selected */}
       <AnimatePresence mode="wait">
-        {transformationGoal && selectedGoalData && selectedDepth && (
+        {transformationGoal && selectedDepth && (
           <motion.div
             key={transformationGoal}
             initial={{ opacity: 0, y: 10, height: 0 }}
@@ -247,7 +248,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
                 className="text-lg font-light mb-2"
                 style={{ color: selectedDepth.color }}
               >
-                {selectedGoalData.title}
+                {getGoalTitle(transformationGoal)}
               </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}

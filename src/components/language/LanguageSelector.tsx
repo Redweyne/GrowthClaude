@@ -19,6 +19,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Globe, Sparkles } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
+import en from '@/i18n/locales/en';
+import fr from '@/i18n/locales/fr';
+import ar from '@/i18n/locales/ar';
 import { type Locale, languageConfig, locales } from '@/i18n/config';
 import { Button } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
@@ -31,8 +35,14 @@ const springs = {
 
 export function LanguageSelector() {
   const { setLanguage } = useStore();
+  const { t } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<Locale | null>(null);
   const [isExiting, setIsExiting] = useState(false);
+  const continueLabels: Record<Locale, string> = {
+    en: en.languageSelector.continue,
+    fr: fr.languageSelector.continue,
+    ar: ar.languageSelector.continue,
+  };
 
   const handleSelectLanguage = (locale: Locale) => {
     setSelectedLanguage(locale);
@@ -88,7 +98,7 @@ export function LanguageSelector() {
               </div>
             </motion.div>
 
-            {/* Title - in all three languages */}
+            {/* Title */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -96,12 +106,9 @@ export function LanguageSelector() {
               className="text-center mb-10"
             >
               <h1 className="text-3xl sm:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 mb-4">
-                Choose Your Language
+                {t('languageSelector.title')}
               </h1>
-              <div className="space-y-1">
-                <p className="text-stone-500">Choisissez votre langue</p>
-                <p className="text-stone-500" style={{ fontFamily: 'system-ui' }}>اختر لغتك</p>
-              </div>
+              <p className="text-stone-500">{t('languageSelector.subtitle')}</p>
             </motion.div>
 
             {/* Language options */}
@@ -217,12 +224,10 @@ export function LanguageSelector() {
                 {selectedLanguage ? (
                   <>
                     <Sparkles size={20} className="mr-2 text-amber-300" />
-                    {selectedLanguage === 'en' && 'Continue'}
-                    {selectedLanguage === 'fr' && 'Continuer'}
-                    {selectedLanguage === 'ar' && 'متابعة'}
+                    {continueLabels[selectedLanguage]}
                   </>
                 ) : (
-                  'Select a language'
+                  t('languageSelector.selectPrompt')
                 )}
               </Button>
             </motion.div>
@@ -234,7 +239,7 @@ export function LanguageSelector() {
               transition={{ delay: 1 }}
               className="text-center text-xs text-stone-600 mt-8"
             >
-              You can change this anytime in settings
+              {t('languageSelector.helper')}
             </motion.p>
           </motion.div>
         )}

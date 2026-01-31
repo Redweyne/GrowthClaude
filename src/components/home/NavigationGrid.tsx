@@ -13,6 +13,7 @@ import {
   MessageCircleHeart,
   type LucideIcon,
 } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION GRID
@@ -186,11 +187,12 @@ export function NavigationGrid({
   hasTransformationAvailable,
   unreadEchoCount = 0,
 }: NavigationGridProps) {
+  const { t } = useTranslation();
   // Primary navigation items (always shown)
   const primaryItems: NavItem[] = [
     {
       id: 'progress',
-      label: 'Progress',
+      label: t('home.navigation.progress'),
       icon: BarChart3,
       color: '#3b82f6',
       glowColor: 'rgba(59, 130, 246, 0.2)',
@@ -198,7 +200,7 @@ export function NavigationGrid({
     },
     {
       id: 'achievements',
-      label: 'Achievements',
+      label: t('home.navigation.achievements'),
       icon: Trophy,
       color: '#fbbf24',
       glowColor: 'rgba(251, 191, 36, 0.2)',
@@ -206,7 +208,7 @@ export function NavigationGrid({
     },
     {
       id: 'identity',
-      label: 'Identity',
+      label: t('home.navigation.identity'),
       icon: Sparkles,
       color: '#a78bfa',
       glowColor: 'rgba(167, 139, 250, 0.2)',
@@ -220,7 +222,7 @@ export function NavigationGrid({
   if (hasPracticeAvailable) {
     secondaryItems.push({
       id: 'practice',
-      label: 'Practice',
+      label: t('home.navigation.practice'),
       icon: Brain,
       color: '#6366f1',
       glowColor: 'rgba(99, 102, 241, 0.2)',
@@ -231,7 +233,7 @@ export function NavigationGrid({
   if (hasTransformationAvailable) {
     secondaryItems.push({
       id: 'transformation',
-      label: 'Growth',
+      label: t('home.navigation.growth'),
       icon: TrendingUp,
       color: '#34d399',
       glowColor: 'rgba(52, 211, 153, 0.2)',
@@ -243,7 +245,7 @@ export function NavigationGrid({
   if (onOpenEchoes) {
     secondaryItems.push({
       id: 'echoes',
-      label: 'Echoes',
+      label: t('home.navigation.echoes'),
       icon: MessageCircleHeart,
       color: '#f472b6',
       glowColor: 'rgba(244, 114, 182, 0.2)',
@@ -254,7 +256,7 @@ export function NavigationGrid({
 
   secondaryItems.push({
     id: 'map',
-    label: 'Map',
+    label: t('home.navigation.map'),
     icon: Map,
     color: '#f97316',
     glowColor: 'rgba(249, 115, 22, 0.2)',
@@ -263,7 +265,7 @@ export function NavigationGrid({
 
   secondaryItems.push({
     id: 'worlds',
-    label: 'Worlds',
+    label: t('home.navigation.worlds'),
     icon: Globe,
     color: '#6366f1',
     glowColor: 'rgba(99, 102, 241, 0.2)',
@@ -312,14 +314,11 @@ export function NavigationGrid({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
       >
-        {streak > 0 ? (
-          <span>
-            <span className="text-amber-500">{streak} day{streak !== 1 ? 's' : ''}</span>
-            {' '}of consistent growth
-          </span>
-        ) : (
-          <span>Start your journey today</span>
-        )}
+        {streak > 0
+          ? (streak === 1
+            ? t('home.streakMessage.singular', { count: streak })
+            : t('home.streakMessage.plural', { count: streak }))
+          : t('home.streakMessage.none')}
       </motion.p>
     </motion.nav>
   );

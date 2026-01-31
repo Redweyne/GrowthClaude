@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Heart, Target, Eye, Brain, TrendingUp, Sparkles, Check } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useSound } from '@/hooks/useSound';
-import { ASSESSMENT_QUESTIONS, FINAL_REFLECTION_PROMPT, getDimensionColor } from '@/content/monthlyAssessment';
+import { getAssessmentQuestions, getFinalReflectionPrompt, getDimensionColor } from '@/content/monthlyAssessment';
+import { useTranslation } from '@/i18n';
 
 interface MonthlyAssessmentProps {
   onComplete: () => void;
@@ -28,6 +29,10 @@ const DimensionIcon = ({ dimension, size = 24 }: { dimension: string; size?: num
 export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps) {
   const { name, saveMonthlyAssessment } = useStore();
   const { playTap, playSparkle, playCelebration } = useSound();
+  const { t, locale } = useTranslation();
+
+  const assessmentQuestions = useMemo(() => getAssessmentQuestions(locale), [locale]);
+  const reflectionPrompt = useMemo(() => getFinalReflectionPrompt(locale), [locale]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [scores, setScores] = useState<Record<string, number>>({
@@ -40,10 +45,10 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
   const [reflection, setReflection] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const totalSteps = ASSESSMENT_QUESTIONS.length + 2; // Questions + reflection + summary
-  const currentQuestion = ASSESSMENT_QUESTIONS[currentStep];
-  const isReflectionStep = currentStep === ASSESSMENT_QUESTIONS.length;
-  const isSummaryStep = currentStep === ASSESSMENT_QUESTIONS.length + 1;
+  const totalSteps = assessmentQuestions.length + 2; // Questions + reflection + summary
+  const currentQuestion = assessmentQuestions[currentStep];
+  const isReflectionStep = currentStep === assessmentQuestions.length;
+  const isSummaryStep = currentStep === assessmentQuestions.length + 1;
 
   const handleScoreChange = (value: number) => {
     if (currentQuestion) {
@@ -103,11 +108,11 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 9) return 'Exceptional';
-    if (score >= 7) return 'Strong';
-    if (score >= 5) return 'Developing';
-    if (score >= 3) return 'Needs Work';
-    return 'Just Starting';
+    if (score >= 9) return t('checkin.monthly.scoreLabels.exceptional');
+    if (score >= 7) return t('checkin.monthly.scoreLabels.strong');
+    if (score >= 5) return t('checkin.monthly.scoreLabels.developing');
+    if (score >= 3) return t('checkin.monthly.scoreLabels.needsWork');
+    return t('checkin.monthly.scoreLabels.justStarting');
   };
 
   return (
@@ -132,10 +137,10 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
             className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
           >
             <ChevronLeft size={20} />
-            {currentStep === 0 ? 'Skip' : 'Back'}
+            {currentStep === 0 ? t('checkin.monthly.skip') : t('common.back')}
           </button>
           <span className="text-zinc-500 text-sm">
-            {currentStep + 1} / {totalSteps}
+            {t('checkin.monthly.progress', { current: currentStep + 1, total: totalSteps })}
           </span>
         </div>
       </div>
@@ -236,7 +241,7 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
 
               {/* Continue Button */}
               <Button size="lg" onClick={handleNext} className="w-full">
-                Continue
+                {t('common.continue')}
                 <ChevronRight size={18} className="ml-2" />
               </Button>
             </motion.div>
@@ -262,17 +267,17 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
               </motion.div>
 
               <h2 className="text-2xl font-bold text-white text-center mb-2">
-                {FINAL_REFLECTION_PROMPT.title}
+                {reflectionPrompt.title}
               </h2>
 
               <p className="text-lg text-zinc-300 text-center mb-8">
-                {FINAL_REFLECTION_PROMPT.prompt}
+                {reflectionPrompt.prompt}
               </p>
 
               <textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
-                placeholder={FINAL_REFLECTION_PROMPT.placeholder}
+                placeholder={reflectionPrompt.placeholder}
                 className="w-full h-40 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none mb-6"
               />
 
@@ -282,13 +287,13 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                 disabled={reflection.trim().length < 20}
                 className="w-full"
               >
-                View Results
+                {t('checkin.monthly.viewResults')}
                 <ChevronRight size={18} className="ml-2" />
               </Button>
 
               {reflection.trim().length < 20 && (
                 <p className="text-xs text-zinc-600 text-center mt-2">
-                  Write at least 20 characters to continue
+                  {t('checkin.monthly.minReflectionChars', { count: 20 })}
                 </p>
               )}
             </motion.div>
@@ -316,17 +321,19 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                   </span>
                 </motion.div>
                 <h2 className="text-2xl font-bold text-white mb-1">
-                  Your Monthly Score
+                  {t('checkin.monthly.scoreTitle')}
                 </h2>
                 <p className="text-zinc-400">
-                  {name ? `${name}, here's` : "Here's"} your growth snapshot
+                  {name
+                    ? t('checkin.monthly.snapshotWithName', { name })
+                    : t('checkin.monthly.snapshot')}
                 </p>
               </div>
 
               {/* Score Breakdown */}
               <Card variant="glass" padding="md" className="mb-6">
                 <div className="space-y-4">
-                  {ASSESSMENT_QUESTIONS.map((q, index) => (
+                  {assessmentQuestions.map((q, index) => (
                     <motion.div
                       key={q.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -372,7 +379,7 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                 className="flex items-center justify-center gap-2 mb-8 text-amber-400"
               >
                 <Sparkles size={20} />
-                <span className="font-medium">+100 XP earned for completing assessment</span>
+                <span className="font-medium">{t('checkin.monthly.xpEarned', { xp: 100 })}</span>
               </motion.div>
 
               {/* Submit Button */}
@@ -389,12 +396,12 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
                     />
-                    Saving...
+                    {t('checkin.monthly.saving')}
                   </>
                 ) : (
                   <>
                     <Check size={18} className="mr-2" />
-                    Complete Assessment
+                    {t('checkin.monthly.submit')}
                   </>
                 )}
               </Button>

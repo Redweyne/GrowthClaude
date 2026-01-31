@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
@@ -29,8 +29,9 @@ import { useAudio } from '@/hooks/useAudio';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
 import { getLevelFromXp } from '@/types';
 import type { PublicReflection } from '@/types/echoes';
-import modernWisdomWorld from '@/content/modernWisdom';
-import stoicismWorld from '@/content/stoicismModern';
+import { getModernWisdomWorld } from '@/content/modernWisdom';
+import { getStoicismWorld } from '@/content/stoicismModern';
+import { useTranslation } from '@/i18n';
 import type { FlexibleLesson, LessonProgress, FlexibleWorld } from '@/types/lessons';
 
 type AppView =
@@ -99,6 +100,8 @@ export default function Home() {
     completeExercise,
     markDailyComplete,
   } = useDailyPracticeStore();
+
+  const { locale } = useTranslation();
 
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
@@ -172,6 +175,8 @@ export default function Home() {
   }, []);
 
   // All available worlds
+  const modernWisdomWorld = useMemo(() => getModernWisdomWorld(locale), [locale]);
+  const stoicismWorld = useMemo(() => getStoicismWorld(locale), [locale]);
   const allWorlds: FlexibleWorld[] = [modernWisdomWorld, stoicismWorld];
 
   // Check for in-progress lesson on mount (page refresh resilience)

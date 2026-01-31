@@ -20,8 +20,7 @@ import { Button } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useTranslation } from '@/i18n';
-import { getGenderLabel, getGenderPronoun } from '@/types/echoes';
-import type { EchoResponse, ConnectionInvitation, Connection } from '@/types/echoes';
+import type { EchoResponse, ConnectionInvitation, Connection, GenderIdentity } from '@/types/echoes';
 
 interface EchoInboxProps {
   onClose: () => void;
@@ -50,6 +49,32 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
     genderIdentity,
     publicReflections,
   } = useEchoesStore();
+
+  const getGenderLabelLocalized = (gender: GenderIdentity) => t(`onboarding.identity.${gender}` as const);
+  const getGenderLabelLower = (gender: GenderIdentity) => getGenderLabelLocalized(gender).toLowerCase();
+  const getPronouns = (gender: GenderIdentity) => {
+    switch (gender) {
+      case 'brother':
+        return {
+          subject: t('echoes.pronounHe'),
+          object: t('echoes.pronounHim'),
+          possessive: t('echoes.pronounHis'),
+        };
+      case 'sister':
+        return {
+          subject: t('echoes.pronounShe'),
+          object: t('echoes.pronounHer'),
+          possessive: t('echoes.pronounHerPossessive'),
+        };
+      case 'traveler':
+      default:
+        return {
+          subject: t('echoes.pronounThey'),
+          object: t('echoes.pronounThem'),
+          possessive: t('echoes.pronounTheir'),
+        };
+    }
+  };
 
   // Counts
   const unreadEchoCount = receivedEchos.filter(e => !e.isRead).length;
@@ -166,9 +191,9 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               {receivedEchos.length === 0 ? (
                 <div className="text-center py-16">
                   <MessageCircle size={48} className="mx-auto text-stone-700 mb-4" />
-                  <p className="text-stone-500">No reflections yet</p>
+                  <p className="text-stone-500">{t('echoes.noReflectionsYet')}</p>
                   <p className="text-stone-600 text-sm mt-2">
-                    When someone reflects on your words, you&apos;ll see it here
+                    {t('echoes.whenSomeoneReflects')}
                   </p>
                 </div>
               ) : (
@@ -194,18 +219,18 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-stone-200 font-medium">
-                            A fellow {getGenderLabel(echo.responderGender).toLowerCase()} reflected
+                            {t('echoes.fellowReflected', { gender: getGenderLabelLower(echo.responderGender) })}
                           </p>
                           <p className="text-stone-500 text-sm mt-1 line-clamp-2">
                             {echo.content}
                           </p>
                           {echo.isOpenToConnect && (
                             <p className="text-amber-400/70 text-xs mt-2">
-                              ✨ Open to connecting
+                              ✨ {t('echoes.openToConnecting')}
                             </p>
                           )}
                         </div>
-                        <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />
+                        {isRTL ? <ChevronLeft size={18} className="text-stone-600 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />}
                       </div>
                     </motion.button>
                   );
@@ -227,7 +252,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 onClick={() => setSelectedEcho(null)}
                 className="mb-4 text-stone-500 hover:text-stone-300 text-sm flex items-center gap-1"
               >
-                ← Back
+                ← {t('common.back')}
               </button>
 
               <div className="space-y-6">
@@ -237,14 +262,14 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     <Heart size={28} className="text-amber-400" />
                   </div>
                   <h2 className="text-xl font-semibold text-stone-100">
-                    A fellow {getGenderLabel(selectedEcho.responderGender).toLowerCase()} reflected on your words
+                    {t('echoes.fellowReflectedOnYourWords', { gender: getGenderLabelLower(selectedEcho.responderGender) })}
                   </h2>
                 </div>
 
                 {/* Your original reflection */}
                 {getOriginalReflection(selectedEcho.reflectionId) && (
                   <div className="p-4 rounded-xl bg-stone-800/50 border border-stone-700/50">
-                    <p className="text-stone-500 text-sm mb-2">Your reflection:</p>
+                    <p className="text-stone-500 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
                     <p className="text-stone-400 text-sm">
                       &ldquo;{getOriginalReflection(selectedEcho.reflectionId)?.content}&rdquo;
                     </p>
@@ -254,16 +279,21 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 {/* Their reflection */}
                 <div className="p-5 rounded-xl bg-stone-900/80 border border-stone-800">
                   <p className="text-stone-500 text-sm mb-3">
-                    {getGenderPronoun(selectedEcho.responderGender).possessive.charAt(0).toUpperCase() +
-                     getGenderPronoun(selectedEcho.responderGender).possessive.slice(1)} reflection for you:
+                    {t('echoes.theirReflection', {
+                      possessive: getPronouns(selectedEcho.responderGender).possessive.charAt(0).toUpperCase() +
+                        getPronouns(selectedEcho.responderGender).possessive.slice(1),
+                      gender: getGenderLabelLower(selectedEcho.responderGender),
+                    })}
                   </p>
                   <p className="text-stone-200 text-lg leading-relaxed">
                     &ldquo;{selectedEcho.content}&rdquo;
                   </p>
                   {selectedEcho.isOpenToConnect && (
                     <p className="text-amber-400/70 text-sm mt-4">
-                      ✨ {getGenderPronoun(selectedEcho.responderGender).subject.charAt(0).toUpperCase() +
-                         getGenderPronoun(selectedEcho.responderGender).subject.slice(1)}&apos;{selectedEcho.responderGender === 'traveler' ? 're' : 's'} open to connecting
+                      ✨ {t('echoes.theyreOpenToConnect', {
+                        subject: getPronouns(selectedEcho.responderGender).subject.charAt(0).toUpperCase() +
+                          getPronouns(selectedEcho.responderGender).subject.slice(1),
+                      })}
                     </p>
                   )}
                 </div>
@@ -271,14 +301,14 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 {/* Invite to connect */}
                 <div className="space-y-4">
                   <p className="text-stone-400 text-center text-sm">
-                    Would you like to connect with this person?
+                    {t('echoes.wouldYouLikeToConnect')}
                   </p>
 
                   <div className="p-4 rounded-xl bg-stone-900/50 border border-stone-800">
                     <textarea
                       value={invitationMessage}
                       onChange={(e) => setInvitationMessage(e.target.value)}
-                      placeholder="Write a message with your invitation..."
+                      placeholder={t('echoes.writeInvitationMessage')}
                       className="w-full min-h-[100px] p-3 bg-transparent text-stone-200 placeholder-stone-600 focus:outline-none resize-none"
                     />
                   </div>
@@ -291,14 +321,14 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     className="w-full"
                   >
                     <UserPlus size={18} className="mr-2" />
-                    Invite to Connect
+                    {t('echoes.inviteToConnect')}
                   </Button>
 
                   <button
                     onClick={() => setSelectedEcho(null)}
                     className="w-full py-3 text-stone-500 hover:text-stone-400 text-sm"
                   >
-                    Close without connecting
+                    {t('echoes.closeWithoutConnecting')}
                   </button>
                 </div>
               </div>
@@ -319,9 +349,9 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               {receivedInvitations.filter(i => i.status === 'pending').length === 0 ? (
                 <div className="text-center py-16">
                   <UserPlus size={48} className="mx-auto text-stone-700 mb-4" />
-                  <p className="text-stone-500">No pending invitations</p>
+                  <p className="text-stone-500">{t('echoes.noPendingInvitations')}</p>
                   <p className="text-stone-600 text-sm mt-2">
-                    Connection invitations will appear here
+                    {t('echoes.invitationsWillAppear')}
                   </p>
                 </div>
               ) : (
@@ -339,13 +369,13 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-amber-200 font-medium">
-                          A fellow {getGenderLabel(invitation.inviterGender).toLowerCase()} wants to connect
+                          {t('echoes.wantsToConnect', { gender: getGenderLabelLower(invitation.inviterGender) })}
                         </p>
                         <p className="text-stone-500 text-sm mt-1 line-clamp-2">
                           {invitation.message}
                         </p>
                       </div>
-                      <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />
+                      {isRTL ? <ChevronLeft size={18} className="text-stone-600 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />}
                     </div>
                   </motion.button>
                 ))
@@ -366,7 +396,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 onClick={() => setSelectedInvitation(null)}
                 className="mb-4 text-stone-500 hover:text-stone-300 text-sm flex items-center gap-1"
               >
-                ← Back
+                ← {t('common.back')}
               </button>
 
               <div className="space-y-6">
@@ -376,17 +406,17 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     <UserPlus size={28} className="text-amber-400" />
                   </div>
                   <h2 className="text-xl font-semibold text-stone-100">
-                    Connection Request
+                    {t('echoes.connectionRequest')}
                   </h2>
                   <p className="text-stone-500 mt-2">
-                    A fellow {getGenderLabel(selectedInvitation.inviterGender).toLowerCase()} wants to connect
+                    {t('echoes.wantsToConnect', { gender: getGenderLabelLower(selectedInvitation.inviterGender) })}
                   </p>
                 </div>
 
                 {/* Context */}
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-stone-800/50 border border-stone-700/50">
-                    <p className="text-stone-500 text-sm mb-2">Your reflection:</p>
+                    <p className="text-stone-500 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
                     <p className="text-stone-400 text-sm">
                       &ldquo;{selectedInvitation.originalReflectionContent}&rdquo;
                     </p>
@@ -394,8 +424,11 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                   <div className="p-4 rounded-xl bg-stone-900/80 border border-stone-800">
                     <p className="text-stone-500 text-sm mb-2">
-                      {getGenderPronoun(selectedInvitation.inviterGender).possessive.charAt(0).toUpperCase() +
-                       getGenderPronoun(selectedInvitation.inviterGender).possessive.slice(1)} reflection:
+                      {t('echoes.theirReflection', {
+                        possessive: getPronouns(selectedInvitation.inviterGender).possessive.charAt(0).toUpperCase() +
+                          getPronouns(selectedInvitation.inviterGender).possessive.slice(1),
+                        gender: getGenderLabelLower(selectedInvitation.inviterGender),
+                      })}
                     </p>
                     <p className="text-stone-300">
                       &ldquo;{selectedInvitation.echoResponseContent}&rdquo;
@@ -404,8 +437,11 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                   <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
                     <p className="text-amber-400/70 text-sm mb-2">
-                      {getGenderPronoun(selectedInvitation.inviterGender).possessive.charAt(0).toUpperCase() +
-                       getGenderPronoun(selectedInvitation.inviterGender).possessive.slice(1)} message:
+                      {t('echoes.invitationMessageLabel', {
+                        possessive: getPronouns(selectedInvitation.inviterGender).possessive.charAt(0).toUpperCase() +
+                          getPronouns(selectedInvitation.inviterGender).possessive.slice(1),
+                        gender: getGenderLabelLower(selectedInvitation.inviterGender),
+                      })}
                     </p>
                     <p className="text-stone-200">
                       &ldquo;{selectedInvitation.message}&rdquo;
@@ -422,7 +458,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     className="flex-1"
                   >
                     <XIcon size={18} className="mr-2" />
-                    Decline
+                    {t('echoes.decline')}
                   </Button>
                   <Button
                     onClick={() => handleRespondToInvitation(true)}
@@ -431,7 +467,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     className="flex-1"
                   >
                     <Check size={18} className="mr-2" />
-                    Accept & Connect
+                    {t('echoes.acceptConnect')}
                   </Button>
                 </div>
               </div>
@@ -452,9 +488,9 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               {connections.length === 0 ? (
                 <div className="text-center py-16">
                   <MessageCircle size={48} className="mx-auto text-stone-700 mb-4" />
-                  <p className="text-stone-500">No connections yet</p>
+                  <p className="text-stone-500">{t('echoes.noConnectionsYet')}</p>
                   <p className="text-stone-600 text-sm mt-2">
-                    When you connect with someone, your conversations will appear here
+                    {t('echoes.conversationsWillAppear')}
                   </p>
                 </div>
               ) : (
@@ -477,15 +513,15 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-stone-200 font-medium">
-                            A fellow {getGenderLabel(partnerGender).toLowerCase()}
+                            {t('echoes.fellowLabel', { gender: getGenderLabelLower(partnerGender) })}
                           </p>
                           <p className="text-stone-500 text-sm mt-1 line-clamp-1">
                             {lastMessage
                               ? lastMessage.content
-                              : 'Connected through reflection'}
+                              : t('echoes.connectedThroughReflection')}
                           </p>
                         </div>
-                        <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />
+                        {isRTL ? <ChevronLeft size={18} className="text-stone-600 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />}
                       </div>
                     </motion.button>
                   );
@@ -509,19 +545,19 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                   onClick={() => setSelectedConnection(null)}
                   className="mb-2 text-stone-500 hover:text-stone-300 text-sm flex items-center gap-1"
                 >
-                  ← Back
+                  ← {t('common.back')}
                 </button>
                 <p className="text-stone-200 font-medium">
-                  Growth Conversation
+                  {t('echoes.growthConversation')}
                 </p>
                 <p className="text-stone-500 text-sm">
-                  with a fellow {getGenderLabel(getPartnerGender(selectedConnection)).toLowerCase()}
+                  {t('echoes.withFellow', { gender: getGenderLabelLower(getPartnerGender(selectedConnection)) })}
                 </p>
               </div>
 
               {/* Connection context */}
               <div className="p-4 border-b border-stone-800 bg-stone-900/50">
-                <p className="text-stone-500 text-xs mb-2">You connected through:</p>
+                <p className="text-stone-500 text-xs mb-2">{t('echoes.youConnectedThrough')}</p>
                 <p className="text-stone-400 text-sm line-clamp-2">
                   &ldquo;{selectedConnection.originReflectionContent.slice(0, 100)}...&rdquo;
                 </p>
@@ -549,7 +585,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 {getConnectionMessages(selectedConnection.id).length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-stone-500 text-sm">
-                      Start your growth conversation...
+                      {t('echoes.startConversation')}
                     </p>
                   </div>
                 )}
@@ -563,7 +599,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     value={chatMessage}
                     onChange={(e) => setChatMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Type a message..."
+                    placeholder={t('echoes.typeMessage')}
                     className="flex-1 px-4 py-3 rounded-xl bg-stone-800 border border-stone-700 text-stone-200 placeholder-stone-500 focus:outline-none focus:border-stone-600"
                   />
                   <Button

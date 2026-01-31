@@ -26,6 +26,9 @@ const en = {
     delete: 'Delete',
     edit: 'Edit',
     add: 'Add',
+    copy: 'Copy',
+    copied: 'Copied!',
+    share: 'Share',
     settings: 'Settings',
     profile: 'Profile',
     complete: 'Complete',
@@ -61,6 +64,8 @@ const en = {
     title: 'Choose Your Language',
     subtitle: 'Select the language for your journey',
     continue: 'Continue',
+    selectPrompt: 'Select a language',
+    helper: 'You can change this anytime in settings',
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -308,6 +313,30 @@ const en = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PRACTICE MODE
+  // ─────────────────────────────────────────────────────────────────────────
+  practiceMode: {
+    noPracticeAvailable: 'No Practice Available',
+    completeLessonsFirst: "Complete some lessons first, then return here to practice and reinforce what you've learned.",
+    title: 'Practice Mode',
+    progressOf: '{current} of {total}',
+    practiceSession: 'Practice Session',
+    applyWhatYouLearned: "Apply what you've learned to real-world scenarios. This strengthens your understanding and builds lasting wisdom.",
+    scenarioCount: '{count} scenarios',
+    estimatedTime: '~{minutes} min',
+    beginPractice: 'Begin Practice',
+    scenarioLabel: 'Scenario',
+    writeResponsePlaceholder: 'Write your response...',
+    reflectionLabel: 'Reflection',
+    yourResponseLabel: 'Your response:',
+    reflectPlaceholder: 'Reflect on this...',
+    nextScenario: 'Next Scenario',
+    completePractice: 'Complete Practice',
+    practiceComplete: 'Practice Complete!',
+    practiceCompleteBody: "You've strengthened your understanding through application. This is how wisdom becomes instinct.",
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // DASHBOARD
   // ─────────────────────────────────────────────────────────────────────────
   dashboard: {
@@ -328,6 +357,15 @@ const en = {
 
     // Quote of the day
     quoteOfTheDay: 'Daily Wisdom',
+
+    // Journey map labels
+    chapterLabels: {
+      start: 'Start',
+      chapter2: 'Ch. 2',
+      mid: 'Mid',
+      chapter4: 'Ch. 4',
+      end: 'End',
+    },
 
     // Sections
     sections: {
@@ -372,17 +410,78 @@ const en = {
       evening: 'Good evening',
     },
     wisdomQuotes: [
-      'The obstacle is the way.',
-      'Focus on what you can control.',
-      'Begin at once to live.',
-      'The best revenge is not to be like your enemy.',
-      'Waste no more time arguing about what a good person should be. Be one.',
-      'You have power over your mind - not outside events. Realize this, and you will find strength.',
-      'It is not death that a man should fear, but never beginning to live.',
-      'The happiness of your life depends upon the quality of your thoughts.',
-      'Accept the things to which fate binds you.',
-      'When you arise in the morning, think of what a privilege it is to be alive.',
+      {
+        text: 'The obstacle is the way.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'Focus on what you can control.',
+        author: 'Seneca',
+      },
+      {
+        text: 'Begin at once to live.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'The best revenge is not to be like your enemy.',
+        author: 'Seneca',
+      },
+      {
+        text: 'Waste no more time arguing about what a good person should be. Be one.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'You have power over your mind - not outside events. Realize this, and you will find strength.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'It is not death that a man should fear, but never beginning to live.',
+        author: 'Marcus Aurelius',
+      },
+      {
+        text: 'The happiness of your life depends upon the quality of your thoughts.',
+        author: 'Seneca',
+      },
+      {
+        text: 'Accept the things to which fate binds you.',
+        author: 'Epictetus',
+      },
+      {
+        text: 'When you arise in the morning, think of what a privilege it is to be alive.',
+        author: 'Marcus Aurelius',
+      },
     ],
+    navigation: {
+      progress: 'Progress',
+      achievements: 'Achievements',
+      identity: 'Identity',
+      practice: 'Practice',
+      growth: 'Growth',
+      echoes: 'Echoes',
+      map: 'Map',
+      worlds: 'Worlds',
+    },
+    streakMessage: {
+      singular: '{count} day of consistent growth',
+      plural: '{count} days of consistent growth',
+      none: 'Start your journey today',
+    },
+    level: {
+      progressToNext: '{percent}% to next level',
+      motivation: {
+        almostThere: 'Almost there! Keep pushing forward.',
+        halfway: 'Halfway there. Every lesson brings you closer.',
+        firstStep: 'The journey of a thousand miles begins with a single step.',
+      },
+    },
+    lessonCard: {
+      actionAwaits: 'Your Action Awaits',
+      completeThenReturn: 'Complete it, then return here',
+      youCommittedTo: 'You committed to:',
+      rememberPrefix: 'Remember:',
+      rememberEmphasis: 'action is the antidote to anxiety.',
+      rememberSuffix: "Don't just think about it. Do it. Then come back to reflect.",
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -477,12 +576,15 @@ const en = {
     noReflectionsYet: 'No reflections yet',
     whenSomeoneReflects: "When someone reflects on your words, you'll see it here",
     fellowReflected: 'A fellow {gender} reflected',
+    fellowReflectedOnYourWords: 'A fellow {gender} reflected on your words',
+    fellowLabel: 'A fellow {gender}',
     openToConnecting: 'Open to connecting',
     yourReflectionLabel: 'Your reflection:',
     theirReflection: '{possessive} reflection for you:',
-    theyreOpenToConnect: "{subject}'re open to connecting",
+    theyreOpenToConnect: '{subject} is open to connecting',
     wouldYouLikeToConnect: 'Would you like to connect with this person?',
     writeInvitationMessage: 'Write a message with your invitation...',
+    invitationMessageLabel: '{possessive} message:',
     inviteToConnect: 'Invite to Connect',
     closeWithoutConnecting: 'Close without connecting',
     noPendingInvitations: 'No pending invitations',
@@ -513,6 +615,9 @@ const en = {
     pronounHe: 'he',
     pronounShe: 'she',
     pronounThey: 'they',
+    pronounHis: 'his',
+    pronounHerPossessive: 'her',
+    pronounTheir: 'their',
     yourReflectionFor: 'Your reflection for {pronoun}:',
     writeYourThoughts: 'Write your thoughts...',
     word: 'word',
@@ -913,8 +1018,23 @@ const en = {
         selfAwareness: 'Self-Awareness',
         growth: 'Growth',
       },
+      xpEarned: '+{xp} XP earned for completing assessment',
       submit: 'Complete Assessment',
       skip: 'Skip this month',
+      progress: '{current} / {total}',
+      scoreTitle: 'Your Monthly Score',
+      snapshot: "Here's your growth snapshot",
+      snapshotWithName: '{name}, here\'s your growth snapshot',
+      viewResults: 'View Results',
+      minReflectionChars: 'Write at least {count} characters to continue',
+      saving: 'Saving...',
+      scoreLabels: {
+        exceptional: 'Exceptional',
+        strong: 'Strong',
+        developing: 'Developing',
+        needsWork: 'Needs Work',
+        justStarting: 'Just Starting',
+      },
     },
   },
 
@@ -991,6 +1111,84 @@ const en = {
     wisdom: 'Wisdom Logs',
     assessment: 'Assessment',
     radar: 'Growth Radar',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STORY
+  // ─────────────────────────────────────────────────────────────────────────
+  story: {
+    trigger: {
+      label: 'View Your Story',
+      keepGrowing: 'Keep growing to unlock',
+      tapToExperience: 'Tap to experience',
+      demoTitle: 'Try with demo data',
+      demoSubtitle: 'Experience your transformation story preview',
+    },
+    slides: {
+      unknownType: 'Unknown slide type',
+      firstLessonWas: 'Your first lesson was',
+      daysSinceMoment: 'days since that moment',
+      before: 'Before',
+      after: 'After',
+      patternShift: {
+        title: 'Your Mind Shifted',
+      },
+      streak: {
+        best: 'Best',
+        totalDays: 'Total Days',
+        consistency: 'Consistency',
+      },
+      achievementUnlockedCount: '{unlocked} of {total} unlocked',
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SHARE
+  // ─────────────────────────────────────────────────────────────────────────
+  share: {
+    hubLabel: 'TRANSFORMATION HUB',
+    achievedBy: 'Achieved by',
+    messageLabel: 'Share message:',
+    cards: {
+      streak: {
+        title: '{count} Day Streak',
+        subtitle: 'Daily Stoic Practice',
+        message: "I've practiced Stoic wisdom for {count} days straight!",
+        stats: {
+          days: 'Days',
+          lessons: 'Lessons',
+          xp: 'XP',
+        },
+      },
+      achievement: {
+        titleFallback: 'Milestone Reached',
+        messageFallback: 'I reached a new milestone on my journey!',
+        stats: {
+          virtue: 'Virtue',
+          wisdom: 'wisdom',
+          totalXp: 'Total XP',
+        },
+      },
+      level: {
+        title: 'Level {level}',
+        message: 'I reached Level {level}: {title} on my journey of self-mastery!',
+        stats: {
+          level: 'Level',
+          title: 'Title',
+          xp: 'XP',
+        },
+      },
+      journey: {
+        title: '{days} Days of Growth',
+        subtitle: 'My Transformation Journey',
+        message: '{days} days, {lessons} lessons, {words} words of reflection. This is my transformation journey.',
+        stats: {
+          days: 'Days',
+          lessons: 'Lessons',
+          words: 'Words',
+        },
+      },
+    },
   },
 
   // ─────────────────────────────────────────────────────────────────────────

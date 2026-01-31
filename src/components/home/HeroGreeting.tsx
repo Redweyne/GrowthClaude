@@ -13,20 +13,6 @@ import { useTranslation } from '@/i18n';
 // inspirational Stoic wisdom that changes daily
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Stoic wisdom quotes that rotate daily (with authors)
-const wisdomAuthors = [
-  'Marcus Aurelius',
-  'Seneca',
-  'Epictetus',
-  'Seneca',
-  'Marcus Aurelius',
-  'Epictetus',
-  'Marcus Aurelius',
-  'Seneca',
-  'Epictetus',
-  'Marcus Aurelius',
-];
-
 interface HeroGreetingProps {
   name: string;
   streak: number;
@@ -63,18 +49,15 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
   }, [t]);
 
   // Get wisdom quote from translations
-  const wisdomQuotes = t('home.wisdomQuotes') as unknown as string[];
-  const quote = {
-    text: Array.isArray(wisdomQuotes) ? wisdomQuotes[quoteIndex] : '',
-    author: wisdomAuthors[quoteIndex],
-  };
+  const quoteText = t(`home.wisdomQuotes.${quoteIndex}.text`);
+  const quoteAuthor = t(`home.wisdomQuotes.${quoteIndex}.author`);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // Stagger animation for letters
-  const nameLetters = (name || 'Seeker').split('');
+  const nameLetters = (name || t('settings.seeker')).split('');
 
   // Container variants
   const containerVariants = {
@@ -204,10 +187,10 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
         animate="visible"
       >
         <p className={`text-stone-400 text-sm italic leading-relaxed ${isRTL ? 'text-right' : ''}`}>
-          &ldquo;{quote.text}&rdquo;
+          &ldquo;{quoteText}&rdquo;
         </p>
         <p className={`text-stone-600 text-xs mt-1 ${isRTL ? 'text-right' : ''}`}>
-          — {quote.author}
+          — {quoteAuthor}
         </p>
 
         {/* Subtle glow on quote */}

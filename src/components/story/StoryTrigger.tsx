@@ -9,6 +9,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Play, Wand2 } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 interface StoryTriggerProps {
   onClick: () => void;
@@ -23,12 +24,14 @@ interface StoryTriggerProps {
 export function StoryTrigger({
   onClick,
   variant = 'primary',
-  label = 'View Your Story',
+  label,
   subtitle,
   disabled = false,
   onSeedDemo,
   showDemoOption = false
 }: StoryTriggerProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('story.trigger.label');
   if (variant === 'card') {
     return (
       <div className="w-full">
@@ -52,7 +55,7 @@ export function StoryTrigger({
               <div className="p-2 rounded-full bg-purple-500/20">
                 <Play className="w-5 h-5 text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">{label}</h3>
+              <h3 className="text-lg font-semibold text-white">{resolvedLabel}</h3>
             </div>
 
             {subtitle && (
@@ -61,7 +64,7 @@ export function StoryTrigger({
 
             <div className="flex items-center gap-2 mt-4 ml-12">
               <span className="text-xs text-purple-400 font-medium">
-                {disabled ? 'Keep growing to unlock' : 'Tap to experience'}
+                {disabled ? t('story.trigger.keepGrowing') : t('story.trigger.tapToExperience')}
               </span>
               {!disabled && (
                 <motion.span
@@ -94,8 +97,8 @@ export function StoryTrigger({
                 <Wand2 className="w-4 h-4 text-amber-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-amber-200">Try with demo data</p>
-                <p className="text-xs text-amber-300/60">Experience your transformation story preview</p>
+                <p className="text-sm font-medium text-amber-200">{t('story.trigger.demoTitle')}</p>
+                <p className="text-xs text-amber-300/60">{t('story.trigger.demoSubtitle')}</p>
               </div>
             </div>
           </motion.button>
@@ -114,7 +117,7 @@ export function StoryTrigger({
         whileTap={{ scale: disabled ? 1 : 0.95 }}
       >
         <Sparkles className="w-4 h-4 text-purple-400" />
-        <span className="text-sm text-white">{label}</span>
+        <span className="text-sm text-white">{resolvedLabel}</span>
       </motion.button>
     );
   }
@@ -141,7 +144,7 @@ export function StoryTrigger({
       {/* Content */}
       <div className="relative flex items-center gap-3">
         <Sparkles className="w-5 h-5 text-white" />
-        <span className="text-white font-semibold">{label}</span>
+        <span className="text-white font-semibold">{resolvedLabel}</span>
       </div>
     </motion.button>
   );

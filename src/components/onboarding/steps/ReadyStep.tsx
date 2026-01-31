@@ -36,6 +36,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
   const { playCelebrate } = useAudio();
 
   const selectedGoal = TRANSFORMATION_GOALS.find((g) => g.id === transformationGoal);
+  const goalTitle = transformationGoal ? t(`onboarding.goal.goals.${transformationGoal}.title` as any) : '';
 
   useEffect(() => {
     setMounted(true);
@@ -135,7 +136,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                   {name}, {t('onboarding.ready.youveChosen')}
                 </p>
                 <p className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
-                  {selectedGoal?.title}
+                  {goalTitle || selectedGoal?.title}
                 </p>
               </motion.div>
 

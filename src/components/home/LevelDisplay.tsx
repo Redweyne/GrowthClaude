@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Sparkles, Zap } from 'lucide-react';
 import { Card, XPBadge, ProgressBar } from '@/components/ui';
 import type { Level } from '@/types';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LEVEL DISPLAY
@@ -49,6 +50,7 @@ function AnimatedCounter({ value, duration = 1 }: { value: number; duration?: nu
 export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) {
   const [mounted, setMounted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
@@ -225,7 +227,7 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
                   <span className="text-stone-500">
                     {xpProgress.needed === Infinity ? '∞' : xpProgress.needed.toLocaleString()}
                   </span>
-                  {' XP'}
+                  {' '}{t('common.xp')}
                 </span>
               </div>
 
@@ -236,7 +238,7 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
                   color: xpProgress.percentage >= 80 ? 'rgb(251, 191, 36)' : 'rgb(113, 113, 122)',
                 }}
               >
-                {Math.round(xpProgress.percentage)}% to next level
+                {t('home.level.progressToNext', { percent: Math.round(xpProgress.percentage) })}
               </motion.span>
             </motion.div>
           </div>
@@ -250,13 +252,13 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
           >
             <p className="text-xs text-stone-500 text-center">
               {xpProgress.percentage >= 80 && (
-                <span className="text-amber-400">Almost there! Keep pushing forward.</span>
+                <span className="text-amber-400">{t('home.level.motivation.almostThere')}</span>
               )}
               {xpProgress.percentage >= 50 && xpProgress.percentage < 80 && (
-                <span>Halfway there. Every lesson brings you closer.</span>
+                <span>{t('home.level.motivation.halfway')}</span>
               )}
               {xpProgress.percentage < 50 && (
-                <span>The journey of a thousand miles begins with a single step.</span>
+                <span>{t('home.level.motivation.firstStep')}</span>
               )}
             </p>
           </motion.div>

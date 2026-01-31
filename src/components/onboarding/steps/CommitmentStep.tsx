@@ -24,6 +24,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
   const [showPledge, setShowPledge] = useState(false);
 
   const selectedGoal = TRANSFORMATION_GOALS.find(g => g.id === transformationGoal);
+  const goalTitle = transformationGoal ? t(`onboarding.goal.goals.${transformationGoal}.title` as any) : '';
 
   // Get translated commitment descriptions
   const getCommitmentDesc = (minutes: number): string => {
@@ -77,7 +78,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
       >
         <span className="text-2xl">{selectedGoal?.icon}</span>
         <span className="text-zinc-500 text-sm">
-          {t('onboarding.why.yourPath')} <span className="text-zinc-300">{selectedGoal?.title}</span>
+          {t('onboarding.why.yourPath')} <span className="text-zinc-300">{goalTitle || selectedGoal?.title}</span>
         </span>
       </motion.div>
 
@@ -151,7 +152,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
               "{t('onboarding.commitment.iCommit')} <span className="text-indigo-400">{name || t('onboarding.commitment.iCommit')}</span>, {t('onboarding.commitment.commitTo')}{' '}
               <span className="text-indigo-400">{dailyCommitmentMinutes} {t('onboarding.commitment.minutesDaily')}</span>{' '}
               {t('onboarding.commitment.toBecome')}{' '}
-              <span className="text-indigo-400">{selectedGoal?.title?.toLowerCase()}</span>."
+              <span className="text-indigo-400">{goalTitle || selectedGoal?.title}</span>."
             </p>
           </motion.div>
         )}

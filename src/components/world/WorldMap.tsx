@@ -135,7 +135,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
                       <p className={`text-xs ${
                         accessible ? 'text-zinc-500' : 'text-zinc-700'
                       }`}>
-                        {isCompleted ? `✓ ${t('world.completed')}` : `${lesson.xpReward} XP`}
+                        {isCompleted ? `✓ ${t('world.completed')}` : `${lesson.xpReward} ${t('common.xp')}`}
                       </p>
                     </button>
 

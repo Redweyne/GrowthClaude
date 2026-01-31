@@ -52,6 +52,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
   };
 
   const selectedGoal = TRANSFORMATION_GOALS.find(g => g.id === transformationGoal);
+  const goalTitle = transformationGoal ? t(`onboarding.goal.goals.${transformationGoal}.title` as any) : '';
   const goalKey = transformationGoal || 'calmer';
 
   return (
@@ -73,7 +74,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
       >
         <span className="text-2xl">{selectedGoal?.icon}</span>
         <span className="text-zinc-500 text-sm">
-          {t('onboarding.why.yourPath')}: <span className="text-zinc-300">{selectedGoal?.title}</span>
+          {t('onboarding.why.yourPath')}: <span className="text-zinc-300">{goalTitle || selectedGoal?.title}</span>
         </span>
       </motion.div>
 
