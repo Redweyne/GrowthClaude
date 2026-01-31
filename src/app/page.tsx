@@ -107,6 +107,8 @@ export default function Home() {
   const [reflectionForReview, setReflectionForReview] = useState<PublicReflection | null>(null);
   const [completedLessonInfo, setCompletedLessonInfo] = useState<{ id: string; title: string } | null>(null);
   const [skipEchoIntro, setSkipEchoIntro] = useState(false); // Track if coaching was shown to skip echo intro
+  // Store exercises from the completed lesson to ensure they're available for the exercise view
+  const [exercisesForSession, setExercisesForSession] = useState<FlexibleLesson['exercises'] | null>(null);
 
   // Story state
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
@@ -319,6 +321,16 @@ export default function Home() {
         id: selectedFlexibleLesson.id,
         title: selectedFlexibleLesson.title,
       });
+
+      // Store exercises from the completed lesson for the exercise session
+      // This ensures exercises are available even if todaysLesson changes
+      if (selectedFlexibleLesson.exercises && selectedFlexibleLesson.exercises.length > 0) {
+        setExercisesForSession(selectedFlexibleLesson.exercises);
+      } else if (todaysLesson?.exercises) {
+        // Fallback to today's lesson exercises if completed lesson has none
+        setExercisesForSession(todaysLesson.exercises);
+      }
+
       // Mark lesson complete in daily practice store
       completeLesson(selectedFlexibleLesson.xpReward || 50);
 
@@ -369,6 +381,10 @@ export default function Home() {
   const handleExercisesComplete = () => {
     // Mark the daily practice as complete - this is critical!
     markDailyComplete();
+
+    // Clear the session exercises state
+    setExercisesForSession(null);
+    setCompletedLessonInfo(null);
 
     // Show celebration coaching if first session
     if (isFirstSession() && !isCoachingStepSeen('afterFirstDayComplete')) {
@@ -676,20 +692,34 @@ export default function Home() {
   }
 
   // Exercise experience - 5 exercises after echo
-  if (currentView === 'exercises' && todaysLesson?.exercises) {
-    return (
-      <>
-        <AchievementCelebration />
-        <ExerciseExperience
-          exercises={todaysLesson.exercises}
-          lessonTitle={todaysLesson.title}
-          completedExercises={exercisesCompletedToday}
-          onCompleteExercise={handleExerciseComplete}
-          onAllComplete={handleExercisesComplete}
-          onBack={() => setCurrentView('home')}
-        />
-      </>
-    );
+  // Use exercisesForSession (saved from completed lesson) as primary source,
+  // fallback to todaysLesson.exercises
+  const availableExercises = exercisesForSession || todaysLesson?.exercises;
+  const exerciseLessonTitle = completedLessonInfo?.title || todaysLesson?.title || 'Practice';
+
+  if (currentView === 'exercises') {
+    // Check if we have exercises available
+    if (availableExercises && availableExercises.length > 0) {
+      return (
+        <>
+          <AchievementCelebration />
+          <ExerciseExperience
+            exercises={availableExercises}
+            lessonTitle={exerciseLessonTitle}
+            completedExercises={exercisesCompletedToday}
+            onCompleteExercise={handleExerciseComplete}
+            onAllComplete={handleExercisesComplete}
+            onBack={() => setCurrentView('home')}
+          />
+        </>
+      );
+    } else {
+      // No exercises available - mark complete and go home
+      // This handles edge cases where exercises view is accessed without available exercises
+      markDailyComplete();
+      setCurrentView('home');
+      return null;
+    }
   }
 
   // Check for pending action to show "Continue" message

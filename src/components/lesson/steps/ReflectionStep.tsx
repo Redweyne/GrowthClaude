@@ -82,7 +82,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const [milestone, setMilestone] = useState<string | null>(null);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [phase, setPhase] = useState<'entering' | 'writing' | 'complete'>('entering');
-  const [isPublic, setIsPublic] = useState(false); // Privacy toggle
+  const [isPublic, setIsPublic] = useState(true); // Default to sharing - community connection is valuable
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastKeystrokeRef = useRef<number>(0);
   const promptShownRef = useRef<Set<number>>(new Set());
