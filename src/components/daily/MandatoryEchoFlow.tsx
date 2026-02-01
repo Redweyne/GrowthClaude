@@ -112,7 +112,7 @@ export function MandatoryEchoFlow({
   }, [isSubstantial, handleSend]);
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden" data-testid="mandatory-echo">
       {/* Ambient background */}
       <AmbientBackground intensity="subtle" particleCount={6} orbCount={2} />
 
@@ -253,6 +253,7 @@ export function MandatoryEchoFlow({
                     variant="insight"
                     animate={true}
                     speed="slow"
+                    data-testid="echo-reflection-text"
                   >
                     {reflection.content}
                   </WisdomText>
@@ -352,6 +353,7 @@ export function MandatoryEchoFlow({
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
                       placeholder={t('echoes.mandatory.writeThoughts')}
+                      data-testid="echo-response-input"
                       className="
                         w-full min-h-[160px] p-5
                         bg-transparent text-lg text-stone-200
@@ -428,6 +430,7 @@ export function MandatoryEchoFlow({
                     disabled={!isSubstantial}
                     glow={isSubstantial}
                     className="w-full group"
+                    data-testid="echo-submit-btn"
                   >
                     <Heart size={18} className="mr-2" />
                     {t('echoes.mandatory.sendAndUnlock')}
@@ -530,6 +533,7 @@ export function MandatoryEchoFlow({
                     size="lg"
                     glow
                     className="group"
+                    data-testid="echo-complete-btn"
                   >
                     {t('echoes.mandatory.continueToExercises')}
                     <ChevronRight size={18} className="ml-2 opacity-60 group-hover:translate-x-1 transition-transform" />

@@ -146,12 +146,13 @@ export function ExerciseExperience({
 
   // Exercise list view
   return (
-    <motion.div
+<motion.div
       className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       dir={isRTL ? 'rtl' : 'ltr'}
+      data-testid="exercise-experience"
     >
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
@@ -238,11 +239,12 @@ export function ExerciseExperience({
               </div>
             </Card>
 
-            <Button
+<Button
               onClick={onAllComplete}
               variant="primary"
               className="w-full max-w-sm"
               sound="celebrate"
+              data-testid="daily-complete-celebration"
             >
               {t('exercises.completeTodaysPractice')}
             </Button>

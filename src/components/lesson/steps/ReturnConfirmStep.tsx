@@ -134,8 +134,9 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                 className="space-y-4"
               >
                 {/* Completed option */}
-                <motion.button
+<motion.button
                   onClick={() => handleSelect('completed')}
+                  data-testid="return-completed-btn"
                   className="
                     w-full p-5 rounded-2xl text-left transition-all duration-300
                     border-2 bg-stone-900/50 border-stone-700/50
@@ -151,8 +152,9 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                 </motion.button>
 
                 {/* Did not complete option */}
-                <motion.button
+<motion.button
                   onClick={() => handleSelect('notCompleted')}
+                  data-testid="return-not-completed-btn"
                   className="
                     w-full p-5 rounded-2xl text-left transition-all duration-300
                     border-2 bg-stone-900/50 border-stone-700/50

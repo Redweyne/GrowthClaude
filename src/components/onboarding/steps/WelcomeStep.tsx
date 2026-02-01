@@ -279,6 +279,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               <Button
                 size="lg"
                 glow
+                data-testid="welcome-continue-btn"
                 onClick={onNext}
                 className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
               >

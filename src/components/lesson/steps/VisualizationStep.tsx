@@ -202,6 +202,7 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
                   }}
                   glow
                   className="w-full group"
+                  data-testid="visualization-continue-btn"
                 >
                   {step.followUpPrompt ? 'Continue to reflect' : 'I have seen'}
                   <ChevronRight

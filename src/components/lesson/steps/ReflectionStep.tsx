@@ -311,13 +311,14 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 `}
               >
                 {/* Textarea */}
-                <textarea
+<textarea
                   ref={textareaRef}
                   value={reflection}
                   onChange={handleChange}
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder={t('lessons.reflection.beginWriting')}
+                  data-testid="reflection-input"
                   className={`
                     w-full h-full min-h-[180px] p-5
                     bg-transparent text-lg text-stone-200
@@ -472,12 +473,13 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               </div>
 
               {/* Continue button */}
-              <Button
+<Button
                 size="lg"
                 onClick={handleSubmit}
                 disabled={!isSubstantial}
                 glow={isSubstantial}
                 className="w-full group"
+                data-testid="reflection-submit-btn"
               >
                 {isReady ? (
                   <>

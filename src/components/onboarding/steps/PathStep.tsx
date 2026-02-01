@@ -281,6 +281,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
         <Button
           size="lg"
           glow
+          data-testid="path-continue-btn"
           onClick={onNext}
           className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
         >

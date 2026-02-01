@@ -229,11 +229,12 @@ export function GoDoItStep({ step, commitment, onDismiss }: GoDoItStepProps) {
                     transition={{ delay: 0.3 }}
                     className="pt-4"
                   >
-                    <Button
+<Button
                       size="lg"
                       onClick={onDismiss}
                       glow
                       className="w-full group"
+                      data-testid="godoit-dismiss-btn"
                     >
                       {step.dismissLabel}
                       <ExternalLink

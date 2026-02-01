@@ -175,6 +175,7 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
                 onClick={onComplete}
                 glow
                 className="w-full group"
+                data-testid="scenario-continue-btn"
               >
                 {step.continueLabel || 'I feel this'}
                 <ChevronRight

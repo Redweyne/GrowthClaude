@@ -93,7 +93,7 @@ export function DailyFlowHome({
   const isComplete = flowState.currentPhase === 'complete';
 
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="relative min-h-screen flex flex-col" data-testid="daily-flow-home">
       {/* Ambient background */}
       <AmbientBackground intensity="normal" particleCount={15} orbCount={3} />
 
@@ -520,11 +520,12 @@ function PhaseCard({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Button
+<Button
                 onClick={onAction}
                 variant="primary"
                 className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
                 glow
+                data-testid={phase === 1 ? (status === 'pending' ? 'continue-lesson-btn' : 'start-lesson-btn') : phase === 2 ? 'start-echo-btn' : 'start-exercises-btn'}
               >
                 {actionLabel}
                 {isRTL ? (

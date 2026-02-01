@@ -342,11 +342,12 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
               >
-                <Button
+<Button
                   size="lg"
                   glow
                   onClick={onNext}
                   sound="tapConfirm"
+                  data-testid="ready-begin-btn"
                   className={`w-full group text-lg py-5 ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
                   <Flame size={22} className={`${isRTL ? 'ml-3' : 'mr-3'} text-amber-300`} />

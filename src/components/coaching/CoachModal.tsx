@@ -166,6 +166,7 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
             <button
               onClick={onDismiss}
               className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-300 transition-colors z-10"
+              data-testid="coach-modal-close-btn"
             >
               <X size={20} />
             </button>
@@ -261,6 +262,7 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
                   glow={iconConfig.celebration}
                   onClick={onDismiss}
                   className="w-full"
+                  data-testid={`coach-modal-btn-${step}`}
                 >
                   {content.buttonText}
                 </Button>

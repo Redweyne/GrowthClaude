@@ -157,7 +157,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   }, [canAdvance, advancePhase]);
 
   return (
-    <div className="relative min-h-[420px] flex flex-col items-center justify-center px-4">
+    <div className="relative min-h-[420px] flex flex-col items-center justify-center px-4" data-testid="xp-celebration">
       {/* Ambient background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -473,10 +473,11 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         transition={{ duration: 0.5 }}
       >
         {phase === 'wisdom' ? (
-          <Button
+<Button
             onClick={advancePhase}
             disabled={!canAdvance}
             className="group"
+            data-testid="reward-continue-btn"
           >
             {t('lessons.reward.continueToMentor')}
             <ChevronRight className={`w-4 h-4 ${isRTL ? 'mr-1 group-hover:-translate-x-1' : 'ml-1 group-hover:translate-x-1'} transition-transform`} />
@@ -486,6 +487,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             onClick={advancePhase}
             disabled={!canAdvance}
             className={`flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors py-3 px-6 ${isRTL ? 'flex-row-reverse' : ''}`}
+            data-testid="reward-phase-btn"
           >
             <span className="text-sm">{t('common.continue')}</span>
             <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />

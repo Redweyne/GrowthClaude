@@ -136,6 +136,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
           return (
             <motion.button
               key={goal.id}
+              data-testid={`goal-${goal.id}`}
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: 0.1 + index * 0.05, ...springs.gentle }}
@@ -277,6 +278,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
           onClick={handleContinue}
           disabled={!transformationGoal}
           glow={!!transformationGoal}
+          data-testid="goal-continue-btn"
           className={`w-full group ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           {transformationGoal ? (

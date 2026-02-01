@@ -106,6 +106,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
         `}>
           <textarea
             ref={textareaRef}
+            data-testid="why-input"
             value={localWhy}
             onChange={(e) => setLocalWhy(e.target.value)}
             onFocus={() => setIsFocused(true)}
@@ -160,6 +161,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
         transition={{ delay: 0.4 }}
       >
         <motion.button
+          data-testid="why-continue-btn"
           onClick={handleContinue}
           disabled={!isValid}
           className={`

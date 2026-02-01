@@ -125,6 +125,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
         {IDENTITY_OPTIONS.map((option, index) => (
           <motion.button
             key={option.id}
+            data-testid={`identity-${option.id}`}
             onClick={() => handleSelect(option.id)}
             className={`w-full p-4 rounded-2xl border transition-all duration-300 ${
               isRTL ? 'text-right' : 'text-left'
@@ -205,6 +206,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
           onClick={handleContinue}
           disabled={!selected}
           glow={!!selected}
+          data-testid="identity-continue-btn"
           className={`flex-1 ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           {t('common.continue')}

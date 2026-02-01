@@ -64,11 +64,8 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
     }
   }, []);
 
-  // Single useLayoutEffect for all setup - runs once
+  // Single useLayoutEffect for all setup
   useLayoutEffect(() => {
-    if (hasMountedRef.current) return;
-    hasMountedRef.current = true;
-
     // Transition from entering to writing after 1.5s
     transitionTimerRef.current = setTimeout(() => {
       setPhase('writing');
@@ -206,13 +203,14 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   `}
                 >
                   {/* Textarea */}
-                  <textarea
+<textarea
                     ref={textareaRef}
                     value={commitment}
                     onChange={handleChange}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     placeholder={step.placeholder || "I will..."}
+                    data-testid="commitment-input"
                     className="
                       w-full h-full min-h-[140px] p-5 pb-14
                       bg-transparent text-lg text-stone-200
@@ -264,12 +262,13 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                 transition={{ delay: 0.4 }}
                 className="mt-6 space-y-4"
               >
-                <Button
+<Button
                   size="lg"
                   onClick={handleSubmit}
                   disabled={!isReady}
                   glow={isReady}
                   className="w-full group"
+                  data-testid="commitment-submit-btn"
                 >
                   {step.continueLabel || 'I commit to this'}
                   <ChevronRight

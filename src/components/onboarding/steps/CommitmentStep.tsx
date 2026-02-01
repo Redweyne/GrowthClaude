@@ -102,6 +102,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         {DAILY_COMMITMENTS.map((commitment, index) => (
           <motion.button
             key={commitment.minutes}
+            data-testid={`commitment-${commitment.minutes}min`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + index * 0.05 }}
@@ -180,6 +181,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         <motion.button
           onClick={handleContinue}
           disabled={!dailyCommitmentMinutes}
+          data-testid="commitment-continue-btn"
           className={`
             w-full py-4 rounded-xl font-medium text-lg transition-all duration-300
             ${dailyCommitmentMinutes

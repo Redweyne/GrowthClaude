@@ -125,6 +125,7 @@ export function LanguageSelector() {
                 return (
                   <motion.button
                     key={locale}
+                    data-testid={`language-${locale}`}
                     onClick={() => handleSelectLanguage(locale)}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -216,6 +217,7 @@ export function LanguageSelector() {
             >
               <Button
                 size="lg"
+                data-testid="language-continue-btn"
                 onClick={handleContinue}
                 disabled={!selectedLanguage}
                 glow={!!selectedLanguage}

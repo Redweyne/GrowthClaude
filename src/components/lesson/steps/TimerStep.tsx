@@ -253,7 +253,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
   };
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8" data-testid="timer-step">
       <motion.div
         className="fixed inset-0 pointer-events-none"
         initial={{ opacity: 0 }}
@@ -315,6 +315,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                   glow
                   onClick={handleStartPractice}
                   className="w-full group"
+                  data-testid="timer-start-btn"
                 >
                   <Play size={20} className="mr-2" />
                   Start Practice
@@ -407,6 +408,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                   onClick={() => handleComplete(true)}
                   glow
                   className="w-full group"
+                  data-testid="timer-complete-btn"
                 >
                   <Check size={18} className="mr-2" />
                   I practiced fully

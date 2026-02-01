@@ -131,6 +131,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
           <input
             ref={inputRef}
             type="text"
+            data-testid="name-input"
             value={localName}
             onChange={(e) => setLocalName(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -205,6 +206,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
         >
           <Button
             size="lg"
+            data-testid="name-continue-btn"
             onClick={handleContinue}
             disabled={!isValid}
             glow={isValid}

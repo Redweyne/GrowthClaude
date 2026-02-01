@@ -277,7 +277,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           />
 
           {/* Message text */}
-          <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-stone-200'}`}>
+          <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-stone-200'}`} data-testid="mentor-response">
             {displayedText}
             {isTyping && (
               <motion.span
@@ -366,6 +366,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               onClick={handleComplete}
               disabled={isTyping}
               glow={!isTyping}
+              data-testid="mentor-complete-btn"
               className={`w-full group ${
                 sageMood === 'celebrating'
                   ? 'bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400'

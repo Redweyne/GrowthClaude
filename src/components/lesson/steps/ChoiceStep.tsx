@@ -80,13 +80,14 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
               className="space-y-4"
             >
               {step.options.map((option, index) => (
-                <motion.button
+<motion.button
                   key={option.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.3 }}
                   onClick={() => handleSelect(option)}
                   disabled={selectedOption !== null}
+                  data-testid={`choice-option-${option.id}`}
                   className={`
                     w-full p-6 rounded-2xl text-left transition-all duration-300
                     border-2 group relative overflow-hidden

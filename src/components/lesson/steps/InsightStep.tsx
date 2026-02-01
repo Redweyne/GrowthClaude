@@ -236,6 +236,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
                 onClick={handleContinue}
                 glow
                 className="w-full group"
+                data-testid="insight-continue-btn"
               >
                 I receive this
                 <ChevronRight
