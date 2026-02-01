@@ -1,1 +1,1 @@
-export { LessonExperience } from './LessonExperience';
+export { FlexibleLessonExperience } from './FlexibleLessonExperience';

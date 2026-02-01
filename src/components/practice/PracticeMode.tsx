@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronRight, X, Sparkles, Zap } from 'lucide-react';
 import { Button, Card, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
 import { getPracticeScenarios } from '@/content/practiceScenarios';
 import { getMentor, getMentorResponses, getRandomMentorResponse } from '@/content/mentor';
@@ -19,7 +19,7 @@ type PracticeStage = 'intro' | 'scenario' | 'response' | 'reflection' | 'complet
 
 export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
   const { completedLessons, completeLesson } = useStore();
-  const { playComplete, playSuccess, playReward } = useSound();
+  const { playComplete, playSuccess, playReward } = useAudio();
   const { t, locale } = useTranslation();
 
   const [stage, setStage] = useState<PracticeStage>('intro');

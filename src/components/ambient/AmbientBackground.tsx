@@ -98,6 +98,10 @@ interface OrbProps {
 }
 
 const FloatingOrb = memo(function FloatingOrb({ color, size, initialX, initialY, duration, delay }: OrbProps) {
+  // Use reduced blur on mobile for better GPU performance
+  const isMobileSsr = typeof navigator !== 'undefined' && /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+  const blurAmount = isMobileSsr ? 20 : 40;
+
   return (
     <motion.div
       className="absolute rounded-full pointer-events-none"
@@ -105,7 +109,8 @@ const FloatingOrb = memo(function FloatingOrb({ color, size, initialX, initialY,
         width: size,
         height: size,
         background: `radial-gradient(circle at 30% 30%, ${color}, transparent 70%)`,
-        filter: 'blur(40px)',
+        filter: `blur(${blurAmount}px)`,
+        willChange: 'transform, opacity',
         left: `${initialX}%`,
         top: `${initialY}%`,
       }}
@@ -183,32 +188,48 @@ export function AmbientBackground({
 }: AmbientBackgroundProps) {
   const [theme, setTheme] = useState<TimeTheme>(getTimeTheme);
   const [mounted, setMounted] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Update theme periodically
+  // Detect mobile and reduced motion preference
   useEffect(() => {
     setMounted(true);
+
+    // Detect mobile via touch capability and screen size
+    const mobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      window.matchMedia('(max-width: 768px)').matches;
+    setIsMobileDevice(mobile);
+
+    // Detect prefers-reduced-motion
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(motionQuery.matches);
+
     const interval = setInterval(() => {
       setTheme(getTimeTheme());
     }, 60000); // Check every minute
     return () => clearInterval(interval);
   }, []);
 
+  // Reduce counts on mobile to prevent GPU overload (especially Android)
+  const effectiveOrbCount = prefersReducedMotion ? 0 : (isMobileDevice ? Math.min(orbCount, 2) : orbCount);
+  const effectiveParticleCount = prefersReducedMotion ? 0 : (isMobileDevice ? Math.min(particleCount, 6) : particleCount);
+
   // Generate stable orbs
   const orbs = useMemo(() => {
-    return Array.from({ length: orbCount }, (_, i) => ({
+    return Array.from({ length: effectiveOrbCount }, (_, i) => ({
       id: i,
       color: theme.orbColors[i % theme.orbColors.length],
-      size: 200 + Math.random() * 300,
+      size: isMobileDevice ? (150 + Math.random() * 150) : (200 + Math.random() * 300),
       initialX: 10 + (i * 30) + Math.random() * 20,
       initialY: 20 + Math.random() * 60,
       duration: 20 + Math.random() * 15,
       delay: i * 2,
     }));
-  }, [orbCount, theme.orbColors]);
+  }, [effectiveOrbCount, theme.orbColors, isMobileDevice]);
 
   // Generate stable particles
   const particles = useMemo(() => {
-    return Array.from({ length: particleCount }, (_, i) => ({
+    return Array.from({ length: effectiveParticleCount }, (_, i) => ({
       id: i,
       color: theme.particleColor,
       size: 2 + Math.random() * 3,
@@ -217,7 +238,7 @@ export function AmbientBackground({
       duration: 8 + Math.random() * 8,
       delay: Math.random() * 10,
     }));
-  }, [particleCount, theme.particleColor]);
+  }, [effectiveParticleCount, theme.particleColor]);
 
   // Intensity multipliers
   const intensityMap = {
@@ -228,6 +249,10 @@ export function AmbientBackground({
   const mult = intensityMap[intensity];
 
   if (!mounted) return null;
+
+  // Reduce blur on mobile for GPU performance
+  const atmosphereBlur = isMobileDevice ? 30 : 60;
+  const accentBlur = isMobileDevice ? 40 : 80;
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: -1 }}>
@@ -251,7 +276,7 @@ export function AmbientBackground({
           className="absolute -top-1/4 -left-1/4 w-[80%] h-[80%] rounded-full transition-colors duration-[3000ms]"
           style={{
             background: `radial-gradient(ellipse at center, ${theme.primary} 0%, transparent 70%)`,
-            filter: 'blur(60px)',
+            filter: `blur(${atmosphereBlur}px)`,
           }}
         />
 
@@ -260,7 +285,7 @@ export function AmbientBackground({
           className="absolute -bottom-1/4 -right-1/4 w-[70%] h-[70%] rounded-full transition-colors duration-[3000ms]"
           style={{
             background: `radial-gradient(ellipse at center, ${theme.secondary} 0%, transparent 70%)`,
-            filter: 'blur(60px)',
+            filter: `blur(${atmosphereBlur}px)`,
           }}
         />
 
@@ -269,7 +294,7 @@ export function AmbientBackground({
           className="absolute top-1/3 left-1/3 w-[50%] h-[50%] rounded-full transition-colors duration-[3000ms]"
           style={{
             background: `radial-gradient(ellipse at center, ${theme.accent} 0%, transparent 70%)`,
-            filter: 'blur(80px)',
+            filter: `blur(${accentBlur}px)`,
           }}
         />
       </motion.div>

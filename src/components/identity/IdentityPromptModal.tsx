@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Send } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import type { IdentityContext } from '@/types/identity';
 import { IDENTITY_PROMPTS, getRandomIdentityPrompt } from '@/types/identity';
 import { useTranslation } from '@/i18n';
@@ -26,7 +26,7 @@ export function IdentityPromptModal({
   milestoneMessage,
 }: IdentityPromptModalProps) {
   const { saveIdentityStatement, name } = useStore();
-  const { playTap, playSparkle } = useSound();
+  const { playTap, playSparkle } = useAudio();
   const { t, isRTL } = useTranslation();
 
   const [statement, setStatement] = useState('');

@@ -382,8 +382,20 @@ export function tryUnlock(): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 let eventListenersAdded = false;
+let lastInteractionWasTouch = false;
 
-function handleUserInteraction(): void {
+function handleUserInteraction(e: Event): void {
+  // On Android/touch devices, touchstart fires before click (~300ms gap).
+  // Ignore the ghost click that follows a touch to prevent double unlock attempts.
+  if (e.type === 'touchstart' || e.type === 'touchend') {
+    lastInteractionWasTouch = true;
+  }
+  if (e.type === 'click' && lastInteractionWasTouch) {
+    // Reset after ignoring the ghost click so future real clicks work (e.g. on hybrid devices)
+    lastInteractionWasTouch = false;
+    return;
+  }
+
   log('User interaction detected');
   tryUnlock();
 }
@@ -406,7 +418,7 @@ export function initAudioEngine(): void {
   if (!eventListenersAdded && typeof document !== 'undefined') {
     const events = ['click', 'touchstart', 'touchend', 'keydown'];
     events.forEach(event => {
-      document.addEventListener(event, handleUserInteraction, { passive: true });
+      document.addEventListener(event, handleUserInteraction as EventListener, { passive: true });
     });
     eventListenersAdded = true;
     log('Event listeners added');
@@ -572,13 +584,30 @@ export const playCelebration = (volume?: number) => {
 
 const MIN_CLEANUP_DELAY = 300; // Minimum delay for iOS cleanup
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PLATFORM DETECTION - exported for use by AudioProvider and other modules
+// ─────────────────────────────────────────────────────────────────────────────
+
 // iOS Safari detection - used for additional safeguards
-function isIOSSafari(): boolean {
+export function isIOSSafari(): boolean {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
   return isIOS && isSafari;
+}
+
+// Android detection - used for Android-specific handling
+export function isAndroid(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /android/i.test(navigator.userAgent);
+}
+
+// General mobile detection
+export function isMobile(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /android|iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
 // Safe Howl creation wrapper to prevent iOS Safari crashes

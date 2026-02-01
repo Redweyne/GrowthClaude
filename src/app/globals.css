@@ -255,6 +255,8 @@ html {
   color-scheme: dark;
   font-size: 16px;
   scroll-behavior: smooth;
+  /* Prevent pull-to-refresh on Android Chrome and overscroll bounce */
+  overscroll-behavior: none;
 }
 
 body {
@@ -283,6 +285,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern" 1, "liga" 1;
+
+  /* Android/Mobile touch behavior */
+  -webkit-tap-highlight-color: transparent; /* Remove blue tap highlight on Android */
+  touch-action: manipulation; /* Prevent double-tap zoom on Android */
+  overscroll-behavior: none; /* Prevent pull-to-refresh and overscroll */
 
   /* Layout */
   min-height: 100vh;
@@ -652,6 +659,7 @@ body {
    ───────────────────────────────────────────────────────────────── */
 
 .gradient-text-gold {
+  color: var(--luminous-gold); /* Fallback for browsers without gradient text support */
   background: var(--gradient-gold);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -659,6 +667,7 @@ body {
 }
 
 .gradient-text-sunset {
+  color: var(--luminous-rose); /* Fallback */
   background: var(--gradient-sunset);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -666,6 +675,7 @@ body {
 }
 
 .gradient-text-wisdom {
+  color: var(--luminous-purple); /* Fallback */
   background: var(--gradient-wisdom);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -673,6 +683,7 @@ body {
 }
 
 .gradient-text-growth {
+  color: var(--luminous-emerald); /* Fallback */
   background: var(--gradient-growth);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -681,6 +692,7 @@ body {
 
 /* Legacy alias */
 .gradient-text-warm {
+  color: var(--luminous-gold); /* Fallback */
   background: var(--gradient-gold);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1388,5 +1400,46 @@ body {
   textarea:focus {
     outline-width: 3px;
     outline-offset: 3px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ANDROID-SPECIFIC FIXES
+   Targets Android Chrome and WebView quirks
+───────────────────────────────────────────────────────────────── */
+
+/* Backdrop-filter fallback for older Android WebView */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-warm,
+  .glass-premium {
+    background: rgba(28, 25, 23, 0.92);
+  }
+}
+
+/* Prevent Android Chrome address bar from causing layout shifts */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* Android-specific text rendering improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Ensure text doesn't get cut off on Android */
+  body {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Prevent font boosting on Android Chrome */
+  p, span, div, li, td, th, label, a, button {
+    max-height: 999999px;
+  }
+
+  /* Smoother scrolling containers on Android */
+  .scroll-container,
+  [style*="overflow"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 }

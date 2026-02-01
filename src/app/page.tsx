@@ -54,6 +54,19 @@ type AppView =
   | 'echo-review';
 
 export default function Home() {
+  // Hydration guard: Zustand persist middleware loads state from localStorage
+  // asynchronously. Before hydration completes, store values are defaults
+  // (e.g., languageSelected=false), causing a flash of the wrong screen.
+  // Wait for hydration before rendering to prevent this.
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    // Zustand persist hydration happens synchronously during module init,
+    // but the React state update is async. Using useEffect ensures we
+    // wait for the first render cycle to complete.
+    setHydrated(true);
+  }, []);
+
   const {
     languageSelected,
     onboardingComplete,
@@ -483,6 +496,18 @@ export default function Home() {
 
   // Calculate total unread count for inbox
   const totalUnreadCount = getUnreadEchoCount() + getUnreadInvitationCount() + getUnreadMessageCount();
+
+  // Wait for Zustand hydration to prevent flash of wrong screen on Android
+  // Shows a blank screen matching the app background while state loads from localStorage
+  if (!hydrated) {
+    return (
+      <div
+        className="min-h-screen"
+        style={{ background: '#050403' }}
+        aria-hidden="true"
+      />
+    );
+  }
 
   // Language selection - FIRST, before anything else
   if (!languageSelected) {

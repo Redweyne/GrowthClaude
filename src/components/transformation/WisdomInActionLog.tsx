@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 
 // Stoic principles to choose from
 const STOIC_PRINCIPLES = [
@@ -71,7 +71,7 @@ interface WisdomInActionLogProps {
 
 export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
   const { saveWisdomInAction, getWisdomInActionLogs } = useStore();
-  const { playSparkle, playCelebration } = useSound();
+  const { playSparkle, playCelebrate } = useAudio();
 
   const [isAdding, setIsAdding] = useState(false);
   const [step, setStep] = useState<'principle' | 'situation' | 'application' | 'outcome'>('principle');
@@ -99,7 +99,7 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
       tags: [selectedPrinciple],
     });
 
-    playCelebration();
+    playCelebrate();
     resetForm();
   };
 

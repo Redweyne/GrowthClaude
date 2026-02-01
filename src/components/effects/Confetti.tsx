@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Particle {
@@ -48,12 +48,22 @@ export function Confetti({
   spread = 180,
   onComplete,
 }: ConfettiProps) {
+  // Detect mobile and reduce particle count for Android performance
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      window.matchMedia('(max-width: 768px)').matches;
+    setIsMobile(mobile);
+  }, []);
+
+  const effectiveCount = isMobile ? Math.min(particleCount, 20) : particleCount;
+
   const particles = useMemo(() => {
     if (!active) return [];
     const newParticles: Particle[] = [];
     const shapes: Array<'circle' | 'square' | 'star'> = ['circle', 'square', 'star'];
 
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < effectiveCount; i++) {
       const angleSeed = pseudoRandom(i + particleCount);
       const velocitySeed = pseudoRandom(i + spread);
       const colorSeed = pseudoRandom(i + colors.length);
@@ -77,7 +87,7 @@ export function Confetti({
     }
 
     return newParticles;
-  }, [active, particleCount, colors, spread]);
+  }, [active, effectiveCount, colors, spread]);
 
   useEffect(() => {
     if (!active) return;
@@ -164,14 +174,21 @@ interface XPOrbProps {
 }
 
 export function XPOrbs({ count, onCollect }: XPOrbProps) {
+  // Reduce orb count on mobile for performance
+  const [isMobileOrb, setIsMobileOrb] = useState(false);
+  useEffect(() => {
+    setIsMobileOrb(/android|iphone|ipad|ipod/i.test(navigator.userAgent));
+  }, []);
+  const maxOrbs = isMobileOrb ? 8 : 15;
+
   const orbs = useMemo(() => (
-    Array.from({ length: Math.min(count, 15) }, (_, i) => ({
+    Array.from({ length: Math.min(count, maxOrbs) }, (_, i) => ({
       id: i,
       delay: i * 0.05,
       offsetX: (pseudoRandom(i + count) - 0.5) * 200,
       offsetY: (pseudoRandom(i + count + 12) - 0.5) * 200,
     }))
-  ), [count]);
+  ), [count, maxOrbs]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

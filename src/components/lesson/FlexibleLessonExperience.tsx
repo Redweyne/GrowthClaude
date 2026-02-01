@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
 import { MuteButton } from '@/components/ui/MuteButton';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import { useContextualAudio } from '@/hooks/useContextualAudio';
 import { useTranslation } from '@/i18n';
 import { getRandomLessonMusic } from '@/lib/audioEngine';
@@ -127,10 +127,10 @@ export function FlexibleLessonExperience({
     saveInProgressLesson,
     clearInProgressLesson,
   } = useStore();
-  const { playComplete, playReward, initAudio } = useSound();
-  
+  const { playComplete, playReward } = useAudio();
+
   // Use contextual audio for lessons - starts music immediately
-  const contextualAudio = useContextualAudio({ 
+  const contextualAudio = useContextualAudio({
     initialScene: 'silent',
     autoStartMusic: true,
   });
@@ -185,11 +185,10 @@ export function FlexibleLessonExperience({
   const handleInitializeAudio = useCallback(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
-    initAudio();
     // Start lesson music with variety - different track each lesson
     contextualAudio.startMusic(selectedMusic);
     contextualAudio.playStepTransition();
-  }, [initAudio, contextualAudio, selectedMusic]);
+  }, [contextualAudio, selectedMusic]);
 
   // Store audio ref for stable cleanup
   useEffect(() => {

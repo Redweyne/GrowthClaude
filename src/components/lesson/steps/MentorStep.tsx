@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Flame, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { SageAvatar, type SageMood } from '@/components/mentor';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 import {
@@ -59,7 +59,7 @@ const springs = {
 
 export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
   const { name, currentStreak } = useStore();
-  const { playTap, playSparkle, playCelebration } = useSound();
+  const { playTap, playSparkle, playCelebrate } = useAudio();
   const { t, isRTL, locale } = useTranslation();
 
   const fallbackWisdom = useMemo(() => getFallbackWisdom(locale), [locale]);
@@ -188,12 +188,12 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
   const handleComplete = useCallback(() => {
     playTap();
     if (sageMood === 'celebrating') {
-      playCelebration();
+      playCelebrate();
     } else {
       playSparkle();
     }
     onComplete();
-  }, [playTap, playSparkle, playCelebration, sageMood, onComplete]);
+  }, [playTap, playSparkle, playCelebrate, sageMood, onComplete]);
 
   // Handle retry
   const handleRetry = useCallback(() => {

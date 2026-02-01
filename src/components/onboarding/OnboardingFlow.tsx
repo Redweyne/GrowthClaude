@@ -59,19 +59,24 @@ export function OnboardingFlow() {
   }, [audio]);
 
   // Start audio on very first interaction (any touch/click)
+  // On Android, touchstart fires before click. Use { once: true } and a flag
+  // to ensure only one event triggers audio initialization.
   useEffect(() => {
     setMounted(true);
-    
-    // Listen for first interaction to start audio
+    let handled = false;
+
     const handleInteraction = () => {
+      if (handled) return;
+      handled = true;
       initializeAudio();
+      // Clean up both listeners after first interaction
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);
     };
-    
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('touchstart', handleInteraction);
-    
+
+    document.addEventListener('click', handleInteraction, { once: true });
+    document.addEventListener('touchstart', handleInteraction, { once: true });
+
     return () => {
       document.removeEventListener('click', handleInteraction);
       document.removeEventListener('touchstart', handleInteraction);

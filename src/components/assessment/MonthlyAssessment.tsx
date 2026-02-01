@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Heart, Target, Eye, Brain, TrendingUp, Sparkles, Check } from 'lucide-react';
 import { Button, Card } from '@/components/ui';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import { getAssessmentQuestions, getFinalReflectionPrompt, getDimensionColor } from '@/content/monthlyAssessment';
 import { useTranslation } from '@/i18n';
 
@@ -28,7 +28,7 @@ const DimensionIcon = ({ dimension, size = 24 }: { dimension: string; size?: num
 
 export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps) {
   const { name, saveMonthlyAssessment } = useStore();
-  const { playTap, playSparkle, playCelebration } = useSound();
+  const { playTap, playSparkle, playCelebrate } = useAudio();
   const { t, locale } = useTranslation();
 
   const assessmentQuestions = useMemo(() => getAssessmentQuestions(locale), [locale]);
@@ -76,7 +76,7 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    playCelebration();
+    playCelebrate();
 
     // Save assessment to store
     saveMonthlyAssessment({

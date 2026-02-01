@@ -24,6 +24,7 @@ import {
   initAudioEngine,
   subscribeToState,
   tryUnlock,
+  isIOSSafari,
   playUI as enginePlayUI,
   startAmbientMusic as engineStartMusic,
   stopAmbientMusic as engineStopMusic,
@@ -211,13 +212,26 @@ export function AudioProvider({ children }: AudioProviderProps) {
     };
   }, []);
 
-  // DISABLED: Visibility change listener was causing iOS Safari page crashes
-  // The tryUnlock() call on visibility change was creating audio context conflicts
-  // that caused the page to restart. Audio will resume automatically when the
-  // user interacts with the page again.
-  //
-  // If audio needs to be resumed after returning to the tab, the user can
-  // tap anywhere on the screen to trigger the audio unlock sequence.
+  // Re-enable visibility change handler for non-iOS browsers (Android, desktop Chrome, etc.)
+  // This was previously disabled globally because it caused iOS Safari page crashes.
+  // On Android, audio context gets suspended when the app is backgrounded and needs
+  // to be resumed when the user returns.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    // Skip for iOS Safari which has known audio context conflicts on visibility change
+    if (isIOSSafari()) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Resume audio context when returning to the page
+        tryUnlock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   // Sync sound enabled state to stop audio when disabled
   useEffect(() => {

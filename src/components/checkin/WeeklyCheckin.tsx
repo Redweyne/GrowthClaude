@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ChevronRight, X, Sparkles, Zap, Heart } from 'lucide-react';
 import { Button, Card, ProgressBar } from '@/components/ui';
 import { useStore } from '@/store/useStore';
-import { useSound } from '@/hooks/useSound';
+import { useAudio } from '@/hooks/useAudio';
 import { getWeeklyCheckinPrompts, getRandomCheckinMessage, type CheckinPrompt } from '@/content/weeklyCheckin';
 import { getMentor } from '@/content/mentor';
 import { useTranslation } from '@/i18n';
@@ -25,7 +25,7 @@ interface ResponseData {
 
 export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
   const { name, completeWeeklyCheckin, getWeekNumber, weeklyCheckins } = useStore();
-  const { playComplete, playSuccess, playReward } = useSound();
+  const { playComplete, playSuccess, playReward } = useAudio();
   const { t, isRTL, locale } = useTranslation();
 
   const [stage, setStage] = useState<CheckinStage>('intro');
