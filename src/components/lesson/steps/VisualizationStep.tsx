@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import type { VisualizationStep as VisualizationStepType } from '@/types/lessons';
 
 interface VisualizationStepProps {
@@ -54,6 +55,7 @@ const MIN_INSTRUCTION_TIME = 2500; // Minimum time per instruction
 const MAX_INSTRUCTION_TIME = 6000; // Maximum time per instruction
 
 export function VisualizationStep({ step, onComplete }: VisualizationStepProps) {
+  const { t } = useTranslation();
   const [visibleInstructions, setVisibleInstructions] = useState(0);
   const [showButton, setShowButton] = useState(false);
   const hasPlayedChimeRef = useRef(false);
@@ -204,7 +206,9 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
                   className="w-full group"
                   data-testid="visualization-continue-btn"
                 >
-                  {step.followUpPrompt ? 'Continue to reflect' : 'I have seen'}
+                  {step.followUpPrompt
+                    ? t('lessons.visualization.continueToReflect')
+                    : t('lessons.visualization.continue')}
                   <ChevronRight
                     size={18}
                     className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

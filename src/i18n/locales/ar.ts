@@ -736,6 +736,7 @@ const ar = {
       breathe: 'تنفس',
       contemplate: 'تأمل',
       timeRemaining: 'الوقت المتبقي',
+      startPractice: 'ابدأ التمرين',
     },
     // Stage labels for LessonExperience progress indicator
     stages: {
@@ -767,6 +768,22 @@ const ar = {
       practice: 'الممارسة',
       sageWisdom: 'حكمة الحكيم',
       celebration: 'الاحتفال',
+    },
+    scenario: {
+      continue: 'أشعر بهذا',
+    },
+    visualization: {
+      continue: 'لقد رأيت',
+      continueToReflect: 'متابعة التأمل',
+    },
+    commitment: {
+      placeholder: 'سأفعل...',
+      word: 'كلمة',
+      words: 'كلمات',
+      readyToCommit: 'جاهز للالتزام',
+      moreNeeded: 'يتبقى {count}',
+      commitButton: 'ألتزم بهذا',
+      pressToSubmit: 'اضغط {key}+إدخال للمتابعة',
     },
     // Wisdom Step
     wisdom: {

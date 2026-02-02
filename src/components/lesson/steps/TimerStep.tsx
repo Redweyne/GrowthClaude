@@ -16,6 +16,7 @@ import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, ChevronRight, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import type { TimerStep as TimerStepType } from '@/types/lessons';
 
 interface TimerStepProps {
@@ -30,6 +31,7 @@ function formatTime(seconds: number): string {
 }
 
 export function TimerStep({ step, onComplete }: TimerStepProps) {
+  const { t } = useTranslation();
   // Core state - kept minimal
   const [phase, setPhase] = useState<'preparing' | 'practicing' | 'complete'>('preparing');
   const [timeRemaining, setTimeRemaining] = useState(step.durationSeconds);
@@ -318,7 +320,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                   data-testid="timer-start-btn"
                 >
                   <Play size={20} className="mr-2" />
-                  Start Practice
+                  {t('lessons.timer.startPractice')}
                   <ChevronRight
                     size={18}
                     className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

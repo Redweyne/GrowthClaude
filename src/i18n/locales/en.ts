@@ -736,6 +736,7 @@ const en = {
       breathe: 'Breathe',
       contemplate: 'Contemplate',
       timeRemaining: 'Time remaining',
+      startPractice: 'Start Practice',
     },
     // Stage labels for LessonExperience progress indicator
     stages: {
@@ -767,6 +768,22 @@ const en = {
       practice: 'Practice',
       sageWisdom: 'Sage Wisdom',
       celebration: 'Celebration',
+    },
+    scenario: {
+      continue: 'Continue',
+    },
+    visualization: {
+      continue: 'I have seen',
+      continueToReflect: 'Continue to reflect',
+    },
+    commitment: {
+      placeholder: 'I will...',
+      word: 'word',
+      words: 'words',
+      readyToCommit: 'Ready to commit',
+      moreNeeded: '{count} more needed',
+      commitButton: 'I commit to this',
+      pressToSubmit: 'Press {key}+Enter to continue',
     },
     // Wisdom Step
     wisdom: {

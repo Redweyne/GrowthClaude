@@ -16,6 +16,7 @@ import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Target } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import type { CommitmentStep as CommitmentStepType } from '@/types/lessons';
 
 interface CommitmentStepProps {
@@ -31,6 +32,7 @@ const DEFAULT_GUIDANCE = [
 ];
 
 export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStepProps) {
+  const { t } = useTranslation();
   const [commitment, setCommitment] = useState('');
   const [phase, setPhase] = useState<'entering' | 'writing' | 'confirming'>('entering');
   const [isFocused, setIsFocused] = useState(false);
@@ -209,7 +211,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     onChange={handleChange}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    placeholder={step.placeholder || "I will..."}
+                    placeholder={step.placeholder || t('lessons.commitment.placeholder')}
                     data-testid="commitment-input"
                     className="
                       w-full h-full min-h-[140px] p-5 pb-14
@@ -226,13 +228,17 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     <span className={`text-sm transition-colors ${
                       isReady ? 'text-emerald-400' : 'text-stone-500'
                     }`}>
-                      {wordCount} {wordCount === 1 ? 'word' : 'words'}
+                      {wordCount} {wordCount === 1
+                        ? t('lessons.commitment.word')
+                        : t('lessons.commitment.words')}
                     </span>
 
                     <span className={`text-sm transition-colors ${
                       isReady ? 'text-emerald-400' : 'text-stone-600'
                     }`}>
-                      {isReady ? 'Ready to commit' : `${minimumWords - wordCount} more needed`}
+                      {isReady
+                        ? t('lessons.commitment.readyToCommit')
+                        : t('lessons.commitment.moreNeeded', { count: minimumWords - wordCount })}
                     </span>
                   </div>
                 </div>
@@ -270,7 +276,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   className="w-full group"
                   data-testid="commitment-submit-btn"
                 >
-                  {step.continueLabel || 'I commit to this'}
+                  {step.continueLabel || t('lessons.commitment.commitButton')}
                   <ChevronRight
                     size={18}
                     className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
@@ -287,7 +293,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                         exit={{ opacity: 0 }}
                         className="text-xs text-stone-600"
                       >
-                        Press ⌘+Enter to continue
+                        {t('lessons.commitment.pressToSubmit', { key: '⌘' })}
                       </motion.p>
                     )}
                   </AnimatePresence>

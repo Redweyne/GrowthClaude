@@ -14,6 +14,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import type { ScenarioStep as ScenarioStepType } from '@/types/lessons';
 
 interface ScenarioStepProps {
@@ -48,6 +49,7 @@ const MOOD_COLORS = {
 type Phase = 'narrative' | 'subtext' | 'bridgeQuestion' | 'ready';
 
 export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('narrative');
   const mountedRef = useRef(true);
 
@@ -170,19 +172,19 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="pt-4"
             >
-              <Button
-                size="lg"
-                onClick={onComplete}
-                glow
-                className="w-full group"
-                data-testid="scenario-continue-btn"
-              >
-                {step.continueLabel || 'I feel this'}
-                <ChevronRight
-                  size={18}
-                  className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
-                />
-              </Button>
+                <Button
+                  size="lg"
+                  onClick={onComplete}
+                  glow
+                  className="w-full group"
+                  data-testid="scenario-continue-btn"
+                >
+                  {step.continueLabel || t('lessons.scenario.continue')}
+                  <ChevronRight
+                    size={18}
+                    className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  />
+                </Button>
             </motion.div>
           )}
         </div>

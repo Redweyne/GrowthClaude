@@ -21,6 +21,101 @@ function seed(lessonId: string, content: string, gender: GenderIdentity): SeedRe
 const SEED_REFLECTIONS_BY_LOCALE: Record<Locale, SeedReflection[]> = {
   en: [
   // ─────────────────────────────────────────────────────────────────────────
+  // Lesson 1: The Instant Reframe (modern-1-instant-reframe)
+  // ─────────────────────────────────────────────────────────────────────────
+  seed(
+    'modern-1-instant-reframe',
+    `I kept replaying a conversation that hurt me. Today I asked the question: is any part of this in my control? The answer was yes — I can choose to say how I feel instead of looping. I sent the text. The weight dropped a little.`,
+    'sister'
+  ),
+  seed(
+    'modern-1-instant-reframe',
+    `The thing that surprised me was how freeing “not in my control” felt. I stopped fighting the weather, the delay, the other people. I just focused on my next small action. My shoulders actually relaxed.`,
+    'brother'
+  ),
+  seed(
+    'modern-1-instant-reframe',
+    `I realized I keep trying to control someone else's reaction to me. I can't. But I can control my preparation and my tone. That's the part I own. The rest is theirs.`,
+    'traveler'
+  ),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Lesson 2: The Power of Tiny (modern-2-power-of-tiny)
+  // ─────────────────────────────────────────────────────────────────────────
+  seed(
+    'modern-2-power-of-tiny',
+    `I did the 2-minute version and it felt almost laughable. Two pushups. But once I started, I did more. And even if I hadn't, I still showed up. That's new for me.`,
+    'brother'
+  ),
+  seed(
+    'modern-2-power-of-tiny',
+    `I wrote one sentence in my journal: “I feel nervous but hopeful.” That's it. It took 30 seconds. Somehow that tiny action broke the perfectionism spell.`,
+    'sister'
+  ),
+  seed(
+    'modern-2-power-of-tiny',
+    `The identity part landed. If I do a tiny habit daily, I'm not “trying,” I'm becoming. I want to become someone who keeps promises to myself, even tiny ones.`,
+    'traveler'
+  ),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Lesson 3: The Hidden Gift (modern-3-obstacle-opportunity)
+  // ─────────────────────────────────────────────────────────────────────────
+  seed(
+    'modern-3-obstacle-opportunity',
+    `I didn't get the thing I wanted and it stung. But the question “what is this trying to teach me?” changed the temperature. The answer was: patience and a better plan.`,
+    'sister'
+  ),
+  seed(
+    'modern-3-obstacle-opportunity',
+    `My difficult client is forcing me to get clear. Clear boundaries, clear scope, clear communication. I hate the stress but I can see how it's making me sharper.`,
+    'brother'
+  ),
+  seed(
+    'modern-3-obstacle-opportunity',
+    `I thought the obstacle was a wall. Today it felt more like a teacher. Not a gentle one, but a real one. I'm learning to look for the lesson instead of just the pain.`,
+    'traveler'
+  ),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Lesson 4: Own Your Morning (modern-4-morning-mindset)
+  // ─────────────────────────────────────────────────────────────────────────
+  seed(
+    'modern-4-morning-mindset',
+    `I didn't touch my phone for the first two minutes. Just breathed and asked what might go wrong today. It sounds small, but I walked into my morning calmer and less reactive.`,
+    'sister'
+  ),
+  seed(
+    'modern-4-morning-mindset',
+    `I anticipated the meeting that usually stresses me out. When it came, it didn't hit as hard. I was already prepared. That felt like a quiet superpower.`,
+    'brother'
+  ),
+  seed(
+    'modern-4-morning-mindset',
+    `I always start the day behind. Today I claimed the first minute for myself. It wasn't dramatic, but it shifted everything.`,
+    'traveler'
+  ),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Lesson 5: The Gratitude Shift (modern-5-gratitude-shift)
+  // ─────────────────────────────────────────────────────────────────────────
+  seed(
+    'modern-5-gratitude-shift',
+    `I imagined my partner gone. It hit me hard. The messy shoes suddenly felt so small compared to the gift of having them here.`,
+    'brother'
+  ),
+  seed(
+    'modern-5-gratitude-shift',
+    `I pictured losing my health for a minute. It made me grateful for boring things like walking, breathing, making tea. The gratitude felt real, not forced.`,
+    'sister'
+  ),
+  seed(
+    'modern-5-gratitude-shift',
+    `The negative visualization felt intense, but then I opened my eyes and everything was still here. That rush of relief turned into real appreciation.`,
+    'traveler'
+  ),
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Lesson 1: The Compound Effect (modern-wisdom-1)
   // ─────────────────────────────────────────────────────────────────────────
   seed(
@@ -186,6 +281,101 @@ const SEED_REFLECTIONS_BY_LOCALE: Record<Locale, SeedReflection[]> = {
   ],
   fr: [
     // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 1: The Instant Reframe (modern-1-instant-reframe)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-1-instant-reframe',
+      "Je rejouais une conversation qui m'avait blessé. Aujourd'hui j'ai posé la question : est-ce que j'y peux quelque chose ? La réponse était oui — je peux dire ce que je ressens au lieu de ruminer. J'ai envoyé le message. Le poids a un peu baissé.",
+      'sister'
+    ),
+    seed(
+      'modern-1-instant-reframe',
+      "Ce qui m'a surpris, c'est à quel point dire « ce n'est pas sous mon contrôle » libère. J'ai arrêté de me battre contre la météo, le retard, les autres. Je me suis concentré sur ma prochaine petite action. Mes épaules se sont relâchées.",
+      'brother'
+    ),
+    seed(
+      'modern-1-instant-reframe',
+      "Je réalise que j'essaie de contrôler la réaction de quelqu'un d'autre. Je ne peux pas. Mais je peux contrôler ma préparation et mon ton. Ça, ça m'appartient.",
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 2: The Power of Tiny (modern-2-power-of-tiny)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-2-power-of-tiny',
+      "J'ai fait la version 2 minutes et ça me semblait ridicule. Deux pompes. Mais une fois commencé, j'en ai fait plus. Et même si je n'en avais pas fait plus, j'ai quand même été au rendez-vous. C'est nouveau pour moi.",
+      'brother'
+    ),
+    seed(
+      'modern-2-power-of-tiny',
+      "J'ai écrit une seule phrase dans mon journal : « Je suis nerveuse mais pleine d'espoir. » Trente secondes. Et pourtant, ça a cassé le perfectionnisme.",
+      'sister'
+    ),
+    seed(
+      'modern-2-power-of-tiny',
+      "La partie identité m'a frappé. Si je fais une petite habitude chaque jour, je ne « tente » pas — je deviens. Je veux devenir quelqu'un qui tient ses promesses, même minuscules.",
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 3: The Hidden Gift (modern-3-obstacle-opportunity)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-3-obstacle-opportunity',
+      "Je n'ai pas obtenu ce que je voulais et ça a piqué. Mais demander « qu'est-ce que ça m'apprend ? » a changé la température. La réponse : patience et meilleur plan.",
+      'sister'
+    ),
+    seed(
+      'modern-3-obstacle-opportunity',
+      "Mon client difficile m'oblige à être clair. Limites claires, périmètre clair, communication claire. Je déteste le stress, mais je vois comment ça m'affûte.",
+      'brother'
+    ),
+    seed(
+      'modern-3-obstacle-opportunity',
+      "Je croyais que l'obstacle était un mur. Aujourd'hui il ressemblait plutôt à un professeur. Pas un doux, mais un vrai. J'apprends à chercher la leçon, pas seulement la douleur.",
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 4: Own Your Morning (modern-4-morning-mindset)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-4-morning-mindset',
+      "Je n'ai pas touché mon téléphone pendant les deux premières minutes. Juste respirer et penser à ce qui pourrait mal se passer aujourd'hui. Ce n'est pas grand-chose, mais mon matin était plus calme et moins réactif.",
+      'sister'
+    ),
+    seed(
+      'modern-4-morning-mindset',
+      "J'ai anticipé la réunion qui me stresse d'habitude. Quand elle est arrivée, ça a moins frappé. J'étais déjà prêt. C'était comme un super-pouvoir discret.",
+      'brother'
+    ),
+    seed(
+      'modern-4-morning-mindset',
+      "Je commence toujours la journée en retard. Aujourd'hui j'ai repris la première minute pour moi. Ce n'était pas spectaculaire, mais ça a tout déplacé.",
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 5: The Gratitude Shift (modern-5-gratitude-shift)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-5-gratitude-shift',
+      "J'ai imaginé mon/ma partenaire absent(e). Ça m'a retourné. Les chaussures en désordre paraissaient minuscules face au cadeau de l'avoir là.",
+      'brother'
+    ),
+    seed(
+      'modern-5-gratitude-shift',
+      "J'ai imaginé perdre ma santé une minute. Ça m'a rendu reconnaissante pour des choses banales comme marcher, respirer, faire du thé. La gratitude était réelle, pas forcée.",
+      'sister'
+    ),
+    seed(
+      'modern-5-gratitude-shift',
+      "La visualisation négative a été intense, puis j'ai ouvert les yeux et tout était encore là. Ce soulagement est devenu de la vraie appréciation.",
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Lesson 1: The Compound Effect (modern-wisdom-1)
     // ─────────────────────────────────────────────────────────────────────────
     seed(
@@ -350,6 +540,101 @@ const SEED_REFLECTIONS_BY_LOCALE: Record<Locale, SeedReflection[]> = {
     ),
   ],
   ar: [
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 1: The Instant Reframe (modern-1-instant-reframe)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-1-instant-reframe',
+      'كنت أعيد محادثة آذتني مراراً. اليوم سألت السؤال: هل هناك شيء تحت سيطرتي؟ الإجابة كانت نعم — يمكنني أن أقول ما أشعر به بدل الدوران. أرسلت الرسالة. خفّ العبء قليلاً.',
+      'sister'
+    ),
+    seed(
+      'modern-1-instant-reframe',
+      'المدهش أن قول «هذا خارج سيطرتي» كان مريحاً. توقفت عن مقاومة الطقس والتأخير والناس. ركّزت على فعلي الصغير التالي. فعلاً كتفاي ارتخيا.',
+      'brother'
+    ),
+    seed(
+      'modern-1-instant-reframe',
+      'أدركت أنني أحاول التحكم في رد فعل شخص آخر. لا أستطيع. لكنني أستطيع التحكم في تحضيري ونبرتي. هذا الجزء لي.',
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 2: The Power of Tiny (modern-2-power-of-tiny)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-2-power-of-tiny',
+      'فعلت نسخة الدقيقتين وشعرت أنها مضحكة. تمرينتا ضغط فقط. لكن بعدما بدأت، فعلت أكثر. وحتى لو لم أفعل، فقد حضرت. هذا جديد علي.',
+      'brother'
+    ),
+    seed(
+      'modern-2-power-of-tiny',
+      'كتبت جملة واحدة في يومياتي: «أنا متوترة لكني آمل». ثلاثون ثانية. ومع ذلك كسرت سحر الكمال.',
+      'sister'
+    ),
+    seed(
+      'modern-2-power-of-tiny',
+      'جزء الهوية لمسني. إذا فعلت عادة صغيرة يومياً، فأنا لا «أحاول» — أنا أصبح. أريد أن أصبح شخصاً يحافظ على وعوده لنفسه، ولو كانت صغيرة.',
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 3: The Hidden Gift (modern-3-obstacle-opportunity)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-3-obstacle-opportunity',
+      'لم أحصل على ما أردته وكان ذلك مؤلماً. لكن سؤال «ماذا يعلّمني هذا؟» غيّر المزاج. الإجابة: صبر وخطة أفضل.',
+      'sister'
+    ),
+    seed(
+      'modern-3-obstacle-opportunity',
+      'العميل الصعب يجبرني على الوضوح. حدود واضحة، نطاق واضح، تواصل واضح. أكره الضغط، لكنني أرى كيف يجعلني أدق.',
+      'brother'
+    ),
+    seed(
+      'modern-3-obstacle-opportunity',
+      'ظننت أن العائق جدار. اليوم بدا كأنه معلّم. ليس لطيفاً، لكنه حقيقي. أتعلم البحث عن الدرس لا عن الألم فقط.',
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 4: Own Your Morning (modern-4-morning-mindset)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-4-morning-mindset',
+      'لم ألمس هاتفي في الدقيقتين الأوليين. فقط تنفّست وسألت ما الذي قد يزعجني اليوم. الأمر بسيط، لكن صباحي كان أهدأ وأقل تفاعلاً.',
+      'sister'
+    ),
+    seed(
+      'modern-4-morning-mindset',
+      'توقعت الاجتماع الذي يضغطني عادة. عندما جاء، لم يضربني بقوة. كنت مستعداً. شعور يشبه قوة هادئة.',
+      'brother'
+    ),
+    seed(
+      'modern-4-morning-mindset',
+      'أنا دائماً أبدأ اليوم متأخراً. اليوم أخذت الدقيقة الأولى لنفسي. لم يكن كبيراً، لكنه غيّر كل شيء.',
+      'traveler'
+    ),
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lesson 5: The Gratitude Shift (modern-5-gratitude-shift)
+    // ─────────────────────────────────────────────────────────────────────────
+    seed(
+      'modern-5-gratitude-shift',
+      'تخيلت شريكي غير موجود. ضربني ذلك بقوة. الفوضى بدت صغيرة جداً أمام نعمة وجوده.',
+      'brother'
+    ),
+    seed(
+      'modern-5-gratitude-shift',
+      'تخيلت فقدان صحتي لدقيقة. جعلني ذلك ممتنة لأشياء مملة مثل المشي والتنفس وتحضير الشاي. الامتنان كان حقيقياً، لا مصطنعاً.',
+      'sister'
+    ),
+    seed(
+      'modern-5-gratitude-shift',
+      'التصور السلبي كان مكثفاً، ثم فتحت عيني وكل شيء ما زال هنا. ذلك الارتياح تحول إلى تقدير حقيقي.',
+      'traveler'
+    ),
+
     // ─────────────────────────────────────────────────────────────────────────
     // Lesson 1: The Compound Effect (modern-wisdom-1)
     // ─────────────────────────────────────────────────────────────────────────

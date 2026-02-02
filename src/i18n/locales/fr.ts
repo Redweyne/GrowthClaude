@@ -736,6 +736,7 @@ const fr = {
       breathe: 'Respirez',
       contemplate: 'Contemplez',
       timeRemaining: 'Temps restant',
+      startPractice: 'Commencer la pratique',
     },
     // Stage labels for LessonExperience progress indicator
     stages: {
@@ -767,6 +768,22 @@ const fr = {
       practice: 'Pratique',
       sageWisdom: 'Sagesse du Sage',
       celebration: 'Célébration',
+    },
+    scenario: {
+      continue: 'Je le ressens',
+    },
+    visualization: {
+      continue: "Je l'ai vu",
+      continueToReflect: 'Continuer la réflexion',
+    },
+    commitment: {
+      placeholder: 'Je vais...',
+      word: 'mot',
+      words: 'mots',
+      readyToCommit: 'Prêt(e) à m’engager',
+      moreNeeded: 'Encore {count} requis',
+      commitButton: 'Je m’engage',
+      pressToSubmit: 'Appuyez sur {key}+Entrée pour continuer',
     },
     // Wisdom Step
     wisdom: {
