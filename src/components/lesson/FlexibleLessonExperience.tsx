@@ -108,6 +108,8 @@ export function FlexibleLessonExperience({
     resumeProgress?.actionCompleted || false
   );
   const [xpEarned, setXpEarned] = useState(0);
+  // Track if user is retrying after low-quality reflection feedback
+  const [isRetryingReflection, setIsRetryingReflection] = useState(false);
 
   const xpEarnedRef = useRef(0);
   const hasInitializedRef = useRef(false);
@@ -387,7 +389,7 @@ export function FlexibleLessonExperience({
       actionCompleted,
     });
 
-    // Calculate XP
+    // Calculate XP (always calculate to get correct value based on reflection quality)
     const baseXp = lesson.xpReward || 15;
     let xp = baseXp;
 
@@ -408,6 +410,18 @@ export function FlexibleLessonExperience({
     setXpEarned(xp);
     xpEarnedRef.current = xp;
 
+    // If retrying after low-quality feedback, skip reward phase and go directly to mentor
+    // The user already saw the celebration on their first attempt
+    if (isRetryingReflection) {
+      const mentorStep = lesson.steps.find(s => s.type === 'mentor');
+      if (mentorStep) {
+        contextualAudio.playStepComplete();
+        goToStep(mentorStep.id);
+        return;
+      }
+    }
+
+    // First attempt: show full celebration
     contextualAudio.playStepComplete();
     contextualAudio.playLessonComplete();
     // Transition to reward music when ENTERING reward phase (not when leaving)
@@ -415,7 +429,7 @@ export function FlexibleLessonExperience({
     goToNextStep();
   }, [
     lesson, actionCompleted, currentStreak, saveReflection,
-    contextualAudio, goToNextStep
+    contextualAudio, goToNextStep, isRetryingReflection, goToStep
   ]);
 
   const handleRewardComplete = useCallback(() => {
@@ -439,6 +453,8 @@ export function FlexibleLessonExperience({
     const reflectionStep = lesson.steps.find(s => s.type === 'reflection');
     if (reflectionStep) {
       setWritings(prev => ({ ...prev, reflection: '' }));
+      // Mark as retrying so we skip the reward phase on the second attempt
+      setIsRetryingReflection(true);
       goToStep(reflectionStep.id);
     }
   }, [lesson.steps, goToStep]);

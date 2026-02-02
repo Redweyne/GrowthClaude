@@ -283,12 +283,12 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               {completionMessage}
             </motion.p>
 
-            {/* XP indicator - subtle */}
+            {/* XP indicator - subtle, with proper spacing */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
-              className="text-sm text-zinc-600 mt-8"
+              className="text-sm text-zinc-500 mt-12"
             >
               +{safeXpEarned} {t('lessons.reward.growth')}
             </motion.p>
@@ -357,7 +357,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             >
               {/* Flame icon with glow */}
               <motion.div
-                className="relative mb-4"
+                className="relative mb-6"
                 animate={isFirstLessonToday ? {
                   scale: [1, 1.1, 1],
                 } : {}}
@@ -384,7 +384,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               <span className="text-4xl font-bold text-white tracking-tight">
                 {streakInfo.title}
               </span>
-              <p className="text-zinc-400 mt-2 text-lg">{streakInfo.subtitle}</p>
+              <p className="text-zinc-400 mt-3 text-lg">{streakInfo.subtitle}</p>
             </motion.div>
 
             {/* Progress bar (if applicable) */}
@@ -420,14 +420,14 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center text-center max-w-lg"
+            className="flex flex-col items-center justify-center text-center max-w-lg px-4"
           >
             {/* Decorative quote marks */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 0.15, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-8xl font-serif text-amber-500 mb-4 select-none"
+              className="text-6xl font-serif text-amber-500 mb-2 select-none leading-none"
             >
               &ldquo;
             </motion.div>
@@ -437,7 +437,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-xl md:text-2xl text-zinc-200 font-light leading-relaxed italic -mt-8"
+              className="text-xl md:text-2xl text-zinc-200 font-light leading-relaxed italic"
             >
               {wisdomQuote.text}
             </motion.blockquote>
@@ -447,7 +447,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
-              className="text-zinc-500 mt-6 text-sm tracking-wide"
+              className="text-zinc-500 mt-8 text-sm tracking-wide"
             >
               — {wisdomQuote.author}
             </motion.p>
@@ -457,7 +457,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
-              className="text-zinc-700 text-xs mt-10"
+              className="text-zinc-700 text-xs mt-12"
             >
               {lesson.title}
             </motion.p>
