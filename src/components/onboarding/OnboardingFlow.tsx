@@ -44,18 +44,18 @@ export function OnboardingFlow() {
   
   // Audio integration - use new standalone background music system
   const audio = useAudio();
-  const audioStartedRef = useRef(false);
+  const [audioStarted, setAudioStarted] = useState(false);
   const prevStepRef = useRef(onboardingStep);
 
   // Start background music on first user interaction
   // This needs to happen on interaction because browsers block autoplay
   const initializeAudio = useCallback(() => {
-    if (!audioStartedRef.current) {
-      audioStartedRef.current = true;
+    if (!audioStarted) {
+      setAudioStarted(true);
       // Start background music using new system
       backgroundMusic.start();
     }
-  }, []);
+  }, [audioStarted]);
 
   // Start audio on very first interaction (any touch/click)
   // On Android, touchstart fires before click. Use { once: true } and a flag
@@ -86,9 +86,9 @@ export function OnboardingFlow() {
   useEffect(() => {
     return () => {
       // Only stop if audio was actually started during onboarding
-      if (audioStartedRef.current) {
-        backgroundMusic.stop();
-      }
+      // Note: We always call stop() since the component unmounting
+      // means we're leaving onboarding
+      backgroundMusic.stop();
     };
   }, []);
 
@@ -311,7 +311,7 @@ export function OnboardingFlow() {
       </div>
 
       {/* Music controls - mute and change track */}
-      <MusicControls show={audioStartedRef.current} />
+      <MusicControls show={audioStarted} />
 
       {/* Bottom decorative gradient */}
       <div

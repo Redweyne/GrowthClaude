@@ -12,14 +12,23 @@
  *   backgroundMusic.toggleMute();
  */
 
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
+
+// Get base path for assets (handles production deployment at /growthmvp)
+const getBasePath = () => {
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_BASE_PATH || '';
+  }
+  return '';
+};
 
 // Available music tracks from /audio/writing/
+// rain.mp3 is first because it's the smallest (6MB) - faster to start
 const MUSIC_TRACKS = [
-  { name: 'forest', path: '/audio/writing/forest.mp3', isLong: true },
-  { name: 'lessonDeep', path: '/audio/writing/lessonDeep.mp3', isLong: true },
   { name: 'rain', path: '/audio/writing/rain.mp3', isLong: false },
+  { name: 'forest', path: '/audio/writing/forest.mp3', isLong: true },
   { name: 'visualization', path: '/audio/writing/visualization.mp3', isLong: true },
+  { name: 'lessonDeep', path: '/audio/writing/lessonDeep.mp3', isLong: true },
 ] as const;
 
 type TrackName = typeof MUSIC_TRACKS[number]['name'];
@@ -30,6 +39,7 @@ interface MusicState {
   isPlaying: boolean;
   isMuted: boolean;
   volume: number;
+  currentPlayId: number | null;
 }
 
 const state: MusicState = {
@@ -38,93 +48,145 @@ const state: MusicState = {
   isPlaying: false,
   isMuted: false,
   volume: 0.3,
+  currentPlayId: null,
 };
 
 // Fade duration in milliseconds
 const FADE_DURATION = 2000;
+
+// Debug mode
+const DEBUG = typeof window !== 'undefined' && localStorage.getItem('MUSIC_DEBUG') === 'true';
+
+function log(msg: string, ...args: unknown[]) {
+  if (DEBUG) console.log(`[BackgroundMusic] ${msg}`, ...args);
+}
 
 /**
  * Get a random start position for long tracks
  * Returns a position between 0 and 80% of the track duration
  */
 function getRandomStartPosition(duration: number): number {
+  if (!duration || duration <= 0) return 0;
   return Math.random() * (duration * 0.8);
 }
 
-/**
- * Create a new Howl instance for a track
- */
-function createTrack(trackIndex: number): Howl {
-  const track = MUSIC_TRACKS[trackIndex];
-  
-  const howl = new Howl({
-    src: [track.path],
-    loop: true,
-    volume: 0, // Start at 0 for fade in
-    html5: true, // Use HTML5 Audio for large files
-    preload: true,
-  });
-
-  return howl;
-}
+// Track if we want to play (for async loading)
+let wantsToPlay = false;
 
 /**
  * Start playing background music
  * If already playing, does nothing
  */
 function start(): void {
+  log('start() called, isPlaying:', state.isPlaying);
+  
+  wantsToPlay = true;
+  
+  // If already playing, just make sure context is active
   if (state.isPlaying && state.currentTrack) {
+    if (Howler.ctx && Howler.ctx.state === 'suspended') {
+      Howler.ctx.resume();
+    }
     return;
   }
 
-  // Create track if needed
-  if (!state.currentTrack) {
-    state.currentTrack = createTrack(state.currentTrackIndex);
+  // Resume audio context first (CRITICAL for iOS/Chrome)
+  if (Howler.ctx && Howler.ctx.state === 'suspended') {
+    log('Resuming suspended audio context');
+    Howler.ctx.resume();
   }
 
-  const track = state.currentTrack;
   const trackInfo = MUSIC_TRACKS[state.currentTrackIndex];
+  const fullPath = getBasePath() + trackInfo.path;
+  log('Starting track:', trackInfo.name, fullPath);
 
-  // Handle random start position for long tracks
-  track.once('load', () => {
-    if (trackInfo.isLong) {
-      const duration = track.duration();
-      const startPos = getRandomStartPosition(duration);
-      track.seek(startPos);
-    }
-    
-    // Start playing and fade in
-    track.play();
-    track.fade(0, state.isMuted ? 0 : state.volume, FADE_DURATION);
-    state.isPlaying = true;
+  // Clean up old track if exists
+  if (state.currentTrack) {
+    state.currentTrack.unload();
+    state.currentTrack = null;
+  }
+
+  // Create new track with html5:true for STREAMING (starts playing while downloading)
+  // Without html5:true, the entire file must download first which takes forever
+  const howl = new Howl({
+    src: [fullPath],
+    loop: true,
+    volume: state.isMuted ? 0 : state.volume,
+    html5: true, // CRITICAL: Enables streaming so music starts fast
+    preload: true,
+    onload: function() {
+      log('Track loaded/buffered:', trackInfo.name);
+      // Seek to random position for long tracks
+      if (trackInfo.isLong && state.isPlaying) {
+        const duration = howl.duration();
+        if (duration > 0) {
+          const startPos = getRandomStartPosition(duration);
+          log('Seeking to:', startPos, 'of', duration);
+          howl.seek(startPos);
+        }
+      }
+    },
+    onplay: function(id) {
+      log('Track playing, id:', id);
+      state.currentPlayId = id;
+      state.isPlaying = true;
+    },
+    onplayerror: function(_id, error) {
+      log('Play error:', error, '- will retry');
+      // With html5 mode, play errors are common before buffering is ready
+      // Retry after a short delay
+      setTimeout(() => {
+        if (wantsToPlay && !state.isPlaying) {
+          log('Retrying play after error...');
+          howl.play();
+        }
+      }, 100);
+    },
+    onloaderror: function(_id, error) {
+      // Error codes: 1=aborted, 2=network, 3=decode, 4=src_not_supported
+      const errorMessages: Record<number, string> = {
+        1: 'Load aborted',
+        2: 'Network error - check if file exists',
+        3: 'Decode error - file may be corrupted',
+        4: 'Source not supported or file not found',
+      };
+      const errorNum = typeof error === 'number' ? error : 0;
+      console.error(`[BackgroundMusic] Load error for ${fullPath}:`, errorMessages[errorNum] || error);
+    },
   });
 
-  // If already loaded, play immediately
-  if (track.state() === 'loaded') {
-    if (trackInfo.isLong) {
-      const duration = track.duration();
-      const startPos = getRandomStartPosition(duration);
-      track.seek(startPos);
-    }
-    
-    track.play();
-    track.fade(0, state.isMuted ? 0 : state.volume, FADE_DURATION);
-    state.isPlaying = true;
-  }
+  state.currentTrack = howl;
+  
+  // Play immediately - with html5:true this will start as soon as enough is buffered
+  log('Calling play()');
+  howl.play();
+  
+  // Mark as playing optimistically (onplay will confirm)
+  state.isPlaying = true;
 }
 
 /**
  * Stop playing background music with fade out
  */
 function stop(): void {
-  if (!state.currentTrack || !state.isPlaying) {
+  log('stop() called');
+  
+  wantsToPlay = false; // Prevent any pending retries
+  
+  if (!state.currentTrack) {
+    state.isPlaying = false;
     return;
   }
 
   const track = state.currentTrack;
+  const playId = state.currentPlayId;
   
   // Fade out then stop
-  track.fade(track.volume(), 0, FADE_DURATION);
+  if (playId !== null) {
+    track.fade(track.volume(), 0, FADE_DURATION, playId);
+  } else {
+    track.fade(track.volume(), 0, FADE_DURATION);
+  }
   
   setTimeout(() => {
     track.stop();
@@ -137,6 +199,8 @@ function stop(): void {
  * The new track starts at a random position if it's a long track
  */
 function changeTrack(): void {
+  log('changeTrack() called');
+  
   const wasPlaying = state.isPlaying;
   
   // Stop current track immediately (no fade for track change)
@@ -149,10 +213,12 @@ function changeTrack(): void {
   // Move to next track
   state.currentTrackIndex = (state.currentTrackIndex + 1) % MUSIC_TRACKS.length;
   state.isPlaying = false;
+  state.currentPlayId = null;
+  
+  log('Changed to track index:', state.currentTrackIndex);
   
   // If was playing, start the new track
   if (wasPlaying) {
-    state.currentTrack = createTrack(state.currentTrackIndex);
     start();
   }
 }
@@ -162,12 +228,14 @@ function changeTrack(): void {
  */
 function toggleMute(): boolean {
   state.isMuted = !state.isMuted;
+  log('toggleMute, now muted:', state.isMuted);
   
   if (state.currentTrack) {
+    const playId = state.currentPlayId !== null ? state.currentPlayId : undefined;
     if (state.isMuted) {
-      state.currentTrack.fade(state.currentTrack.volume(), 0, 300);
+      state.currentTrack.fade(state.currentTrack.volume(), 0, 300, playId);
     } else {
-      state.currentTrack.fade(0, state.volume, 300);
+      state.currentTrack.fade(state.currentTrack.volume(), state.volume, 300, playId);
     }
   }
   
@@ -181,12 +249,14 @@ function setMuted(muted: boolean): void {
   if (state.isMuted === muted) return;
   
   state.isMuted = muted;
+  log('setMuted:', muted);
   
   if (state.currentTrack) {
+    const playId = state.currentPlayId !== null ? state.currentPlayId : undefined;
     if (state.isMuted) {
-      state.currentTrack.fade(state.currentTrack.volume(), 0, 300);
+      state.currentTrack.fade(state.currentTrack.volume(), 0, 300, playId);
     } else {
-      state.currentTrack.fade(0, state.volume, 300);
+      state.currentTrack.fade(state.currentTrack.volume(), state.volume, 300, playId);
     }
   }
 }
@@ -194,14 +264,14 @@ function setMuted(muted: boolean): void {
 /**
  * Check if music is muted
  */
-function isMuted(): boolean {
+function isMutedFn(): boolean {
   return state.isMuted;
 }
 
 /**
  * Check if music is currently playing
  */
-function isPlaying(): boolean {
+function isPlayingFn(): boolean {
   return state.isPlaying;
 }
 
@@ -227,12 +297,14 @@ function setVolume(volume: number): void {
  * Cleanup - call when unmounting the app
  */
 function cleanup(): void {
+  log('cleanup() called');
   if (state.currentTrack) {
     state.currentTrack.stop();
     state.currentTrack.unload();
     state.currentTrack = null;
   }
   state.isPlaying = false;
+  state.currentPlayId = null;
 }
 
 // Export as a singleton object
@@ -242,8 +314,8 @@ export const backgroundMusic = {
   changeTrack,
   toggleMute,
   setMuted,
-  isMuted,
-  isPlaying,
+  isMuted: isMutedFn,
+  isPlaying: isPlayingFn,
   getCurrentTrackName,
   setVolume,
   cleanup,
