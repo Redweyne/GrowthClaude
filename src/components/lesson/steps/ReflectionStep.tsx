@@ -110,11 +110,12 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
 
   // Timer for idle prompts
   useEffect(() => {
+    if (phase !== 'writing') return;
     const interval = setInterval(() => {
       setSecondsElapsed(prev => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [phase]);
 
   // Entering phase timing - no audio starting, managed by parent
   useEffect(() => {

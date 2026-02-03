@@ -190,6 +190,26 @@ export function AudioProvider({ children }: AudioProviderProps) {
   const [state, setState] = useState<AudioEngineState>(defaultContextValue.state);
   const initializedRef = useRef(false);
 
+  const isSameAudioState = (a: AudioEngineState, b: AudioEngineState) => {
+    if (a === b) return true;
+    return (
+      a.isInitialized === b.isInitialized &&
+      a.isUnlocked === b.isUnlocked &&
+      a.isUnlocking === b.isUnlocking &&
+      a.currentMusicTrack === b.currentMusicTrack &&
+      a.currentAmbienceTrack === b.currentAmbienceTrack &&
+      a.isMusicPlaying === b.isMusicPlaying &&
+      a.isAmbiencePlaying === b.isAmbiencePlaying &&
+      a.lastError === b.lastError &&
+      a.settings.masterVolume === b.settings.masterVolume &&
+      a.settings.musicVolume === b.settings.musicVolume &&
+      a.settings.uiVolume === b.settings.uiVolume &&
+      a.settings.ambienceVolume === b.settings.ambienceVolume &&
+      a.settings.breathingEnabled === b.settings.breathingEnabled &&
+      a.settings.writingAmbienceType === b.settings.writingAmbienceType
+    );
+  };
+
   // Initialize engine once
   useEffect(() => {
     if (initializedRef.current) return;
@@ -203,7 +223,7 @@ export function AudioProvider({ children }: AudioProviderProps) {
 
     // Subscribe to state changes
     const unsubscribe = subscribeToState((newState) => {
-      setState(newState);
+      setState((prev) => (isSameAudioState(prev, newState) ? prev : newState));
     });
 
     return () => {

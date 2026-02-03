@@ -82,10 +82,58 @@ const variantStyles = {
 
 // Timing configurations based on speed
 const speedConfigs = {
-  slow: { initialDelay: 600, sentenceDelay: 1200 },
-  normal: { initialDelay: 400, sentenceDelay: 800 },
-  fast: { initialDelay: 200, sentenceDelay: 500 },
+  slow: {
+    initialDelay: 700,
+    sentenceGap: 200,
+    baseReadTime: 320,
+    charTime: 18,
+    wordTime: 55,
+    punctuationPause: 160,
+    minSentenceTime: 800,
+    maxSentenceTime: 3000,
+    finalPause: 500,
+  },
+  normal: {
+    initialDelay: 400,
+    sentenceGap: 150,
+    baseReadTime: 250,
+    charTime: 15,
+    wordTime: 45,
+    punctuationPause: 120,
+    minSentenceTime: 600,
+    maxSentenceTime: 2400,
+    finalPause: 400,
+  },
+  fast: {
+    initialDelay: 300,
+    sentenceGap: 100,
+    baseReadTime: 200,
+    charTime: 12,
+    wordTime: 35,
+    punctuationPause: 100,
+    minSentenceTime: 500,
+    maxSentenceTime: 2000,
+    finalPause: 300,
+  },
 };
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getSentenceReadTime(sentence: string, timing: typeof speedConfigs.slow): number {
+  const wordCount = sentence.trim().split(/\s+/).filter(Boolean).length;
+  const charCount = sentence.length;
+  const punctuationCount = (sentence.match(/[.!?]/g) || []).length + (sentence.match(/[,;:—–]/g) || []).length;
+
+  const rawTime =
+    timing.baseReadTime +
+    (charCount * timing.charTime) +
+    (wordCount * timing.wordTime) +
+    (punctuationCount * timing.punctuationPause);
+
+  return clamp(rawTime, timing.minSentenceTime, timing.maxSentenceTime);
+}
 
 export function WisdomText({
   children,
@@ -109,6 +157,7 @@ export function WisdomText({
   const timersRef = useRef<NodeJS.Timeout[]>([]);
   const onCompleteRef = useRef(onComplete);
   const textRef = useRef(children);
+  const signatureRef = useRef(`${children}::${speed}::${animate}`);
   
   // Keep onComplete ref updated without causing effect re-runs
   useEffect(() => {
@@ -120,93 +169,71 @@ export function WisdomText({
   
   // Progressive reveal effect - ONLY runs when text content changes
   useEffect(() => {
-    // If text hasn't changed and we've already animated, don't re-run
-    if (textRef.current === children && hasAnimated) {
+    const signature = `${children}::${speed}::${animate}`;
+    if (signatureRef.current === signature && hasAnimated) {
       return;
     }
-    
-    // Text changed - reset and re-animate
+
+    signatureRef.current = signature;
     textRef.current = children;
     mountedRef.current = true;
-    
-    // Clear any existing timers
+
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
-    
-    // If not animating, show all immediately
+
     if (!animate) {
       setVisibleCount(sentences.length);
       setHasAnimated(true);
-      // Call onComplete after a brief delay
       const completeTimer = setTimeout(() => {
         if (mountedRef.current && onCompleteRef.current) {
           onCompleteRef.current();
         }
       }, 100);
       timersRef.current.push(completeTimer);
-      return;
+      return () => {
+        mountedRef.current = false;
+        timersRef.current.forEach(clearTimeout);
+        timersRef.current = [];
+      };
     }
-    
-    // Start fresh
+
     setVisibleCount(0);
     setHasAnimated(false);
-    
-    // Schedule each sentence to appear
-    sentences.forEach((_, index) => {
-      const delay = timing.initialDelay + (index * timing.sentenceDelay);
-      
+
+    let accumulatedDelay = timing.initialDelay;
+
+    sentences.forEach((sentence, index) => {
+      const revealAt = accumulatedDelay;
+      const readTime = getSentenceReadTime(sentence, timing);
+
       const timer = setTimeout(() => {
         if (!mountedRef.current) return;
-        
         setVisibleCount(index + 1);
-        
-        // If this is the last sentence, call onComplete after animation settles
-        if (index === sentences.length - 1) {
-          setHasAnimated(true);
-          const completeTimer = setTimeout(() => {
-            if (mountedRef.current && onCompleteRef.current) {
-              onCompleteRef.current();
-            }
-          }, 400); // Wait for animation to complete
-          timersRef.current.push(completeTimer);
-        }
-      }, delay);
-      
+      }, revealAt);
+
       timersRef.current.push(timer);
+      accumulatedDelay += readTime + timing.sentenceGap;
     });
-    
-    // Cleanup function
+
+    const completeTimer = setTimeout(() => {
+      if (!mountedRef.current) return;
+      setHasAnimated(true);
+      if (onCompleteRef.current) {
+        onCompleteRef.current();
+      }
+    }, accumulatedDelay + timing.finalPause);
+
+    timersRef.current.push(completeTimer);
+
     return () => {
       mountedRef.current = false;
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
-  // IMPORTANT: Only depend on children and animate to prevent re-runs on parent re-renders
-  // Using sentences.length instead of sentences array to avoid reference issues
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [children, animate]);
+  }, [children, animate, speed, sentences, timing, hasAnimated]);
   
   // For very short text (one short sentence), render simply
-  if (sentences.length === 1 && sentences[0].length < 60) {
-    return (
-      <motion.p
-        initial={animate && !hasAnimated ? { opacity: 0, y: 12 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut', delay: animate && !hasAnimated ? timing.initialDelay / 1000 : 0 }}
-        className={`${styles.base} ${styles.size} ${styles.leading} ${className}`}
-        onAnimationComplete={() => {
-          if (!hasAnimated && onCompleteRef.current) {
-            setHasAnimated(true);
-            onCompleteRef.current();
-          }
-        }}
-      >
-        {sentences[0]}
-      </motion.p>
-    );
-  }
-  
-  // Multiple sentences - reveal one at a time
+  // Reveal sentences with consistent timing
   return (
     <div className={`${styles.spacing} ${className}`}>
       <AnimatePresence mode="sync">

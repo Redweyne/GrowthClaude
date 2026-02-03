@@ -1,15 +1,17 @@
 import type { NextConfig } from "next";
 
+const basePath = process.env.NODE_ENV === 'production' ? '/growthmvp' : '';
+
 const nextConfig: NextConfig = {
   // Base path for deployment at /growthmvp
-  basePath: '/growthmvp',
+  basePath: basePath || undefined,
 
   // Also set assetPrefix for static files
-  assetPrefix: '/growthmvp',
+  assetPrefix: basePath || undefined,
 
   // Environment variables available to the browser
   env: {
-    NEXT_PUBLIC_BASE_PATH: '/growthmvp',
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
 };
 
