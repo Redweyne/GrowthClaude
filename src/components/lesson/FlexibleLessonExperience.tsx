@@ -20,12 +20,11 @@
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
-import { MuteButton } from '@/components/ui/MuteButton';
+import { MusicControls } from '@/components/ui/MusicControls';
+import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
-import { useContextualAudio } from '@/hooks/useContextualAudio';
 import { useTranslation } from '@/i18n';
-import { getRandomLessonMusic } from '@/lib/audioEngine';
 
 // Step components
 import { ScenarioStep } from './steps/ScenarioStep';
@@ -113,8 +112,6 @@ export function FlexibleLessonExperience({
 
   const xpEarnedRef = useRef(0);
   const hasInitializedRef = useRef(false);
-  // Store ref to audio functions for stable cleanup
-  const audioCleanupRef = useRef<{ stopMusic: (fadeOut?: number) => void } | null>(null);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Store & Audio
@@ -129,14 +126,8 @@ export function FlexibleLessonExperience({
     saveInProgressLesson,
     clearInProgressLesson,
   } = useStore();
-  const { playComplete, playReward } = useAudio();
+  const { playComplete, playReward, playChime, playSuccess } = useAudio();
 
-  // Use contextual audio for lessons - starts music immediately
-  const contextualAudio = useContextualAudio({
-    initialScene: 'silent',
-    autoStartMusic: true,
-  });
-  
   // No-op keystroke handler - silence during typing is more calming
   const handleKeystroke = useCallback(() => {
     // Intentionally silent
@@ -178,34 +169,23 @@ export function FlexibleLessonExperience({
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Audio Initialization - Start lesson music on mount with variety
+  // Audio Initialization - Start lesson music on mount
   // ─────────────────────────────────────────────────────────────────────────
-  
-  // Select a random music track once per lesson (memoized)
-  const selectedMusic = useMemo(() => getRandomLessonMusic(), []);
 
   const handleInitializeAudio = useCallback(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
-    // Start lesson music with variety - different track each lesson
-    contextualAudio.startMusic(selectedMusic);
-    contextualAudio.playStepTransition();
-  }, [contextualAudio, selectedMusic]);
-
-  // Store audio ref for stable cleanup
-  useEffect(() => {
-    audioCleanupRef.current = { stopMusic: contextualAudio.stopMusic };
-  }, [contextualAudio.stopMusic]);
+    // Start background music using new system
+    backgroundMusic.start();
+    playChime(); // Play step transition sound
+  }, [playChime]);
 
   // Initialize on mount
   useEffect(() => {
     handleInitializeAudio();
     // Cleanup: stop music when leaving the lesson
-    // Use the ref for stable cleanup that won't have stale closures
     return () => {
-      if (audioCleanupRef.current) {
-        audioCleanupRef.current.stopMusic(0.5); // Quick fadeout on unmount
-      }
+      backgroundMusic.stop();
     };
   }, [handleInitializeAudio]);
 
@@ -244,7 +224,7 @@ export function FlexibleLessonExperience({
       if (currentIndex >= 0 && currentIndex < lesson.steps.length - 1) {
         // Go to next step in array as fallback
         setIsTransitioning(true);
-        contextualAudio.playStepTransition();
+        playChime(); // Step transition sound
         setTimeout(() => {
           setCurrentStepId(lesson.steps[currentIndex + 1].id);
           setIsTransitioning(false);
@@ -258,12 +238,12 @@ export function FlexibleLessonExperience({
     }
 
     setIsTransitioning(true);
-    contextualAudio.playStepTransition();
+    playChime(); // Step transition sound
     setTimeout(() => {
       setCurrentStepId(stepId);
       setIsTransitioning(false);
     }, 500);
-  }, [contextualAudio, currentStepId, lesson.steps, onComplete]);
+  }, [playChime, currentStepId, lesson.steps, onComplete]);
 
   const goToNextStep = useCallback(() => {
     if (!currentStep) {
@@ -333,7 +313,7 @@ export function FlexibleLessonExperience({
     });
 
     // Stop any active music before leaving the lesson
-    contextualAudio.stopMusic(1);
+    backgroundMusic.stop();
 
 
     // Close the lesson (user goes to do their action)
@@ -344,7 +324,7 @@ export function FlexibleLessonExperience({
     } else {
       onComplete();
     }
-  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction, contextualAudio]);
+  }, [lesson.id, currentStep, choices, writings, onComplete, onDismiss, savePendingLessonAction]);
 
   const handleReturnConfirmComplete = useCallback((completed: boolean) => {
     setActionCompleted(completed);
@@ -373,9 +353,9 @@ export function FlexibleLessonExperience({
   }, [goToNextStep]);
 
   const handleTimerComplete = useCallback(() => {
-    contextualAudio.playStepTransition();
+    playChime(); // Step transition sound
     goToNextStep();
-  }, [contextualAudio, goToNextStep]);
+  }, [playChime, goToNextStep]);
 
   const handleReflectionComplete = useCallback((text: string) => {
     setWritings(prev => ({ ...prev, reflection: text }));
@@ -415,21 +395,19 @@ export function FlexibleLessonExperience({
     if (isRetryingReflection) {
       const mentorStep = lesson.steps.find(s => s.type === 'mentor');
       if (mentorStep) {
-        contextualAudio.playStepComplete();
+        playSuccess(); // Step complete sound
         goToStep(mentorStep.id);
         return;
       }
     }
 
     // First attempt: show full celebration
-    contextualAudio.playStepComplete();
-    contextualAudio.playLessonComplete();
-    // Transition to reward music when ENTERING reward phase (not when leaving)
-    contextualAudio.transitionTo('reward');
+    playSuccess(); // Step complete sound
+    playComplete(); // Lesson complete sound
     goToNextStep();
   }, [
     lesson, actionCompleted, currentStreak, saveReflection,
-    contextualAudio, goToNextStep, isRetryingReflection, goToStep
+    playSuccess, playComplete, goToNextStep, isRetryingReflection, goToStep
   ]);
 
   const handleRewardComplete = useCallback(() => {
@@ -440,13 +418,13 @@ export function FlexibleLessonExperience({
   }, [playReward, goToNextStep]);
 
   const handleMentorComplete = useCallback(() => {
-    contextualAudio.stopMusic(1);
+    backgroundMusic.stop();
     completeLesson(lesson.id, xpEarnedRef.current);
     // Clear saved progress since lesson is complete
     clearInProgressLesson();
     playComplete();
     setTimeout(onComplete, 300);
-  }, [contextualAudio, completeLesson, lesson.id, clearInProgressLesson, playComplete, onComplete]);
+  }, [completeLesson, lesson.id, clearInProgressLesson, playComplete, onComplete]);
 
   const handleRetry = useCallback(() => {
     // Find the reflection step and go back to it
@@ -698,8 +676,8 @@ export function FlexibleLessonExperience({
         </AnimatePresence>
       </div>
 
-      {/* Simple mute button */}
-      <MuteButton />
+      {/* Music controls - mute and change track */}
+      <MusicControls />
 
       {/* Bottom gradient fade */}
       <div

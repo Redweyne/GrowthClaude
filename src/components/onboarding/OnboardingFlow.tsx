@@ -18,8 +18,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { AmbientBackground } from '@/components/ambient';
-import { MuteButton } from '@/components/ui/MuteButton';
-import { useContextualAudio } from '@/hooks/useContextualAudio';
+import { MusicControls } from '@/components/ui/MusicControls';
+import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
 import { WelcomeStep } from './steps/WelcomeStep';
@@ -42,21 +42,20 @@ export function OnboardingFlow() {
   const [direction, setDirection] = useState(1);
   const [mounted, setMounted] = useState(false);
   
-  // Audio integration
-  const contextualAudio = useContextualAudio({ initialScene: 'silent' });
+  // Audio integration - use new standalone background music system
   const audio = useAudio();
   const audioStartedRef = useRef(false);
   const prevStepRef = useRef(onboardingStep);
 
-  // Start onboarding music immediately on first user interaction
+  // Start background music on first user interaction
   // This needs to happen on interaction because browsers block autoplay
   const initializeAudio = useCallback(() => {
     if (!audioStartedRef.current) {
       audioStartedRef.current = true;
-      // Directly start music for maximum reliability
-      audio.startMusic('onboarding', 3);
+      // Start background music using new system
+      backgroundMusic.start();
     }
-  }, [audio]);
+  }, []);
 
   // Start audio on very first interaction (any touch/click)
   // On Android, touchstart fires before click. Use { once: true } and a flag
@@ -88,10 +87,10 @@ export function OnboardingFlow() {
     return () => {
       // Only stop if audio was actually started during onboarding
       if (audioStartedRef.current) {
-        audio.stopAllAudio(true);
+        backgroundMusic.stop();
       }
     };
-  }, [audio]);
+  }, []);
 
   // Play sounds on step changes
   useEffect(() => {
@@ -124,16 +123,15 @@ export function OnboardingFlow() {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      // Completing onboarding - IMMEDIATELY stop ALL audio
-      // Use stopAllAudio with immediate=true for clean exit
-      audio.stopAllAudio(true);
+      // Completing onboarding - IMMEDIATELY stop background music
+      backgroundMusic.stop();
 
       // Small delay for clean transition, then complete
       setTimeout(() => {
         completeOnboarding();
       }, 100);
     }
-  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio, audio]);
+  }, [onboardingStep, setOnboardingStep, completeOnboarding, initializeAudio]);
 
   const prevStep = useCallback(() => {
     if (onboardingStep > 0) {
@@ -312,8 +310,8 @@ export function OnboardingFlow() {
         </AnimatePresence>
       </div>
 
-      {/* Simple mute button */}
-      <MuteButton />
+      {/* Music controls - mute and change track */}
+      <MusicControls show={audioStartedRef.current} />
 
       {/* Bottom decorative gradient */}
       <div

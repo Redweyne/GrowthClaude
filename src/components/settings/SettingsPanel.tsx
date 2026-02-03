@@ -16,6 +16,7 @@ import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { useAudio } from '@/hooks/useAudio';
+import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useTranslation, languageConfig, type Locale } from '@/i18n';
 
 interface SettingsPanelProps {
@@ -27,7 +28,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   const { soundEnabled, hapticEnabled, toggleSound, toggleHaptic, name, setLanguage, resetUser } = useStore();
   const { resetEchoes } = useEchoesStore();
   const { resetDailyPractice } = useDailyPracticeStore();
-  const { playTap, playSuccess, startMusic, stopMusic, playSingingBowl } = useAudio();
+  const { playTap, playSuccess, playSingingBowl } = useAudio();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Handle complete app reset
@@ -69,9 +70,10 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   };
 
   const handleTestAmbience = () => {
-    startMusic('lessonCalm', 1);
+    // Start background music for test
+    backgroundMusic.start();
     // Auto-stop after 5 seconds
-    setTimeout(() => stopMusic(2), 5000);
+    setTimeout(() => backgroundMusic.stop(), 5000);
   };
 
   const handleTestMeditation = () => {
