@@ -1,2 +1,2 @@
-export { Confetti, XPOrbs, StarBurst } from './Confetti';
+export { Confetti } from './Confetti';
 export { GoldShimmer, LightSweep, GlowRing, ShimmerOverlay } from './GoldShimmer';

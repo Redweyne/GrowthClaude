@@ -1,5 +1,13 @@
 'use client';
 
+// ============================================================================
+// CONFETTI - Colorful celebration effect
+// ============================================================================
+//
+// Used in onboarding and achievement celebrations.
+// For the reward step, we now use GoldShimmer instead.
+// ============================================================================
+
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -87,7 +95,7 @@ export function Confetti({
     }
 
     return newParticles;
-  }, [active, effectiveCount, colors, spread]);
+  }, [active, effectiveCount, colors, spread, particleCount]);
 
   useEffect(() => {
     if (!active) return;
@@ -163,111 +171,6 @@ export function Confetti({
           </motion.div>
         ))}
       </AnimatePresence>
-    </div>
-  );
-}
-
-// XP Orbs that float and collect
-interface XPOrbProps {
-  count: number;
-  onCollect?: () => void;
-}
-
-export function XPOrbs({ count, onCollect }: XPOrbProps) {
-  // Reduce orb count on mobile for performance
-  const [isMobileOrb, setIsMobileOrb] = useState(false);
-  useEffect(() => {
-    setIsMobileOrb(/android|iphone|ipad|ipod/i.test(navigator.userAgent));
-  }, []);
-  const maxOrbs = isMobileOrb ? 8 : 15;
-
-  const orbs = useMemo(() => (
-    Array.from({ length: Math.min(count, maxOrbs) }, (_, i) => ({
-      id: i,
-      delay: i * 0.05,
-      offsetX: (pseudoRandom(i + count) - 0.5) * 200,
-      offsetY: (pseudoRandom(i + count + 12) - 0.5) * 200,
-    }))
-  ), [count, maxOrbs]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onCollect?.();
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [count, onCollect]);
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-40">
-      {orbs.map((orb) => (
-        <motion.div
-          key={orb.id}
-          className="absolute left-1/2 top-1/2"
-          initial={{
-            x: orb.offsetX,
-            y: orb.offsetY,
-            scale: 0,
-            opacity: 0,
-          }}
-          animate={{
-            x: 0,
-            y: -200,
-            scale: [0, 1.5, 1, 0.5],
-            opacity: [0, 1, 1, 0],
-          }}
-          transition={{
-            duration: 1.2,
-            delay: orb.delay,
-            ease: 'easeOut',
-          }}
-        >
-          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-lg shadow-amber-500/50">
-            <div className="absolute inset-0 rounded-full bg-amber-200 opacity-50 animate-ping" />
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-// Star burst for special moments
-interface StarBurstProps {
-  active: boolean;
-  color?: string;
-}
-
-export function StarBurst({ active, color = '#fbbf24' }: StarBurstProps) {
-  if (!active) return null;
-
-  const stars = Array.from({ length: 8 }, (_, i) => ({
-    id: i,
-    angle: (i * 45) * (Math.PI / 180),
-  }));
-
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      {stars.map((star) => (
-        <motion.div
-          key={star.id}
-          className="absolute left-1/2 top-1/2"
-          initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
-          animate={{
-            x: Math.cos(star.angle) * 100,
-            y: Math.sin(star.angle) * 100,
-            scale: [0, 1, 0.5],
-            opacity: [1, 1, 0],
-          }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24">
-            <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-              fill={color}
-            />
-          </svg>
-        </motion.div>
-      ))}
     </div>
   );
 }

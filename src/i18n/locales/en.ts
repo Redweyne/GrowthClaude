@@ -899,14 +899,10 @@ const en = {
     },
     // Reward Step
     reward: {
-      takeABreath: 'Take a breath.',
-      youShowedUp: 'You showed up today.',
-      growth: 'growth',
-      youveGrown: "You've grown",
-      dayStreak: 'Day Streak',
-      continueToMentor: 'Continue to Mentor',
       wellDone: 'Well done',
       youMastered: 'You mastered',
+      youveGrown: "You've grown",
+      continueToMentor: 'Continue to Mentor',
       day: 'day',
       days: 'days',
       streak: 'streak',
