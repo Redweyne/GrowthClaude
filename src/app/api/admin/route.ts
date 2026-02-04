@@ -6,23 +6,32 @@ import { activityDb } from '@/lib/activityDb';
 // All actions require ADMIN_SECRET in the Authorization header
 // ─────────────────────────────────────────────────────────────────────────────
 
-function unauthorized() {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+function unauthorized(reason: string) {
+  return NextResponse.json({ error: 'Unauthorized', reason }, { status: 401 });
 }
 
-function validateAuth(request: NextRequest): boolean {
+function validateAuth(request: NextRequest): { valid: boolean; reason: string } {
   const secret = process.env.ADMIN_SECRET;
-  if (!secret || secret === 'change-this-to-a-secure-random-string') {
-    return false; // Force the user to set a real secret
+  if (!secret) {
+    return { valid: false, reason: 'ADMIN_SECRET env variable is not set on the server' };
+  }
+  if (secret === 'change-this-to-a-secure-random-string') {
+    return { valid: false, reason: 'ADMIN_SECRET is still the default placeholder — change it in .env' };
   }
   const auth = request.headers.get('authorization');
-  if (!auth) return false;
+  if (!auth) {
+    return { valid: false, reason: 'No authorization header sent' };
+  }
   const token = auth.replace('Bearer ', '');
-  return token === secret;
+  if (token !== secret) {
+    return { valid: false, reason: 'Secret does not match' };
+  }
+  return { valid: true, reason: '' };
 }
 
 export async function GET(request: NextRequest) {
-  if (!validateAuth(request)) return unauthorized();
+  const auth = validateAuth(request);
+  if (!auth.valid) return unauthorized(auth.reason);
 
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action') || 'overview';

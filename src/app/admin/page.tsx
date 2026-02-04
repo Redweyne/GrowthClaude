@@ -150,12 +150,17 @@ export default function AdminPage() {
       const res = await fetch(`${basePath}/api/admin?${query}`, {
         headers: { Authorization: `Bearer ${secret}` },
       });
-      if (res.status === 401) {
-        setAuthenticated(false);
-        sessionStorage.removeItem('admin_secret');
-        throw new Error('Unauthorized');
+      const data = await res.json();
+      if (!res.ok) {
+        // Pass the server's reason through so the UI can show it
+        const reason = data.reason || data.error || `HTTP ${res.status}`;
+        if (res.status === 401) {
+          setAuthenticated(false);
+          sessionStorage.removeItem('admin_secret');
+        }
+        throw new Error(reason);
       }
-      return res.json();
+      return data;
     },
     [secret]
   );
@@ -166,15 +171,11 @@ export default function AdminPage() {
     setError('');
     try {
       const data = await apiFetch('overview');
-      if (data.error) {
-        setError('Invalid secret key');
-        return;
-      }
       setAuthenticated(true);
       sessionStorage.setItem('admin_secret', secret);
       setOverview(data);
-    } catch {
-      setError('Invalid secret key or server error');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
 
