@@ -905,6 +905,12 @@ const en = {
       youveGrown: "You've grown",
       dayStreak: 'Day Streak',
       continueToMentor: 'Continue to Mentor',
+      wellDone: 'Well done',
+      youMastered: 'You mastered',
+      day: 'day',
+      days: 'days',
+      streak: 'streak',
+      levelUp: 'Level Up!',
     },
     // Mentor Step
     mentor: {

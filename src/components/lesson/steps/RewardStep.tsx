@@ -1,36 +1,38 @@
 'use client';
 
 // ============================================================================
-// REWARD STEP - A Sacred Moment of Acknowledgment
+// REWARD STEP - The Elegant Moment
 // ============================================================================
 //
-// This is not a gamification moment. This is a pause to breathe.
-// The user just completed something meaningful. We honor that with:
-// - Silence and space (not rushed transitions)
-// - Beautiful, atmospheric visuals
-// - Words that actually mean something
-// - Time to absorb before moving on
-// - Triumphant audio that makes the moment unforgettable
+// A premium, mobile-first reward experience designed to:
+// - Feel like opening a luxury gift (refined, surprising, memorable)
+// - Run at 60fps on iOS and Android
+// - Respect safe areas and thumb zones
+// - Create a genuine moment of accomplishment
+//
+// Structure: 2 phases only
+// 1. THE REVEAL (auto-advances) - Dramatic entrance with lesson concept
+// 2. THE CROWN (user-controlled) - XP, streak, level, wisdom, CTA
 //
 // Design principles:
-// - Each phase LINGERS. User controls when to move forward.
-// - Visuals create atmosphere, not distraction
-// - Less text, more weight
+// - Transforms and opacity only (no layout thrashing)
+// - Reduced particles on mobile
+// - Spring physics that feel native to iOS
+// - Touch targets at least 48px
 // ============================================================================
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, ChevronRight, ArrowRight } from 'lucide-react';
+import { Flame, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { Confetti } from '@/components/effects';
+import { GoldShimmer, GlowRing } from '@/components/effects';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
+import { useHaptics } from '@/hooks/useHaptics';
 import { useTranslation } from '@/i18n';
 import {
   getGrowthLevel,
   getGrowthProgress,
-  getCompletionMessage,
-  getStreakMessage,
   getRandomQuote,
   GROWTH_LEVELS,
 } from '@/lib/growthPhilosophy';
@@ -42,20 +44,41 @@ interface RewardStepProps {
   onComplete: () => void;
 }
 
-type Phase = 'breathing' | 'acknowledgment' | 'growth' | 'wisdom';
+type Phase = 'reveal' | 'crown';
+
+// Spring animation config for iOS-native feel
+const SPRING_CONFIG = {
+  type: 'spring' as const,
+  stiffness: 200,
+  damping: 25,
+  mass: 1,
+};
+
+// Concept display names for the reveal phase
+const CONCEPT_DISPLAY: Record<string, { icon: string; title: string }> = {
+  control: { icon: '⚖️', title: 'CONTROL' },
+  habits: { icon: '🌱', title: 'HABITS' },
+  obstacles: { icon: '🔥', title: 'OBSTACLES' },
+  mindset: { icon: '🧠', title: 'MINDSET' },
+  gratitude: { icon: '✨', title: 'GRATITUDE' },
+  resilience: { icon: '💪', title: 'RESILIENCE' },
+  focus: { icon: '🎯', title: 'FOCUS' },
+  default: { icon: '⭐', title: 'WISDOM' },
+};
 
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { totalXp, currentStreak, lastLessonDate, name } = useStore();
   const audio = useAudio();
+  const haptics = useHaptics();
   const { t, isRTL } = useTranslation();
 
-  const [phase, setPhase] = useState<Phase>('breathing');
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [canAdvance, setCanAdvance] = useState(false);
+  const [phase, setPhase] = useState<Phase>('reveal');
+  const [showGoldShimmer, setShowGoldShimmer] = useState(true);
+  const [showLevelUpRing, setShowLevelUpRing] = useState(false);
 
-  // Guard to prevent bell from playing multiple times
-  const hasPlayedBellRef = useRef(false);
+  // Prevent double-playing sounds
+  const hasPlayedRevealSound = useRef(false);
+  const hasPlayedLevelUpSound = useRef(false);
 
   // Calculate values
   const safeXpEarned = xpEarned > 0 ? xpEarned : Math.max(lesson.xpReward ?? 0, 15);
@@ -70,448 +93,364 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const isFirstLessonToday = lastLessonDate !== today;
   const predictedStreak = isFirstLessonToday ? currentStreak + 1 : currentStreak;
 
-  // Get personalized messages
-  const completionMessage = useMemo(
-    () => getCompletionMessage(name, lesson.title, predictedStreak),
-    [name, lesson.title, predictedStreak]
-  );
+  // Get concept for reveal
+  const concept = CONCEPT_DISPLAY[lesson.coreConceptTag ?? ''] ?? CONCEPT_DISPLAY.default;
 
-  const streakInfo = useMemo(
-    () => getStreakMessage(predictedStreak),
-    [predictedStreak]
-  );
-
+  // Get wisdom quote
   const wisdomQuote = useMemo(
     () => getRandomQuote(leveledUp ? 'growth' : 'completion', lesson.id),
     [leveledUp, lesson.id]
   );
 
-  // Progress
+  // Progress to next level
   const progress = getGrowthProgress(newTotalXp);
-  const nextLevel = GROWTH_LEVELS.find(l => l.level === newLevel.level + 1);
+  const nextLevel = GROWTH_LEVELS.find((l) => l.level === newLevel.level + 1);
 
-  // Handle phase advancement
-  const advancePhase = useCallback(() => {
-    audio.playTap();
-    setCanAdvance(false);
-
-    switch (phase) {
-      case 'breathing':
-        setPhase('acknowledgment');
-        break;
-      case 'acknowledgment':
-        setPhase('growth');
-        if (leveledUp) {
-          setShowLevelUp(true);
-          setShowConfetti(true);
-          audio.playLevelUp();
-          audio.playCelebrate();
-        }
-        break;
-      case 'growth':
-        setPhase('wisdom');
-        break;
-      case 'wisdom':
-        onComplete();
-        break;
+  // Personalized greeting
+  const greeting = useMemo(() => {
+    if (name) {
+      return `${t('lessons.reward.wellDone')}, ${name}`;
     }
-  }, [phase, leveledUp, audio, onComplete]);
+    return t('lessons.reward.wellDone');
+  }, [name, t]);
 
-  // Enable advancement after minimum time per phase
+  // Play reveal sound and haptic on mount
   useEffect(() => {
-    const timings: Record<Phase, number> = {
-      breathing: 2000,      // 2 seconds of stillness
-      acknowledgment: 3500, // 3.5 seconds to read the message
-      growth: leveledUp ? 4500 : 3000, // 4.5s if level up, 3s otherwise
-      wisdom: 4000,         // 4 seconds to absorb the quote
-    };
+    if (!hasPlayedRevealSound.current) {
+      hasPlayedRevealSound.current = true;
+      audio.playSingingBowl();
+      haptics.hapticSuccess();
+    }
+  }, [audio, haptics]);
+
+  // Auto-advance from reveal to crown
+  useEffect(() => {
+    if (phase !== 'reveal') return;
 
     const timer = setTimeout(() => {
-      setCanAdvance(true);
-    }, timings[phase]);
+      setPhase('crown');
+      haptics.hapticMedium();
 
-    // Initial sound - a soft singing bowl to create sacred space
-    // Use ref guard to prevent multiple plays due to re-renders
-    if (phase === 'breathing' && !hasPlayedBellRef.current) {
-      hasPlayedBellRef.current = true;
-      audio.playSingingBowl();
-    }
+      // Trigger level-up effects if applicable
+      if (leveledUp && !hasPlayedLevelUpSound.current) {
+        hasPlayedLevelUpSound.current = true;
+        setShowLevelUpRing(true);
+        audio.playLevelUp();
+        audio.playCelebrate();
+        haptics.hapticCelebration();
+      }
+    }, 2500); // 2.5 seconds for reveal
 
     return () => clearTimeout(timer);
-    // NOTE: audio is intentionally excluded from deps to prevent re-runs
-    // when AudioProvider context changes. The ref guard provides extra safety.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, leveledUp]);
+  }, [phase, leveledUp, audio, haptics]);
+
+  // Handle completion
+  const handleContinue = useCallback(() => {
+    haptics.hapticTap();
+    audio.playTap();
+    onComplete();
+  }, [haptics, audio, onComplete]);
 
   // Keyboard support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Enter' || e.key === ' ') && canAdvance) {
+      if ((e.key === 'Enter' || e.key === ' ') && phase === 'crown') {
         e.preventDefault();
-        advancePhase();
+        handleContinue();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canAdvance, advancePhase]);
+  }, [phase, handleContinue]);
 
   return (
-    <div className="relative min-h-[420px] flex flex-col items-center justify-center px-4" data-testid="xp-celebration">
-      {/* Ambient background glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-          style={{
-            background: leveledUp
-              ? 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, rgba(251,191,36,0) 70%)'
-              : 'radial-gradient(circle, rgba(161,161,170,0.05) 0%, rgba(161,161,170,0) 70%)',
-          }}
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </div>
+    <div
+      className="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 pb-safe"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top), 24px)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 24px)',
+      }}
+      data-testid="xp-celebration"
+    >
+      {/* Subtle grain texture background */}
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        }}
+      />
 
-      {/* Confetti for level up */}
-      <Confetti
-        active={showConfetti}
-        particleCount={80}
-        duration={5000}
-        onComplete={() => setShowConfetti(false)}
+      {/* Vignette effect */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%)',
+        }}
+      />
+
+      {/* Gold shimmer particles */}
+      <GoldShimmer
+        active={showGoldShimmer}
+        variant="gold"
+        intensity={leveledUp ? 'intense' : 'medium'}
+        duration={4000}
+        onComplete={() => setShowGoldShimmer(false)}
+      />
+
+      {/* Level-up glow rings */}
+      <GlowRing
+        active={showLevelUpRing}
+        color="#fbbf24"
+        rings={4}
+        onComplete={() => setShowLevelUpRing(false)}
       />
 
       <AnimatePresence mode="wait">
-        {/* Phase 0: Breathing - A moment of stillness */}
-        {phase === 'breathing' && (
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* PHASE 1: THE REVEAL - Dramatic entrance with lesson concept */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {phase === 'reveal' && (
           <motion.div
-            key="breathing"
+            key="reveal"
+            className="flex flex-col items-center justify-center text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-center justify-center text-center"
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
           >
-            {/* Gentle breathing circle */}
+            {/* Concept icon with glow */}
             <motion.div
-              className="w-32 h-32 rounded-full border border-zinc-700/50 flex items-center justify-center mb-12"
-              animate={{
-                scale: [1, 1.15, 1],
-                borderColor: ['rgba(113,113,122,0.3)', 'rgba(113,113,122,0.6)', 'rgba(113,113,122,0.3)'],
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative mb-8"
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ ...SPRING_CONFIG, delay: 0.2 }}
             >
-              <motion.div
-                className="w-20 h-20 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center"
-                animate={{
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <motion.div
-                  className="w-3 h-3 rounded-full bg-amber-400/80"
-                  animate={{
-                    opacity: [0.4, 1, 0.4],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                />
-              </motion.div>
-            </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-zinc-500 text-lg font-light tracking-wide"
-            >
-              {t('lessons.reward.takeABreath')}
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              className="text-zinc-600 text-sm mt-2"
-            >
-              {t('lessons.reward.youShowedUp')}
-            </motion.p>
-          </motion.div>
-        )}
-
-        {/* Phase 1: Acknowledgment - The Personal Message */}
-        {phase === 'acknowledgment' && (
-          <motion.div
-            key="acknowledgment"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center text-center max-w-lg"
-          >
-            {/* Soft glowing orb */}
-            <motion.div
-              className="relative mb-10"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="absolute inset-0 w-24 h-24 rounded-full bg-amber-500/10 blur-2xl" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-amber-900/40 to-stone-900 border border-amber-700/30 flex items-center justify-center">
-                <motion.div
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500"
-                  animate={{
-                    boxShadow: [
-                      '0 0 20px rgba(251,191,36,0.3)',
-                      '0 0 40px rgba(251,191,36,0.5)',
-                      '0 0 20px rgba(251,191,36,0.3)',
-                    ],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                />
+              {/* Glow behind icon */}
+              <div className="absolute inset-0 w-24 h-24 rounded-full bg-amber-500/20 blur-2xl" />
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 border border-amber-500/30 flex items-center justify-center">
+                <span className="text-4xl" role="img" aria-label={concept.title}>
+                  {concept.icon}
+                </span>
               </div>
             </motion.div>
 
-            {/* The message */}
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-2xl md:text-3xl text-zinc-100 font-light leading-relaxed"
-            >
-              {completionMessage}
-            </motion.p>
-
-            {/* XP indicator - subtle, with proper spacing */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2 }}
-              className="text-sm text-zinc-500 mt-12"
-            >
-              +{safeXpEarned} {t('lessons.reward.growth')}
-            </motion.p>
-          </motion.div>
-        )}
-
-        {/* Phase 2: Growth - Streak & Level */}
-        {phase === 'growth' && (
-          <motion.div
-            key="growth"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center text-center w-full max-w-md"
-          >
-            {/* Level Up - Full Focus */}
-            {showLevelUp && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-                className="mb-10 w-full"
-              >
-                {/* Level up container with glow */}
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-amber-500/20 blur-3xl rounded-3xl" />
-                  <div className="relative bg-gradient-to-br from-zinc-900/90 via-stone-900/90 to-zinc-900/90 border border-amber-500/30 rounded-2xl p-8">
-                    {/* Shimmer */}
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl overflow-hidden"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    >
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent"
-                        animate={{ x: ['-100%', '200%'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                      />
-                    </motion.div>
-
-                    <p className="text-amber-400 text-sm font-medium tracking-widest uppercase mb-3">
-                      {t('lessons.reward.youveGrown')}
-                    </p>
-                    <h3 className="text-4xl font-bold text-white mb-2 tracking-tight">
-                      {newLevel.title}
-                    </h3>
-                    <p className="text-zinc-400 italic mb-4">{newLevel.subtitle}</p>
-
-                    <div className="h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent my-5" />
-
-                    <p className="text-zinc-300 text-sm leading-relaxed">
-                      {newLevel.unlockMessage}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Streak Display */}
+            {/* Lesson concept title */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: showLevelUp ? 0.5 : 0 }}
-              className="flex flex-col items-center"
+              transition={{ delay: 0.5, duration: 0.6 }}
             >
-              {/* Flame icon with glow */}
-              <motion.div
-                className="relative mb-6"
-                animate={isFirstLessonToday ? {
-                  scale: [1, 1.1, 1],
-                } : {}}
-                transition={{ duration: 0.6 }}
-              >
-                <div className={`absolute inset-0 rounded-full blur-xl ${
-                  predictedStreak >= 30
-                    ? 'bg-orange-500/30'
-                    : predictedStreak >= 7
-                    ? 'bg-amber-500/25'
-                    : 'bg-amber-500/15'
-                }`} />
-                <Flame
-                  className={`relative w-12 h-12 ${
-                    predictedStreak >= 30
-                      ? 'text-orange-400 fill-orange-400'
-                      : predictedStreak >= 7
-                      ? 'text-amber-400 fill-amber-400'
-                      : 'text-amber-500/80 fill-amber-500/80'
-                  }`}
-                />
-              </motion.div>
-
-              <span className="text-4xl font-bold text-white tracking-tight">
-                {streakInfo.title}
-              </span>
-              <p className="text-zinc-400 mt-3 text-lg">{streakInfo.subtitle}</p>
+              <p className="text-amber-400/80 text-xs font-medium tracking-[0.3em] uppercase mb-2">
+                {t('lessons.reward.youMastered')}
+              </p>
+              <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                {concept.title}
+              </h2>
             </motion.div>
 
-            {/* Progress bar (if applicable) */}
-            {nextLevel && !showLevelUp && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-                className="mt-10 w-full"
-              >
-                <div className="flex justify-between text-xs text-zinc-600 mb-2">
-                  <span>{newLevel.title}</span>
-                  <span>{nextLevel.title}</span>
-                </div>
-                <div className="h-1 bg-zinc-800/80 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-amber-600 to-orange-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress.percentage}%` }}
-                    transition={{ duration: 1.5, delay: 0.3, ease: 'easeOut' }}
-                  />
-                </div>
-              </motion.div>
-            )}
+            {/* Subtle pulse indicator that it will auto-advance */}
+            <motion.div
+              className="mt-12 flex gap-1.5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              transition={{ delay: 1.5 }}
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full bg-zinc-500"
+                  animate={{
+                    opacity: [0.3, 1, 0.3],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                />
+              ))}
+            </motion.div>
           </motion.div>
         )}
 
-        {/* Phase 3: Wisdom - The Quote */}
-        {phase === 'wisdom' && (
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* PHASE 2: THE CROWN - XP, streak, level, wisdom, CTA */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {phase === 'crown' && (
           <motion.div
-            key="wisdom"
+            key="crown"
+            className="flex flex-col items-center justify-center w-full max-w-sm"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center text-center max-w-lg px-4"
           >
-            {/* Decorative quote marks */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 0.15, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-6xl font-serif text-amber-500 mb-2 select-none leading-none"
-            >
-              &ldquo;
-            </motion.div>
-
-            {/* The wisdom */}
-            <motion.blockquote
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-xl md:text-2xl text-zinc-200 font-light leading-relaxed italic"
-            >
-              {wisdomQuote.text}
-            </motion.blockquote>
-
-            {/* Author */}
+            {/* Greeting */}
             <motion.p
+              className="text-zinc-400 text-lg mb-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="text-zinc-500 mt-8 text-sm tracking-wide"
+              transition={{ delay: 0.2 }}
             >
-              — {wisdomQuote.author}
+              {greeting}
             </motion.p>
 
-            {/* Lesson title - very subtle */}
+            {/* Main reward card */}
+            <motion.div
+              className="relative w-full rounded-2xl overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ ...SPRING_CONFIG, delay: 0.1 }}
+            >
+              {/* Card background with subtle gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/90 via-zinc-900/95 to-black/90 backdrop-blur-sm" />
+              
+              {/* Gold accent border on top */}
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+
+              {/* Card content */}
+              <div className="relative p-6">
+                {/* XP Earned - Hero element */}
+                <div className="flex items-center justify-center mb-6">
+                  <motion.div
+                    className="flex items-center gap-3"
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ ...SPRING_CONFIG, delay: 0.3 }}
+                  >
+                    <Sparkles className="w-6 h-6 text-amber-400" />
+                    <span className="text-5xl font-bold text-white">
+                      +{safeXpEarned}
+                    </span>
+                    <span className="text-xl text-zinc-400 font-light">XP</span>
+                  </motion.div>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent mb-5" />
+
+                {/* Streak and Level row */}
+                <div className="flex items-center justify-between mb-5">
+                  {/* Streak */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <Flame
+                        className={`w-5 h-5 ${
+                          predictedStreak >= 30
+                            ? 'text-orange-400 fill-orange-400'
+                            : predictedStreak >= 7
+                            ? 'text-amber-400 fill-amber-400'
+                            : 'text-amber-500/70 fill-amber-500/70'
+                        }`}
+                      />
+                    </div>
+                    <span className="text-white font-semibold">
+                      {predictedStreak} {predictedStreak === 1 ? t('lessons.reward.day') : t('lessons.reward.days')}
+                    </span>
+                    <span className="text-zinc-500 text-sm">
+                      {t('lessons.reward.streak')}
+                    </span>
+                  </div>
+
+                  {/* Current Level */}
+                  <div className="text-right">
+                    <span className="text-zinc-500 text-sm">
+                      {leveledUp ? t('lessons.reward.levelUp') : newLevel.title}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Level progress bar */}
+                {nextLevel && (
+                  <div className="mb-6">
+                    <div className="flex justify-between text-xs text-zinc-600 mb-1.5">
+                      <span>{newLevel.title}</span>
+                      <span>{nextLevel.title}</span>
+                    </div>
+                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress.percentage}%` }}
+                        transition={{
+                          duration: 1.2,
+                          delay: 0.5,
+                          ease: [0.25, 0.46, 0.45, 0.94],
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Level Up Banner - only shown when leveled up */}
+                {leveledUp && (
+                  <motion.div
+                    className="bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 rounded-lg p-4 mb-5 border border-amber-500/20"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <p className="text-amber-400 text-xs font-medium tracking-wider uppercase mb-1">
+                      {t('lessons.reward.youveGrown')}
+                    </p>
+                    <p className="text-white font-bold text-lg">{newLevel.title}</p>
+                    <p className="text-zinc-400 text-sm mt-1">{newLevel.subtitle}</p>
+                  </motion.div>
+                )}
+
+                {/* Wisdom Quote */}
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <p className="text-zinc-400 text-sm italic leading-relaxed mb-2">
+                    &ldquo;{wisdomQuote.text}&rdquo;
+                  </p>
+                  <p className="text-zinc-600 text-xs">
+                    — {wisdomQuote.author}
+                  </p>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            {/* CTA Button - in the thumb zone */}
+            <motion.div
+              className="w-full mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+            >
+              <Button
+                onClick={handleContinue}
+                className="w-full py-4 text-base group"
+                data-testid="reward-continue-btn"
+              >
+                {t('lessons.reward.continueToMentor')}
+                <ChevronRight
+                  className={`w-5 h-5 ${
+                    isRTL
+                      ? 'mr-2 group-hover:-translate-x-1'
+                      : 'ml-2 group-hover:translate-x-1'
+                  } transition-transform`}
+                />
+              </Button>
+            </motion.div>
+
+            {/* Lesson title - very subtle at bottom */}
             <motion.p
+              className="text-zinc-700 text-xs mt-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
-              className="text-zinc-700 text-xs mt-12"
+              transition={{ delay: 1.2 }}
             >
               {lesson.title}
             </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Navigation - appears after minimum time */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 flex justify-center pb-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: canAdvance ? 1 : 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {phase === 'wisdom' ? (
-<Button
-            onClick={advancePhase}
-            disabled={!canAdvance}
-            className="group"
-            data-testid="reward-continue-btn"
-          >
-            {t('lessons.reward.continueToMentor')}
-            <ChevronRight className={`w-4 h-4 ${isRTL ? 'mr-1 group-hover:-translate-x-1' : 'ml-1 group-hover:translate-x-1'} transition-transform`} />
-          </Button>
-        ) : (
-          <button
-            onClick={advancePhase}
-            disabled={!canAdvance}
-            className={`flex items-center gap-2 text-zinc-500 hover:text-zinc-300 transition-colors py-3 px-6 ${isRTL ? 'flex-row-reverse' : ''}`}
-            data-testid="reward-phase-btn"
-          >
-            <span className="text-sm">{t('common.continue')}</span>
-            <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
-          </button>
-        )}
-      </motion.div>
-
-      {/* Phase indicators */}
-      <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-2">
-        {(['breathing', 'acknowledgment', 'growth', 'wisdom'] as Phase[]).map((p, i) => (
-          <motion.div
-            key={p}
-            className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
-              phase === p
-                ? 'bg-amber-400'
-                : i < ['breathing', 'acknowledgment', 'growth', 'wisdom'].indexOf(phase)
-                ? 'bg-zinc-600'
-                : 'bg-zinc-800'
-            }`}
-            animate={phase === p ? { scale: [1, 1.3, 1] } : {}}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
-        ))}
-      </div>
     </div>
   );
 }

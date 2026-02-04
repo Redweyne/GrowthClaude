@@ -905,6 +905,12 @@ const ar = {
       youveGrown: 'لقد نمَوت',
       dayStreak: 'يوم متتالي',
       continueToMentor: 'متابعة إلى المرشد',
+      wellDone: 'أحسنت',
+      youMastered: 'لقد أتقنت',
+      day: 'يوم',
+      days: 'أيام',
+      streak: 'سلسلة',
+      levelUp: 'ارتقيت!',
     },
     // Mentor Step
     mentor: {

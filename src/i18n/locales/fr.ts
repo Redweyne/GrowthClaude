@@ -905,6 +905,12 @@ const fr = {
       youveGrown: 'Vous avez grandi',
       dayStreak: 'Jours de Suite',
       continueToMentor: 'Continuer vers le Mentor',
+      wellDone: 'Bravo',
+      youMastered: 'Vous avez maîtrisé',
+      day: 'jour',
+      days: 'jours',
+      streak: 'série',
+      levelUp: 'Niveau supérieur !',
     },
     // Mentor Step
     mentor: {
