@@ -304,3 +304,79 @@ model WeeklyCheckIn {
   @@unique([userId, weekOf])
   @@map("weekly_check_ins")
 }
+
+// ============================================
+// ACTIVITY LOGGING & ANALYTICS
+// ============================================
+
+model ActivitySession {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  endedAt   DateTime?
+
+  // User identity (from Zustand store, null for pre-onboarding)
+  userId   String?
+  userName String?
+
+  // Device & browser (parsed from User-Agent server-side)
+  ipAddress      String?
+  userAgent      String?
+  browser        String?
+  browserVersion String?
+  os             String?
+  osVersion      String?
+  deviceType     String? // mobile, tablet, desktop
+
+  // Geolocation (resolved from IP)
+  country String?
+  city    String?
+  region  String?
+
+  // Screen info (sent from client)
+  screenWidth  Int?
+  screenHeight Int?
+
+  // App context
+  appLanguage String? // en, fr, ar
+  referrer    String?
+
+  events    ActivityEvent[]
+  pageViews ActivityPageView[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_sessions")
+}
+
+model ActivityEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String?
+  eventType String
+  eventData String? // JSON string for flexible data
+  view      String? // Current view when event happened
+  timestamp DateTime @default(now())
+
+  session ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("activity_events")
+}
+
+model ActivityPageView {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String?
+  viewName  String
+  enteredAt DateTime @default(now())
+  duration  Int? // Duration in seconds
+
+  session ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([viewName])
+  @@map("activity_page_views")
+}

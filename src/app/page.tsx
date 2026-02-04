@@ -35,6 +35,7 @@ import { useTranslation } from '@/i18n';
 import type { FlexibleLesson, LessonProgress, LessonMode, FlexibleWorld } from '@/types/lessons';
 import { LessonModeSelector } from '@/components/lesson/LessonModeSelector';
 import { backgroundMusic } from '@/lib/backgroundMusic';
+import { useActivityLog } from '@/providers/ActivityLoggerProvider';
 
 type AppView =
   | 'home'
@@ -118,6 +119,7 @@ export default function Home() {
   } = useDailyPracticeStore();
 
   const { locale } = useTranslation();
+  const { logEvent, trackView } = useActivityLog();
 
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
@@ -253,6 +255,32 @@ export default function Home() {
       setCurrentView('exercises');
     }
   }, [currentView, reflectionForReview, completeMandatoryEcho]);
+
+  // ─── Activity Logging: track view transitions ─────────────────────────
+  useEffect(() => {
+    // Compute the logical view (including pre-app states)
+    let logicalView: string;
+    if (!languageSelected) {
+      logicalView = 'language-select';
+    } else if (!onboardingComplete) {
+      logicalView = 'onboarding';
+    } else {
+      logicalView = currentView;
+    }
+    trackView(logicalView);
+  }, [currentView, languageSelected, onboardingComplete, trackView]);
+
+  // ─── Activity Logging: log lesson mode selection ──────────────────────
+  useEffect(() => {
+    if (currentView === 'lesson' && selectedFlexibleLesson) {
+      logEvent('lesson_mode_selected', {
+        lessonId: selectedFlexibleLesson.id,
+        mode: lessonMode,
+      });
+    }
+  // Only fire when entering lesson view, not on every re-render
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView === 'lesson' && selectedFlexibleLesson?.id]);
 
   // Get daily practice state
   const todaysLesson = getTodaysLesson(allWorlds);
