@@ -51,9 +51,6 @@ const state: MusicState = {
   currentPlayId: null,
 };
 
-// Fade duration in milliseconds
-const FADE_DURATION = 2000;
-
 // Debug mode
 const DEBUG = typeof window !== 'undefined' && localStorage.getItem('MUSIC_DEBUG') === 'true';
 
@@ -70,8 +67,30 @@ function getRandomStartPosition(duration: number): number {
   return Math.random() * (duration * 0.8);
 }
 
+function applyMuteState(track: Howl, muted: boolean, playId: number | null): void {
+  const id = playId !== null ? playId : undefined;
+  track.mute(muted, id);
+  if (!muted) {
+    if (id !== undefined) {
+      track.volume(state.volume, id);
+    } else {
+      track.volume(state.volume);
+    }
+  }
+}
+
 // Track if we want to play (for async loading)
 let wantsToPlay = false;
+
+/**
+ * Ensure AudioContext is running (crucial for iOS)
+ */
+function ensureContext(): void {
+  if (Howler.ctx && Howler.ctx.state === 'suspended') {
+    log('Resuming suspended audio context');
+    Howler.ctx.resume();
+  }
+}
 
 /**
  * Start playing background music
@@ -81,19 +100,11 @@ function start(): void {
   log('start() called, isPlaying:', state.isPlaying);
   
   wantsToPlay = true;
+  ensureContext();
   
   // If already playing, just make sure context is active
   if (state.isPlaying && state.currentTrack) {
-    if (Howler.ctx && Howler.ctx.state === 'suspended') {
-      Howler.ctx.resume();
-    }
     return;
-  }
-
-  // Resume audio context first (CRITICAL for iOS/Chrome)
-  if (Howler.ctx && Howler.ctx.state === 'suspended') {
-    log('Resuming suspended audio context');
-    Howler.ctx.resume();
   }
 
   const trackInfo = MUSIC_TRACKS[state.currentTrackIndex];
@@ -112,6 +123,7 @@ function start(): void {
     src: [fullPath],
     loop: true,
     volume: state.isMuted ? 0 : state.volume,
+    mute: state.isMuted,
     html5: true, // CRITICAL: Enables streaming so music starts fast
     preload: true,
     onload: function() {
@@ -156,6 +168,7 @@ function start(): void {
   });
 
   state.currentTrack = howl;
+  applyMuteState(howl, state.isMuted, state.currentPlayId);
   
   // Play immediately - with html5:true this will start as soon as enough is buffered
   log('Calling play()');
@@ -172,26 +185,20 @@ function stop(): void {
   log('stop() called');
   
   wantsToPlay = false; // Prevent any pending retries
-  
-  if (!state.currentTrack) {
-    state.isPlaying = false;
+
+  const track = state.currentTrack;
+  state.isPlaying = false;
+  state.currentPlayId = null;
+
+  if (!track) {
     return;
   }
 
-  const track = state.currentTrack;
-  const playId = state.currentPlayId;
-  
-  // Fade out then stop
-  if (playId !== null) {
-    track.fade(track.volume(), 0, FADE_DURATION, playId);
-  } else {
-    track.fade(track.volume(), 0, FADE_DURATION);
+  track.stop();
+  track.unload();
+  if (state.currentTrack === track) {
+    state.currentTrack = null;
   }
-  
-  setTimeout(() => {
-    track.stop();
-    state.isPlaying = false;
-  }, FADE_DURATION);
 }
 
 /**
@@ -199,6 +206,7 @@ function stop(): void {
  * The new track starts at a random position if it's a long track
  */
 function changeTrack(): void {
+  ensureContext();
   log('changeTrack() called');
   
   const wasPlaying = state.isPlaying;
@@ -227,16 +235,12 @@ function changeTrack(): void {
  * Toggle mute state
  */
 function toggleMute(): boolean {
+  ensureContext();
   state.isMuted = !state.isMuted;
   log('toggleMute, now muted:', state.isMuted);
   
   if (state.currentTrack) {
-    const playId = state.currentPlayId !== null ? state.currentPlayId : undefined;
-    if (state.isMuted) {
-      state.currentTrack.fade(state.currentTrack.volume(), 0, 300, playId);
-    } else {
-      state.currentTrack.fade(state.currentTrack.volume(), state.volume, 300, playId);
-    }
+    applyMuteState(state.currentTrack, state.isMuted, state.currentPlayId);
   }
   
   return state.isMuted;
@@ -246,18 +250,14 @@ function toggleMute(): boolean {
  * Set mute state directly
  */
 function setMuted(muted: boolean): void {
+  ensureContext();
   if (state.isMuted === muted) return;
   
   state.isMuted = muted;
   log('setMuted:', muted);
   
   if (state.currentTrack) {
-    const playId = state.currentPlayId !== null ? state.currentPlayId : undefined;
-    if (state.isMuted) {
-      state.currentTrack.fade(state.currentTrack.volume(), 0, 300, playId);
-    } else {
-      state.currentTrack.fade(state.currentTrack.volume(), state.volume, 300, playId);
-    }
+    applyMuteState(state.currentTrack, state.isMuted, state.currentPlayId);
   }
 }
 

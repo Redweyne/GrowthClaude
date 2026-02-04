@@ -34,6 +34,7 @@ import { getStoicismWorld } from '@/content/stoicismModern';
 import { useTranslation } from '@/i18n';
 import type { FlexibleLesson, LessonProgress, LessonMode, FlexibleWorld } from '@/types/lessons';
 import { LessonModeSelector } from '@/components/lesson/LessonModeSelector';
+import { backgroundMusic } from '@/lib/backgroundMusic';
 
 type AppView =
   | 'home'
@@ -156,6 +157,13 @@ export default function Home() {
     }
     prevOnboardingCompleteRef.current = onboardingComplete;
   }, [onboardingComplete, stopAllAudio]);
+
+  useEffect(() => {
+    if (!onboardingComplete) return;
+    if (currentView !== 'lesson') {
+      backgroundMusic.stop();
+    }
+  }, [currentView, onboardingComplete]);
 
   // Handle opening the story
   const handleOpenStory = useCallback(() => {
@@ -408,6 +416,7 @@ export default function Home() {
   const handleLessonComplete = () => {
     // CRITICAL: Stop all audio when leaving the lesson
     // This ensures background music doesn't continue playing through echo and exercises
+    backgroundMusic.stop();
     stopAllAudio(false); // false = allow fadeout for smooth transition
 
     // Save completed lesson info for Echo prompt
