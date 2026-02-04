@@ -110,6 +110,7 @@ export interface InProgressLesson {
   choices: Record<string, string>;
   writings: Record<string, string>;
   lastUpdated: string;
+  mode?: 'deep' | 'engagement';
 }
 
 interface UserState {

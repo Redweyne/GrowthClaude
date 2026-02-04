@@ -24,7 +24,12 @@ export type LessonStepType =
   | 'timer'          // Timed practice (breathing, focus, etc.)
   | 'insight'        // Reveal wisdom/principle (can appear anywhere)
   | 'mentor'         // Sage feedback
-  | 'reward';        // Celebration
+  | 'reward'         // Celebration
+  // Engagement path step types (no writing, no long waits)
+  | 'resonanceCheck' // Multi-select from emotionally resonant options
+  | 'scaleRating'    // Visual scale rating (quick personal input)
+  | 'affirmation'    // Dramatic statement confirmation (tap to commit)
+  | 'tapFlow';       // Sequential content revealed by tapping (user-paced)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BASE STEP INTERFACE
@@ -229,6 +234,10 @@ export interface MentorResponseSet {
     completed: string[];
     notCompleted: string[];
   };
+  // Responses for engagement mode (no writing path)
+  byMode?: {
+    engagement: string[];
+  };
 }
 
 export interface MentorStep extends BaseLessonStep {
@@ -250,6 +259,69 @@ export interface RewardStep extends BaseLessonStep {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// RESONANCE CHECK STEP - Select what resonates (replaces writing in engagement path)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ResonanceOption {
+  id: string;
+  text: string;
+  emoji?: string;
+}
+
+export interface ResonanceCheckStep extends BaseLessonStep {
+  type: 'resonanceCheck';
+  prompt: string;
+  instruction?: string;
+  options: ResonanceOption[];
+  minSelections?: number;
+  maxSelections?: number;
+  storeAs?: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCALE RATING STEP - Quick personal rating (replaces some commitments)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ScaleRatingStep extends BaseLessonStep {
+  type: 'scaleRating';
+  prompt: string;
+  lowLabel: string;
+  highLabel: string;
+  steps: number;
+  storeAs?: string;
+  responsesByRange?: {
+    low: string;
+    mid: string;
+    high: string;
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AFFIRMATION STEP - Dramatic statement confirmation (replaces GoDoIt/written commitments)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AffirmationStep extends BaseLessonStep {
+  type: 'affirmation';
+  preText?: string;
+  statement: string;
+  subtext?: string;
+  confirmLabel: string;
+  style?: 'commitment' | 'release' | 'gratitude' | 'strength';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAP FLOW STEP - User-paced sequential content (replaces timed visualizations)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface TapFlowStep extends BaseLessonStep {
+  type: 'tapFlow';
+  title?: string;
+  instructions: string[];
+  closingText?: string;
+  style?: 'cosmic' | 'grounding' | 'fearless' | 'grateful';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // UNION TYPE FOR ALL STEPS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -264,7 +336,11 @@ export type LessonStep =
   | TimerStep
   | InsightStep
   | MentorStep
-  | RewardStep;
+  | RewardStep
+  | ResonanceCheckStep
+  | ScaleRatingStep
+  | AffirmationStep
+  | TapFlowStep;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FLEXIBLE LESSON INTERFACE
@@ -312,6 +388,10 @@ export interface FlexibleLesson {
 
   // Teaser text for "tomorrow's glimpse" preview
   teaserText?: string;
+
+  // Alternative engagement path (no writing, no long waits)
+  // Used when user selects "Feel & Choose" mode before a lesson
+  engagementSteps?: LessonStep[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -348,6 +428,8 @@ export interface FlexibleWorld {
 // LESSON STATE - For tracking progress within a lesson
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type LessonMode = 'deep' | 'engagement';
+
 export interface LessonProgress {
   lessonId: string;
   currentStepId: string;
@@ -361,6 +443,8 @@ export interface LessonProgress {
   dismissedAt?: string;
   // Has returned from action
   hasReturned?: boolean;
+  // Which mode the lesson is running in
+  mode?: LessonMode;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -409,4 +493,20 @@ export function isMentorStep(step: LessonStep): step is MentorStep {
 
 export function isRewardStep(step: LessonStep): step is RewardStep {
   return step.type === 'reward';
+}
+
+export function isResonanceCheckStep(step: LessonStep): step is ResonanceCheckStep {
+  return step.type === 'resonanceCheck';
+}
+
+export function isScaleRatingStep(step: LessonStep): step is ScaleRatingStep {
+  return step.type === 'scaleRating';
+}
+
+export function isAffirmationStep(step: LessonStep): step is AffirmationStep {
+  return step.type === 'affirmation';
+}
+
+export function isTapFlowStep(step: LessonStep): step is TapFlowStep {
+  return step.type === 'tapFlow';
 }

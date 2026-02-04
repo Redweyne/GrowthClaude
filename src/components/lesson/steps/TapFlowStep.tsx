@@ -1,0 +1,260 @@
+'use client';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TAP FLOW STEP - USER-PACED SEQUENTIAL CONTENT
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Replaces timed visualizations in the engagement path.
+// Same powerful content, but user taps to advance instead of waiting.
+// Each tap is a micro-commitment to stay present.
+// Keeps TikTok-brain users actively engaged instead of passively bored.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, Eye } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { useAudio } from '@/hooks/useAudio';
+import type { TapFlowStep as TapFlowStepType } from '@/types/lessons';
+
+interface TapFlowStepProps {
+  step: TapFlowStepType;
+  onComplete: () => void;
+}
+
+const STYLE_CONFIG = {
+  cosmic: {
+    glow: 'rgba(99, 102, 241, 0.12)',
+    accent: 'text-indigo-400',
+    gradient: 'from-indigo-500/20 via-purple-500/10 to-stone-900',
+    tapColor: 'text-indigo-400/50',
+  },
+  grounding: {
+    glow: 'rgba(16, 185, 129, 0.12)',
+    accent: 'text-emerald-400',
+    gradient: 'from-emerald-500/20 via-teal-500/10 to-stone-900',
+    tapColor: 'text-emerald-400/50',
+  },
+  fearless: {
+    glow: 'rgba(244, 63, 94, 0.10)',
+    accent: 'text-rose-400',
+    gradient: 'from-rose-500/15 via-amber-500/10 to-stone-900',
+    tapColor: 'text-rose-400/50',
+  },
+  grateful: {
+    glow: 'rgba(251, 191, 36, 0.12)',
+    accent: 'text-amber-400',
+    gradient: 'from-amber-500/20 via-orange-500/10 to-stone-900',
+    tapColor: 'text-amber-400/50',
+  },
+};
+
+export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showComplete, setShowComplete] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
+  const mountedRef = useRef(true);
+
+  const { playChime, playSuccess } = useAudio();
+
+  const style = step.style || 'cosmic';
+  const config = STYLE_CONFIG[style];
+
+  const isLastInstruction = currentIndex >= step.instructions.length - 1;
+  const allRevealed = currentIndex >= step.instructions.length;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  // Show complete button after last instruction
+  useEffect(() => {
+    if (allRevealed) {
+      const timer = setTimeout(() => {
+        if (mountedRef.current) setShowComplete(true);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [allRevealed]);
+
+  const handleTap = useCallback(() => {
+    if (allRevealed || isFinishing) return;
+
+    // Advance to next instruction
+    setCurrentIndex(prev => prev + 1);
+    playChime();
+  }, [allRevealed, isFinishing, playChime]);
+
+  const handleComplete = useCallback(() => {
+    if (isFinishing) return;
+    setIsFinishing(true);
+    playSuccess();
+    setTimeout(() => {
+      if (mountedRef.current) {
+        onComplete();
+      }
+    }, 300);
+  }, [isFinishing, playSuccess, onComplete]);
+
+  // Progress dots
+  const progress = Math.min(currentIndex, step.instructions.length);
+
+  return (
+    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+      {/* Atmospheric glow - shifts subtly with each tap */}
+      <motion.div
+        className="fixed inset-0 pointer-events-none"
+        animate={{
+          opacity: 0.8 + (progress / step.instructions.length) * 0.4,
+        }}
+        transition={{ duration: 0.5 }}
+        style={{
+          background: `
+            radial-gradient(ellipse 80% 60% at 50% 30%, ${config.glow} 0%, transparent 50%),
+            radial-gradient(ellipse 60% 40% at 30% 70%, ${config.glow} 0%, transparent 40%)
+          `,
+        }}
+      />
+
+      <motion.div
+        className="max-w-lg w-full relative z-10"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-4">
+            <div
+              className={`
+                w-16 h-16 mx-auto rounded-full
+                bg-gradient-to-br ${config.gradient}
+                border border-stone-700/50
+                flex items-center justify-center
+              `}
+            >
+              <Eye size={28} className={config.accent} />
+            </div>
+
+            {step.title && (
+              <h2 className="text-2xl text-stone-100">
+                {step.title}
+              </h2>
+            )}
+
+            {/* Progress dots */}
+            <div className="flex justify-center gap-1.5">
+              {step.instructions.map((_, i) => (
+                <motion.div
+                  key={i}
+                  className={`
+                    h-1.5 rounded-full transition-all duration-300
+                    ${i < progress
+                      ? `w-4 ${style === 'grateful' ? 'bg-amber-400' : style === 'fearless' ? 'bg-rose-400' : style === 'grounding' ? 'bg-emerald-400' : 'bg-indigo-400'}`
+                      : i === progress
+                      ? `w-3 ${style === 'grateful' ? 'bg-amber-400/50' : style === 'fearless' ? 'bg-rose-400/50' : style === 'grounding' ? 'bg-emerald-400/50' : 'bg-indigo-400/50'}`
+                      : 'w-1.5 bg-stone-700'
+                    }
+                  `}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Current instruction - tap area */}
+          <div
+            onClick={!allRevealed ? handleTap : undefined}
+            className={`
+              min-h-[250px] flex flex-col items-center justify-center
+              ${!allRevealed ? 'cursor-pointer' : ''}
+            `}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+            role={!allRevealed ? 'button' : undefined}
+            tabIndex={!allRevealed ? 0 : undefined}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTap(); }}
+          >
+            <AnimatePresence mode="wait">
+              {!allRevealed && currentIndex < step.instructions.length && (
+                <motion.p
+                  key={currentIndex}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="text-xl sm:text-2xl text-stone-200 leading-relaxed text-center px-2"
+                >
+                  {step.instructions[currentIndex]}
+                </motion.p>
+              )}
+
+              {allRevealed && step.closingText && (
+                <motion.p
+                  key="closing"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className={`text-lg ${config.accent} leading-relaxed text-center italic`}
+                >
+                  {step.closingText}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
+            {/* Tap indicator */}
+            {!allRevealed && currentIndex > 0 && (
+              <motion.p
+                className={`text-xs ${config.tapColor} mt-8 tracking-wider`}
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                TAP TO CONTINUE
+              </motion.p>
+            )}
+
+            {/* First-tap prompt */}
+            {!allRevealed && currentIndex === 0 && (
+              <motion.p
+                className={`text-xs ${config.tapColor} mt-8 tracking-wider`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+              >
+                TAP ANYWHERE TO BEGIN
+              </motion.p>
+            )}
+          </div>
+
+          {/* Continue button - after all instructions */}
+          <AnimatePresence>
+            {showComplete && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="pt-2"
+              >
+                <Button
+                  size="lg"
+                  onClick={handleComplete}
+                  disabled={isFinishing}
+                  glow
+                  className="w-full group"
+                >
+                  I feel this
+                  <ChevronRight
+                    size={18}
+                    className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                  />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export default TapFlowStep;

@@ -13,7 +13,7 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import type { FlexibleWorld, FlexibleLesson, FlexibleChapter } from '@/types/lessons';
+import type { FlexibleWorld, FlexibleLesson, FlexibleChapter, LessonStep } from '@/types/lessons';
 import { type Locale } from '@/i18n';
 import { chapter2_Resilience } from './modernWisdomChapter2';
 import { chapter3_Relationships } from './modernWisdomChapter3';
@@ -380,6 +380,177 @@ const lesson1_InstantReframe: FlexibleLesson = {
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ENGAGEMENT PATH - No writing, no long waits, still deeply personal
+  // ═══════════════════════════════════════════════════════════════════════════
+  engagementSteps: [
+    {
+      id: 'e-opening',
+      type: 'scenario',
+      narrative: "Right now, something is sitting in the back of your mind. It's been there for a while. Maybe it's a conversation you keep rehearsing. A wrong that was done to you. A decision you've been avoiding. A fear about the future that won't let go.",
+      mood: 'tension',
+      nextStepId: 'e-scenario-2',
+    },
+    {
+      id: 'e-scenario-2',
+      type: 'scenario',
+      narrative: "You can feel it right now, can't you? That familiar weight. The mental loop that plays when you're trying to fall asleep. The tension that lives in your shoulders, your chest, your jaw.",
+      subtext: "This weight is real. And today, we're going to do something about it.",
+      bridgeQuestion: "Are you ready to face it?",
+      continueLabel: "Yes, I'm ready",
+      mood: 'tension',
+      nextStepId: 'e-identify-burden',
+    },
+    {
+      id: 'e-identify-burden',
+      type: 'resonanceCheck',
+      prompt: "What's been weighing on you?",
+      instruction: "Tap everything that resonates",
+      options: [
+        { id: 'conversation', text: 'A conversation I keep replaying' },
+        { id: 'decision', text: 'A decision I\'ve been avoiding' },
+        { id: 'wronged', text: 'Someone who wronged me' },
+        { id: 'future-fear', text: 'Fear about my future' },
+        { id: 'regret', text: 'Something I said or did that I regret' },
+        { id: 'responsibility', text: 'A responsibility that\'s crushing me' },
+        { id: 'relationship', text: 'A relationship that\'s draining me' },
+        { id: 'self-doubt', text: 'Constant self-doubt' },
+      ],
+      minSelections: 1,
+      maxSelections: 3,
+      storeAs: 'burden-type',
+      nextStepId: 'e-feel-weight',
+    },
+    {
+      id: 'e-feel-weight',
+      type: 'scaleRating',
+      prompt: "How heavy does this feel right now?",
+      lowLabel: 'A whisper',
+      highLabel: 'Crushing',
+      steps: 5,
+      storeAs: 'burden-weight',
+      responsesByRange: {
+        low: 'Even small weights add up when you carry them long enough.',
+        mid: "You've been carrying this longer than you realize.",
+        high: "No wonder you're exhausted. You've been carrying a boulder.",
+      },
+      nextStepId: 'e-ancient-question',
+    },
+    {
+      id: 'e-ancient-question',
+      type: 'insight',
+      text: "For two thousand years, emperors and slaves have asked themselves one question to find peace. Marcus Aurelius asked it while ruling Rome. Epictetus asked it while in chains. James Stockdale asked it while being tortured as a prisoner of war. Today, you ask it about what you just named.",
+      style: 'principle',
+      followUp: "The question is simple. But answering it honestly changes everything.",
+      nextStepId: 'e-the-choice',
+    },
+    {
+      id: 'e-the-choice',
+      type: 'choice',
+      instruction: 'Answer with ruthless honesty',
+      question: 'Is there a concrete action you can take about this in the next 5 minutes?',
+      options: [
+        {
+          id: 'yes',
+          label: 'Yes — there is something I can do',
+          subtext: 'A specific action I could take right now',
+          nextStepId: 'e-action-validation',
+          storeAs: 'controlChoice',
+        },
+        {
+          id: 'no',
+          label: 'No — this is truly outside my control',
+          subtext: 'I cannot change this through my own actions',
+          nextStepId: 'e-acceptance-validation',
+          storeAs: 'controlChoice',
+        },
+      ],
+    },
+    // YES PATH
+    {
+      id: 'e-action-validation',
+      type: 'insight',
+      text: "You have power here. Most people never realize that. They sit with their worries, replaying them endlessly, when the cure was always within reach. You saw differently. You saw an opening.",
+      style: 'reframe',
+      followUp: "Now comes the hardest part: actually doing something about it.",
+      nextStepId: 'e-action-affirmation',
+    },
+    {
+      id: 'e-action-affirmation',
+      type: 'affirmation',
+      preText: "You identified your burden. You saw that action is possible.",
+      statement: "I will take one concrete step about this today. Not tomorrow. Today.",
+      confirmLabel: "This is my commitment",
+      style: 'commitment',
+      nextStepId: 'e-reward',
+    },
+    // NO PATH
+    {
+      id: 'e-acceptance-validation',
+      type: 'insight',
+      text: "You just did something incredibly difficult: you told yourself the truth. This thing that's been torturing you — you cannot fix it through action. Most people spend months, years, entire lifetimes fighting battles they can never win. You stopped. Right here. Right now.",
+      style: 'reframe',
+      followUp: "This isn't defeat. This is wisdom. The question now is: can you actually let go?",
+      nextStepId: 'e-acceptance-tapflow',
+    },
+    {
+      id: 'e-acceptance-tapflow',
+      type: 'tapFlow',
+      title: 'The Release',
+      instructions: [
+        'Take three deep breaths. Slow and deliberate.',
+        'Picture the thing you named. See it clearly in your mind.',
+        'Notice how your body responds. The tightening. The resistance.',
+        "Now imagine you're holding this burden in your cupped hands.",
+        "Feel its weight. You've been carrying this for so long.",
+        'Now slowly... open your hands. Palm up. Fingers spread.',
+        "Watch it lift. It was never yours to carry.",
+        "It exists. But it doesn't need to live inside you.",
+        'Take one more breath. Feel the space where the weight used to be.',
+      ],
+      style: 'grounding',
+      nextStepId: 'e-reward',
+    },
+    // CONVERGE
+    {
+      id: 'e-reward',
+      type: 'reward',
+      celebrationStyle: 'breakthrough',
+      nextStepId: 'e-closing-insight',
+    },
+    {
+      id: 'e-closing-insight',
+      type: 'insight',
+      text: "What you just practiced is called the Dichotomy of Control. It's the foundation of Stoic philosophy, and it has guided leaders, survivors, and ordinary people for over two thousand years. One question: 'Is this within my control?' If yes, act. If no, accept. That's it. That's the entire philosophy.",
+      source: 'Epictetus',
+      sourceBook: 'The Enchiridion',
+      style: 'quote',
+      nextStepId: 'e-mentor',
+    },
+    {
+      id: 'e-mentor',
+      type: 'mentor',
+      responses: {
+        default: [
+          "This question will change your life if you let it. Every worry, every stress, every sleepless night — ask yourself: 'Can I do something about this?' Then act or accept. That's where peace lives.",
+        ],
+        byChoice: {
+          yes: [
+            "You saw an opening where others see only walls. You committed to action — not in writing, but in your heart. That commitment is real. Honor it today.",
+          ],
+          no: [
+            "You practiced the hardest skill in philosophy: accepting what you cannot change. Most people fight that battle forever. Today, you chose peace instead.",
+          ],
+        },
+        byMode: {
+          engagement: [
+            "You didn't write today — but you showed up. You identified your burden, faced the ancient question, and made your choice. That's not less. That's enough. Come back tomorrow.",
+          ],
+        },
+      },
+    },
+  ] as LessonStep[],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -549,6 +720,105 @@ const lesson2_PowerOfTiny: FlexibleLesson = {
       },
     },
   ],
+
+  engagementSteps: [
+    {
+      id: 'e-scenario',
+      type: 'scenario',
+      narrative: "You've tried to change before. Started strong. Then life happened. The gym membership went unused. The meditation app gathered dust. The journal stayed blank after day three.",
+      subtext: "It's not your fault. You were playing the wrong game.",
+      bridgeQuestion: "What if the problem was never your willpower?",
+      continueLabel: "Tell me more",
+      mood: 'hope',
+    },
+    {
+      id: 'e-insight',
+      type: 'insight',
+      text: "We overestimate what we can do in a day and underestimate what we can do in a year. The secret isn't massive action - it's tiny action, repeated. 1% better every day means 37x better in a year.",
+      source: 'James Clear',
+      sourceBook: 'Atomic Habits',
+      style: 'principle',
+      nextStepId: 'e-failed-habits',
+    },
+    {
+      id: 'e-failed-habits',
+      type: 'resonanceCheck',
+      prompt: "What have you tried and failed to stick with?",
+      instruction: "Be honest — tap all that apply",
+      options: [
+        { id: 'exercise', text: 'Working out consistently' },
+        { id: 'eating', text: 'Eating healthier' },
+        { id: 'reading', text: 'Reading more' },
+        { id: 'meditation', text: 'Meditation or mindfulness' },
+        { id: 'sleep', text: 'Waking up earlier' },
+        { id: 'productivity', text: 'Being more productive' },
+        { id: 'bad-habit', text: 'Breaking a bad habit' },
+        { id: 'learning', text: 'Learning something new' },
+      ],
+      minSelections: 1,
+      maxSelections: 4,
+      storeAs: 'failed-habits',
+      nextStepId: 'e-tiny-choice',
+    },
+    {
+      id: 'e-tiny-choice',
+      type: 'choice',
+      instruction: 'Now shrink it to 2 minutes',
+      question: 'Which tiny version could you actually do every single day?',
+      options: [
+        { id: 'pushups', label: '2 pushups instead of a workout', nextStepId: 'e-affirmation' },
+        { id: 'paragraph', label: 'Read one paragraph, not a chapter', nextStepId: 'e-affirmation' },
+        { id: 'breaths', label: '3 deep breaths instead of meditating', nextStepId: 'e-affirmation' },
+        { id: 'shoes', label: 'Put on my shoes instead of running', nextStepId: 'e-affirmation' },
+        { id: 'sentence', label: 'Write one sentence instead of journaling', nextStepId: 'e-affirmation' },
+        { id: 'water', label: 'Drink one glass of water first thing', nextStepId: 'e-affirmation' },
+      ],
+    },
+    {
+      id: 'e-affirmation',
+      type: 'affirmation',
+      preText: "Not the perfect version. The possible version.",
+      statement: "I will do the tiny version. Every day. Starting today.",
+      confirmLabel: "This is my tiny habit",
+      style: 'commitment',
+      nextStepId: 'e-confidence',
+    },
+    {
+      id: 'e-confidence',
+      type: 'scaleRating',
+      prompt: "How confident are you that you can do this tiny version every day?",
+      lowLabel: 'Not sure',
+      highLabel: '100% certain',
+      steps: 5,
+      storeAs: 'confidence',
+      responsesByRange: {
+        low: "Make it even smaller until you hit 5/5. That's the sweet spot.",
+        mid: "Good — but could you shrink it even more? The tinier, the more unstoppable.",
+        high: "That's the sweet spot. A habit you can't fail at. Unstoppable.",
+      },
+      nextStepId: 'e-reward',
+    },
+    {
+      id: 'e-reward',
+      type: 'reward',
+      celebrationStyle: 'standard',
+      nextStepId: 'e-mentor',
+    },
+    {
+      id: 'e-mentor',
+      type: 'mentor',
+      responses: {
+        default: [
+          "You identified what failed, chose the tiny version, and committed. That's more than most people ever do. James Clear says: 'Every action is a vote for who you wish to become.' You just cast your vote.",
+        ],
+        byMode: {
+          engagement: [
+            "You didn't just learn about tiny habits — you chose yours and committed to it. No writing needed. Your commitment is in the choice you made. Honor it today. Do the tiny thing. Then come back tomorrow.",
+          ],
+        },
+      },
+    },
+  ] as LessonStep[],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -737,6 +1007,134 @@ const lesson3_ObstacleOpportunity: FlexibleLesson = {
       },
     },
   ],
+
+  engagementSteps: [
+    {
+      id: 'e-scenario',
+      type: 'scenario',
+      narrative: "There's something blocking your path right now. A rejection. A failure. A person who won't cooperate. A situation that feels impossibly stuck.",
+      subtext: "What if this obstacle is exactly what you need?",
+      continueLabel: "I'm listening",
+      mood: 'curiosity',
+    },
+    {
+      id: 'e-identify-obstacle',
+      type: 'resonanceCheck',
+      prompt: "What kind of obstacle are you facing?",
+      instruction: "Tap what sounds most like you",
+      options: [
+        { id: 'rejection', text: 'Rejection or failure' },
+        { id: 'person', text: 'A difficult person' },
+        { id: 'money', text: 'Financial pressure' },
+        { id: 'health', text: 'Health challenges' },
+        { id: 'stuck', text: 'Feeling stuck in life' },
+        { id: 'relationship', text: 'A broken relationship' },
+        { id: 'career', text: 'Career frustration' },
+        { id: 'self-doubt', text: 'Crushing self-doubt' },
+      ],
+      minSelections: 1,
+      maxSelections: 2,
+      storeAs: 'obstacle-type',
+      nextStepId: 'e-flip-question',
+    },
+    {
+      id: 'e-flip-question',
+      type: 'choice',
+      instruction: 'Consider this carefully',
+      question: 'Could this obstacle be teaching you something you needed to learn?',
+      options: [
+        {
+          id: 'maybe-yes',
+          label: 'Maybe... I can see how it might',
+          nextStepId: 'e-opportunity-insight',
+        },
+        {
+          id: 'not-sure',
+          label: "I honestly don't see it",
+          nextStepId: 'e-reframe-insight',
+        },
+      ],
+    },
+    {
+      id: 'e-opportunity-insight',
+      type: 'insight',
+      text: "The impediment to action advances action. What stands in the way becomes the way. Every obstacle you face contains within it the seeds of an equal or greater opportunity.",
+      source: 'Ryan Holiday',
+      sourceBook: 'The Obstacle Is the Way',
+      style: 'principle',
+      nextStepId: 'e-visualization',
+    },
+    {
+      id: 'e-reframe-insight',
+      type: 'insight',
+      text: "When we can't see the gift in an obstacle, it's usually because we're too close. But history is full of people who became who they were BECAUSE of their obstacles, not despite them. Let's zoom out.",
+      style: 'reframe',
+      nextStepId: 'e-visualization',
+    },
+    {
+      id: 'e-visualization',
+      type: 'tapFlow',
+      title: 'Finding the Gift',
+      instructions: [
+        'Picture your obstacle clearly.',
+        "Now imagine you're 5 years in the future.",
+        "You're looking back at this moment.",
+        'This obstacle helped you become someone stronger.',
+        'What did it teach you?',
+        'What skill did you develop because of it?',
+        'Who did you become by facing it?',
+        'Hold that future version of yourself in your mind.',
+      ],
+      style: 'fearless',
+      nextStepId: 'e-gift-check',
+    },
+    {
+      id: 'e-gift-check',
+      type: 'resonanceCheck',
+      prompt: "What might this obstacle be building in you?",
+      instruction: "Tap what resonates",
+      options: [
+        { id: 'resilience', text: "Resilience — I'm learning to bounce back" },
+        { id: 'patience', text: "Patience — I'm learning to endure" },
+        { id: 'creativity', text: "Creativity — I'm finding new paths" },
+        { id: 'empathy', text: "Empathy — I understand struggle now" },
+        { id: 'strength', text: "Strength — I'm harder to break" },
+        { id: 'wisdom', text: 'Wisdom — I see things differently' },
+      ],
+      minSelections: 1,
+      maxSelections: 3,
+      storeAs: 'obstacle-gift',
+      nextStepId: 'e-affirmation',
+    },
+    {
+      id: 'e-affirmation',
+      type: 'affirmation',
+      statement: "This obstacle is not my enemy. It is my teacher.",
+      confirmLabel: "I accept this lesson",
+      style: 'strength',
+      nextStepId: 'e-reward',
+    },
+    {
+      id: 'e-reward',
+      type: 'reward',
+      celebrationStyle: 'standard',
+      nextStepId: 'e-mentor',
+    },
+    {
+      id: 'e-mentor',
+      type: 'mentor',
+      responses: {
+        default: [
+          "You just did alchemy. You named your obstacle, visualized your future self overcoming it, and identified the gift hiding inside the pain. That's how great people think.",
+        ],
+        byMode: {
+          engagement: [
+            "The obstacle is the way. Not around. Not over. Through. You saw the gift in the struggle today. That shift in perspective — from victim to student — is worth more than any essay could capture.",
+          ],
+        },
+      },
+    },
+  ] as LessonStep[],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -896,6 +1294,100 @@ const lesson4_MorningMindset: FlexibleLesson = {
       },
     },
   ],
+
+  engagementSteps: [
+    {
+      id: 'e-scenario',
+      type: 'scenario',
+      narrative: "Most people wake up and immediately react. Check the phone. Read the news. Get pulled into someone else's agenda. By the time they're out the door, the day is already controlling them.",
+      subtext: "What if you could flip that?",
+      continueLabel: "Show me how",
+      mood: 'hope',
+    },
+    {
+      id: 'e-breathing',
+      type: 'timer',
+      title: 'Arrive in This Moment',
+      instruction: 'Take 3 slow breaths. In through the nose, out through the mouth. Feel yourself arrive.',
+      durationSeconds: 15,
+      timerStyle: 'breathing',
+      guidanceMessages: [
+        'Inhale... hold... exhale.',
+        'This moment is yours.',
+        'No one needs anything from you right now.',
+      ],
+      nextStepId: 'e-ambush',
+    },
+    {
+      id: 'e-ambush',
+      type: 'resonanceCheck',
+      prompt: "What usually ambushes your day?",
+      instruction: "Tap the ones that hit home",
+      options: [
+        { id: 'emails', text: 'Stressful emails or messages' },
+        { id: 'coworker', text: 'A difficult coworker or boss' },
+        { id: 'commute', text: 'Traffic or commute chaos' },
+        { id: 'todos', text: 'Overwhelming to-do list' },
+        { id: 'family', text: 'Family tensions' },
+        { id: 'social', text: 'Social media comparison' },
+        { id: 'unexpected', text: 'Unexpected problems that derail everything' },
+        { id: 'self-talk', text: 'My own negative self-talk' },
+      ],
+      minSelections: 1,
+      maxSelections: 3,
+      storeAs: 'day-ambush',
+      nextStepId: 'e-prep-insight',
+    },
+    {
+      id: 'e-prep-insight',
+      type: 'insight',
+      text: "By naming what might go wrong, you've already taken away its power to surprise you. A warrior who expects battle is calm when it comes. You're not being negative - you're being prepared.",
+      style: 'reframe',
+      followUp: "Now you have a choice: when that thing happens, how do you WANT to respond?",
+      nextStepId: 'e-response-choice',
+    },
+    {
+      id: 'e-response-choice',
+      type: 'choice',
+      instruction: 'Choose your stance',
+      question: 'When this happens today, how do you want to show up?',
+      options: [
+        { id: 'calm', label: "Calm and centered — I won't let it rattle me", nextStepId: 'e-affirmation' },
+        { id: 'curious', label: "Curious and open — I'll look for what I can learn", nextStepId: 'e-affirmation' },
+        { id: 'compassionate', label: 'Compassionate — to others and myself', nextStepId: 'e-affirmation' },
+        { id: 'prepared', label: "Prepared and proactive — I expected this, I'm ready", nextStepId: 'e-affirmation' },
+      ],
+    },
+    {
+      id: 'e-affirmation',
+      type: 'affirmation',
+      preText: "You named the ambush. You chose your response.",
+      statement: "Today, when life tests me, I choose to respond with intention, not reaction.",
+      confirmLabel: "I am ready for today",
+      style: 'commitment',
+      nextStepId: 'e-reward',
+    },
+    {
+      id: 'e-reward',
+      type: 'reward',
+      celebrationStyle: 'standard',
+      nextStepId: 'e-mentor',
+    },
+    {
+      id: 'e-mentor',
+      type: 'mentor',
+      responses: {
+        default: [
+          "Marcus Aurelius began every morning exactly like this — anticipating challenges and choosing his response. He ran the Roman Empire with this 2-minute practice. Now it's yours.",
+        ],
+        byMode: {
+          engagement: [
+            "You just rehearsed your day before it happened. Athletes visualize. Performers rehearse. Now you do too. The challenge will come — but for the first time, you'll be ready. Not because you wrote a plan, but because you chose who you want to be when it arrives.",
+          ],
+        },
+      },
+    },
+  ] as LessonStep[],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1058,6 +1550,126 @@ const lesson5_GratitudeShift: FlexibleLesson = {
       },
     },
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ENGAGEMENT PATH: The Gratitude Shift (no writing, no long waits)
+  // Flow: scenario → tapFlow (loss) → insight → resonanceCheck → scaleRating
+  //       → timer (15s presence) → affirmation → reward → mentor
+  // ═══════════════════════════════════════════════════════════════════════════
+  engagementSteps: [
+    {
+      id: 'e-scenario',
+      type: 'scenario',
+      narrative: "You've heard it a thousand times: 'Be grateful.' But forced gratitude feels hollow. You can't just decide to feel thankful. Or can you?",
+      subtext: "The Stoics found a backdoor to genuine appreciation.",
+      continueLabel: "Show me",
+      mood: 'curiosity',
+    },
+    {
+      id: 'e-loss-tapflow',
+      type: 'tapFlow',
+      title: 'The Temporary Gift',
+      instructions: [
+        'Think of someone you love. See their face.',
+        'Now imagine: what if they were gone tomorrow?',
+        'Feel the weight of that absence.',
+        "The conversations you'd miss. The moments lost.",
+        'Sit with that feeling for a moment.',
+        "Now... open your eyes. They're still here.",
+        "They were always a temporary gift. As are you.",
+      ],
+      closingText: "Everything you love is borrowed, not owned.",
+      style: 'grateful',
+      nextStepId: 'e-insight',
+    },
+    {
+      id: 'e-insight',
+      type: 'insight',
+      text: "This is 'negative visualization' - imagining loss to unlock appreciation. It's not morbid. It's the fastest path to genuine gratitude. You don't have to pretend. You just have to remember that everything is temporary.",
+      source: 'William B. Irvine',
+      sourceBook: 'A Guide to the Good Life',
+      style: 'principle',
+      nextStepId: 'e-taken-for-granted',
+    },
+    {
+      id: 'e-taken-for-granted',
+      type: 'resonanceCheck',
+      prompt: "What have you been taking for granted?",
+      instruction: "Tap the ones that hit home",
+      options: [
+        { id: 'health', text: 'My health or physical ability', emoji: '🫀' },
+        { id: 'person', text: 'Someone who loves me', emoji: '💛' },
+        { id: 'safety', text: 'Safety and a roof over my head', emoji: '🏠' },
+        { id: 'senses', text: 'My senses — sight, hearing, taste', emoji: '👁️' },
+        { id: 'freedom', text: 'Freedom to choose my own path', emoji: '🦅' },
+        { id: 'today', text: 'The fact that I woke up today', emoji: '☀️' },
+        { id: 'access', text: 'Access to food, water, warmth', emoji: '🌊' },
+        { id: 'moments', text: 'Small moments that make life beautiful', emoji: '✨' },
+      ],
+      minSelections: 1,
+      maxSelections: 4,
+      storeAs: 'taken-for-granted',
+      nextStepId: 'e-gratitude-scale',
+    },
+    {
+      id: 'e-gratitude-scale',
+      type: 'scaleRating',
+      prompt: "Right now, in this moment — how grateful do you feel?",
+      lowLabel: "Not much",
+      highLabel: "Deeply grateful",
+      steps: 5,
+      storeAs: 'gratitude-level',
+      responsesByRange: {
+        low: "Honest. Gratitude isn't always easy to feel. But you just named what matters — that's the first step.",
+        mid: "You feel it stirring. That's the shift beginning. From thinking about gratitude to feeling it.",
+        high: "That warmth you feel? That's what happens when you stop chasing more and see what's already here.",
+      },
+      nextStepId: 'e-presence-timer',
+    },
+    {
+      id: 'e-presence-timer',
+      type: 'timer',
+      title: 'A Moment of Presence',
+      instruction: 'Close your eyes. Feel gratitude for what you just named. Not in your head — in your chest.',
+      durationSeconds: 15,
+      timerStyle: 'presence',
+      guidanceMessages: [
+        'Let the appreciation fill you.',
+        'This moment is a gift.',
+      ],
+      nextStepId: 'e-affirmation',
+    },
+    {
+      id: 'e-affirmation',
+      type: 'affirmation',
+      preText: "You didn't force gratitude. You uncovered it.",
+      statement: "I don't need more to be grateful. I need to see what I already have.",
+      subtext: "From scarcity to abundance — in one shift.",
+      confirmLabel: "I see it now",
+      style: 'gratitude',
+      nextStepId: 'e-reward',
+    },
+    {
+      id: 'e-reward',
+      type: 'reward',
+      celebrationStyle: 'breakthrough',
+      nextStepId: 'e-mentor',
+    },
+    {
+      id: 'e-mentor',
+      type: 'mentor',
+      responses: {
+        default: [
+          "Seneca wrote: 'It is not the man who has too little, but the man who craves more, that is poor.' You just became rich by seeing what you already have.",
+        ],
+        byMode: {
+          engagement: [
+            "You didn't write a gratitude list. You didn't force yourself to feel thankful. You imagined loss — and appreciation appeared on its own. That's the Stoic secret: you don't create gratitude. You uncover it by remembering that everything is temporary. The people you love. The body you inhabit. This very day. All borrowed. All precious.",
+          ],
+        },
+      },
+    },
+  ] as LessonStep[],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
