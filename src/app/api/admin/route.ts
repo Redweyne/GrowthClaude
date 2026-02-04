@@ -61,7 +61,8 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('[Admin API] Error:', error);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Internal error', reason: message }, { status: 500 });
   }
 }
 
