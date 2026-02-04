@@ -31,12 +31,14 @@ import {
 } from '@/content/mentor';
 import { isLowEffortReflection } from '@/lib/reflection';
 import type { Lesson } from '@/types';
+import type { LessonMode } from '@/types/lessons';
 
 interface MentorStepProps {
   lesson: Lesson;
   reflection: string;
   onComplete: () => void;
   onRetry: () => void;
+  mode?: LessonMode; // 'deep' (writing) or 'engagement' (no writing)
 }
 
 // Localized wisdom is sourced from content/mentor
@@ -57,7 +59,7 @@ const springs = {
   gentle: { type: 'spring' as const, stiffness: 120, damping: 14 },
 };
 
-export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorStepProps) {
+export function MentorStep({ lesson, reflection, onComplete, onRetry, mode = 'deep' }: MentorStepProps) {
   const { name, currentStreak } = useStore();
   const { playTap, playSparkle, playCelebrate } = useAudio();
   const { t, isRTL, locale } = useTranslation();
@@ -71,7 +73,11 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
   const [showStreakBonus, setShowStreakBonus] = useState(false);
 
   // Check if reflection is low effort
-  const isLowEffort = useMemo(() => isLowEffortReflection(reflection), [reflection]);
+  // In engagement mode, skip reflection quality check - there's no writing!
+  const isLowEffort = useMemo(() => {
+    if (mode === 'engagement') return false;
+    return isLowEffortReflection(reflection);
+  }, [reflection, mode]);
 
   // Check for streak milestone
   const nextStreak = currentStreak + 1;

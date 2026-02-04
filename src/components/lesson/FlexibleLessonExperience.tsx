@@ -718,7 +718,7 @@ export function FlexibleLessonExperience({
             : mentorStepData.responses.byCompletion.notCompleted;
         }
 
-        return (
+return (
           <MentorStep
             lesson={{
               id: lesson.id,
@@ -737,6 +737,7 @@ export function FlexibleLessonExperience({
             reflection={writings.reflection || ''}
             onComplete={handleMentorComplete}
             onRetry={handleRetry}
+            mode={mode}
           />
         );
 
