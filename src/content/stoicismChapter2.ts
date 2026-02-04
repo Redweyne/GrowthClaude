@@ -122,7 +122,6 @@ const lesson6_DoTheWork: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -213,7 +212,6 @@ const lesson7_ObstacleWay: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {
@@ -296,7 +294,6 @@ const lesson8_ReserveClause: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -380,7 +377,6 @@ const lesson9_ActImmediately: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -516,7 +512,6 @@ const lesson10_VoluntaryDiscomfort: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {

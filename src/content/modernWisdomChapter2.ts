@@ -189,7 +189,6 @@ const lesson6_ComebackFormula: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {
@@ -375,7 +374,6 @@ const lesson7_EmbraceStruggle: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -584,7 +582,6 @@ const lesson8_FearSetting: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {
@@ -745,7 +742,6 @@ const lesson9_AntifragileMind: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -892,7 +888,6 @@ const lesson10_FutureSelf: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {

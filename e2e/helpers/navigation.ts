@@ -130,40 +130,24 @@ export async function navigateToChoice(page: Page) {
 }
 
 /**
- * Complete the reward flow by clicking through phases
+ * Complete the reward flow (new 2-phase design: reveal auto-plays, then crown with single button)
  */
 export async function completeRewardFlow(page: Page) {
   await page.waitForSelector('[data-testid="xp-celebration"]', { timeout: 15000 });
   
-  let rewardPhases = 0;
-  // It takes at least ~15s to get through all phases
-  // Loop enough times to catch all transitions
-  while (rewardPhases < 30) {
-    // Check for final button first
-    const finalBtn = page.locator('[data-testid="reward-continue-btn"]');
-    if (await finalBtn.isVisible()) {
-      if (await finalBtn.isEnabled()) {
-          await finalBtn.click();
-          return; // Done!
-      } else {
-          await page.waitForTimeout(500);
-          continue;
+  // Wait for the continue button to appear and be enabled
+  // The reveal phase auto-plays for ~2.5s, then crown phase shows the button
+  let attempts = 0;
+  while (attempts < 20) {
+    const continueBtn = page.locator('[data-testid="reward-continue-btn"]');
+    if (await continueBtn.isVisible()) {
+      if (await continueBtn.isEnabled()) {
+        await continueBtn.click();
+        return; // Done!
       }
     }
-    
-    // Check for phase button
-    const phaseBtn = page.locator('[data-testid="reward-phase-btn"]');
-    if (await phaseBtn.isVisible()) {
-       if (await phaseBtn.isEnabled()) {
-           await phaseBtn.click();
-           await page.waitForTimeout(1000);
-       } else {
-           await page.waitForTimeout(500);
-       }
-    } else {
-       await page.waitForTimeout(500);
-    }
-    rewardPhases++;
+    await page.waitForTimeout(500);
+    attempts++;
   }
 }
 

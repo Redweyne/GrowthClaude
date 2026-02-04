@@ -80,7 +80,6 @@ const lesson11_AmorFati: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {
@@ -177,7 +176,6 @@ const lesson12_MementoMori: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {
@@ -268,7 +266,6 @@ const lesson13_PremeditatioMalorum: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -360,7 +357,6 @@ const lesson14_EternalRecurrence: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -462,7 +458,6 @@ const lesson15_InnerCitadel: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             customMessage: "You have completed Stoicism. The Inner Citadel is yours.",
             nextStepId: 'mentor',
         },

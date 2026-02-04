@@ -252,8 +252,6 @@ export interface MentorStep extends BaseLessonStep {
 
 export interface RewardStep extends BaseLessonStep {
   type: 'reward';
-  // Celebration style
-  celebrationStyle?: 'standard' | 'breakthrough' | 'milestone';
   // Custom celebration message
   customMessage?: string;
 }

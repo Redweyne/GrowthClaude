@@ -175,11 +175,6 @@ export const GROWTH_LEVELS: GrowthLevel[] = [
   },
 ];
 
-// ============================================================================
-// PERSONALIZED REWARD MESSAGES
-// ============================================================================
-// These acknowledge the person, not just the action
-
 // Deterministic hash helper
 function getStableIndex(seed: string, length: number): number {
   let hash = 0;
@@ -189,103 +184,6 @@ function getStableIndex(seed: string, length: number): number {
     hash = hash & hash;
   }
   return Math.abs(hash) % length;
-}
-
-export function getCompletionMessage(name: string | null, lessonTitle: string, streak: number): string {
-  const messages = [
-    `You showed up today${name ? `, ${name}` : ''}. That's what matters most.`,
-    `Another step forward${name ? `, ${name}` : ''}. This is how transformation happens.`,
-    `${name ? `${name}, you` : 'You'} chose growth today. That choice compounds.`,
-    `The work you just did${name ? `, ${name}` : ''} - it matters. Even when it doesn't feel like it.`,
-    `${name ? `${name}, this` : 'This'} quiet moment of practice is building something extraordinary.`,
-  ];
-
-  // Add streak-specific messages
-  if (streak >= 30) {
-    return `${name ? `${name}, ` : ''}${streak} days of choosing yourself. That's not discipline - that's devotion.`;
-  } else if (streak >= 14) {
-    return `${name ? `${name}, ` : ''}Two weeks of consistency. You're proving who you're becoming.`;
-  } else if (streak >= 7) {
-    return `${name ? `${name}, ` : ''}A full week of showing up. The habit is taking root.`;
-  }
-
-  // Use deterministic selection based on lesson title
-  const index = getStableIndex(lessonTitle, messages.length);
-  return messages[index];
-}
-
-export function getStreakMessage(streak: number): { title: string; subtitle: string } {
-  if (streak === 1) {
-    return {
-      title: "Day One",
-      subtitle: "Every journey begins here"
-    };
-  } else if (streak < 7) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "Building momentum"
-    };
-  } else if (streak === 7) {
-    return {
-      title: "One Week",
-      subtitle: "The habit is forming"
-    };
-  } else if (streak < 14) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "Consistency is taking hold"
-    };
-  } else if (streak === 14) {
-    return {
-      title: "Two Weeks",
-      subtitle: "This is who you're becoming"
-    };
-  } else if (streak < 21) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "Commitment deepening"
-    };
-  } else if (streak === 21) {
-    return {
-      title: "Three Weeks",
-      subtitle: "They say this forges habits"
-    };
-  } else if (streak < 30) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "Remarkable dedication"
-    };
-  } else if (streak === 30) {
-    return {
-      title: "One Month",
-      subtitle: "You've changed"
-    };
-  } else if (streak < 60) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "Extraordinary commitment"
-    };
-  } else if (streak < 90) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "This is rare. You are rare."
-    };
-  } else if (streak < 180) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "A testament to your will"
-    };
-  } else if (streak < 365) {
-    return {
-      title: `${streak} Days`,
-      subtitle: "Approaching a year of transformation"
-    };
-  } else {
-    return {
-      title: `${streak} Days`,
-      subtitle: "You've built something permanent"
-    };
-  }
 }
 
 // ============================================================================

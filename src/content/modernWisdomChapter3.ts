@@ -143,7 +143,6 @@ const lesson11_MirrorEffect: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -355,7 +354,6 @@ const lesson12_RadicalHonesty: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -511,7 +509,6 @@ const lesson13_BoundariesGrace: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -663,7 +660,6 @@ const lesson14_EmpathyShift: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -857,7 +853,6 @@ const lesson15_ForgivenessFreedm: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'breakthrough',
             nextStepId: 'mentor',
         },
         {

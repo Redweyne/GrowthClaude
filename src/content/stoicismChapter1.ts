@@ -141,7 +141,6 @@ const lesson1_DichotomyControl: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -252,7 +251,6 @@ const lesson2_PerceptionEverything: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -348,7 +346,6 @@ const lesson3_ViewFromAbove: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -436,7 +433,6 @@ const lesson4_MorningPreparation: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {
@@ -534,7 +530,6 @@ const lesson5_RemovingJudgment: FlexibleLesson = {
         {
             id: 'reward',
             type: 'reward',
-            celebrationStyle: 'standard',
             nextStepId: 'mentor',
         },
         {

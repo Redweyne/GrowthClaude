@@ -338,7 +338,6 @@ const lesson1_InstantReframe: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'closing-insight',
     },
 
@@ -534,7 +533,6 @@ const lesson1_InstantReframe: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'e-closing-insight',
     },
     {
@@ -715,7 +713,6 @@ const lesson2_PowerOfTiny: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -819,7 +816,6 @@ const lesson2_PowerOfTiny: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'e-mentor',
     },
     {
@@ -1010,7 +1006,6 @@ const lesson3_ObstacleOpportunity: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -1135,7 +1130,6 @@ const lesson3_ObstacleOpportunity: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'e-mentor',
     },
     {
@@ -1297,7 +1291,6 @@ const lesson4_MorningMindset: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -1388,7 +1381,6 @@ const lesson4_MorningMindset: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'e-mentor',
     },
     {
@@ -1553,7 +1545,6 @@ const lesson5_GratitudeShift: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'mentor',
     },
     {
@@ -1670,7 +1661,6 @@ const lesson5_GratitudeShift: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'e-mentor',
     },
     {
@@ -2010,7 +2000,6 @@ const lesson1_InstantReframe_FR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'closing-insight',
     },
     {
@@ -2201,7 +2190,6 @@ const lesson1_InstantReframe_FR: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'e-closing-insight',
     },
     {
@@ -2514,7 +2502,6 @@ const lesson1_InstantReframe_AR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'closing-insight',
     },
     {
@@ -2705,7 +2692,6 @@ const lesson1_InstantReframe_AR: FlexibleLesson = {
     {
       id: 'e-reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'e-closing-insight',
     },
     {
@@ -2881,7 +2867,6 @@ const lesson2_PowerOfTiny_FR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -3045,7 +3030,6 @@ const lesson2_PowerOfTiny_AR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -3236,7 +3220,6 @@ const lesson3_ObstacleOpportunity_FR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -3419,7 +3402,6 @@ const lesson3_ObstacleOpportunity_AR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -3573,7 +3555,6 @@ const lesson4_MorningMindset_FR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -3727,7 +3708,6 @@ const lesson4_MorningMindset_AR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'standard',
       nextStepId: 'mentor',
     },
     {
@@ -3884,7 +3864,6 @@ const lesson5_GratitudeShift_FR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'mentor',
     },
     {
@@ -4041,7 +4020,6 @@ const lesson5_GratitudeShift_AR: FlexibleLesson = {
     {
       id: 'reward',
       type: 'reward',
-      celebrationStyle: 'breakthrough',
       nextStepId: 'mentor',
     },
     {
