@@ -5,9 +5,8 @@ import { PrismaClient } from '@/generated/prisma/client';
 const globalForPrisma = globalThis as unknown as { activityDb: PrismaClient };
 
 function createClient() {
-  // Prisma CLI creates the DB relative to the schema directory (prisma/).
-  // At runtime, resolve to an absolute path so it works regardless of CWD.
-  const dbFile = path.resolve(process.cwd(), 'prisma', 'dev.db');
+  // prisma.config.ts is at project root, so prisma db push creates dev.db there.
+  const dbFile = path.resolve(process.cwd(), 'dev.db');
   const adapter = new PrismaBetterSqlite3({
     url: `file:${dbFile}`,
   });
