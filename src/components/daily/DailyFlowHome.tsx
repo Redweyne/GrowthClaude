@@ -6,6 +6,7 @@ import { BookOpen, Heart, Dumbbell, ChevronRight, ChevronLeft, Settings, Lock, C
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { AmbientBackground } from '@/components/ambient';
+import { SparkLockedCard } from '@/components/spark/SparkLockedCard';
 import { HeroGreeting } from '@/components/home/HeroGreeting';
 import { LevelDisplay } from '@/components/home/LevelDisplay';
 import { getLevelFromXp, getXpProgress } from '@/types';
@@ -54,6 +55,10 @@ interface DailyFlowHomeProps {
   onRedoPastLesson?: () => void;
   onWeeklyReflection?: () => void;
   onOpenDashboard?: () => void;
+
+  // Spark
+  onOpenSpark?: () => void;
+  isSparkForcedClosed?: boolean;
 }
 
 export function DailyFlowHome({
@@ -79,6 +84,8 @@ export function DailyFlowHome({
   onRedoPastLesson,
   onWeeklyReflection,
   onOpenDashboard,
+  onOpenSpark,
+  isSparkForcedClosed,
 }: DailyFlowHomeProps) {
   const { t, isRTL } = useTranslation();
 
@@ -171,6 +178,22 @@ export function DailyFlowHome({
                   {t('dailyFlow.doneTheWork')}
                 </p>
               </Card>
+
+              {/* Spark — the daily reward */}
+              {onOpenSpark && (
+                <motion.div
+                  className="mb-6"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <SparkLockedCard
+                    isUnlocked={true}
+                    isForcedClosed={isSparkForcedClosed}
+                    onOpen={onOpenSpark}
+                  />
+                </motion.div>
+              )}
 
               {/* Tomorrow's glimpse */}
               {tomorrowsLesson && (
@@ -335,6 +358,21 @@ export function DailyFlowHome({
                 t={t}
               />
             </div>
+          )}
+
+          {/* Spark locked preview (when practice not complete) */}
+          {!isComplete && onOpenSpark && (
+            <motion.div
+              className="mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <SparkLockedCard
+                isUnlocked={false}
+                onOpen={onOpenSpark}
+              />
+            </motion.div>
           )}
         </div>
 

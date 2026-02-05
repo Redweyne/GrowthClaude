@@ -35,6 +35,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { AmbientBackground } from '@/components/ambient';
+import { SparkLockedCard } from '@/components/spark/SparkLockedCard';
 import { HelpTooltip } from '@/components/help';
 import { getXpProgress } from '@/types';
 import { useTranslation } from '@/i18n';
@@ -90,6 +91,11 @@ interface DashboardProps {
   onOpenIdentity: () => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
+
+  // Spark
+  onOpenSpark?: () => void;
+  isSparkUnlocked?: boolean;
+  isSparkForcedClosed?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -407,6 +413,9 @@ export function DashboardNew({
   onOpenIdentity,
   onOpenStats,
   onOpenSettings,
+  onOpenSpark,
+  isSparkUnlocked,
+  isSparkForcedClosed,
 }: DashboardProps) {
   const { t, isRTL } = useTranslation();
   const xpProgress = getXpProgress(totalXp);
@@ -619,6 +628,22 @@ export function DashboardNew({
               {isRTL ? <ChevronLeft size={20} className="text-stone-600" /> : <ChevronRight size={20} className="text-stone-600" />}
             </div>
           </motion.button>
+
+          {/* Spark card */}
+          {onOpenSpark && (
+            <motion.div
+              className="mt-3"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <SparkLockedCard
+                isUnlocked={isSparkUnlocked ?? false}
+                isForcedClosed={isSparkForcedClosed}
+                onOpen={onOpenSpark}
+              />
+            </motion.div>
+          )}
         </motion.div>
 
         {/* ═══════════════════════════════════════════════════════════════════

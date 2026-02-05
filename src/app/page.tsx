@@ -33,6 +33,8 @@ import { getModernWisdomWorld } from '@/content/modernWisdom';
 import { useTranslation } from '@/i18n';
 import type { FlexibleLesson, LessonProgress, LessonMode, FlexibleWorld } from '@/types/lessons';
 import { LessonModeSelector } from '@/components/lesson/LessonModeSelector';
+import { SparkFeed, SparkUnlockScreen } from '@/components/spark';
+import { useSparkStore } from '@/store/useSparkStore';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useActivityLog } from '@/providers/ActivityLoggerProvider';
 
@@ -54,7 +56,9 @@ type AppView =
   | 'settings'
   | 'worldSwitcher'
   | 'echoes'
-  | 'echo-review';
+  | 'echo-review'
+  | 'spark'
+  | 'spark-unlock';
 
 export default function Home() {
   // Hydration guard: Zustand persist middleware loads state from localStorage
@@ -116,6 +120,13 @@ export default function Home() {
     completeExercise,
     markDailyComplete,
   } = useDailyPracticeStore();
+
+  // Spark store
+  const {
+    hasSeenUnlockScreen: sparkUnlockSeen,
+    markUnlockScreenSeen: markSparkUnlockSeen,
+    isForcedClosedToday: isSparkForcedClosed,
+  } = useSparkStore();
 
   const { locale } = useTranslation();
   const { logEvent, trackView } = useActivityLog();
@@ -523,6 +534,13 @@ export default function Home() {
       return;
     }
 
+    // Show Spark unlock screen on first-ever daily completion
+    if (!sparkUnlockSeen) {
+      markSparkUnlockSeen();
+      setCurrentView('spark-unlock');
+      return;
+    }
+
     setCurrentView('home');
   };
 
@@ -773,6 +791,23 @@ export default function Home() {
     );
   }
 
+  // Spark Unlock Screen - first-time celebration
+  if (currentView === 'spark-unlock') {
+    return (
+      <SparkUnlockScreen
+        onEnterSpark={() => setCurrentView('spark')}
+        onSkip={() => setCurrentView('home')}
+      />
+    );
+  }
+
+  // Spark Feed - motivational shorts
+  if (currentView === 'spark') {
+    return (
+      <SparkFeed onExit={() => setCurrentView('home')} />
+    );
+  }
+
   // Settings
   if (currentView === 'settings') {
     return (
@@ -827,6 +862,9 @@ export default function Home() {
           onOpenIdentity={() => setCurrentView('identity')}
           onOpenStats={() => setCurrentView('progress')}
           onOpenSettings={() => setCurrentView('settings')}
+          onOpenSpark={() => setCurrentView('spark')}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          isSparkForcedClosed={isSparkForcedClosed()}
         />
       </>
     );
@@ -923,6 +961,8 @@ export default function Home() {
         onBrowseMoreEchoes={() => setCurrentView('echoes')}
         onRedoPastLesson={() => setCurrentView('map')}
         onOpenDashboard={() => setCurrentView('dashboard')}
+        onOpenSpark={() => setCurrentView('spark')}
+        isSparkForcedClosed={isSparkForcedClosed()}
       />
 
       {/* First-Session Coaching Modal */}
