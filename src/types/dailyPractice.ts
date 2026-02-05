@@ -10,58 +10,89 @@
 // The Daily Loop:
 // 1. THE LESSON - Learn today's wisdom
 // 2. THE ECHO - Connect with a fellow traveler's reflection (mandatory)
-// 3. THE PRACTICE - 5 exercises to embody the wisdom
+// 3. THE PRACTICE - 3 exercises to embody the wisdom (no writing!)
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EXERCISE TYPES - Different ways to practice wisdom
+// NEW EXERCISE TYPES - Engaging, emotional, no writing required
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ExerciseType =
-  | 'scenario'      // Real-life application scenario
-  | 'quote'         // Quote contemplation with reflection
-  | 'application'   // Tomorrow's specific application
-  | 'anchor'        // Physical anchor with breath work
-  | 'reframe';      // Reframe a challenge using today's wisdom
+  | 'truth-mirror'     // Tap through truths, hold when one resonates deeply
+  | 'soul-compass'     // Multi-select what resonates + intensity
+  | 'presence-anchor'; // Enhanced breathwork with visualization prompts
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EXERCISE CONTENT STRUCTURES
+// TRUTH MIRROR - Tap through revelations until one stops you
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface ScenarioContent {
-  situation: string;          // The real-life situation
-  question: string;           // The question to reflect on
-  hints?: string[];           // Helpful thinking prompts
+export interface TruthMirrorContent {
+  /** Statements to tap through - user holds when one resonates */
+  statements: string[];
+  /** Message shown when user holds on their truth */
+  holdReveal: string;
+  /** Breath prompts after selection (shown during exhales) */
+  breathPrompts: string[];
+  /** Style affects colors and atmosphere */
+  style: 'release' | 'strength' | 'gratitude' | 'clarity';
 }
 
-export interface QuoteContent {
-  quote: string;              // The wisdom quote
-  author: string;             // Who said it
-  source?: string;            // Book or context
-  reflectionPrompt: string;   // What to reflect on
+// ─────────────────────────────────────────────────────────────────────────────
+// SOUL COMPASS - Multi-select resonance + intensity
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SoulCompassOption {
+  id: string;
+  emoji: string;
+  text: string;
 }
 
-export interface ApplicationContent {
-  instruction: string;        // What to do tomorrow
-  planPrompt: string;         // Specific planning question
-  examples?: string[];        // Example applications
-}
-
-export interface AnchorContent {
-  gesture: string;            // Physical anchor description
-  meaning: string;            // What the gesture represents
-  breathPattern: string;      // Breathing instructions
-  repetitions: number;        // Number of times to repeat
-}
-
-export interface ReframeContent {
-  challengePrompt: string;    // Describe the challenge
-  reframeGuide: string;       // How to reframe it
-  example: {
-    before: string;           // Example before reframe
-    after: string;            // Example after reframe
+export interface SoulCompassContent {
+  /** Central question or prompt */
+  centralQuestion: string;
+  /** Options arranged around the compass */
+  options: SoulCompassOption[];
+  /** Minimum selections required (default 1) */
+  minSelections?: number;
+  /** Maximum selections allowed (default all) */
+  maxSelections?: number;
+  /** Whether to show intensity slider after selection */
+  showIntensity: boolean;
+  /** Intensity question (if showIntensity is true) */
+  intensityQuestion?: string;
+  /** Labels for intensity scale */
+  intensityLabels?: { low: string; high: string };
+  /** Contextual responses based on intensity (low/mid/high) */
+  intensityResponses?: {
+    low: string;
+    mid: string;
+    high: string;
   };
+  /** Optional follow-up options after first selection */
+  followUpQuestion?: string;
+  followUpOptions?: SoulCompassOption[];
+  /** Style affects colors */
+  style: 'introspective' | 'energizing' | 'grounding' | 'awakening';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRESENCE ANCHOR - Breathwork with visualization prompts
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface PresenceAnchorContent {
+  /** Physical gesture description */
+  gesture: string;
+  /** What the gesture represents */
+  meaning: string;
+  /** Number of breath cycles */
+  breathCycles: number;
+  /** Visualization prompts shown during each exhale */
+  exhalePrompts: string[];
+  /** Final anchoring message */
+  anchorMessage: string;
+  /** Style affects colors and atmosphere */
+  style: 'release' | 'strength' | 'gratitude' | 'grounding';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,28 +103,20 @@ export interface DailyExercise {
   id: string;
   type: ExerciseType;
   title: string;
-  content: ScenarioContent | QuoteContent | ApplicationContent | AnchorContent | ReframeContent;
+  content: TruthMirrorContent | SoulCompassContent | PresenceAnchorContent;
 }
 
 // Type guards for exercise content
-export function isScenarioContent(content: DailyExercise['content']): content is ScenarioContent {
-  return 'situation' in content && 'question' in content;
+export function isTruthMirrorContent(content: DailyExercise['content']): content is TruthMirrorContent {
+  return 'statements' in content && 'holdReveal' in content;
 }
 
-export function isQuoteContent(content: DailyExercise['content']): content is QuoteContent {
-  return 'quote' in content && 'author' in content;
+export function isSoulCompassContent(content: DailyExercise['content']): content is SoulCompassContent {
+  return 'centralQuestion' in content && 'options' in content;
 }
 
-export function isApplicationContent(content: DailyExercise['content']): content is ApplicationContent {
-  return 'instruction' in content && 'planPrompt' in content;
-}
-
-export function isAnchorContent(content: DailyExercise['content']): content is AnchorContent {
-  return 'gesture' in content && 'breathPattern' in content;
-}
-
-export function isReframeContent(content: DailyExercise['content']): content is ReframeContent {
-  return 'challengePrompt' in content && 'reframeGuide' in content;
+export function isPresenceAnchorContent(content: DailyExercise['content']): content is PresenceAnchorContent {
+  return 'gesture' in content && 'exhalePrompts' in content;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -167,7 +190,7 @@ export interface PastWorldAccess {
 export type DailyFlowPhase =
   | 'lesson'        // Phase 1: Main lesson
   | 'echo'          // Phase 2: Mandatory echo
-  | 'practice'      // Phase 3: 5 exercises
+  | 'practice'      // Phase 3: 3 exercises
   | 'complete';     // All done for today
 
 export interface DailyFlowState {
@@ -175,7 +198,7 @@ export interface DailyFlowState {
   canAccessLesson: boolean;       // Always true if not completed
   canAccessEcho: boolean;         // True after lesson complete
   canAccessPractice: boolean;     // True after echo complete
-  exercisesRemaining: number;     // 5 down to 0
+  exercisesRemaining: number;     // 3 down to 0
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -227,7 +250,7 @@ export function canDoPastWorldExercise(lastExerciseDate: string | null): boolean
 /**
  * Get the daily flow state based on progress
  */
-export function getDailyFlowState(progress: DailyProgress | null, totalExercises: number = 5): DailyFlowState {
+export function getDailyFlowState(progress: DailyProgress | null, totalExercises: number = 3): DailyFlowState {
   if (!progress) {
     return {
       currentPhase: 'lesson',
@@ -286,7 +309,7 @@ export function getDailyFlowState(progress: DailyProgress | null, totalExercises
 export const DAILY_XP_REWARDS = {
   lesson: 20,           // Base XP for lesson (can be more based on lesson config)
   mandatoryEcho: 10,    // XP for the mandatory echo
-  exercise: 5,          // XP per exercise (5 exercises = 25 XP potential)
+  exercise: 5,          // XP per exercise (3 exercises = 15 XP potential)
   dailyCompletion: 10,  // Bonus for completing all phases
 } as const;
 
@@ -296,6 +319,6 @@ export const DAILY_XP_REWARDS = {
 export function calculateDailyXpPotential(lessonXp: number = 20): number {
   return lessonXp +
          DAILY_XP_REWARDS.mandatoryEcho +
-         (DAILY_XP_REWARDS.exercise * 5) +
+         (DAILY_XP_REWARDS.exercise * 3) +
          DAILY_XP_REWARDS.dailyCompletion;
 }

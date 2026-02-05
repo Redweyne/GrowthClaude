@@ -10,27 +10,21 @@ import type { DailyExercise, ExerciseType } from '@/types/dailyPractice';
 // ═══════════════════════════════════════════════════════════════════════════
 
 const exerciseIcons: Record<ExerciseType, string> = {
-  scenario: '🎭',
-  quote: '💎',
-  application: '🌅',
-  anchor: '🫁',
-  reframe: '🔄',
+  'truth-mirror': '💫',
+  'soul-compass': '🔮',
+  'presence-anchor': '🌊',
 };
 
 const exerciseColors: Record<ExerciseType, string> = {
-  scenario: 'from-blue-500/20 to-purple-500/20',
-  quote: 'from-amber-500/20 to-orange-500/20',
-  application: 'from-emerald-500/20 to-teal-500/20',
-  anchor: 'from-violet-500/20 to-purple-500/20',
-  reframe: 'from-rose-500/20 to-pink-500/20',
+  'truth-mirror': 'from-indigo-500/20 to-purple-500/20',
+  'soul-compass': 'from-amber-500/20 to-orange-500/20',
+  'presence-anchor': 'from-emerald-500/20 to-teal-500/20',
 };
 
-const exerciseLabelKeys: Record<ExerciseType, string> = {
-  scenario: 'exercises.scenarioTitle',
-  quote: 'exercises.quoteTitle',
-  application: 'exercises.applicationTitle',
-  anchor: 'exercises.anchorTitle',
-  reframe: 'exercises.reframeTitle',
+const exerciseLabels: Record<ExerciseType, string> = {
+  'truth-mirror': 'Truth Mirror',
+  'soul-compass': 'Soul Compass',
+  'presence-anchor': 'Presence Anchor',
 };
 
 interface ExerciseCardProps {
@@ -54,8 +48,7 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const icon = exerciseIcons[exercise.type];
   const colorGradient = exerciseColors[exercise.type];
-  const labelKey = exerciseLabelKeys[exercise.type];
-  const label = t(labelKey);
+  const label = exerciseLabels[exercise.type];
 
   return (
     <motion.button

@@ -38,66 +38,71 @@ const lesson1_InstantReframe: FlexibleLesson = {
   teaserText: "Tomorrow you'll discover the one question that has freed emperors and prisoners alike for 2000 years.",
   exercises: [
     {
-      id: 'ex-1-scenario',
-      type: 'scenario',
-      title: 'The Traffic Test',
+      id: 'ex-1-truth-mirror',
+      type: 'truth-mirror',
+      title: 'The Letting Go Sequence',
       content: {
-        situation: "You're stuck in heavy traffic. You're already 20 minutes late for an important meeting. Your phone is buzzing with messages asking where you are. You feel your frustration rising, your grip tightening on the steering wheel.",
-        question: "Using the dichotomy of control, what is within your control right now, and what isn't? How would you respond?",
-        hints: [
-          "Consider: can you control the traffic?",
-          "What CAN you control about this situation?",
-          "How would acceptance of what you can't control change your experience?"
-        ]
+        statements: [
+          "I'm still thinking about something I said.",
+          "I'm worried about something I can't change.",
+          "I keep replaying a conversation in my head.",
+          "I'm trying to control someone else's opinion of me.",
+          "I'm anxious about a future I can't predict.",
+          "I'm holding onto anger at something that's over.",
+          "I'm waiting for someone to change who won't.",
+          "I'm fighting a reality I need to accept."
+        ],
+        holdReveal: "This is the weight. Breathe it out.",
+        breathPrompts: [
+          "Let go...",
+          "Release...",
+          "Accept..."
+        ],
+        style: 'release'
       }
     },
     {
-      id: 'ex-1-quote',
-      type: 'quote',
-      title: 'Epictetus on Freedom',
+      id: 'ex-1-soul-compass',
+      type: 'soul-compass',
+      title: 'Control or Release?',
       content: {
-        quote: "Make the best use of what is in your power, and take the rest as it happens. Some things are up to us and some things are not up to us.",
-        author: "Epictetus",
-        source: "Enchiridion",
-        reflectionPrompt: "Think of a current worry in your life. Which parts are truly 'up to you' and which parts are you needlessly trying to control?"
+        centralQuestion: "Think of what's weighing on you right now. What does it feel like?",
+        options: [
+          { id: 'action', emoji: '🎯', text: 'I can take action on this' },
+          { id: 'accept', emoji: '🌊', text: 'I need to accept this' },
+          { id: 'unsure', emoji: '⚡', text: "I'm not sure yet" },
+          { id: 'circles', emoji: '💭', text: 'I keep going in circles' },
+          { id: 'angry', emoji: '🔥', text: 'This makes me angry' },
+          { id: 'sad', emoji: '🌑', text: 'This makes me sad' }
+        ],
+        showIntensity: true,
+        intensityQuestion: "How heavy does this feel?",
+        intensityLabels: { low: 'Light', high: 'Crushing' },
+        intensityResponses: {
+          low: "Light burdens become lighter when named.",
+          mid: "You're in the middle. That takes courage to admit.",
+          high: "Heavy weights need heavy tools. You're here. That's step one."
+        },
+        style: 'introspective'
       }
     },
     {
-      id: 'ex-1-application',
-      type: 'application',
-      title: 'Tomorrow\'s Question',
-      content: {
-        instruction: "Tomorrow, when you notice yourself feeling stressed or worried, pause and ask: 'Is this within my control?' If yes, act. If no, practice acceptance.",
-        planPrompt: "What's one specific situation tomorrow where you could apply this question? Be specific about when and where.",
-        examples: [
-          "When I check my email and see something frustrating",
-          "During my commute when things don't go as planned",
-          "In a meeting when someone disagrees with me"
-        ]
-      }
-    },
-    {
-      id: 'ex-1-anchor',
-      type: 'anchor',
+      id: 'ex-1-presence-anchor',
+      type: 'presence-anchor',
       title: 'The Open Palms',
       content: {
-        gesture: "Open your hands, palms up, fingers relaxed",
-        meaning: "This gesture represents releasing what you cannot control. Open palms cannot grip, cannot hold tight, cannot fight against reality.",
-        breathPattern: "As you breathe in, notice any tension in your hands. As you breathe out, let your palms open fully, releasing the urge to control.",
-        repetitions: 3
-      }
-    },
-    {
-      id: 'ex-1-reframe',
-      type: 'reframe',
-      title: 'Control Reframe',
-      content: {
-        challengePrompt: "Describe something that's been stressing you out lately - something you keep thinking about but can't seem to resolve.",
-        reframeGuide: "Now separate what's within your control from what isn't. Rewrite this situation focusing ONLY on the parts you can actually influence.",
-        example: {
-          before: "My coworker keeps undermining me in meetings and I can't stop thinking about it",
-          after: "I can't control my coworker's behavior, but I can control: how I prepare for meetings, how I respond in the moment, and whether I address it directly with them or my manager"
-        }
+        gesture: "Open your hands, palms up, fingers relaxed. Feel the air on your palms.",
+        meaning: "Release what you cannot control",
+        breathCycles: 5,
+        exhalePrompts: [
+          "What you cannot control...",
+          "Let it rest in open palms...",
+          "You are not your worry...",
+          "This moment is enough...",
+          "Freedom is letting go..."
+        ],
+        anchorMessage: "Whenever you feel the urge to control, open your palms. Your body will remember.",
+        style: 'release'
       }
     }
   ],
@@ -588,66 +593,70 @@ const lesson2_PowerOfTiny: FlexibleLesson = {
   teaserText: "Tomorrow you'll learn the 2-minute rule that makes habits impossible to fail.",
   exercises: [
     {
-      id: 'ex-2-scenario',
-      type: 'scenario',
-      title: 'The Overwhelmed Beginner',
+      id: 'ex-2-truth-mirror',
+      type: 'truth-mirror',
+      title: 'The Identity Votes',
       content: {
-        situation: "Your friend wants to get fit. They buy an expensive gym membership, workout clothes, supplements, and create an ambitious 6-day workout plan. Three weeks later, they've been to the gym twice and feel like a failure. They ask you for advice.",
-        question: "Using the power of tiny, what would you tell them? How would you help them redesign their approach?",
-        hints: [
-          "Think: what's the 2-minute version?",
-          "What habit is so small they can't fail?",
-          "How does showing up matter more than performance?"
-        ]
+        statements: [
+          "I start things but rarely finish them.",
+          "I wait until I'm motivated to begin.",
+          "I think I need to make big changes.",
+          "I've tried this before and failed.",
+          "I don't believe small actions matter.",
+          "I'm harder on myself than anyone else.",
+          "I compare my start to someone else's finish.",
+          "I forget that showing up IS the win."
+        ],
+        holdReveal: "This pattern can change. One tiny vote at a time.",
+        breathPrompts: [
+          "One percent...",
+          "One vote...",
+          "One day..."
+        ],
+        style: 'strength'
       }
     },
     {
-      id: 'ex-2-quote',
-      type: 'quote',
-      title: 'James Clear on Identity',
+      id: 'ex-2-soul-compass',
+      type: 'soul-compass',
+      title: "What's Your 2-Minute Truth?",
       content: {
-        quote: "Every action you take is a vote for the type of person you wish to become. No single instance will transform your beliefs, but as the votes build up, so does the evidence of your new identity.",
-        author: "James Clear",
-        source: "Atomic Habits",
-        reflectionPrompt: "What identity are you voting for with your daily tiny actions? What small habit would cast a vote for the person you want to become?"
+        centralQuestion: "Why haven't your past attempts stuck?",
+        options: [
+          { id: 'big', emoji: '🎯', text: 'I made it too big' },
+          { id: 'motivation', emoji: '🌀', text: 'I lost motivation' },
+          { id: 'life', emoji: '📅', text: 'Life got in the way' },
+          { id: 'hard', emoji: '😤', text: 'I was too hard on myself' },
+          { id: 'wrong', emoji: '🎭', text: 'I was doing it for the wrong reasons' },
+          { id: 'unknown', emoji: '❓', text: "I don't know why" }
+        ],
+        showIntensity: true,
+        intensityQuestion: "How much do you want this to change?",
+        intensityLabels: { low: 'A little', high: 'Desperately' },
+        intensityResponses: {
+          low: "Maybe you're content. That's okay too.",
+          mid: "The spark is there. Let's fan it gently.",
+          high: "That fire is real. Now shrink the action, not the desire."
+        },
+        style: 'energizing'
       }
     },
     {
-      id: 'ex-2-application',
-      type: 'application',
-      title: 'The 2-Minute Tomorrow',
-      content: {
-        instruction: "Tomorrow morning, before you do anything else, do a 2-minute version of something you've been wanting to build into your life.",
-        planPrompt: "What specific 2-minute habit will you do tomorrow morning? Where will you do it? What's your cue to start?",
-        examples: [
-          "When my feet hit the floor, I'll do 2 pushups",
-          "After I brush my teeth, I'll write one sentence in a journal",
-          "Before I check my phone, I'll take 3 deep breaths"
-        ]
-      }
-    },
-    {
-      id: 'ex-2-anchor',
-      type: 'anchor',
+      id: 'ex-2-presence-anchor',
+      type: 'presence-anchor',
       title: 'The Seed Gesture',
       content: {
-        gesture: "Touch your thumb to your index finger, forming a small circle - like holding a tiny seed",
-        meaning: "This small circle represents the tiny habit - small enough to hold, but containing infinite potential for growth. Every mighty oak started as something this small.",
-        breathPattern: "Breathe in and imagine planting this seed. Breathe out and imagine it taking root. Small. Consistent. Unstoppable.",
-        repetitions: 3
-      }
-    },
-    {
-      id: 'ex-2-reframe',
-      type: 'reframe',
-      title: 'From All-or-Nothing to Something',
-      content: {
-        challengePrompt: "What's something you've been failing at because you've been trying to do too much? A goal where you keep starting strong and then quitting?",
-        reframeGuide: "Now shrink it. What's the 2-minute version that you could do every single day no matter what? Make it so small it feels almost pointless.",
-        example: {
-          before: "I want to meditate for 20 minutes every morning but I keep skipping it",
-          after: "I will sit down, close my eyes, and take exactly 3 breaths. That's my meditation. Done. I can always do more, but 3 breaths is the only requirement."
-        }
+        gesture: "Touch your thumb to your index finger, forming a tiny circle - like holding a seed.",
+        meaning: "Tiny is powerful",
+        breathCycles: 4,
+        exhalePrompts: [
+          "Small doesn't mean weak...",
+          "Consistent beats intense...",
+          "You are what you repeat...",
+          "The seed becomes the oak..."
+        ],
+        anchorMessage: "Touch these fingers anytime you feel overwhelmed. Remember: tiny is powerful.",
+        style: 'grounding'
       }
     }
   ],
@@ -854,66 +863,71 @@ const lesson3_ObstacleOpportunity: FlexibleLesson = {
   teaserText: "Tomorrow you'll learn the ancient secret that turns every obstacle into your greatest advantage.",
   exercises: [
     {
-      id: 'ex-3-scenario',
-      type: 'scenario',
-      title: 'The Unexpected Layoff',
+      id: 'ex-3-truth-mirror',
+      type: 'truth-mirror',
+      title: 'The Hidden Gifts',
       content: {
-        situation: "Your coworker just got laid off after 8 years at the company. They're devastated, angry, and scared. They call you seeking comfort but also convinced their life is ruined.",
-        question: "Using 'the obstacle is the way' thinking, how would you help them see this differently? What opportunity might be hiding in this setback?",
-        hints: [
-          "What doors might this close that needed closing?",
-          "What might they pursue now that they wouldn't have before?",
-          "How have layoffs transformed other people's lives for the better?"
-        ]
+        statements: [
+          "This setback might be redirecting me somewhere better.",
+          "This difficulty is building strength I'll need later.",
+          "What feels like rejection might be protection.",
+          "The door that closed wasn't my door.",
+          "This struggle is teaching me something important.",
+          "My biggest growth has come from my hardest times.",
+          "The obstacle contains exactly what I need.",
+          "I can use this, even if I didn't choose it."
+        ],
+        holdReveal: "The obstacle is the way. This is your way.",
+        breathPrompts: [
+          "Through...",
+          "Not around...",
+          "Forward..."
+        ],
+        style: 'strength'
       }
     },
     {
-      id: 'ex-3-quote',
-      type: 'quote',
-      title: 'Marcus Aurelius on Obstacles',
+      id: 'ex-3-soul-compass',
+      type: 'soul-compass',
+      title: 'Obstacle Inventory',
       content: {
-        quote: "The impediment to action advances action. What stands in the way becomes the way.",
-        author: "Marcus Aurelius",
-        source: "Meditations",
-        reflectionPrompt: "Think of a past obstacle that ended up redirecting your life in a better direction. What 'gift' did that difficulty ultimately give you?"
+        centralQuestion: "What is blocking your path right now?",
+        options: [
+          { id: 'door', emoji: '🚪', text: "A door that won't open" },
+          { id: 'person', emoji: '👤', text: "A person who won't change" },
+          { id: 'time', emoji: '⏰', text: "Time I don't have" },
+          { id: 'loss', emoji: '💔', text: "A loss I can't undo" },
+          { id: 'fear', emoji: '😰', text: "Fear I can't shake" },
+          { id: 'unknown', emoji: '🤷', text: "I don't know what's blocking me" }
+        ],
+        showIntensity: false,
+        followUpQuestion: "What could this obstacle be creating?",
+        followUpOptions: [
+          { id: 'strength', emoji: '💪', text: 'Strength' },
+          { id: 'wisdom', emoji: '🧠', text: 'Wisdom' },
+          { id: 'redirect', emoji: '🔄', text: 'Redirection' },
+          { id: 'growth', emoji: '🌱', text: 'Growth' },
+          { id: 'unseen', emoji: '❓', text: "I can't see it yet" }
+        ],
+        style: 'awakening'
       }
     },
     {
-      id: 'ex-3-application',
-      type: 'application',
-      title: 'The Obstacle Flip',
-      content: {
-        instruction: "Tomorrow, when you encounter any frustration or obstacle, immediately ask: 'What opportunity is hiding in this?'",
-        planPrompt: "What's one obstacle you're currently facing? How might you actively look for the opportunity within it tomorrow?",
-        examples: [
-          "The difficult client is teaching me patience and communication skills",
-          "The boring task is a chance to practice focus and presence",
-          "The rejection is redirecting me somewhere better"
-        ]
-      }
-    },
-    {
-      id: 'ex-3-anchor',
-      type: 'anchor',
+      id: 'ex-3-presence-anchor',
+      type: 'presence-anchor',
       title: 'The Phoenix Rising',
       content: {
-        gesture: "Press your palms together at your chest, then slowly raise them overhead while spreading your fingers wide - like flames rising",
-        meaning: "Like the phoenix, you rise from what tried to burn you. The gesture transforms downward pressure into upward movement.",
-        breathPattern: "Breathe in with palms together. Breathe out as you raise and spread - transforming the obstacle into fuel for your rise.",
-        repetitions: 3
-      }
-    },
-    {
-      id: 'ex-3-reframe',
-      type: 'reframe',
-      title: 'From Block to Building Block',
-      content: {
-        challengePrompt: "What obstacle are you currently facing that feels like it's just blocking your path? Something that seems purely negative?",
-        reframeGuide: "Now flip it. What skill, strength, or opportunity could this obstacle be creating for you? How might your future self thank this difficulty?",
-        example: {
-          before: "I keep getting rejected from jobs and it's destroying my confidence",
-          after: "Each rejection is teaching me resilience and helping me refine my approach. The right opportunity hasn't appeared yet because I'm being prepared for something better. This difficulty is building my determination."
-        }
+        gesture: "Press your palms together at your chest. As you breathe out, raise them overhead while spreading your fingers wide - like flames rising.",
+        meaning: "Rise from what tried to burn you",
+        breathCycles: 4,
+        exhalePrompts: [
+          "From the fire...",
+          "Comes the fuel...",
+          "The obstacle becomes...",
+          "The way forward..."
+        ],
+        anchorMessage: "Whenever you feel blocked, do this gesture. Rise like the phoenix.",
+        style: 'strength'
       }
     }
   ],
@@ -1168,66 +1182,71 @@ const lesson4_MorningMindset: FlexibleLesson = {
   teaserText: "Tomorrow you'll learn the 2-minute morning practice used by Roman emperors and modern CEOs alike.",
   exercises: [
     {
-      id: 'ex-4-scenario',
-      type: 'scenario',
-      title: 'The Reactive Morning',
+      id: 'ex-4-truth-mirror',
+      type: 'truth-mirror',
+      title: 'The Ambush Awareness',
       content: {
-        situation: "Your friend tells you they wake up every day already stressed. They immediately check their phone, see work emails and social media, and feel anxious before they even get out of bed. They say they have no time for a morning routine.",
-        question: "How would you help them design a 2-minute morning practice that takes back control of how their day starts?",
-        hints: [
-          "What could they do BEFORE reaching for their phone?",
-          "How can anticipating challenges reduce their power?",
-          "What tiny ritual could change their whole morning energy?"
-        ]
+        statements: [
+          "My mornings are usually hijacked by my phone.",
+          "I wake up already stressed about the day.",
+          "I let other people set my emotional tone.",
+          "I'm surprised when things go wrong.",
+          "I react instead of respond.",
+          "I forget that I have a choice in how I feel.",
+          "I start the day on defense, not offense.",
+          "I could anticipate, but I usually don't."
+        ],
+        holdReveal: "The warrior expects the ambush. Now you're ready.",
+        breathPrompts: [
+          "I anticipated...",
+          "I chose...",
+          "I'm ready..."
+        ],
+        style: 'clarity'
       }
     },
     {
-      id: 'ex-4-quote',
-      type: 'quote',
-      title: 'Marcus Aurelius at Dawn',
+      id: 'ex-4-soul-compass',
+      type: 'soul-compass',
+      title: 'What Ambushes You?',
       content: {
-        quote: "Begin each day by telling yourself: Today I will meet with interference, ingratitude, insolence, disloyalty, ill-will, and selfishness. But I have seen the beauty of good, and the ugliness of evil, and have recognized that the wrongdoer has a nature related to my own.",
-        author: "Marcus Aurelius",
-        source: "Meditations",
-        reflectionPrompt: "What typically catches you off guard during your day? How would anticipating it change your reaction?"
+        centralQuestion: "What typically derails your day?",
+        options: [
+          { id: 'phone', emoji: '📱', text: 'My phone/social media' },
+          { id: 'people', emoji: '👥', text: 'Difficult people' },
+          { id: 'email', emoji: '📧', text: 'Emails/messages' },
+          { id: 'commute', emoji: '🚗', text: 'Commute/traffic' },
+          { id: 'anxiety', emoji: '😰', text: 'My own anxiety' },
+          { id: 'random', emoji: '🎲', text: 'Random surprises' }
+        ],
+        showIntensity: false,
+        followUpQuestion: "If this happened tomorrow, how would you CHOOSE to respond?",
+        followUpOptions: [
+          { id: 'calm', emoji: '🧘', text: 'With calm acceptance' },
+          { id: 'focus', emoji: '🔥', text: 'With fierce focus' },
+          { id: 'step-back', emoji: '💭', text: 'By stepping back first' },
+          { id: 'unsure', emoji: '🤷', text: "I'm not sure yet" }
+        ],
+        style: 'grounding'
       }
     },
     {
-      id: 'ex-4-application',
-      type: 'application',
-      title: 'Morning Premeditation',
+      id: 'ex-4-presence-anchor',
+      type: 'presence-anchor',
+      title: "The Warrior's Breath",
       content: {
-        instruction: "Tomorrow morning, before checking any devices, spend 2 minutes: 1) Take 5 deep breaths, 2) Ask: what might frustrate me today? 3) Decide: how do I WANT to respond?",
-        planPrompt: "What time will you wake up? What's one challenge you can anticipate for tomorrow? How will you choose to respond to it?",
-        examples: [
-          "The meeting at 10am might get tense - I'll choose to stay curious instead of defensive",
-          "Traffic will probably be bad - I'll use that time to listen to something uplifting",
-          "My inbox will be full - I'll process it calmly, one email at a time"
-        ]
-      }
-    },
-    {
-      id: 'ex-4-anchor',
-      type: 'anchor',
-      title: 'The Warrior\'s Breath',
-      content: {
-        gesture: "Place your right hand over your heart, left hand on your belly",
-        meaning: "This stance connects head and heart, preparation and presence. A warrior prepares for battle not with fear, but with calm readiness.",
-        breathPattern: "Breathe in courage through the hand on your belly. Breathe out calm through the hand on your heart. You are prepared. You are ready.",
-        repetitions: 5
-      }
-    },
-    {
-      id: 'ex-4-reframe',
-      type: 'reframe',
-      title: 'From Victim to Victor',
-      content: {
-        challengePrompt: "Describe a recurring frustration in your daily life - something that seems to 'happen to you' regularly and throws off your mood.",
-        reframeGuide: "Now rewrite this as something you can anticipate and prepare for. How can you respond to it as a warrior who expected this, not a victim who was surprised?",
-        example: {
-          before: "My boss always dumps work on me at 5pm and ruins my evening",
-          after: "I know my boss often has last-minute requests. At 4:30pm, I'll prepare myself mentally. When it comes, I'll calmly assess: what can wait until tomorrow, and what truly can't? I expected this. I'm ready."
-        }
+        gesture: "Place your right hand over your heart, left hand on your belly. Feel both rise and fall.",
+        meaning: "Prepared and present",
+        breathCycles: 5,
+        exhalePrompts: [
+          "I expect difficulty...",
+          "I choose my response...",
+          "I am not surprised...",
+          "I am not overwhelmed...",
+          "I am prepared..."
+        ],
+        anchorMessage: "Tomorrow morning, before you touch your phone, touch your heart. Remember this feeling.",
+        style: 'grounding'
       }
     }
   ],
@@ -1419,66 +1438,70 @@ const lesson5_GratitudeShift: FlexibleLesson = {
   teaserText: "Tomorrow you'll discover the counterintuitive technique that makes gratitude feel real instead of forced.",
   exercises: [
     {
-      id: 'ex-5-scenario',
-      type: 'scenario',
-      title: 'The Gratitude Skeptic',
+      id: 'ex-5-truth-mirror',
+      type: 'truth-mirror',
+      title: 'The Invisible Gifts',
       content: {
-        situation: "Your friend says: 'I've tried gratitude journals and they feel fake. Listing things I'm grateful for just feels like going through the motions. It doesn't actually change how I feel.'",
-        question: "How would you explain negative visualization to them? How is it different from forced gratitude?",
-        hints: [
-          "Why does imagining loss work better than listing blessings?",
-          "How does contrast create genuine appreciation?",
-          "What makes this approach feel real instead of performative?"
-        ]
+        statements: [
+          "I've stopped noticing what I have.",
+          "I'm chasing what I don't have.",
+          "Someone I love could be gone tomorrow.",
+          "My body works miracles I ignore.",
+          "I have comforts my ancestors dreamed of.",
+          "I take people for granted who take nothing from me.",
+          "Everything I have is borrowed.",
+          "This ordinary moment is actually extraordinary."
+        ],
+        holdReveal: "What you have is not permanent. See it before it's gone.",
+        breathPrompts: [
+          "I see it...",
+          "I feel it...",
+          "I'm grateful..."
+        ],
+        style: 'gratitude'
       }
     },
     {
-      id: 'ex-5-quote',
-      type: 'quote',
-      title: 'Seneca on Wealth',
+      id: 'ex-5-soul-compass',
+      type: 'soul-compass',
+      title: 'What Have You Stopped Seeing?',
       content: {
-        quote: "It is not the man who has too little, but the man who craves more, that is poor. What difference does it make how much is in your bank account or in your barns, if you covet your neighbor's harvest and you count not your past blessings, but the blessings you're yet to have?",
-        author: "Seneca",
-        source: "Letters from a Stoic",
-        reflectionPrompt: "What do you already have that you've stopped noticing? What would you desperately miss if it were suddenly gone?"
+        centralQuestion: "What gift in your life has become invisible?",
+        options: [
+          { id: 'person', emoji: '👤', text: 'Someone who loves me' },
+          { id: 'home', emoji: '🏠', text: 'A safe place to live' },
+          { id: 'body', emoji: '💪', text: 'A body that works' },
+          { id: 'mind', emoji: '🧠', text: 'A mind that thinks' },
+          { id: 'time', emoji: '🌅', text: 'Time I still have' },
+          { id: 'food', emoji: '🍽️', text: 'Food I take for granted' }
+        ],
+        showIntensity: true,
+        intensityQuestion: "How invisible has this become?",
+        intensityLabels: { low: 'I notice it sometimes', high: 'Completely invisible' },
+        intensityResponses: {
+          low: "Good - you still see it. Don't let it fade further.",
+          mid: "It's fading. Today, you brought it back into focus.",
+          high: "It vanished from view. Now imagine it gone forever. Feel that? That's gratitude."
+        },
+        style: 'awakening'
       }
     },
     {
-      id: 'ex-5-application',
-      type: 'application',
-      title: 'The Temporary Gift Practice',
-      content: {
-        instruction: "Tomorrow, choose one person or thing you often take for granted. Spend 60 seconds imagining your life without them. Then notice how your appreciation shifts.",
-        planPrompt: "Who or what will you focus on tomorrow? Why did you choose this person or thing?",
-        examples: [
-          "My morning coffee - imagining not having access to it",
-          "My ability to walk - imagining being unable to move freely",
-          "My partner/friend - imagining they weren't in my life"
-        ]
-      }
-    },
-    {
-      id: 'ex-5-anchor',
-      type: 'anchor',
+      id: 'ex-5-presence-anchor',
+      type: 'presence-anchor',
       title: 'The Heart Hold',
       content: {
-        gesture: "Place both hands over your heart, one on top of the other, and gently press",
-        meaning: "This gesture physically connects you to what matters. Your heart beats without your effort - a gift you never asked for but always receive.",
-        breathPattern: "Breathe in and feel your heart beating under your hands. Breathe out and silently say 'thank you' for this gift you didn't earn.",
-        repetitions: 3
-      }
-    },
-    {
-      id: 'ex-5-reframe',
-      type: 'reframe',
-      title: 'From Taking to Receiving',
-      content: {
-        challengePrompt: "What's something in your life you've completely stopped appreciating? Something that's become so normal you don't even notice it anymore?",
-        reframeGuide: "Now imagine it being taken away tomorrow. Really feel the loss. Then write about how this 'ordinary' thing is actually an extraordinary gift.",
-        example: {
-          before: "My health is fine, nothing special. I just exist.",
-          after: "My body woke up today. My lungs filled with air without me asking. My heart has beaten over a billion times without missing. I can see colors, hear music, taste food. This ordinary body is actually a miracle I've been ignoring."
-        }
+        gesture: "Place both hands over your heart, one on top of the other. Press gently. Feel your heartbeat.",
+        meaning: "This gift I didn't earn",
+        breathCycles: 4,
+        exhalePrompts: [
+          "For this heartbeat I didn't earn...",
+          "For this breath I didn't request...",
+          "For this moment I can't keep...",
+          "For this life I didn't deserve..."
+        ],
+        anchorMessage: "Your heart beats without asking. That alone is miracle enough.",
+        style: 'gratitude'
       }
     }
   ],
@@ -1738,74 +1761,69 @@ const lesson1_InstantReframe_FR: FlexibleLesson = {
   teaserText: "Demain, tu découvriras l’unique question qui libère empereurs et prisonniers depuis 2000 ans.",
   exercises: [
     {
-      id: 'ex-1-scenario',
-      type: 'scenario',
-      title: 'L’épreuve des embouteillages',
+      id: 'ex-1-truth-mirror',
+      type: 'truth-mirror',
+      title: 'La séquence du lâcher-prise',
       content: {
-        situation: "Tu es coincé dans un embouteillage dense. Tu as déjà 20 minutes de retard pour une réunion importante. Ton téléphone vibre avec des messages qui demandent où tu es. Tu sens ta frustration monter, ta prise se resserrer sur le volant.",
-        question: "En utilisant la dichotomie du contrôle, qu’est-ce qui dépend de toi maintenant, et qu’est-ce qui n’en dépend pas ? Comment répondrais-tu ?",
-        hints: [
-          "Demande-toi : peux-tu contrôler la circulation ?",
-          "Que PEUX-TU contrôler dans cette situation ?",
-          "Comment l’acceptation de ce que tu ne peux pas contrôler changerait-elle ton expérience ?",
+        statements: [
+          "Je pense encore à quelque chose que j'ai dit.",
+          "Je m'inquiète de quelque chose que je ne peux pas changer.",
+          "Je rejoue une conversation dans ma tête.",
+          "J'essaie de contrôler l'opinion des autres sur moi.",
+          "Je suis anxieux face à un futur que je ne peux pas prédire.",
+          "Je garde de la colère pour quelque chose qui est terminé.",
+          "J'attends que quelqu'un change alors qu'il ne changera pas.",
+          "Je lutte contre une réalité que je dois accepter."
         ],
-      },
+        holdReveal: "C'est le poids. Expire-le.",
+        breathPrompts: ["Lâche prise...", "Libère...", "Accepte..."],
+        style: 'release'
+      }
     },
     {
-      id: 'ex-1-quote',
-      type: 'quote',
-      title: 'Épictète sur la liberté',
+      id: 'ex-1-soul-compass',
+      type: 'soul-compass',
+      title: 'Contrôler ou lâcher ?',
       content: {
-        quote: "Fais le meilleur usage de ce qui dépend de toi, et prends le reste comme il vient. Certaines choses dépendent de nous et d’autres ne dépendent pas de nous.",
-        author: 'Épictète',
-        source: 'Manuel (Enchiridion)',
-        reflectionPrompt: "Pense à une inquiétude actuelle dans ta vie. Quelles parties dépendent vraiment de toi et quelles parties essaies-tu inutilement de contrôler ?",
-      },
-    },
-    {
-      id: 'ex-1-application',
-      type: 'application',
-      title: 'La question de demain',
-      content: {
-        instruction: "Demain, dès que tu te surprends à être stressé(e) ou inquiet(ète), fais une pause et demande-toi : 'Est-ce sous mon contrôle ?' Si oui, agis. Si non, pratique l’acceptation.",
-        planPrompt: "Quelle situation précise demain pourrais-tu utiliser pour appliquer cette question ? Sois précis(e) sur quand et où.",
-        examples: [
-          "Quand je consulte mes e-mails et que je vois quelque chose de frustrant",
-          "Pendant mon trajet quand tout ne se passe pas comme prévu",
-          "En réunion quand quelqu’un n’est pas d’accord avec moi",
+        centralQuestion: "Pense à ce qui te pèse en ce moment. Qu'est-ce que tu ressens ?",
+        options: [
+          { id: 'action', emoji: '🎯', text: 'Je peux agir sur ça' },
+          { id: 'accept', emoji: '🌊', text: 'Je dois accepter ça' },
+          { id: 'unsure', emoji: '⚡', text: 'Je ne sais pas encore' },
+          { id: 'circles', emoji: '💭', text: 'Je tourne en rond' },
+          { id: 'angry', emoji: '🔥', text: 'Ça me met en colère' },
+          { id: 'sad', emoji: '🌑', text: 'Ça me rend triste' }
         ],
-      },
+        showIntensity: true,
+        intensityQuestion: "À quel point ça pèse ?",
+        intensityLabels: { low: 'Léger', high: 'Écrasant' },
+        intensityResponses: {
+          low: "Les fardeaux légers deviennent plus légers quand on les nomme.",
+          mid: "Tu es au milieu. Ça demande du courage de l'admettre.",
+          high: "Les poids lourds nécessitent des outils puissants. Tu es là. C'est la première étape."
+        },
+        style: 'introspective'
+      }
     },
     {
-      id: 'ex-1-anchor',
-      type: 'anchor',
+      id: 'ex-1-presence-anchor',
+      type: 'presence-anchor',
       title: 'Les paumes ouvertes',
       content: {
-        gesture: 'Ouvre tes mains, paumes vers le haut, doigts détendus',
-        meaning: "Ce geste représente le fait de relâcher ce que tu ne peux pas contrôler. Des paumes ouvertes ne peuvent pas serrer, ni tenir fort, ni lutter contre la réalité.",
-        breathPattern: "À l’inspiration, remarque toute tension dans tes mains. À l’expiration, laisse tes paumes s’ouvrir complètement, en relâchant l’envie de contrôler.",
-        repetitions: 3,
-      },
-    },
-    {
-      id: 'ex-1-reframe',
-      type: 'reframe',
-      title: 'Reformuler le contrôle',
-      content: {
-        challengePrompt: "Décris quelque chose qui te stresse ces temps-ci — quelque chose auquel tu penses sans arrêt mais que tu n’arrives pas à résoudre.",
-        reframeGuide: "Sépare maintenant ce qui dépend de toi de ce qui n’en dépend pas. Réécris cette situation en te concentrant UNIQUEMENT sur les parties que tu peux réellement influencer.",
-        example: {
-          before: "Mon collègue me discrédite en réunion et je n’arrête pas d’y penser",
-          after: "Je ne peux pas contrôler le comportement de mon collègue, mais je peux contrôler : ma préparation aux réunions, ma réponse sur le moment, et le fait d’en parler directement avec lui ou mon/ma manager",
-        },
-      },
-    },
+        gesture: "Ouvre tes mains, paumes vers le haut, doigts détendus. Sens l'air sur tes paumes.",
+        meaning: "Lâcher ce que tu ne peux pas contrôler",
+        breathCycles: 5,
+        exhalePrompts: ["Ce que tu ne peux pas contrôler...", "Laisse-le reposer dans tes paumes...", "Tu n'es pas ton inquiétude...", "Ce moment suffit...", "La liberté, c'est lâcher prise..."],
+        anchorMessage: "Chaque fois que tu ressens l'envie de contrôler, ouvre tes paumes. Ton corps s'en souviendra.",
+        style: 'release'
+      }
+    }
   ],
   steps: [
     {
       id: 'opening',
       type: 'scenario',
-      narrative: "En ce moment, quelque chose te reste en tête. Cela fait un moment. Peut-être une conversation que tu répètes sans cesse. Un tort qu’on t’a fait. Une décision que tu évites. Une peur du futur qui ne te lâche pas.",
+      narrative: "En ce moment, quelque chose te reste en tête. Cela fait un moment. Peut-être une conversation que tu répètes sans cesse. Un tort qu'on t'a fait. Une décision que tu évites. Une peur du futur qui ne te lâche pas.",
       mood: 'tension',
       nextStepId: 'scenario-2',
     },
@@ -2240,68 +2258,73 @@ const lesson1_InstantReframe_AR: FlexibleLesson = {
   teaserText: 'غداً ستكتشف السؤال الوحيد الذي حرر الأباطرة والسجناء منذ 2000 عام.',
   exercises: [
     {
-      id: 'ex-1-scenario',
-      type: 'scenario',
-      title: 'اختبار الزحام',
+      id: 'ex-1-truth-mirror',
+      type: 'truth-mirror',
+      title: 'تسلسل التحرّر',
       content: {
-        situation: 'أنت عالق في ازدحام خانق. أنت متأخر بالفعل 20 دقيقة عن اجتماع مهم. هاتفك يهتز برسائل تسأل أين أنت. تشعر بالإحباط يصعد وتشد قبضتك على المقود.',
-        question: 'باستخدام ثنائية التحكم، ما الذي يقع ضمن سيطرتك الآن، وما الذي لا يقع ضمنها؟ كيف ستتصرف؟',
-        hints: [
-          'فكّر: هل تستطيع التحكم في الزحام؟',
-          'ما الذي تستطيع التحكم به في هذا الموقف؟',
-          'كيف سيغيّر قبول ما لا تستطيع التحكم به تجربتك؟',
+        statements: [
+          "ما زلت أفكر بشيء قلته.",
+          "أقلق بشأن شيء لا أستطيع تغييره.",
+          "أعيد محادثة في رأسي باستمرار.",
+          "أحاول التحكم برأي شخص آخر فيّ.",
+          "أشعر بالقلق من مستقبل لا أستطيع توقعه.",
+          "أتمسك بغضب تجاه شيء انتهى.",
+          "أنتظر أن يتغير شخص لن يتغير.",
+          "أقاوم واقعاً أحتاج أن أتقبله."
         ],
-      },
-    },
-    {
-      id: 'ex-1-quote',
-      type: 'quote',
-      title: 'إبكتيتوس عن الحرية',
-      content: {
-        quote: 'استعمل أفضل ما في قدرتك، وتقبّل الباقي كما يحدث. بعض الأمور لنا وبعضها ليس لنا.',
-        author: 'إبكتيتوس',
-        source: 'الإنخيريديون',
-        reflectionPrompt: 'فكّر في قلق حالي في حياتك. أي الأجزاء تقع فعلاً ضمن سيطرتك وأي الأجزاء تحاول التحكم بها بلا جدوى؟',
-      },
-    },
-    {
-      id: 'ex-1-application',
-      type: 'application',
-      title: 'سؤال الغد',
-      content: {
-        instruction: "غداً، عندما تلاحظ أنك متوتر أو قلق، توقف واسأل: 'هل هذا ضمن سيطرتي؟' إذا نعم فتصرف. وإذا لا فمارس القبول.",
-        planPrompt: 'ما موقف محدد غداً يمكنك فيه تطبيق هذا السؤال؟ كن محدداً في الوقت والمكان.',
-        examples: [
-          'عندما أراجع بريدي الإلكتروني وأرى شيئاً مزعجاً',
-          'أثناء تنقلي عندما لا تسير الأمور كما خُطط لها',
-          'في اجتماع عندما يختلف معي أحدهم',
+        holdReveal: "هذا هو الثقل. تنفّسه للخارج.",
+        breathPrompts: [
+          "دعه يذهب...",
+          "حرّره...",
+          "تقبّل..."
         ],
-      },
+        style: 'release'
+      }
     },
     {
-      id: 'ex-1-anchor',
-      type: 'anchor',
+      id: 'ex-1-soul-compass',
+      type: 'soul-compass',
+      title: 'التحكم أم التحرّر؟',
+      content: {
+        centralQuestion: "فكّر فيما يثقل عليك الآن. كيف يبدو شعورك؟",
+        options: [
+          { id: 'action', emoji: '🎯', text: 'أستطيع اتخاذ إجراء' },
+          { id: 'accept', emoji: '🌊', text: 'أحتاج أن أتقبل هذا' },
+          { id: 'unsure', emoji: '⚡', text: 'لست متأكداً بعد' },
+          { id: 'circles', emoji: '💭', text: 'أدور في حلقات' },
+          { id: 'angry', emoji: '🔥', text: 'هذا يغضبني' },
+          { id: 'sad', emoji: '🌑', text: 'هذا يحزنني' }
+        ],
+        showIntensity: true,
+        intensityQuestion: "كم يبدو ثقيلاً؟",
+        intensityLabels: { low: 'خفيف', high: 'ساحق' },
+        intensityResponses: {
+          low: "الأثقال الخفيفة تصبح أخف عند تسميتها.",
+          mid: "أنت في المنتصف. الاعتراف بذلك يتطلب شجاعة.",
+          high: "الأثقال الكبيرة تحتاج أدوات قوية. أنت هنا. هذه الخطوة الأولى."
+        },
+        style: 'introspective'
+      }
+    },
+    {
+      id: 'ex-1-presence-anchor',
+      type: 'presence-anchor',
       title: 'الكفان المفتوحتان',
       content: {
-        gesture: 'افتح يديك، الكفان للأعلى، والأصابع مرتخية',
-        meaning: 'هذا الإيماء يرمز إلى إطلاق ما لا يمكنك التحكم به. الكفان المفتوحان لا يمكنهما القبض أو التشبث أو مقاومة الواقع.',
-        breathPattern: 'مع الشهيق لاحظ أي توتر في يديك. ومع الزفير اترك كفيك ينفتحان تماماً، مطلقاً رغبة التحكم.',
-        repetitions: 3,
-      },
-    },
-    {
-      id: 'ex-1-reframe',
-      type: 'reframe',
-      title: 'إعادة صياغة التحكم',
-      content: {
-        challengePrompt: 'صف شيئاً كان يضغط عليك مؤخراً — شيء تفكر فيه باستمرار ولا تستطيع حله.',
-        reframeGuide: 'الآن افصل ما يمكنك التحكم به عما لا يمكنك التحكم به. أعد كتابة الموقف مع التركيز فقط على ما تستطيع التأثير فيه.',
-        example: {
-          before: 'زميلي يستهين بي في الاجتماعات ولا أستطيع التوقف عن التفكير في ذلك',
-          after: 'لا يمكنني التحكم في سلوك زميلي، لكن يمكنني التحكم في: كيف أستعد للاجتماعات، وكيف أرد في اللحظة، وهل أتحدث معه مباشرة أو مع مديري',
-        },
-      },
-    },
+        gesture: "افتح يديك، الكفان للأعلى، الأصابع مرتخية. اشعر بالهواء على كفيك.",
+        meaning: "حرّر ما لا تستطيع التحكم به",
+        breathCycles: 5,
+        exhalePrompts: [
+          "ما لا تستطيع التحكم به...",
+          "اتركه يستريح في كفيك المفتوحتين...",
+          "أنت لست قلقك...",
+          "هذه اللحظة تكفي...",
+          "الحرية في التحرّر..."
+        ],
+        anchorMessage: "كلما شعرت بالرغبة في التحكم، افتح كفيك. جسدك سيتذكر.",
+        style: 'release'
+      }
+    }
   ],
   steps: [
     {
@@ -2742,74 +2765,78 @@ const lesson2_PowerOfTiny_FR: FlexibleLesson = {
   teaserText: "Demain, tu apprendras la règle des 2 minutes qui rend les habitudes impossibles à rater.",
   exercises: [
     {
-      id: 'ex-2-scenario',
-      type: 'scenario',
-      title: 'Le débutant dépassé',
+      id: 'ex-2-truth-mirror',
+      type: 'truth-mirror',
+      title: 'Les votes d\'identité',
       content: {
-        situation: "Ton ami veut se mettre en forme. Il achète un abonnement de gym cher, des vêtements de sport, des compléments, et crée un plan ambitieux de 6 jours. Trois semaines plus tard, il n’est allé à la salle que deux fois et se sent nul. Il te demande conseil.",
-        question: "Avec le pouvoir du tout petit, que lui dirais-tu ? Comment l’aiderais-tu à repenser son approche ?",
-        hints: [
-          'Pense : quelle est la version 2 minutes ? ',
-          'Quelle habitude est si petite qu’il ne peut pas échouer ?',
-          'En quoi se présenter compte plus que la performance ?',
+        statements: [
+          "Je commence des choses mais je les finis rarement.",
+          "J'attends d'être motivé pour commencer.",
+          "Je pense qu'il me faut de grands changements.",
+          "J'ai déjà essayé ça et j'ai échoué.",
+          "Je ne crois pas que les petites actions comptent.",
+          "Je suis plus dur avec moi-même que quiconque.",
+          "Je compare mon début à la fin de quelqu'un d'autre.",
+          "J'oublie que se présenter EST la victoire."
         ],
-      },
-    },
-    {
-      id: 'ex-2-quote',
-      type: 'quote',
-      title: 'James Clear sur l’identité',
-      content: {
-        quote: "Chaque action que tu entreprends est un vote pour la personne que tu souhaites devenir. Aucune action isolée ne transformera tes croyances, mais à mesure que les votes s’accumulent, les preuves de ta nouvelle identité s’accumulent aussi.",
-        author: 'James Clear',
-        source: 'Un rien peut tout changer (Atomic Habits)',
-        reflectionPrompt: "Pour quelle identité votes-tu avec tes petites actions quotidiennes ? Quelle petite habitude voterait pour la personne que tu veux devenir ?",
-      },
-    },
-    {
-      id: 'ex-2-application',
-      type: 'application',
-      title: 'Les 2 minutes de demain',
-      content: {
-        instruction: "Demain matin, avant de faire quoi que ce soit, fais une version de 2 minutes de quelque chose que tu veux intégrer à ta vie.",
-        planPrompt: 'Quelle habitude précise de 2 minutes feras-tu demain matin ? Où ? Quel sera ton déclencheur ?',
-        examples: [
-          'Quand mes pieds touchent le sol, je fais 2 pompes',
-          'Après m’être brossé les dents, j’écris une phrase dans un journal',
-          'Avant de regarder mon téléphone, je prends 3 respirations profondes',
+        holdReveal: "Ce schéma peut changer. Un petit vote à la fois.",
+        breathPrompts: [
+          "Un pour cent...",
+          "Un vote...",
+          "Un jour..."
         ],
-      },
+        style: 'strength'
+      }
     },
     {
-      id: 'ex-2-anchor',
-      type: 'anchor',
+      id: 'ex-2-soul-compass',
+      type: 'soul-compass',
+      title: 'Quelle est ta vérité de 2 minutes ?',
+      content: {
+        centralQuestion: "Pourquoi tes tentatives passées n'ont-elles pas tenu ?",
+        options: [
+          { id: 'big', emoji: '🎯', text: "J'ai visé trop grand" },
+          { id: 'motivation', emoji: '🌀', text: "J'ai perdu ma motivation" },
+          { id: 'life', emoji: '📅', text: "La vie s'est mise en travers" },
+          { id: 'hard', emoji: '😤', text: "J'ai été trop dur avec moi" },
+          { id: 'wrong', emoji: '🎭', text: "Je le faisais pour de mauvaises raisons" },
+          { id: 'unknown', emoji: '❓', text: "Je ne sais pas pourquoi" }
+        ],
+        showIntensity: true,
+        intensityQuestion: "À quel point veux-tu que ça change ?",
+        intensityLabels: { low: 'Un peu', high: 'Désespérément' },
+        intensityResponses: {
+          low: "Peut-être es-tu content. C'est ok aussi.",
+          mid: "L'étincelle est là. Attisons-la doucement.",
+          high: "Ce feu est réel. Maintenant réduis l'action, pas le désir."
+        },
+        style: 'energizing'
+      }
+    },
+    {
+      id: 'ex-2-presence-anchor',
+      type: 'presence-anchor',
       title: 'Le geste de la graine',
       content: {
-        gesture: "Touche ton pouce à ton index, formant un petit cercle — comme si tu tenais une graine",
-        meaning: "Ce petit cercle représente l’habitude minuscule — assez petite pour tenir dans la main, mais contenant un potentiel infini. Chaque grand chêne a commencé si petit.",
-        breathPattern: "Inspire et imagine planter cette graine. Expire et imagine qu’elle prend racine. Petit. Constant. Inarrêtable.",
-        repetitions: 3,
-      },
-    },
-    {
-      id: 'ex-2-reframe',
-      type: 'reframe',
-      title: 'Du tout ou rien au quelque chose',
-      content: {
-        challengePrompt: "Qu’est-ce que tu rates parce que tu essaies d’en faire trop ? Un objectif où tu démarres fort puis abandonnes ?",
-        reframeGuide: 'Réduis-le. Quelle est la version 2 minutes que tu pourrais faire chaque jour quoi qu’il arrive ? Fais-la si petite qu’elle semble presque inutile.',
-        example: {
-          before: "Je veux méditer 20 minutes chaque matin, mais je saute sans cesse",
-          after: "Je vais m’asseoir, fermer les yeux, et prendre exactement 3 respirations. C’est ma méditation. Terminé. Je peux toujours faire plus, mais 3 respirations sont la seule exigence.",
-        },
-      },
-    },
+        gesture: "Touche ton pouce à ton index, formant un petit cercle — comme si tu tenais une graine.",
+        meaning: "Petit est puissant",
+        breathCycles: 4,
+        exhalePrompts: [
+          "Petit ne veut pas dire faible...",
+          "Constant bat intense...",
+          "Tu es ce que tu répètes...",
+          "La graine devient le chêne..."
+        ],
+        anchorMessage: "Touche ces doigts chaque fois que tu te sens dépassé. Souviens-toi : petit est puissant.",
+        style: 'grounding'
+      }
+    }
   ],
   steps: [
     {
       id: 'scenario',
       type: 'scenario',
-      narrative: "Tu as déjà essayé de changer. Tu as commencé fort. Puis la vie a repris. L’abonnement de gym est resté inutilisé. L’appli de méditation a pris la poussière. Le journal est resté vide après le troisième jour.",
+      narrative: "Tu as déjà essayé de changer. Tu as commencé fort. Puis la vie a repris. L'abonnement de gym est resté inutilisé. L'appli de méditation a pris la poussière. Le journal est resté vide après le troisième jour.",
       subtext: 'Ce n’est pas ta faute. Tu jouais au mauvais jeu.',
       bridgeQuestion: 'Et si le problème n’avait jamais été ta volonté ?',
       continueLabel: 'Dis-m’en plus',
@@ -2905,68 +2932,72 @@ const lesson2_PowerOfTiny_AR: FlexibleLesson = {
   teaserText: 'غداً ستتعلم قاعدة الدقيقتين التي تجعل العادات شبه مستحيلة الفشل.',
   exercises: [
     {
-      id: 'ex-2-scenario',
-      type: 'scenario',
-      title: 'المبتدئ المرهق',
+      id: 'ex-2-truth-mirror',
+      type: 'truth-mirror',
+      title: 'أصوات الهوية',
       content: {
-        situation: 'يريد صديقك أن يصبح لائقاً. يشتري اشتراكاً مكلفاً في النادي، وملابس رياضية، ومكملات، ويضع خطة تمرين طموحة لستة أيام. بعد ثلاثة أسابيع، ذهب إلى النادي مرتين فقط ويشعر بالفشل. يطلب منك نصيحة.',
-        question: 'باستخدام قوة الصغير، ماذا ستقول له؟ وكيف ستساعده على إعادة تصميم نهجه؟',
-        hints: [
-          'فكّر: ما نسخة الدقيقتين؟',
-          'ما العادة الصغيرة جداً التي لا يمكنه أن يفشل فيها؟',
-          'كيف أن الحضور أهم من الأداء؟',
+        statements: [
+          "أبدأ أشياء لكنني نادراً ما أنهيها.",
+          "أنتظر حتى أشعر بالتحفيز لأبدأ.",
+          "أظن أنني بحاجة لتغييرات كبيرة.",
+          "جربت هذا من قبل وفشلت.",
+          "لا أؤمن أن الأفعال الصغيرة تهم.",
+          "أنا أقسى على نفسي من أي شخص آخر.",
+          "أقارن بدايتي بنهاية شخص آخر.",
+          "أنسى أن الحضور هو الفوز بحد ذاته."
         ],
-      },
-    },
-    {
-      id: 'ex-2-quote',
-      type: 'quote',
-      title: 'جيمس كلير عن الهوية',
-      content: {
-        quote: 'كل فعل تقوم به هو صوت لصالح نوع الشخص الذي ترغب أن تصبحه. لن تغيّر أي مرة واحدة معتقداتك، لكن مع تراكم الأصوات تتراكم أدلة هويتك الجديدة.',
-        author: 'James Clear',
-        source: 'العادات الذرية (Atomic Habits)',
-        reflectionPrompt: 'لأي هوية تصوّت بأفعالك الصغيرة اليومية؟ ما العادة الصغيرة التي ستصوّت للشخص الذي تريد أن تصبحه؟',
-      },
-    },
-    {
-      id: 'ex-2-application',
-      type: 'application',
-      title: 'دقيقتا الغد',
-      content: {
-        instruction: 'غداً صباحاً، قبل أن تفعل أي شيء آخر، قم بنسخة مدتها دقيقتان من شيء تريد بناءه في حياتك.',
-        planPrompt: 'ما العادة المحددة لمدة دقيقتين التي ستقوم بها صباح الغد؟ أين ستفعلها؟ وما الإشارة التي ستبدأ بها؟',
-        examples: [
-          'عندما تلمس قدماي الأرض، سأقوم بتمرينتي ضغط',
-          'بعد أن أفرش أسناني، سأكتب جملة واحدة في دفتر',
-          'قبل أن أتحقق من هاتفي، سأأخذ 3 أنفاس عميقة',
+        holdReveal: "هذا النمط يمكن أن يتغير. صوت صغير في كل مرة.",
+        breathPrompts: [
+          "واحد بالمئة...",
+          "صوت واحد...",
+          "يوم واحد..."
         ],
-      },
+        style: 'strength'
+      }
     },
     {
-      id: 'ex-2-anchor',
-      type: 'anchor',
+      id: 'ex-2-soul-compass',
+      type: 'soul-compass',
+      title: 'ما حقيقتك ذات الدقيقتين؟',
+      content: {
+        centralQuestion: "لماذا لم تستمر محاولاتك السابقة؟",
+        options: [
+          { id: 'big', emoji: '🎯', text: 'جعلتها كبيرة جداً' },
+          { id: 'motivation', emoji: '🌀', text: 'فقدت حماسي' },
+          { id: 'life', emoji: '📅', text: 'الحياة تدخلت' },
+          { id: 'hard', emoji: '😤', text: 'كنت قاسياً جداً على نفسي' },
+          { id: 'wrong', emoji: '🎭', text: 'كنت أفعلها لأسباب خاطئة' },
+          { id: 'unknown', emoji: '❓', text: 'لا أعرف لماذا' }
+        ],
+        showIntensity: true,
+        intensityQuestion: "كم تريد أن يتغير هذا؟",
+        intensityLabels: { low: 'قليلاً', high: 'بشدة' },
+        intensityResponses: {
+          low: "ربما أنت راضٍ. هذا جيد أيضاً.",
+          mid: "الشرارة موجودة. لنُشعلها برفق.",
+          high: "هذه النار حقيقية. الآن صغّر الفعل، لا الرغبة."
+        },
+        style: 'energizing'
+      }
+    },
+    {
+      id: 'ex-2-presence-anchor',
+      type: 'presence-anchor',
       title: 'إيماءة البذرة',
       content: {
-        gesture: 'المس إبهامك بسبابتك لتصنع دائرة صغيرة — كأنك تمسك بذرة صغيرة',
-        meaning: 'هذه الدائرة الصغيرة تمثل العادة الصغيرة جداً — صغيرة بما يكفي لتحملها، لكنها تحمل إمكانات نمو لا نهائية. كل شجرة عظيمة بدأت بهذا الصغر.',
-        breathPattern: 'اشهق وتخيل أنك تزرع هذه البذرة. ازفر وتخيل أنها تتجذر. صغير. مستمر. لا يُوقف.',
-        repetitions: 3,
-      },
-    },
-    {
-      id: 'ex-2-reframe',
-      type: 'reframe',
-      title: 'من الكل أو لا شيء إلى شيء',
-      content: {
-        challengePrompt: 'ما الشيء الذي تفشل فيه لأنك تحاول فعل الكثير؟ هدف تبدأه بقوة ثم تتوقف؟',
-        reframeGuide: 'الآن صغّره. ما نسخة الدقيقتين التي يمكنك فعلها كل يوم مهما حصل؟ اجعلها صغيرة لدرجة تبدو بلا معنى تقريباً.',
-        example: {
-          before: 'أريد التأمل لمدة 20 دقيقة كل صباح لكنني أتخطاه باستمرار',
-          after: 'سأجلس، أغلق عينيّ، وآخذ ثلاث أنفاس فقط. هذه هي تأملاتي. انتهى. يمكنني فعل المزيد، لكن ثلاث أنفاس هي الشرط الوحيد.',
-        },
-      },
-    },
+        gesture: "المس إبهامك بسبابتك لتصنع دائرة صغيرة — كأنك تمسك بذرة.",
+        meaning: "الصغير قوي",
+        breathCycles: 4,
+        exhalePrompts: [
+          "الصغير لا يعني الضعيف...",
+          "المستمر يهزم المكثف...",
+          "أنت ما تكرره...",
+          "البذرة تصبح البلوطة..."
+        ],
+        anchorMessage: "المس هذين الإصبعين كلما شعرت بالإرهاق. تذكر: الصغير قوي.",
+        style: 'grounding'
+      }
+    }
   ],
   steps: [
     {
@@ -3068,68 +3099,73 @@ const lesson3_ObstacleOpportunity_FR: FlexibleLesson = {
   teaserText: "Demain, tu apprendras le secret ancien qui transforme chaque obstacle en ton plus grand avantage.",
   exercises: [
     {
-      id: 'ex-3-scenario',
-      type: 'scenario',
-      title: 'Le licenciement inattendu',
+      id: 'ex-3-truth-mirror',
+      type: 'truth-mirror',
+      title: 'Les cadeaux cachés',
       content: {
-        situation: "Ton collègue vient d’être licencié après 8 ans dans l’entreprise. Il est dévasté, en colère et effrayé. Il t’appelle pour être réconforté, mais il est convaincu que sa vie est ruinée.",
-        question: "Avec la pensée « l’obstacle est le chemin », comment l’aiderais-tu à voir les choses autrement ? Quelle opportunité pourrait se cacher dans ce revers ?",
-        hints: [
-          'Quelles portes cela ferme-t-il peut-être, et qui devaient se fermer ?',
-          'Que pourrait-il poursuivre maintenant qu’il n’aurait pas poursuivi avant ?',
-          'Comment des licenciements ont-ils transformé la vie d’autres personnes pour le mieux ?',
+        statements: [
+          "Ce revers me redirige peut-être vers quelque chose de mieux.",
+          "Cette difficulté construit une force dont j'aurai besoin plus tard.",
+          "Ce qui ressemble à un rejet est peut-être une protection.",
+          "La porte qui s'est fermée n'était pas ma porte.",
+          "Cette lutte m'enseigne quelque chose d'important.",
+          "Ma plus grande croissance vient de mes moments les plus difficiles.",
+          "L'obstacle contient exactement ce dont j'ai besoin.",
+          "Je peux utiliser ceci, même si je ne l'ai pas choisi."
         ],
-      },
-    },
-    {
-      id: 'ex-3-quote',
-      type: 'quote',
-      title: 'Marc Aurèle sur les obstacles',
-      content: {
-        quote: "L’obstacle à l’action fait avancer l’action. Ce qui fait obstacle devient le chemin.",
-        author: 'Marc Aurèle',
-        source: 'Méditations',
-        reflectionPrompt: 'Pense à un obstacle passé qui a fini par réorienter ta vie dans une meilleure direction. Quel « cadeau » cette difficulté t’a-t-elle offert ?',
-      },
-    },
-    {
-      id: 'ex-3-application',
-      type: 'application',
-      title: 'Le retournement de l’obstacle',
-      content: {
-        instruction: "Demain, lorsque tu rencontres une frustration ou un obstacle, demande immédiatement : « Quelle opportunité se cache ici ? »",
-        planPrompt: 'Quel obstacle affrontes-tu en ce moment ? Comment pourrais-tu chercher activement l’opportunité qu’il contient demain ?',
-        examples: [
-          'Le client difficile m’apprend la patience et la communication',
-          'La tâche ennuyeuse est une chance de pratiquer la concentration',
-          'Le refus me redirige vers mieux',
+        holdReveal: "L'obstacle est le chemin. C'est ton chemin.",
+        breathPrompts: [
+          "À travers...",
+          "Pas autour...",
+          "En avant..."
         ],
-      },
+        style: 'strength'
+      }
     },
     {
-      id: 'ex-3-anchor',
-      type: 'anchor',
-      title: 'Le phénix qui s’élève',
+      id: 'ex-3-soul-compass',
+      type: 'soul-compass',
+      title: 'Inventaire des obstacles',
       content: {
-        gesture: 'Presse tes paumes l’une contre l’autre sur la poitrine, puis monte-les lentement au-dessus de ta tête en écartant les doigts — comme des flammes qui montent',
-        meaning: 'Comme le phénix, tu t’élèves de ce qui voulait te brûler. Le geste transforme la pression vers le bas en mouvement vers le haut.',
-        breathPattern: 'Inspire paumes jointes. Expire en les levant et en les ouvrant — transforme l’obstacle en carburant pour ta montée.',
-        repetitions: 3,
-      },
+        centralQuestion: "Qu'est-ce qui bloque ton chemin en ce moment ?",
+        options: [
+          { id: 'door', emoji: '🚪', text: "Une porte qui ne s'ouvre pas" },
+          { id: 'person', emoji: '👤', text: "Une personne qui ne change pas" },
+          { id: 'time', emoji: '⏰', text: "Du temps que je n'ai pas" },
+          { id: 'loss', emoji: '💔', text: "Une perte irréparable" },
+          { id: 'fear', emoji: '😰', text: "Une peur que je n'arrive pas à secouer" },
+          { id: 'unknown', emoji: '🤷', text: "Je ne sais pas ce qui me bloque" }
+        ],
+        showIntensity: false,
+        followUpQuestion: "Que pourrait créer cet obstacle ?",
+        followUpOptions: [
+          { id: 'strength', emoji: '💪', text: 'De la force' },
+          { id: 'wisdom', emoji: '🧠', text: 'De la sagesse' },
+          { id: 'redirect', emoji: '🔄', text: 'Une redirection' },
+          { id: 'growth', emoji: '🌱', text: 'De la croissance' },
+          { id: 'unseen', emoji: '❓', text: "Je ne le vois pas encore" }
+        ],
+        style: 'awakening'
+      }
     },
     {
-      id: 'ex-3-reframe',
-      type: 'reframe',
-      title: 'Du blocage à la brique',
+      id: 'ex-3-presence-anchor',
+      type: 'presence-anchor',
+      title: 'Le phénix qui s\'élève',
       content: {
-        challengePrompt: 'Quel obstacle affrontes-tu en ce moment qui te donne l’impression de bloquer ton chemin ? Quelque chose de purement négatif ?',
-        reframeGuide: 'Renverse-le. Quelle compétence, force ou opportunité cet obstacle crée-t-il pour toi ? Comment ton toi du futur remercierait-il cette difficulté ?',
-        example: {
-          before: 'Je me fais refuser des emplois et ça détruit ma confiance',
-          after: 'Chaque refus m’apprend la résilience et m’aide à affiner ma démarche. La bonne opportunité n’est pas encore apparue parce que je suis en train d’être préparé(e) à mieux. Cette difficulté construit ma détermination.',
-        },
-      },
-    },
+        gesture: "Presse tes paumes l'une contre l'autre sur ta poitrine. En expirant, lève-les au-dessus de ta tête en écartant tes doigts — comme des flammes qui montent.",
+        meaning: "S'élever de ce qui voulait te brûler",
+        breathCycles: 4,
+        exhalePrompts: [
+          "Du feu...",
+          "Vient le carburant...",
+          "L'obstacle devient...",
+          "Le chemin en avant..."
+        ],
+        anchorMessage: "Chaque fois que tu te sens bloqué(e), fais ce geste. Élève-toi comme le phénix.",
+        style: 'strength'
+      }
+    }
   ],
   steps: [
     {
@@ -3250,68 +3286,73 @@ const lesson3_ObstacleOpportunity_AR: FlexibleLesson = {
   teaserText: 'غداً ستتعلم السر القديم الذي يحوّل كل عقبة إلى أعظم ميزة لديك.',
   exercises: [
     {
-      id: 'ex-3-scenario',
-      type: 'scenario',
-      title: 'الفصل المفاجئ',
+      id: 'ex-3-truth-mirror',
+      type: 'truth-mirror',
+      title: 'الهدايا الخفية',
       content: {
-        situation: 'تم فصل زميلك للتو بعد 8 سنوات في الشركة. هو محطم وغاضب وخائف. يتصل بك طالباً المواساة، لكنه مقتنع أن حياته انتهت.',
-        question: 'باستخدام فكرة "العقبة هي الطريق"، كيف ستساعده على رؤية الأمر بشكل مختلف؟ ما الفرصة التي قد تختبئ في هذه النكسة؟',
-        hints: [
-          'ما الأبواب التي قد يغلقها هذا وكان يجب أن تُغلق؟',
-          'ما الذي قد يلاحقه الآن ولم يكن ليلاحقه من قبل؟',
-          'كيف غيّرت عمليات الفصل حياة أشخاص آخرين للأفضل؟',
+        statements: [
+          "هذه النكسة قد تعيد توجيهي نحو شيء أفضل.",
+          "هذه الصعوبة تبني قوة سأحتاجها لاحقاً.",
+          "ما يبدو رفضاً قد يكون حماية.",
+          "الباب الذي أُغلق لم يكن بابي.",
+          "هذه المعاناة تعلمني شيئاً مهماً.",
+          "أعظم نموّي جاء من أصعب لحظاتي.",
+          "العقبة تحتوي بالضبط ما أحتاجه.",
+          "يمكنني استخدام هذا، حتى لو لم أخترها."
         ],
-      },
-    },
-    {
-      id: 'ex-3-quote',
-      type: 'quote',
-      title: 'ماركوس أوريليوس عن العوائق',
-      content: {
-        quote: 'العائق أمام الفعل يقدّم الفعل. ما يقف في الطريق يصبح الطريق.',
-        author: 'ماركوس أوريليوس',
-        source: 'التأملات',
-        reflectionPrompt: 'فكر في عقبة سابقة انتهت بإعادة توجيه حياتك نحو الأفضل. ما "الهدية" التي قدمتها لك تلك الصعوبة في النهاية؟',
-      },
-    },
-    {
-      id: 'ex-3-application',
-      type: 'application',
-      title: 'قلب العقبة',
-      content: {
-        instruction: 'غداً، عندما تواجه أي إحباط أو عقبة، اسأل فوراً: "ما الفرصة التي تختبئ هنا؟"',
-        planPrompt: 'ما العقبة التي تواجهها حالياً؟ كيف يمكن أن تبحث عن الفرصة داخلها غداً؟',
-        examples: [
-          'العميل الصعب يعلمني الصبر ومهارات التواصل',
-          'المهمة المملة فرصة لتدريب التركيز والحضور',
-          'الرفض يعيد توجيهي إلى مكان أفضل',
+        holdReveal: "العقبة هي الطريق. هذا طريقك.",
+        breathPrompts: [
+          "عبرها...",
+          "ليس حولها...",
+          "للأمام..."
         ],
-      },
+        style: 'strength'
+      }
     },
     {
-      id: 'ex-3-anchor',
-      type: 'anchor',
-      title: 'العنقاء التي تنهض',
+      id: 'ex-3-soul-compass',
+      type: 'soul-compass',
+      title: 'جرد العقبات',
       content: {
-        gesture: 'اضغط كفيك معاً عند صدرك، ثم ارفعهما ببطء فوق رأسك مع تفريق الأصابع — كأنها ألسنة نار ترتفع',
-        meaning: 'مثل العنقاء، تنهض مما حاول إحراقك. الإيماءة تحوّل الضغط إلى حركة صاعدة.',
-        breathPattern: 'اشهق مع ضم الكفين. ازفر وأنت ترفع وتفتح — حوّل العقبة إلى وقود للارتقاء.',
-        repetitions: 3,
-      },
+        centralQuestion: "ما الذي يسد طريقك الآن؟",
+        options: [
+          { id: 'door', emoji: '🚪', text: "باب لا يُفتح" },
+          { id: 'person', emoji: '👤', text: "شخص لا يتغير" },
+          { id: 'time', emoji: '⏰', text: "وقت لا أملكه" },
+          { id: 'loss', emoji: '💔', text: "خسارة لا يمكن إصلاحها" },
+          { id: 'fear', emoji: '😰', text: "خوف لا أستطيع التخلص منه" },
+          { id: 'unknown', emoji: '🤷', text: "لا أعرف ما الذي يعيقني" }
+        ],
+        showIntensity: false,
+        followUpQuestion: "ما الذي قد تخلقه هذه العقبة؟",
+        followUpOptions: [
+          { id: 'strength', emoji: '💪', text: 'القوة' },
+          { id: 'wisdom', emoji: '🧠', text: 'الحكمة' },
+          { id: 'redirect', emoji: '🔄', text: 'إعادة التوجيه' },
+          { id: 'growth', emoji: '🌱', text: 'النمو' },
+          { id: 'unseen', emoji: '❓', text: "لا أراها بعد" }
+        ],
+        style: 'awakening'
+      }
     },
     {
-      id: 'ex-3-reframe',
-      type: 'reframe',
-      title: 'من عائق إلى لبنة',
+      id: 'ex-3-presence-anchor',
+      type: 'presence-anchor',
+      title: 'العنقاء الناهضة',
       content: {
-        challengePrompt: 'ما العقبة التي تواجهها الآن وتشعر أنها تسد طريقك؟ شيء يبدو سلبياً بالكامل؟',
-        reframeGuide: 'الآن اقلبها. ما المهارة أو القوة أو الفرصة التي قد تخلقها لك هذه العقبة؟ كيف سيشكرك مستقبلك على هذه الصعوبة؟',
-        example: {
-          before: 'أتعرض للرفض في الوظائف وهذا يحطم ثقتي',
-          after: 'كل رفض يعلمني الصمود ويساعدني على تحسين أسلوبي. الفرصة المناسبة لم تظهر بعد لأنني أُعدّ لشيء أفضل. هذه الصعوبة تبني عزيمتي.',
-        },
-      },
-    },
+        gesture: "اضغط كفيك معاً عند صدرك. مع الزفير، ارفعهما فوق رأسك مع تفريق أصابعك — كأنها ألسنة نار ترتفع.",
+        meaning: "انهض مما حاول إحراقك",
+        breathCycles: 4,
+        exhalePrompts: [
+          "من النار...",
+          "يأتي الوقود...",
+          "العقبة تصبح...",
+          "الطريق للأمام..."
+        ],
+        anchorMessage: "كلما شعرت بالانسداد، قم بهذه الإيماءة. انهض كالعنقاء.",
+        style: 'strength'
+      }
+    }
   ],
   steps: [
     {
@@ -3432,68 +3473,73 @@ const lesson4_MorningMindset_FR: FlexibleLesson = {
   teaserText: "Demain, tu apprendras la pratique matinale de 2 minutes utilisée par des empereurs romains et des PDG modernes.",
   exercises: [
     {
-      id: 'ex-4-scenario',
-      type: 'scenario',
-      title: 'Le matin réactif',
+      id: 'ex-4-truth-mirror',
+      type: 'truth-mirror',
+      title: 'Conscience de l\'embuscade',
       content: {
-        situation: "Ton ami te dit qu’il se réveille chaque jour déjà stressé. Il attrape immédiatement son téléphone, voit des e-mails de travail et les réseaux sociaux, et se sent anxieux avant même de sortir du lit. Il dit ne pas avoir le temps pour une routine matinale.",
-        question: 'Comment l’aiderais-tu à concevoir une pratique matinale de 2 minutes qui lui rend le contrôle du début de sa journée ?',
-        hints: [
-          'Que pourrait-il faire AVANT de prendre son téléphone ?',
-          'Comment l’anticipation des défis peut-elle réduire leur pouvoir ?',
-          'Quel petit rituel pourrait changer toute l’énergie de son matin ?',
+        statements: [
+          "Mes matins sont généralement piratés par mon téléphone.",
+          "Je me réveille déjà stressé(e) par la journée.",
+          "Je laisse les autres définir mon humeur.",
+          "Je suis surpris(e) quand les choses vont mal.",
+          "Je réagis au lieu de répondre.",
+          "J'oublie que j'ai le choix dans ce que je ressens.",
+          "Je commence la journée en défense, pas en attaque.",
+          "Je pourrais anticiper, mais je ne le fais pas."
         ],
-      },
-    },
-    {
-      id: 'ex-4-quote',
-      type: 'quote',
-      title: 'Marc Aurèle à l’aube',
-      content: {
-        quote: "Commence chaque jour en te disant : aujourd’hui je rencontrerai l’ingérence, l’ingratitude, l’insolence, la déloyauté, la malveillance et l’égoïsme. Mais j’ai vu la beauté du bien et la laideur du mal, et j’ai reconnu que le fautif a une nature apparentée à la mienne.",
-        author: 'Marc Aurèle',
-        source: 'Méditations',
-        reflectionPrompt: 'Qu’est-ce qui te prend habituellement au dépourvu dans ta journée ? Comment l’anticiper changerait ta réaction ?',
-      },
-    },
-    {
-      id: 'ex-4-application',
-      type: 'application',
-      title: 'Préméditation matinale',
-      content: {
-        instruction: 'Demain matin, avant de consulter tout appareil, passe 2 minutes : 1) prends 5 respirations profondes, 2) demande-toi : qu’est-ce qui pourrait me frustrer aujourd’hui ? 3) décide : comment veux-je répondre ?',
-        planPrompt: 'À quelle heure te réveilleras-tu ? Quel est un défi que tu peux anticiper pour demain ? Comment choisiras-tu d’y répondre ?',
-        examples: [
-          'La réunion de 10h risque d’être tendue — je choisirai de rester curieux(se) plutôt que défensif(ve)',
-          'Le trafic sera probablement mauvais — j’utiliserai ce temps pour écouter quelque chose de positif',
-          'Ma boîte mail sera pleine — je la traiterai calmement, un e-mail à la fois',
+        holdReveal: "Le guerrier s'attend à l'embuscade. Maintenant tu es prêt(e).",
+        breathPrompts: [
+          "J'ai anticipé...",
+          "J'ai choisi...",
+          "Je suis prêt(e)..."
         ],
-      },
+        style: 'clarity'
+      }
     },
     {
-      id: 'ex-4-anchor',
-      type: 'anchor',
+      id: 'ex-4-soul-compass',
+      type: 'soul-compass',
+      title: 'Qu\'est-ce qui te prend en embuscade ?',
+      content: {
+        centralQuestion: "Qu'est-ce qui déraille généralement ta journée ?",
+        options: [
+          { id: 'phone', emoji: '📱', text: 'Mon téléphone/les réseaux sociaux' },
+          { id: 'people', emoji: '👥', text: 'Les personnes difficiles' },
+          { id: 'email', emoji: '📧', text: 'Les e-mails/messages' },
+          { id: 'commute', emoji: '🚗', text: 'Le trajet/la circulation' },
+          { id: 'anxiety', emoji: '😰', text: 'Ma propre anxiété' },
+          { id: 'random', emoji: '🎲', text: 'Les surprises aléatoires' }
+        ],
+        showIntensity: false,
+        followUpQuestion: "Si ça arrivait demain, comment CHOISIRAIS-tu de répondre ?",
+        followUpOptions: [
+          { id: 'calm', emoji: '🧘', text: 'Avec une acceptation calme' },
+          { id: 'focus', emoji: '🔥', text: 'Avec une concentration féroce' },
+          { id: 'step-back', emoji: '💭', text: 'En prenant du recul d\'abord' },
+          { id: 'unsure', emoji: '🤷', text: "Je ne suis pas sûr(e) encore" }
+        ],
+        style: 'grounding'
+      }
+    },
+    {
+      id: 'ex-4-presence-anchor',
+      type: 'presence-anchor',
       title: 'Le souffle du guerrier',
       content: {
-        gesture: 'Pose ta main droite sur ton cœur, ta main gauche sur ton ventre',
-        meaning: 'Cette posture relie tête et cœur, préparation et présence. Un guerrier se prépare au combat non par la peur, mais par un calme prêt.',
-        breathPattern: 'Inspire le courage par la main sur ton ventre. Expire le calme par la main sur ton cœur. Tu es prêt(e). Tu es prêt(e).',
-        repetitions: 5,
-      },
-    },
-    {
-      id: 'ex-4-reframe',
-      type: 'reframe',
-      title: 'De victime à victorieux',
-      content: {
-        challengePrompt: 'Décris une frustration récurrente dans ta vie quotidienne — quelque chose qui semble « t’arriver » régulièrement et qui te met de mauvaise humeur.',
-        reframeGuide: 'Réécris-la maintenant comme quelque chose que tu peux anticiper et préparer. Comment peux-tu répondre comme un guerrier qui s’y attendait, pas comme une victime surprise ?',
-        example: {
-          before: 'Mon/ma manager me donne toujours du travail à 17h et ruine ma soirée',
-          after: 'Je sais que mon/ma manager a souvent des demandes de dernière minute. À 16h30, je me prépare mentalement. Quand cela arrive, j’évalue calmement : qu’est-ce qui peut attendre demain et qu’est-ce qui ne peut pas ? Je m’y attendais. Je suis prêt(e).',
-        },
-      },
-    },
+        gesture: "Pose ta main droite sur ton cœur, ta main gauche sur ton ventre. Sens les deux monter et descendre.",
+        meaning: "Préparé(e) et présent(e)",
+        breathCycles: 5,
+        exhalePrompts: [
+          "J'attends la difficulté...",
+          "Je choisis ma réponse...",
+          "Je ne suis pas surpris(e)...",
+          "Je ne suis pas submergé(e)...",
+          "Je suis préparé(e)..."
+        ],
+        anchorMessage: "Demain matin, avant de toucher ton téléphone, touche ton cœur. Souviens-toi de ce sentiment.",
+        style: 'grounding'
+      }
+    }
   ],
   steps: [
     {
@@ -3585,68 +3631,73 @@ const lesson4_MorningMindset_AR: FlexibleLesson = {
   teaserText: 'غداً ستتعلم ممارسة الصباح لمدة دقيقتين التي استخدمها أباطرة روما والرؤساء التنفيذيون المعاصرون.',
   exercises: [
     {
-      id: 'ex-4-scenario',
-      type: 'scenario',
-      title: 'الصباح التفاعلي',
+      id: 'ex-4-truth-mirror',
+      type: 'truth-mirror',
+      title: 'الوعي بالكمين',
       content: {
-        situation: 'يخبرك صديقك أنه يستيقظ كل يوم وهو متوتر. يفتح هاتفه فوراً، يرى رسائل العمل ووسائل التواصل، ويشعر بالقلق قبل أن ينهض من السرير. يقول إنه لا يملك وقتاً لروتين صباحي.',
-        question: 'كيف ستساعده على تصميم ممارسة صباحية لمدة دقيقتين تعيد له السيطرة على بداية يومه؟',
-        hints: [
-          'ما الذي يمكنه فعله قبل الوصول إلى هاتفه؟',
-          'كيف يقلل توقع التحديات من تأثيرها؟',
-          'أي طقس صغير يمكن أن يغيّر طاقة صباحه بالكامل؟',
+        statements: [
+          "صباحاتي عادة يخطفها هاتفي.",
+          "أستيقظ وأنا متوتر بالفعل من اليوم.",
+          "أدع الآخرين يحددون مزاجي.",
+          "أتفاجأ عندما تسوء الأمور.",
+          "أنا أتفاعل بدلاً من أن أستجيب.",
+          "أنسى أن لدي خياراً فيما أشعر به.",
+          "أبدأ يومي في موقف دفاعي لا هجومي.",
+          "كان بإمكاني التوقع، لكنني عادة لا أفعل."
         ],
-      },
-    },
-    {
-      id: 'ex-4-quote',
-      type: 'quote',
-      title: 'ماركوس أوريليوس عند الفجر',
-      content: {
-        quote: 'ابدأ كل يوم بأن تقول لنفسك: اليوم سألاقي التدخل والجحود والوقاحة وعدم الوفاء وسوء النية والأنانية. لكني رأيت جمال الخير وقبح الشر، وعرفت أن المخطئ له طبيعة قريبة من طبيعتي.',
-        author: 'ماركوس أوريليوس',
-        source: 'التأملات',
-        reflectionPrompt: 'ما الذي يفاجئك عادة خلال يومك؟ كيف سيغيّر توقعه طريقة ردك؟',
-      },
-    },
-    {
-      id: 'ex-4-application',
-      type: 'application',
-      title: 'تأمل الصباح المسبق',
-      content: {
-        instruction: 'غداً صباحاً، قبل تفقد أي جهاز، اقضِ دقيقتين: 1) خذ 5 أنفاس عميقة، 2) اسأل: ما الذي قد يزعجني اليوم؟ 3) قرر: كيف أريد أن أستجيب؟',
-        planPrompt: 'متى ستستيقظ؟ ما التحدي الذي يمكنك توقعه غداً؟ وكيف ستختار الاستجابة له؟',
-        examples: [
-          'قد يكون اجتماع العاشرة متوتراً — سأختار الفضول بدلاً من الدفاعية',
-          'سيكون الزحام سيئاً — سأستغل الوقت للاستماع لشيء ملهم',
-          'سيكون بريدي ممتلئاً — سأتعامل معه بهدوء، رسالة تلو الأخرى',
+        holdReveal: "المحارب يتوقع الكمين. الآن أنت مستعد.",
+        breathPrompts: [
+          "توقعت...",
+          "اخترت...",
+          "أنا مستعد..."
         ],
-      },
+        style: 'clarity'
+      }
     },
     {
-      id: 'ex-4-anchor',
-      type: 'anchor',
+      id: 'ex-4-soul-compass',
+      type: 'soul-compass',
+      title: 'ما الذي يكمن لك؟',
+      content: {
+        centralQuestion: "ما الذي يُخرج يومك عن مساره عادة؟",
+        options: [
+          { id: 'phone', emoji: '📱', text: 'هاتفي/وسائل التواصل' },
+          { id: 'people', emoji: '👥', text: 'الأشخاص الصعبون' },
+          { id: 'email', emoji: '📧', text: 'الرسائل/الإيميلات' },
+          { id: 'commute', emoji: '🚗', text: 'التنقل/الزحام' },
+          { id: 'anxiety', emoji: '😰', text: 'قلقي الشخصي' },
+          { id: 'random', emoji: '🎲', text: 'المفاجآت العشوائية' }
+        ],
+        showIntensity: false,
+        followUpQuestion: "إذا حدث هذا غداً، كيف ستختار أن تستجيب؟",
+        followUpOptions: [
+          { id: 'calm', emoji: '🧘', text: 'بقبول هادئ' },
+          { id: 'focus', emoji: '🔥', text: 'بتركيز شرس' },
+          { id: 'step-back', emoji: '💭', text: 'بالتراجع أولاً' },
+          { id: 'unsure', emoji: '🤷', text: "لست متأكداً بعد" }
+        ],
+        style: 'grounding'
+      }
+    },
+    {
+      id: 'ex-4-presence-anchor',
+      type: 'presence-anchor',
       title: 'نَفَس المحارب',
       content: {
-        gesture: 'ضع يدك اليمنى على قلبك، واليسرى على بطنك',
-        meaning: 'هذه الوقفة تربط الرأس بالقلب، والاستعداد بالحضور. المحارب يستعد للمعركة لا بالخوف بل بهدوء جاهز.',
-        breathPattern: 'اشهق الشجاعة عبر اليد على بطنك. ازفر الهدوء عبر اليد على قلبك. أنت مستعد. أنت جاهز.',
-        repetitions: 5,
-      },
-    },
-    {
-      id: 'ex-4-reframe',
-      type: 'reframe',
-      title: 'من الضحية إلى المنتصر',
-      content: {
-        challengePrompt: 'صف إحباطاً متكرراً في حياتك اليومية — شيئاً يبدو أنه "يحدث لك" باستمرار ويؤثر على مزاجك.',
-        reframeGuide: 'الآن أعد صياغته كشيء يمكنك توقعه والاستعداد له. كيف يمكنك الرد كشخص محارب كان يتوقع ذلك، لا كضحية تفاجأت؟',
-        example: {
-          before: 'مديري دائماً يرسل لي عملاً في الساعة الخامسة مساءً ويفسد أمسيتي',
-          after: 'أعرف أن مديري غالباً لديه طلبات في اللحظة الأخيرة. عند 4:30 سأستعد ذهنياً. عندما يحدث ذلك، سأقيّم بهدوء: ما الذي يمكن أن ينتظر للغد، وما الذي لا يمكن؟ كنت أتوقع ذلك. أنا مستعد.',
-        },
-      },
-    },
+        gesture: "ضع يدك اليمنى على قلبك، واليسرى على بطنك. اشعر بهما يرتفعان وينخفضان.",
+        meaning: "مستعد وحاضر",
+        breathCycles: 5,
+        exhalePrompts: [
+          "أتوقع الصعوبة...",
+          "أختار استجابتي...",
+          "لست متفاجئاً...",
+          "لست مرتبكاً...",
+          "أنا مستعد..."
+        ],
+        anchorMessage: "غداً صباحاً، قبل أن تلمس هاتفك، المس قلبك. تذكر هذا الشعور.",
+        style: 'grounding'
+      }
+    }
   ],
   steps: [
     {
@@ -3738,74 +3789,78 @@ const lesson5_GratitudeShift_FR: FlexibleLesson = {
   teaserText: "Demain, tu découvriras la technique contre-intuitive qui rend la gratitude réelle plutôt que forcée.",
   exercises: [
     {
-      id: 'ex-5-scenario',
-      type: 'scenario',
-      title: 'Le sceptique de la gratitude',
+      id: 'ex-5-truth-mirror',
+      type: 'truth-mirror',
+      title: 'Les cadeaux invisibles',
       content: {
-        situation: "Ton ami dit : « J’ai essayé les journaux de gratitude et ça sonne faux. Lister ce dont je suis reconnaissant(e) ressemble à une routine. Ça ne change pas vraiment ce que je ressens. »",
-        question: 'Comment lui expliquerais-tu la visualisation négative ? En quoi est-elle différente d’une gratitude forcée ?',
-        hints: [
-          'Pourquoi imaginer la perte fonctionne mieux que lister les bénédictions ?',
-          'Comment le contraste crée-t-il une appréciation authentique ?',
-          'Qu’est-ce qui rend cette approche réelle plutôt que performative ?',
+        statements: [
+          "J'ai cessé de remarquer ce que j'ai.",
+          "Je cours après ce que je n'ai pas.",
+          "Quelqu'un que j'aime pourrait disparaître demain.",
+          "Mon corps accomplit des miracles que j'ignore.",
+          "J'ai des conforts dont mes ancêtres rêvaient.",
+          "Je prends pour acquis des gens qui ne prennent rien de moi.",
+          "Tout ce que j'ai est emprunté.",
+          "Ce moment ordinaire est en fait extraordinaire."
         ],
-      },
-    },
-    {
-      id: 'ex-5-quote',
-      type: 'quote',
-      title: 'Sénèque sur la richesse',
-      content: {
-        quote: "Ce n’est pas l’homme qui a trop peu, mais celui qui désire plus, qui est pauvre. Quelle différence cela fait-il combien il y a dans ton compte ou tes greniers, si tu convoites la récolte du voisin et ne comptes pas tes bénédictions passées, mais celles que tu n’as pas encore ?",
-        author: 'Sénèque',
-        source: 'Lettres à Lucilius',
-        reflectionPrompt: 'Qu’as-tu déjà et que tu ne remarques plus ? Qu’est-ce qui te manquerait terriblement si cela disparaissait soudainement ?',
-      },
-    },
-    {
-      id: 'ex-5-application',
-      type: 'application',
-      title: 'La pratique du cadeau temporaire',
-      content: {
-        instruction: 'Demain, choisis une personne ou une chose que tu prends souvent pour acquise. Passe 60 secondes à imaginer ta vie sans elle. Puis remarque comment ton appréciation change.',
-        planPrompt: 'Sur qui ou quoi te concentreras-tu demain ? Pourquoi as-tu choisi cette personne ou cette chose ?',
-        examples: [
-          'Mon café du matin — imaginer ne plus y avoir accès',
-          'Ma capacité à marcher — imaginer ne plus pouvoir bouger librement',
-          'Mon/ma partenaire/ami(e) — imaginer qu’il/elle ne soit plus dans ma vie',
+        holdReveal: "Ce que tu as n'est pas permanent. Vois-le avant qu'il disparaisse.",
+        breathPrompts: [
+          "Je le vois...",
+          "Je le ressens...",
+          "Je suis reconnaissant(e)..."
         ],
-      },
+        style: 'gratitude'
+      }
     },
     {
-      id: 'ex-5-anchor',
-      type: 'anchor',
+      id: 'ex-5-soul-compass',
+      type: 'soul-compass',
+      title: 'Qu\'as-tu cessé de voir ?',
+      content: {
+        centralQuestion: "Quel cadeau dans ta vie est devenu invisible ?",
+        options: [
+          { id: 'person', emoji: '👤', text: 'Quelqu\'un qui m\'aime' },
+          { id: 'home', emoji: '🏠', text: 'Un endroit sûr où vivre' },
+          { id: 'body', emoji: '💪', text: 'Un corps qui fonctionne' },
+          { id: 'mind', emoji: '🧠', text: 'Un esprit qui pense' },
+          { id: 'time', emoji: '🌅', text: 'Du temps qu\'il me reste' },
+          { id: 'food', emoji: '🍽️', text: 'De la nourriture que je prends pour acquise' }
+        ],
+        showIntensity: true,
+        intensityQuestion: "À quel point c'est devenu invisible ?",
+        intensityLabels: { low: 'Je le remarque parfois', high: 'Complètement invisible' },
+        intensityResponses: {
+          low: "Bien - tu le vois encore. Ne le laisse pas disparaître davantage.",
+          mid: "Il s'efface. Aujourd'hui, tu l'as remis au premier plan.",
+          high: "Il avait disparu de ta vue. Imagine-le parti pour toujours. Tu sens ça ? C'est la gratitude."
+        },
+        style: 'awakening'
+      }
+    },
+    {
+      id: 'ex-5-presence-anchor',
+      type: 'presence-anchor',
       title: 'Les mains sur le cœur',
       content: {
-        gesture: 'Pose les deux mains sur ton cœur, l’une sur l’autre, et presse doucement',
-        meaning: "Ce geste te relie physiquement à ce qui compte. Ton cœur bat sans ton effort — un cadeau que tu n’as pas demandé mais que tu reçois toujours.",
-        breathPattern: 'Inspire en sentant ton cœur battre sous tes mains. Expire et dis silencieusement « merci » pour ce cadeau que tu n’as pas mérité.',
-        repetitions: 3,
-      },
-    },
-    {
-      id: 'ex-5-reframe',
-      type: 'reframe',
-      title: 'De prendre à recevoir',
-      content: {
-        challengePrompt: 'Qu’est-ce que tu as complètement arrêté d’apprécier dans ta vie ? Quelque chose de si normal que tu ne le remarques même plus ?',
-        reframeGuide: 'Imagine maintenant qu’on te le retire demain. Ressens vraiment la perte. Puis écris comment cette chose « ordinaire » est en réalité un cadeau extraordinaire.',
-        example: {
-          before: 'Ma santé va bien, rien de spécial. J’existe, voilà tout.',
-          after: 'Mon corps s’est réveillé aujourd’hui. Mes poumons se sont remplis d’air sans que je le demande. Mon cœur a battu plus d’un milliard de fois sans faillir. Je peux voir des couleurs, entendre de la musique, goûter la nourriture. Ce corps ordinaire est en fait un miracle que j’ignorais.',
-        },
-      },
-    },
+        gesture: "Pose les deux mains sur ton cœur, l'une sur l'autre. Presse doucement. Sens les battements de ton cœur.",
+        meaning: "Ce cadeau que je n'ai pas mérité",
+        breathCycles: 4,
+        exhalePrompts: [
+          "Pour ce battement de cœur que je n'ai pas mérité...",
+          "Pour ce souffle que je n'ai pas demandé...",
+          "Pour ce moment que je ne peux pas garder...",
+          "Pour cette vie que je n'ai pas méritée..."
+        ],
+        anchorMessage: "Ton cœur bat sans te le demander. Cela seul est un miracle suffisant.",
+        style: 'gratitude'
+      }
+    }
   ],
   steps: [
     {
       id: 'scenario',
       type: 'scenario',
-      narrative: "Tu l’as entendu mille fois : « Sois reconnaissant(e). » Mais la gratitude forcée sonne creux. Tu ne peux pas décider de ressentir de la gratitude. Ou si ?",
+      narrative: "Tu l'as entendu mille fois : « Sois reconnaissant(e). » Mais la gratitude forcée sonne creux. Tu ne peux pas décider de ressentir de la gratitude. Ou si ?",
       subtext: 'Les Stoïciens ont trouvé une porte dérobée vers l’appréciation.',
       continueLabel: 'Montre-moi',
       mood: 'curiosity',
@@ -3894,68 +3949,72 @@ const lesson5_GratitudeShift_AR: FlexibleLesson = {
   teaserText: 'غداً ستكتشف التقنية غير المتوقعة التي تجعل الامتنان حقيقياً بدلاً من مصطنع.',
   exercises: [
     {
-      id: 'ex-5-scenario',
-      type: 'scenario',
-      title: 'المتشكك في الامتنان',
+      id: 'ex-5-truth-mirror',
+      type: 'truth-mirror',
+      title: 'الهدايا الخفية',
       content: {
-        situation: 'يقول صديقك: "لقد جربت دفاتر الامتنان وشعرت أنها زائفة. سرد الأشياء التي أنا ممتن لها يشبه أداء واجب. لا يغيّر شعوري فعلاً."',
-        question: 'كيف تشرح له التصور السلبي؟ وكيف يختلف عن الامتنان القسري؟',
-        hints: [
-          'لماذا يعمل تخيّل الفقد أفضل من تعداد النعم؟',
-          'كيف يصنع التباين تقديراً حقيقياً؟',
-          'ما الذي يجعل هذا النهج صادقاً بدلاً من استعراض؟',
+        statements: [
+          "توقفت عن ملاحظة ما لديّ.",
+          "أطارد ما ليس لديّ.",
+          "قد يختفي شخص أحبه غداً.",
+          "جسدي يصنع معجزات أتجاهلها.",
+          "لديّ راحات حلم بها أجدادي.",
+          "آخذ أناساً كمُسلّمات وهم لا يأخذون مني شيئاً.",
+          "كل ما أملكه مُعار.",
+          "هذه اللحظة العادية استثنائية فعلاً."
         ],
-      },
-    },
-    {
-      id: 'ex-5-quote',
-      type: 'quote',
-      title: 'سينيكا عن الثراء',
-      content: {
-        quote: 'ليس الفقير من يملك القليل، بل من يطمع في المزيد. ما الفرق في مقدار ما لديك في حسابك أو مخازنك إن كنت تشتهي حصاد جارك ولا تعدّ بركاتك الماضية بل البركات التي لم تأت بعد؟',
-        author: 'سينيكا',
-        source: 'رسائل من رواقـي',
-        reflectionPrompt: 'ما الذي لديك بالفعل وتوقفت عن ملاحظته؟ ما الذي ستفتقده بشدة إذا اختفى فجأة؟',
-      },
-    },
-    {
-      id: 'ex-5-application',
-      type: 'application',
-      title: 'ممارسة الهدية المؤقتة',
-      content: {
-        instruction: 'غداً، اختر شخصاً أو شيئاً تأخذه كأمر مسلّم به. اقضِ 60 ثانية تتخيل حياتك بدونه. ثم لاحظ كيف يتغير تقديرك.',
-        planPrompt: 'على من أو على ماذا ستركّز غداً؟ ولماذا اخترت هذا الشخص أو الشيء؟',
-        examples: [
-          'قهوة الصباح — تخيل عدم توفرها',
-          'قدرتي على المشي — تخيل عدم القدرة على الحركة بحرية',
-          'الشريك/الصديق — تخيل أنه ليس في حياتي',
+        holdReveal: "ما لديك ليس دائماً. راه قبل أن يذهب.",
+        breathPrompts: [
+          "أراه...",
+          "أشعر به...",
+          "أنا ممتن..."
         ],
-      },
+        style: 'gratitude'
+      }
     },
     {
-      id: 'ex-5-anchor',
-      type: 'anchor',
+      id: 'ex-5-soul-compass',
+      type: 'soul-compass',
+      title: 'ما الذي توقفت عن رؤيته؟',
+      content: {
+        centralQuestion: "أي هدية في حياتك أصبحت خفية؟",
+        options: [
+          { id: 'person', emoji: '👤', text: 'شخص يحبني' },
+          { id: 'home', emoji: '🏠', text: 'مكان آمن للعيش' },
+          { id: 'body', emoji: '💪', text: 'جسد يعمل' },
+          { id: 'mind', emoji: '🧠', text: 'عقل يفكر' },
+          { id: 'time', emoji: '🌅', text: 'وقت ما زال لديّ' },
+          { id: 'food', emoji: '🍽️', text: 'طعام آخذه كمُسلّم' }
+        ],
+        showIntensity: true,
+        intensityQuestion: "كم أصبح هذا خفياً؟",
+        intensityLabels: { low: 'ألاحظه أحياناً', high: 'خفي تماماً' },
+        intensityResponses: {
+          low: "جيد - لا زلت تراه. لا تدعه يتلاشى أكثر.",
+          mid: "بدأ يتلاشى. اليوم أعدته للصورة.",
+          high: "اختفى من نظرك. الآن تخيله ذهب للأبد. تشعر بذلك؟ هذا هو الامتنان."
+        },
+        style: 'awakening'
+      }
+    },
+    {
+      id: 'ex-5-presence-anchor',
+      type: 'presence-anchor',
       title: 'احتضان القلب',
       content: {
-        gesture: 'ضع كلتا يديك على قلبك، واحدة فوق الأخرى، واضغط برفق',
-        meaning: 'هذا الإيماء يربطك جسدياً بما يهم. قلبك ينبض دون جهد منك — هدية لم تطلبها لكنها تصلك دائماً.',
-        breathPattern: 'اشهق واشعر بنبض قلبك تحت يديك. ازفر وقل بصمت "شكراً" لهذه الهدية التي لم تكسبها.',
-        repetitions: 3,
-      },
-    },
-    {
-      id: 'ex-5-reframe',
-      type: 'reframe',
-      title: 'من الأخذ إلى التلقي',
-      content: {
-        challengePrompt: 'ما الشيء في حياتك الذي توقفت تماماً عن تقديره؟ شيء أصبح عادياً لدرجة أنك لا تلاحظه؟',
-        reframeGuide: 'تخيله الآن يُسلب منك غداً. اشعر بالخسارة فعلاً. ثم اكتب كيف أن هذا الشيء "العادي" هو في الحقيقة هدية استثنائية.',
-        example: {
-          before: 'صحتي جيدة، لا شيء مميز. أنا فقط موجود.',
-          after: 'جسدي استيقظ اليوم. رئتاي امتلأتا بالهواء دون أن أطلب. قلبي نبض أكثر من مليار مرة دون أن يخفق. أستطيع رؤية الألوان وسماع الموسيقى وتذوق الطعام. هذا الجسد العادي معجزة كنت أتجاهلها.',
-        },
-      },
-    },
+        gesture: "ضع كلتا يديك على قلبك، واحدة فوق الأخرى. اضغط برفق. اشعر بنبضات قلبك.",
+        meaning: "هذه الهدية التي لم أكسبها",
+        breathCycles: 4,
+        exhalePrompts: [
+          "لهذه النبضة التي لم أكسبها...",
+          "لهذا النَفَس الذي لم أطلبه...",
+          "لهذه اللحظة التي لا أستطيع الاحتفاظ بها...",
+          "لهذه الحياة التي لا أستحقها..."
+        ],
+        anchorMessage: "قلبك ينبض دون أن يسألك. هذا وحده معجزة كافية.",
+        style: 'gratitude'
+      }
+    }
   ],
   steps: [
     {

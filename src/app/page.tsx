@@ -30,7 +30,6 @@ import { TransformationStory as TransformationStoryType } from '@/types/story';
 import { getLevelFromXp } from '@/types';
 import type { PublicReflection } from '@/types/echoes';
 import { getModernWisdomWorld } from '@/content/modernWisdom';
-import { getStoicismWorld } from '@/content/stoicismModern';
 import { useTranslation } from '@/i18n';
 import type { FlexibleLesson, LessonProgress, LessonMode, FlexibleWorld } from '@/types/lessons';
 import { LessonModeSelector } from '@/components/lesson/LessonModeSelector';
@@ -202,8 +201,7 @@ export default function Home() {
 
   // All available worlds
   const modernWisdomWorld = useMemo(() => getModernWisdomWorld(locale), [locale]);
-  const stoicismWorld = useMemo(() => getStoicismWorld(locale), [locale]);
-  const allWorlds: FlexibleWorld[] = [modernWisdomWorld, stoicismWorld];
+  const allWorlds: FlexibleWorld[] = [modernWisdomWorld];
 
   // Check for in-progress lesson on mount (page refresh resilience)
   // This runs once on mount to restore lesson progress if the user refreshed the page

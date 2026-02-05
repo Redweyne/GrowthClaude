@@ -1,23 +1,30 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ExerciseCard } from './ExerciseCard';
-import { ScenarioExercise } from './ScenarioExercise';
-import { QuoteExercise } from './QuoteExercise';
-import { ApplicationExercise } from './ApplicationExercise';
-import { AnchorExercise } from './AnchorExercise';
-import { ReframeExercise } from './ReframeExercise';
+import { TruthMirrorExercise } from './TruthMirrorExercise';
+import { SoulCompassExercise } from './SoulCompassExercise';
+import { PresenceAnchorExercise } from './PresenceAnchorExercise';
 import { useTranslation } from '@/i18n';
-import type { DailyExercise, ScenarioContent, QuoteContent, ApplicationContent, AnchorContent, ReframeContent } from '@/types/dailyPractice';
-import { isScenarioContent, isQuoteContent, isApplicationContent, isAnchorContent } from '@/types/dailyPractice';
+import type {
+  DailyExercise,
+  TruthMirrorContent,
+  SoulCompassContent,
+  PresenceAnchorContent,
+} from '@/types/dailyPractice';
+import {
+  isTruthMirrorContent,
+  isSoulCompassContent,
+  isPresenceAnchorContent,
+} from '@/types/dailyPractice';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EXERCISE EXPERIENCE
-// The orchestrator for all 5 daily exercises
+// The orchestrator for the 3 daily exercises (no writing required!)
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface ExerciseExperienceProps {
@@ -45,29 +52,21 @@ export function ExerciseExperience({
   const totalCount = exercises.length;
   const allComplete = completedCount === totalCount;
 
-  // Estimated time remaining (roughly 2 min per exercise)
+  // Estimated time remaining (roughly 1.5 min per exercise now - no writing!)
   const remainingCount = exercises.filter(
     (ex) => !completedExercises.includes(ex.id)
   ).length;
-  const estimatedMinutes = remainingCount * 2;
+  const estimatedMinutes = Math.ceil(remainingCount * 1.5);
 
   // Handle exercise completion
   const handleExerciseComplete = (response?: string) => {
     if (selectedExercise) {
       onCompleteExercise(selectedExercise.id, response);
       setSelectedExercise(null);
-
-      // Check if all complete after this one
-      if (completedCount + 1 === totalCount) {
-        // Small delay before showing completion
-        setTimeout(() => {
-          // The parent will handle showing completion
-        }, 300);
-      }
     }
   };
 
-  // Render the active exercise
+  // Render the active exercise based on type
   const renderActiveExercise = () => {
     if (!selectedExercise) return null;
 
@@ -78,54 +77,41 @@ export function ExerciseExperience({
       t,
     };
 
-    if (isScenarioContent(selectedExercise.content)) {
+    // Truth Mirror exercise
+    if (isTruthMirrorContent(selectedExercise.content)) {
       return (
-        <ScenarioExercise
+        <TruthMirrorExercise
           {...commonProps}
-          content={selectedExercise.content as ScenarioContent}
-          onComplete={handleExerciseComplete}
-        />
-      );
-    }
-
-    if (isQuoteContent(selectedExercise.content)) {
-      return (
-        <QuoteExercise
-          {...commonProps}
-          content={selectedExercise.content as QuoteContent}
-          onComplete={handleExerciseComplete}
-        />
-      );
-    }
-
-    if (isAnchorContent(selectedExercise.content)) {
-      return (
-        <AnchorExercise
-          {...commonProps}
-          content={selectedExercise.content as AnchorContent}
+          content={selectedExercise.content as TruthMirrorContent}
           onComplete={() => handleExerciseComplete()}
         />
       );
     }
 
-    if (isApplicationContent(selectedExercise.content)) {
+    // Soul Compass exercise
+    if (isSoulCompassContent(selectedExercise.content)) {
       return (
-        <ApplicationExercise
+        <SoulCompassExercise
           {...commonProps}
-          content={selectedExercise.content as ApplicationContent}
-          onComplete={handleExerciseComplete}
+          content={selectedExercise.content as SoulCompassContent}
+          onComplete={() => handleExerciseComplete()}
         />
       );
     }
 
-    // Default to ReframeExercise
-    return (
-      <ReframeExercise
-        {...commonProps}
-        content={selectedExercise.content as ReframeContent}
-        onComplete={handleExerciseComplete}
-      />
-    );
+    // Presence Anchor exercise
+    if (isPresenceAnchorContent(selectedExercise.content)) {
+      return (
+        <PresenceAnchorExercise
+          {...commonProps}
+          content={selectedExercise.content as PresenceAnchorContent}
+          onComplete={() => handleExerciseComplete()}
+        />
+      );
+    }
+
+    // Fallback - shouldn't happen with new types
+    return null;
   };
 
   // If an exercise is selected, render it fullscreen
@@ -146,7 +132,7 @@ export function ExerciseExperience({
 
   // Exercise list view
   return (
-<motion.div
+    <motion.div
       className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -228,18 +214,18 @@ export function ExerciseExperience({
             <Card variant="glow" padding="lg" className="w-full max-w-sm mb-6">
               <div className={`flex items-center justify-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-amber-400">+25</p>
-                  <p className="text-stone-500 text-sm">{t('exercises.xpEarnedAmount').replace('+{amount} ', '')}</p>
+                  <p className="text-3xl font-bold text-amber-400">+15</p>
+                  <p className="text-stone-500 text-sm">XP earned</p>
                 </div>
                 <div className="w-px h-12 bg-stone-700" />
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-emerald-400">5/5</p>
+                  <p className="text-3xl font-bold text-emerald-400">{totalCount}/{totalCount}</p>
                   <p className="text-stone-500 text-sm">{t('exercises.exercisesCount')}</p>
                 </div>
               </div>
             </Card>
 
-<Button
+            <Button
               onClick={onAllComplete}
               variant="primary"
               className="w-full max-w-sm"

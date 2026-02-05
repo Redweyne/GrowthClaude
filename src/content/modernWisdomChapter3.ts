@@ -20,71 +20,7 @@ const lesson11_MirrorEffect: FlexibleLesson = {
     estimatedMinutes: 5,
     thumbnail: { icon: '🪞', color: '#a855f7' },
     teaserText: "Tomorrow you'll discover why the people who frustrate you most might be your greatest teachers.",
-    exercises: [
-        {
-            id: 'ex-11-scenario',
-            type: 'scenario',
-            title: 'The Annoying Colleague',
-            content: {
-                situation: "Your colleague constantly brags about their achievements, dominates conversations, and makes sure everyone knows about their successes. It drives you crazy. You find yourself thinking about how insufferable they are even when you're not at work.",
-                question: "Using the mirror effect, what might this strong reaction be revealing about YOU? What shadow or fear might this person be triggering?",
-                hints: [
-                    "What might you fear about your own relationship with success?",
-                    "Is there a part of you that also wants recognition but suppresses it?",
-                    "What would it mean if you could be at peace with their behavior?"
-                ]
-            }
-        },
-        {
-            id: 'ex-11-quote',
-            type: 'quote',
-            title: 'Jung on Shadow',
-            content: {
-                quote: "Everything that irritates us about others can lead us to an understanding of ourselves. Until you make the unconscious conscious, it will direct your life and you will call it fate.",
-                author: "Carl Jung",
-                source: "Psychology and Alchemy",
-                reflectionPrompt: "What quality in others consistently triggers a strong reaction in you? What might that say about something unexamined in yourself?"
-            }
-        },
-        {
-            id: 'ex-11-application',
-            type: 'application',
-            title: 'The Mirror Practice',
-            content: {
-                instruction: "Tomorrow, when someone irritates you, pause and ask: 'What is this person showing me about myself? What am I projecting onto them?'",
-                planPrompt: "Who are you likely to interact with tomorrow that often triggers you? What might they be mirroring?",
-                examples: [
-                    "When my critical parent annoys me, maybe I'm avoiding my own critical inner voice",
-                    "When lazy people frustrate me, maybe I fear laziness in myself",
-                    "When someone's confidence bothers me, maybe I'm suppressing my own"
-                ]
-            }
-        },
-        {
-            id: 'ex-11-anchor',
-            type: 'anchor',
-            title: 'The Mirror Touch',
-            content: {
-                gesture: "Touch your fingertips together, as if your hands are reflecting each other in a mirror",
-                meaning: "Each hand mirrors the other. What you see out there reflects what exists in here. This gesture reminds you that triggers are teachers.",
-                breathPattern: "Breathe in and press fingertips together. Breathe out and acknowledge: what I react to reveals what I need to see in myself.",
-                repetitions: 3
-            }
-        },
-        {
-            id: 'ex-11-reframe',
-            type: 'reframe',
-            title: 'From Blame to Mirror',
-            content: {
-                challengePrompt: "Who is someone that really gets under your skin? What specific behavior or quality do you find most frustrating about them?",
-                reframeGuide: "Now look in the mirror. Where might this quality exist in you (perhaps in a different form)? Or what fear does their behavior trigger?",
-                example: {
-                    before: "My sister-in-law is so fake. She's always putting on a perfect image for social media while her real life is a mess. It's so dishonest and it drives me insane.",
-                    after: "My strong reaction to her 'fakeness' might reveal my own discomfort with self-promotion. Maybe I also curate how I present myself but judge her for doing it more visibly. Or maybe I fear people seeing through my own presented image. Her behavior isn't the problem - my reaction is data about me."
-                }
-            }
-        }
-    ],
+    exercises: [],
     steps: [
         {
             id: 'scenario',
@@ -175,71 +111,7 @@ const lesson12_RadicalHonesty: FlexibleLesson = {
     estimatedMinutes: 6,
     thumbnail: { icon: '🔓', color: '#06b6d4' },
     teaserText: "Tomorrow you'll understand why small lies build prisons and radical honesty sets you free.",
-    exercises: [
-        {
-            id: 'ex-12-scenario',
-            type: 'scenario',
-            title: 'The Comfortable Lie',
-            content: {
-                situation: "Your friend asks your honest opinion about their business idea. You can see major problems with it, but they're really excited and have already invested money. They specifically say 'Please be honest, I need real feedback' - but you sense they want validation.",
-                question: "What would radical honesty look like here? How do you balance truth with kindness?",
-                hints: [
-                    "What's the cost to them if you're not honest?",
-                    "What's the cost to your relationship if you are?",
-                    "How can truth be delivered with compassion?"
-                ]
-            }
-        },
-        {
-            id: 'ex-12-quote',
-            type: 'quote',
-            title: 'Blanton on Lies',
-            content: {
-                quote: "Lying is the major source of all human stress. I consider lying to be any misrepresentation of what one knows to be the truth at the time. Each time we lie we build a thicker wall between ourselves and others.",
-                author: "Brad Blanton",
-                source: "Radical Honesty",
-                reflectionPrompt: "What lie (even a small one) are you currently maintaining? What energy does it cost you?"
-            }
-        },
-        {
-            id: 'ex-12-application',
-            type: 'application',
-            title: 'The Micro-Truth',
-            content: {
-                instruction: "Tomorrow, catch yourself about to tell a small social lie - 'I'm fine', 'I'd love to', 'No problem' - and instead say something more true.",
-                planPrompt: "What situation tomorrow might tempt you into a small lie? What's the more honest thing you could say instead?",
-                examples: [
-                    "Instead of 'I'm fine', try 'Actually, it's been a tough week but I'm working through it'",
-                    "Instead of 'I'd love to', try 'I appreciate the invite. Let me check if I have the energy'",
-                    "Instead of 'No problem', try 'It was extra work, but I was glad to help'"
-                ]
-            }
-        },
-        {
-            id: 'ex-12-anchor',
-            type: 'anchor',
-            title: 'The Open Throat',
-            content: {
-                gesture: "Place your hand gently on your throat, then move it forward as if releasing something",
-                meaning: "The throat is where truth gets stuck. This gesture represents releasing what you've been holding back - letting truth flow freely.",
-                breathPattern: "Breathe in with hand on throat, feeling what's trapped there. Breathe out as you move your hand forward, releasing truth into the world.",
-                repetitions: 3
-            }
-        },
-        {
-            id: 'ex-12-reframe',
-            type: 'reframe',
-            title: 'From Polite to True',
-            content: {
-                challengePrompt: "What truth have you been withholding from someone - or yourself - to keep the peace? What have you been too 'polite' to say?",
-                reframeGuide: "Now write what radical honesty would actually sound like. Not brutal, but true. What would you say if you stopped managing their feelings?",
-                example: {
-                    before: "I keep agreeing to help my brother even though it exhausts me and he never reciprocates. I tell myself it's fine because family helps family.",
-                    after: "The honest truth: I feel used. I love my brother, but this one-way dynamic isn't working for me anymore. What I need to say: 'I want to help you, but I've been overextending myself. I need us to find a more balanced way to support each other.'"
-                }
-            }
-        }
-    ],
+    exercises: [],
     steps: [
         {
             id: 'scenario',
@@ -393,71 +265,7 @@ const lesson13_BoundariesGrace: FlexibleLesson = {
     estimatedMinutes: 5,
     thumbnail: { icon: '🛡️', color: '#f59e0b' },
     teaserText: "Tomorrow you'll learn how to say 'no' without guilt - the skill that protects everything you care about.",
-    exercises: [
-        {
-            id: 'ex-13-scenario',
-            type: 'scenario',
-            title: 'The Boundary Test',
-            content: {
-                situation: "A good friend asks you to help them move this weekend. You're exhausted, have barely recovered from a brutal work week, and desperately need rest. But they've helped you before, and saying no feels selfish. You can already feel the guilt forming.",
-                question: "How would you set a boundary with grace? What could you say that's both kind and honest?",
-                hints: [
-                    "Can you decline without lengthy justification?",
-                    "Is there a partial yes that works for both of you?",
-                    "What happens if you say yes when you mean no?"
-                ]
-            }
-        },
-        {
-            id: 'ex-13-quote',
-            type: 'quote',
-            title: 'On Protection',
-            content: {
-                quote: "Daring to set boundaries is about having the courage to love ourselves even when we risk disappointing others. We can't base our own worthiness on others' approval.",
-                author: "Brené Brown",
-                source: "The Gifts of Imperfection",
-                reflectionPrompt: "Where have you been trading your well-being for others' approval? What boundary would your healthiest self set?"
-            }
-        },
-        {
-            id: 'ex-13-application',
-            type: 'application',
-            title: 'The Graceful No',
-            content: {
-                instruction: "Tomorrow, practice setting one small boundary. It doesn't need to be dramatic - just one place where you honor your needs instead of automatically saying yes.",
-                planPrompt: "What request might come up tomorrow where you'd normally say yes against your better judgment? How could you decline gracefully?",
-                examples: [
-                    "If asked to stay late: 'I need to protect my evening tonight. I can help first thing tomorrow.'",
-                    "If invited somewhere I don't want to go: 'Thank you for including me. I'm going to pass this time.'",
-                    "If asked to do something I don't have capacity for: 'I wish I could help, but I'm at capacity right now.'"
-                ]
-            }
-        },
-        {
-            id: 'ex-13-anchor',
-            type: 'anchor',
-            title: 'The Shield',
-            content: {
-                gesture: "Cross your arms briefly, then uncross and open them - from protection to openness",
-                meaning: "This gesture shows that boundaries aren't walls. You protect yourself (crossed arms), then open to genuine connection (open arms). Boundaries enable love by protecting energy.",
-                breathPattern: "Breathe in and cross your arms, honoring your needs. Breathe out and open them, available for authentic connection.",
-                repetitions: 3
-            }
-        },
-        {
-            id: 'ex-13-reframe',
-            type: 'reframe',
-            title: 'From Guilt to Gift',
-            content: {
-                challengePrompt: "What boundary do you need to set but feel too guilty to enforce? What 'yes' has been costing you?",
-                reframeGuide: "Now reframe this boundary as a gift - not just to yourself, but to the relationship. How does your honest 'no' serve everyone better than your resentful 'yes'?",
-                example: {
-                    before: "My mom calls every day and the conversations drain me, but I can't tell her to call less because she'll be hurt.",
-                    after: "Setting a boundary with my mom - maybe calls three times a week instead of daily - isn't rejection, it's protection of our relationship. My resentful 'yes' makes me dread her calls. My honest boundary means when we do talk, I'm actually present. The boundary is a gift to both of us."
-                }
-            }
-        }
-    ],
+    exercises: [],
     steps: [
         {
             id: 'scenario',
@@ -541,71 +349,7 @@ const lesson14_EmpathyShift: FlexibleLesson = {
     estimatedMinutes: 6,
     thumbnail: { icon: '💗', color: '#ec4899' },
     teaserText: "Tomorrow you'll learn the single shift that transforms conflict into connection.",
-    exercises: [
-        {
-            id: 'ex-14-scenario',
-            type: 'scenario',
-            title: 'The Heated Disagreement',
-            content: {
-                situation: "You're in a heated argument with your partner about something important - maybe finances, or how to raise kids, or a life decision. Both of you are talking past each other, getting louder, and neither feels heard. The frustration is escalating.",
-                question: "How could you apply 'seek first to understand' to break this cycle? What would it look like to truly hear them before demanding to be heard?",
-                hints: [
-                    "What if you stopped defending and started asking questions?",
-                    "Can you repeat their position in a way they'd agree with?",
-                    "What fear or need might be driving their stance?"
-                ]
-            }
-        },
-        {
-            id: 'ex-14-quote',
-            type: 'quote',
-            title: 'Covey on Understanding',
-            content: {
-                quote: "Most people do not listen with the intent to understand; they listen with the intent to reply. They're either speaking or preparing to speak. They're filtering everything through their own paradigms.",
-                author: "Stephen Covey",
-                source: "The 7 Habits of Highly Effective People",
-                reflectionPrompt: "Think of a recent disagreement. Were you listening to understand, or listening to prepare your response?"
-            }
-        },
-        {
-            id: 'ex-14-application',
-            type: 'application',
-            title: 'The Understanding First',
-            content: {
-                instruction: "Tomorrow, in one conversation, try this: before responding, summarize what the other person said in a way they'd agree with. Ask 'Did I understand you correctly?' before sharing your view.",
-                planPrompt: "What conversation tomorrow could benefit from this approach? Who do you need to understand better before being understood?",
-                examples: [
-                    "In the meeting, I'll paraphrase the concern before responding with my solution",
-                    "When my partner brings up an issue, I'll ask clarifying questions before explaining my side",
-                    "If someone disagrees with me, I'll first say 'Help me understand your perspective'"
-                ]
-            }
-        },
-        {
-            id: 'ex-14-anchor',
-            type: 'anchor',
-            title: 'The Cup Empty',
-            content: {
-                gesture: "Cup your hands together, then slowly turn them over and open them - emptying your cup",
-                meaning: "You cannot fill a cup that's already full. To truly understand someone, you must first empty your cup of your own agenda, defenses, and preconceptions.",
-                breathPattern: "Breathe in, holding your cup full of your own thoughts. Breathe out as you empty the cup, making space for their perspective.",
-                repetitions: 3
-            }
-        },
-        {
-            id: 'ex-14-reframe',
-            type: 'reframe',
-            title: 'From Opponent to Puzzle',
-            content: {
-                challengePrompt: "Think of someone you've been in conflict with or simply don't understand. What's your current story about why they're wrong or difficult?",
-                reframeGuide: "Now put on their shoes completely. Write their perspective as if you were their defense attorney - making the best possible case for their position.",
-                example: {
-                    before: "My manager is a micromanager who doesn't trust anyone. He's always checking up on my work and it's insulting.",
-                    after: "As my manager: I was burned badly when a project failed because I wasn't monitoring closely enough. My job is on the line, and I have no visibility into whether things are on track unless I check. What looks like micromanagement to my team might just be my anxiety about being responsible for outcomes I can't see. Maybe what I need isn't less involvement but more natural ways to feel confident things are on track."
-                }
-            }
-        }
-    ],
+    exercises: [],
     steps: [
         {
             id: 'scenario',
@@ -692,71 +436,7 @@ const lesson15_ForgivenessFreedm: FlexibleLesson = {
     estimatedMinutes: 7,
     thumbnail: { icon: '🕊️', color: '#22c55e' },
     teaserText: "Tomorrow you'll explore the hardest practice of all - and understand why forgiveness is freedom for YOU, not absolution for them.",
-    exercises: [
-        {
-            id: 'ex-15-scenario',
-            type: 'scenario',
-            title: 'The Betrayal',
-            content: {
-                situation: "A close friend betrayed your trust five years ago. They've apologized, tried to make amends, but you've kept your distance. You know the resentment is affecting you - it comes up in other relationships, you compare new friends to them, you're guarded. But forgiving feels like saying what they did was okay.",
-                question: "How do you reconcile forgiveness with the reality that what they did was wrong? How is forgiveness FOR YOU, not FOR THEM?",
-                hints: [
-                    "What is unforgiveness actually costing you?",
-                    "How is forgiveness different from reconciliation?",
-                    "Can you release the resentment without approving the action?"
-                ]
-            }
-        },
-        {
-            id: 'ex-15-quote',
-            type: 'quote',
-            title: 'Mandela on Chains',
-            content: {
-                quote: "Resentment is like drinking poison and then hoping it will kill your enemies. As I walked out the door toward the gate that would lead to my freedom, I knew if I didn't leave my bitterness and hatred behind, I'd still be in prison.",
-                author: "Nelson Mandela",
-                source: "Long Walk to Freedom",
-                reflectionPrompt: "What bitterness are you carrying that's keeping YOU imprisoned? What would it feel like to walk free?"
-            }
-        },
-        {
-            id: 'ex-15-application',
-            type: 'application',
-            title: 'The Small Release',
-            content: {
-                instruction: "Tomorrow, practice forgiveness on something small - the driver who cut you off, the rude cashier, the friend who was insensitive. Notice the resentment, then consciously choose to release it.",
-                planPrompt: "What small grievance could you practice releasing tomorrow? What phrase could you use to remind yourself to let go?",
-                examples: [
-                    "When annoyed by strangers, I'll think: 'I release you. I don't know your story.'",
-                    "When slighted by a friend, I'll think: 'I won't let this rent space in my head.'",
-                    "When remembering old wounds, I'll think: 'I choose my peace over their punishment.'"
-                ]
-            }
-        },
-        {
-            id: 'ex-15-anchor',
-            type: 'anchor',
-            title: 'The Cord Cut',
-            content: {
-                gesture: "Clasp your hands together tightly, then slowly pull them apart as if breaking a cord",
-                meaning: "Resentment is a cord that binds you to the person who hurt you. Forgiveness cuts that cord. This gesture represents releasing the energetic tie that keeps you connected to pain.",
-                breathPattern: "Breathe in with hands clasped, feeling the tie to resentment. Breathe out as you slowly pull them apart, cutting the cord. You are free.",
-                repetitions: 3
-            }
-        },
-        {
-            id: 'ex-15-reframe',
-            type: 'reframe',
-            title: 'From Prisoner to Free',
-            content: {
-                challengePrompt: "Who are you still holding resentment toward? What did they do that you haven't been able to release?",
-                reframeGuide: "Now rewrite forgiveness not as something they deserve, but as something you need. What would your life look like without this weight? What energy would be freed?",
-                example: {
-                    before: "My father left when I was young. He doesn't deserve my forgiveness. He made his choice and I've lived with the consequences my whole life.",
-                    after: "My father's choice hurt me deeply. Whether he deserves forgiveness is irrelevant - I deserve freedom. Every day I carry this resentment, I'm still the abandoned child waiting for him to make it right. He can't. Only I can release myself. Forgiveness isn't saying what he did was okay. It's saying I refuse to let that moment define the rest of my life. I take back my power by dropping this weight."
-                }
-            }
-        }
-    ],
+    exercises: [],
     steps: [
         {
             id: 'scenario',
