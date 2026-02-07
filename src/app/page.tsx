@@ -35,6 +35,7 @@ import type { FlexibleLesson, LessonProgress, LessonMode, FlexibleWorld } from '
 import { LessonModeSelector } from '@/components/lesson/LessonModeSelector';
 import { SparkFeed, SparkUnlockScreen } from '@/components/spark';
 import { useSparkStore } from '@/store/useSparkStore';
+import { BottomNavBar, type NavTab } from '@/components/navigation/BottomNavBar';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useActivityLog } from '@/providers/ActivityLoggerProvider';
 
@@ -303,6 +304,26 @@ export default function Home() {
   // Current active world state (from store, default to modern-wisdom)
   const currentWorldSlug = storedWorldSlug || 'modern-wisdom';
   const [showWorldSwitcher, setShowWorldSwitcher] = useState(false);
+
+  // Bottom nav tab change handler
+  const handleTabChange = useCallback((tab: NavTab) => {
+    switch (tab) {
+      case 'home': setCurrentView('home'); break;
+      case 'journey': setCurrentView('map'); break;
+      case 'spark':
+        if (dailyFlowState.currentPhase === 'complete') {
+          if (!sparkUnlockSeen) {
+            markSparkUnlockSeen();
+            setCurrentView('spark-unlock');
+          } else {
+            setCurrentView('spark');
+          }
+        }
+        break;
+      case 'echoes': setCurrentView('echoes'); break;
+      case 'profile': setCurrentView('dashboard'); break;
+    }
+  }, [dailyFlowState.currentPhase, sparkUnlockSeen, markSparkUnlockSeen]);
 
   // Get the active world
   const activeWorld = allWorlds.find(w => w.slug === currentWorldSlug) || modernWisdomWorld;
@@ -716,6 +737,12 @@ export default function Home() {
       <>
         <AchievementCelebration />
         <EchoInbox onClose={() => setCurrentView('home')} />
+        <BottomNavBar
+          activeTab="echoes"
+          onTabChange={handleTabChange}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          unreadEchoCount={totalUnreadCount}
+        />
       </>
     );
   }
@@ -778,15 +805,13 @@ export default function Home() {
     return (
       <>
         <AchievementCelebration />
-        <div>
-          <button
-            onClick={() => setCurrentView('home')}
-            className="fixed top-4 left-4 z-50 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors text-sm"
-          >
-            ← Back
-          </button>
-          <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
-        </div>
+        <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
+        <BottomNavBar
+          activeTab="journey"
+          onTabChange={handleTabChange}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          unreadEchoCount={totalUnreadCount}
+        />
       </>
     );
   }
@@ -865,6 +890,12 @@ export default function Home() {
           onOpenSpark={() => setCurrentView('spark')}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           isSparkForcedClosed={isSparkForcedClosed()}
+        />
+        <BottomNavBar
+          activeTab="profile"
+          onTabChange={handleTabChange}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          unreadEchoCount={totalUnreadCount}
         />
       </>
     );
@@ -963,6 +994,13 @@ export default function Home() {
         onOpenDashboard={() => setCurrentView('dashboard')}
         onOpenSpark={() => setCurrentView('spark')}
         isSparkForcedClosed={isSparkForcedClosed()}
+      />
+
+      <BottomNavBar
+        activeTab="home"
+        onTabChange={handleTabChange}
+        isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+        unreadEchoCount={totalUnreadCount}
       />
 
       {/* First-Session Coaching Modal */}

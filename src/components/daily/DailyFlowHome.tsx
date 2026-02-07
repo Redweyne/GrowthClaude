@@ -106,7 +106,7 @@ export function DailyFlowHome({
 
       {/* Main content */}
       <motion.div
-        className="relative z-10 flex-1 flex flex-col p-6 max-w-lg mx-auto w-full"
+        className="relative z-10 flex-1 flex flex-col p-6 pb-24 max-w-lg mx-auto w-full"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}

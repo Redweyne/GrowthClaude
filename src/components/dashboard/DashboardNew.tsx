@@ -27,7 +27,6 @@ import {
   ChevronRight,
   ChevronLeft,
   Flame,
-  X,
   Sparkles,
   Target,
   Settings,
@@ -446,20 +445,12 @@ export function DashboardNew({
         <div className="max-w-lg mx-auto px-4 py-4">
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
             <h1 className="text-xl font-bold text-stone-100">{t('dashboard.yourJourney')}</h1>
-            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <button
-                onClick={onOpenSettings}
-                className="p-2 text-stone-500 hover:text-stone-300 transition-colors"
-              >
-                <Settings size={20} />
-              </button>
-              <button
-                onClick={onClose}
-                className={`p-2 ${isRTL ? '-ml-2' : '-mr-2'} text-stone-500 hover:text-stone-300 transition-colors`}
-              >
-                <X size={24} />
-              </button>
-            </div>
+            <button
+              onClick={onOpenSettings}
+              className="p-2 text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              <Settings size={20} />
+            </button>
           </div>
         </div>
       </div>
@@ -787,8 +778,8 @@ export function DashboardNew({
           </button>
         </motion.div>
 
-        {/* Bottom spacing */}
-        <div className="h-8" />
+        {/* Bottom spacing for nav bar */}
+        <div className="h-24" />
       </div>
     </div>
   );

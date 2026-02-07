@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, AlertCircle, Loader2 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SPARK VIDEO PLAYER
-// YouTube embed wrapper with play/pause overlay and loading states
+// SPARK VIDEO PLAYER — TikTok-Style
+// 9:16 vertical YouTube Shorts embed with tap-to-pause
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface SparkVideoPlayerProps {
@@ -24,7 +24,7 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
   const playPauseTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const loadTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Build YouTube embed URL
+  // YouTube embed URL — optimized for Shorts playback
   const embedUrl = `https://www.youtube.com/embed/${youtubeId}?` +
     'autoplay=1' +
     '&mute=0' +
@@ -34,41 +34,37 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
     '&loop=1' +
     `&playlist=${youtubeId}` +
     '&enablejsapi=1' +
+    '&controls=0' +
+    '&showinfo=0' +
+    '&iv_load_policy=3' +
     '&origin=' + (typeof window !== 'undefined' ? window.location.origin : '');
 
-  // Handle iframe load
   const handleLoad = useCallback(() => {
     setIsLoading(false);
     setHasError(false);
     if (loadTimeout.current) clearTimeout(loadTimeout.current);
   }, []);
 
-  // Handle iframe error
   const handleError = useCallback(() => {
     setIsLoading(false);
     setHasError(true);
   }, []);
 
-  // Set a timeout for loading — if iframe doesn't load in 10s, show error
   useEffect(() => {
     if (isActive) {
       setIsLoading(true);
       setHasError(false);
       loadTimeout.current = setTimeout(() => {
-        if (isLoading) {
-          setHasError(true);
-          setIsLoading(false);
-        }
-      }, 10000);
+        setHasError(true);
+        setIsLoading(false);
+      }, 12000);
     }
-
     return () => {
       if (loadTimeout.current) clearTimeout(loadTimeout.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [youtubeId, isActive]);
 
-  // Send postMessage to control YouTube iframe
   const sendCommand = useCallback((command: string) => {
     if (iframeRef.current?.contentWindow) {
       iframeRef.current.contentWindow.postMessage(
@@ -78,7 +74,6 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
     }
   }, []);
 
-  // Toggle play/pause
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {
       sendCommand('pauseVideo');
@@ -87,14 +82,11 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
       sendCommand('playVideo');
       setIsPlaying(true);
     }
-
-    // Show play/pause indicator briefly
     setShowPlayPause(true);
     if (playPauseTimeout.current) clearTimeout(playPauseTimeout.current);
-    playPauseTimeout.current = setTimeout(() => setShowPlayPause(false), 800);
+    playPauseTimeout.current = setTimeout(() => setShowPlayPause(false), 600);
   }, [isPlaying, sendCommand]);
 
-  // Pause when not active
   useEffect(() => {
     if (!isActive && isPlaying) {
       sendCommand('pauseVideo');
@@ -106,7 +98,6 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
-  // Cleanup
   useEffect(() => {
     return () => {
       if (playPauseTimeout.current) clearTimeout(playPauseTimeout.current);
@@ -114,28 +105,28 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
     };
   }, []);
 
-  // Error state
   if (hasError) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-stone-950 px-8">
-        <AlertCircle size={48} className="text-stone-600 mb-4" />
-        <p className="text-stone-400 text-center text-lg mb-2">Video unavailable</p>
-        <p className="text-stone-600 text-center text-sm">
-          Swipe to see the next spark
-        </p>
+      <div className="w-full h-full flex flex-col items-center justify-center bg-black px-8">
+        <AlertCircle size={40} className="text-stone-700 mb-3" />
+        <p className="text-stone-500 text-center text-base mb-1">Video unavailable</p>
+        <p className="text-stone-700 text-center text-sm">Swipe up for the next one</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-full bg-stone-950 overflow-hidden">
-      {/* YouTube iframe */}
+    <div className="relative w-full h-full bg-black overflow-hidden">
       {isActive && (
         <iframe
           ref={iframeRef}
           src={embedUrl}
           className="absolute inset-0 w-full h-full"
-          style={{ border: 'none' }}
+          style={{
+            border: 'none',
+            transform: 'scale(1.03)',
+            transformOrigin: 'center center',
+          }}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           onLoad={handleLoad}
@@ -144,28 +135,26 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
         />
       )}
 
-      {/* Loading overlay */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center bg-stone-950 z-10"
+            className="absolute inset-0 flex items-center justify-center bg-black z-10"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4 }}
           >
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             >
-              <Loader2 size={40} className="text-amber-500/60" />
+              <Loader2 size={32} className="text-white/20" />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Click area for play/pause */}
       <div
-        className="absolute inset-0 z-20 cursor-pointer"
+        className="absolute inset-0 z-20"
         onClick={togglePlayPause}
         role="button"
         tabIndex={0}
@@ -178,21 +167,20 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
         }}
       />
 
-      {/* Play/Pause indicator */}
       <AnimatePresence>
         {showPlayPause && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.2 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
           >
-            <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
               {isPlaying ? (
-                <Pause size={36} className="text-white" />
+                <Play size={28} className="text-white ml-1" />
               ) : (
-                <Play size={36} className="text-white ml-1" />
+                <Pause size={28} className="text-white" />
               )}
             </div>
           </motion.div>

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { SparkVideoPlayer } from './SparkVideoPlayer';
 import { SparkOverlay } from './SparkOverlay';
 import { SparkWisdomBreak } from './SparkWisdomBreak';
@@ -12,9 +12,8 @@ import { getShuffledSparkVideos } from '@/content/sparkVideos';
 import { SPARK_XP_REWARDS } from '@/types/spark';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SPARK FEED
-// The main container: one video at a time, keyboard/scroll/touch navigation,
-// wisdom breaks, and XP integration
+// SPARK FEED — TikTok-Style
+// Full-screen 9:16 vertical feed with smooth swipe navigation
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface SparkFeedProps {
@@ -37,7 +36,6 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     isForcedClosedToday,
   } = useSparkStore();
 
-  const { totalXp } = useStore();
   const addXp = useCallback((amount: number) => {
     if (amount > 0) {
       useStore.setState(state => ({ totalXp: state.totalXp + amount }));
@@ -48,7 +46,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const playlist = useMemo(() => {
     return getShuffledSparkVideos(watchedVideos);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only shuffle once on mount
+  }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showWisdomBreak, setShowWisdomBreak] = useState(false);
@@ -56,23 +54,20 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const [direction, setDirection] = useState<'up' | 'down'>('up');
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrollTime = useRef(0);
-  const lastTouchY = useRef(0);
+  const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
+  const lastTapTime = useRef(0);
 
   const currentVideo = playlist[currentIndex];
 
   // Start session on mount
   useEffect(() => {
     startSession();
-
-    // Award first session XP
     if (isFirstSparkSession) {
       addXp(SPARK_XP_REWARDS.firstSession);
       useSparkStore.setState({ isFirstSparkSession: false });
     }
-
-    return () => {
-      endSession();
-    };
+    return () => { endSession(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -81,12 +76,9 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     if (isTransitioning || showWisdomBreak) return;
     if (currentIndex >= playlist.length - 1) return;
 
-    // Mark current video as watched and get XP
     const xp = markVideoWatched(currentVideo.id);
     addXp(xp);
 
-    // Check for wisdom break BEFORE advancing
-    // We check AFTER markVideoWatched so the count is updated
     if (shouldShowWisdomBreak()) {
       setShowWisdomBreak(true);
       return;
@@ -94,10 +86,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
     setIsTransitioning(true);
     setDirection('up');
-    setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
-      setIsTransitioning(false);
-    }, 200);
+    setCurrentIndex(prev => prev + 1);
+    setTimeout(() => setIsTransitioning(false), 350);
   }, [currentIndex, playlist.length, isTransitioning, showWisdomBreak, currentVideo, markVideoWatched, addXp, shouldShowWisdomBreak]);
 
   // Navigate to previous video
@@ -107,10 +97,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
     setIsTransitioning(true);
     setDirection('down');
-    setTimeout(() => {
-      setCurrentIndex(prev => prev - 1);
-      setIsTransitioning(false);
-    }, 200);
+    setCurrentIndex(prev => prev - 1);
+    setTimeout(() => setIsTransitioning(false), 350);
   }, [currentIndex, isTransitioning, showWisdomBreak]);
 
   // Handle wisdom break choices
@@ -130,14 +118,18 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       return;
     }
 
-    // Advance to next video
     setIsTransitioning(true);
     setDirection('up');
-    setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
-      setIsTransitioning(false);
-    }, 200);
+    setCurrentIndex(prev => prev + 1);
+    setTimeout(() => setIsTransitioning(false), 350);
   }, [recordWisdomBreakChoice, onExit]);
+
+  // Double-tap to save
+  const handleDoubleTap = useCallback(() => {
+    if (currentVideo) {
+      toggleSaveVideo(currentVideo.id);
+    }
+  }, [currentVideo, toggleSaveVideo]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -178,12 +170,12 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const now = Date.now();
-      if (now - lastScrollTime.current < 500) return; // Debounce 500ms
+      if (now - lastScrollTime.current < 400) return;
       lastScrollTime.current = now;
 
-      if (e.deltaY > 30) {
+      if (e.deltaY > 20) {
         goNext();
-      } else if (e.deltaY < -30) {
+      } else if (e.deltaY < -20) {
         goPrevious();
       }
     };
@@ -192,22 +184,34 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [goNext, goPrevious]);
 
-  // Touch/swipe navigation
+  // Touch/swipe navigation — with velocity detection + double-tap
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      lastTouchY.current = e.touches[0].clientY;
+      touchStartY.current = e.touches[0].clientY;
+      touchStartTime.current = Date.now();
+
+      // Double-tap detection
+      const now = Date.now();
+      if (now - lastTapTime.current < 300) {
+        handleDoubleTap();
+      }
+      lastTapTime.current = now;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      const deltaY = lastTouchY.current - e.changedTouches[0].clientY;
-      const minSwipe = 50; // Minimum swipe distance
+      const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+      const deltaTime = Date.now() - touchStartTime.current;
+      const velocity = Math.abs(deltaY) / deltaTime;
 
-      if (deltaY > minSwipe) {
+      // Lower threshold (30px) + velocity check for faster swipes
+      const minDistance = velocity > 0.5 ? 20 : 30;
+
+      if (deltaY > minDistance) {
         goNext();
-      } else if (deltaY < -minSwipe) {
+      } else if (deltaY < -minDistance) {
         goPrevious();
       }
     };
@@ -218,7 +222,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [goNext, goPrevious]);
+  }, [goNext, goPrevious, handleDoubleTap]);
 
   // Check if forced closed
   useEffect(() => {
@@ -229,14 +233,14 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   if (!currentVideo) {
     return (
-      <div className="fixed inset-0 bg-stone-950 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div className="text-center px-8">
-          <Zap size={48} className="text-amber-500/40 mx-auto mb-4" />
-          <p className="text-stone-400 text-lg">No more sparks available</p>
-          <p className="text-stone-600 text-sm mt-2">Come back tomorrow for fresh inspiration</p>
+          <Zap size={40} className="text-white/20 mx-auto mb-4" />
+          <p className="text-white/50 text-lg">No more sparks available</p>
+          <p className="text-white/30 text-sm mt-2">Come back tomorrow for fresh inspiration</p>
           <button
             onClick={onExit}
-            className="mt-6 px-6 py-3 rounded-xl bg-stone-900 border border-stone-800 text-stone-300 hover:border-stone-700 transition-colors"
+            className="mt-6 px-6 py-3 rounded-2xl bg-white/10 text-white/70 hover:bg-white/15 transition-colors"
           >
             Back to Home
           </button>
@@ -248,73 +252,71 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 bg-stone-950 z-50 overflow-hidden"
-      style={{ touchAction: 'none' }}
+      className="fixed inset-0 bg-black z-50 overflow-hidden"
+      style={{
+        touchAction: 'none',
+        // Use dvh for proper mobile viewport height
+        height: '100dvh',
+      }}
     >
-      {/* Back button */}
-      <button
-        onClick={onExit}
-        className="absolute top-4 left-4 z-50 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
-        aria-label="Exit Spark"
-      >
-        <ArrowLeft size={20} />
-      </button>
+      {/* 9:16 phone-column container — centered */}
+      <div className="relative w-full h-full max-w-[430px] mx-auto">
+        {/* Video player with spring transition */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentVideo.id}
+            className="absolute inset-0"
+            initial={{
+              opacity: 0,
+              y: direction === 'up' ? '100%' : '-100%',
+            }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{
+              opacity: 0,
+              y: direction === 'up' ? '-100%' : '100%',
+            }}
+            transition={{
+              type: 'spring',
+              stiffness: 300,
+              damping: 30,
+              mass: 0.8,
+            }}
+          >
+            <SparkVideoPlayer
+              youtubeId={currentVideo.youtubeId}
+              isActive={!showWisdomBreak && !isTransitioning}
+            />
+          </motion.div>
+        </AnimatePresence>
 
-      {/* Spark branding */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5">
-        <Zap size={16} className="text-amber-400" />
-        <span className="text-white font-semibold text-sm">Spark</span>
-      </div>
-
-      {/* Video player with transition */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentVideo.id}
-          className="absolute inset-0"
-          initial={{
-            opacity: 0,
-            y: direction === 'up' ? 100 : -100,
-          }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{
-            opacity: 0,
-            y: direction === 'up' ? -100 : 100,
-          }}
-          transition={{ duration: 0.25, ease: 'easeInOut' }}
-        >
-          <SparkVideoPlayer
-            youtubeId={currentVideo.youtubeId}
-            isActive={!showWisdomBreak && !isTransitioning}
+        {/* Overlay controls */}
+        {!showWisdomBreak && (
+          <SparkOverlay
+            video={currentVideo}
+            videoIndex={currentIndex}
+            totalVideos={playlist.length}
+            isSaved={isVideoSaved(currentVideo.id)}
+            videosWatchedSession={videosWatchedThisSession}
+            onSave={() => toggleSaveVideo(currentVideo.id)}
+            onNext={goNext}
+            onPrevious={goPrevious}
+            onExit={onExit}
+            hasPrevious={currentIndex > 0}
+            hasNext={currentIndex < playlist.length - 1}
           />
-        </motion.div>
-      </AnimatePresence>
+        )}
 
-      {/* Overlay controls */}
-      {!showWisdomBreak && (
-        <SparkOverlay
-          video={currentVideo}
-          videoIndex={currentIndex}
-          totalVideos={playlist.length}
-          isSaved={isVideoSaved(currentVideo.id)}
-          videosWatchedSession={videosWatchedThisSession}
-          onSave={() => toggleSaveVideo(currentVideo.id)}
-          onNext={goNext}
-          onPrevious={goPrevious}
-          hasPrevious={currentIndex > 0}
-          hasNext={currentIndex < playlist.length - 1}
-        />
-      )}
-
-      {/* Wisdom Break interstitial */}
-      {showWisdomBreak && (
-        <SparkWisdomBreak
-          videosWatched={videosWatchedThisSession}
-          breakNumber={currentSessionBreakCount + 1}
-          onLeave={handleWisdomBreakLeave}
-          onContinue={handleWisdomBreakContinue}
-          isFinalBreak={currentSessionBreakCount + 1 >= 3}
-        />
-      )}
+        {/* Wisdom Break interstitial */}
+        {showWisdomBreak && (
+          <SparkWisdomBreak
+            videosWatched={videosWatchedThisSession}
+            breakNumber={currentSessionBreakCount + 1}
+            onLeave={handleWisdomBreakLeave}
+            onContinue={handleWisdomBreakContinue}
+            isFinalBreak={currentSessionBreakCount + 1 >= 3}
+          />
+        )}
+      </div>
     </div>
   );
 }
