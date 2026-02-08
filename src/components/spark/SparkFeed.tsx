@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useAnimationControls } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { SparkVideoPlayer } from './SparkVideoPlayer';
 import { SparkOverlay } from './SparkOverlay';
@@ -51,14 +51,17 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showWisdomBreak, setShowWisdomBreak] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [direction, setDirection] = useState<'up' | 'down'>('up');
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [containerHeight, setContainerHeight] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrollTime = useRef(0);
-  const touchStartY = useRef(0);
-  const touchStartTime = useRef(0);
   const lastTapTime = useRef(0);
+  const trackControls = useAnimationControls();
 
   const currentVideo = playlist[currentIndex];
+  const previousVideo = currentIndex > 0 ? playlist[currentIndex - 1] : null;
+  const nextVideo = currentIndex < playlist.length - 1 ? playlist[currentIndex + 1] : null;
+  const baseOffset = -containerHeight;
 
   // Start session on mount
   useEffect(() => {
@@ -71,35 +74,64 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Navigate to next video
-  const goNext = useCallback(() => {
+  const animateTo = useCallback(async (direction: 'up' | 'down') => {
     if (isTransitioning || showWisdomBreak) return;
-    if (currentIndex >= playlist.length - 1) return;
+    if (direction === 'up' && currentIndex >= playlist.length - 1) return;
+    if (direction === 'down' && currentIndex <= 0) return;
+
+    if (containerHeight === 0) {
+      setCurrentIndex(prev => prev + (direction === 'up' ? 1 : -1));
+      return;
+    }
+
+    setIsTransitioning(true);
+    const targetOffset = baseOffset + (direction === 'up' ? -containerHeight : containerHeight);
+    await trackControls.start({
+      y: targetOffset,
+      transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 },
+    });
+    setCurrentIndex(prev => prev + (direction === 'up' ? 1 : -1));
+    trackControls.set({ y: baseOffset });
+    setIsTransitioning(false);
+  }, [isTransitioning, showWisdomBreak, currentIndex, playlist.length, containerHeight, baseOffset, trackControls]);
+
+  // Navigate to next video
+  const goNext = useCallback(async () => {
+    if (isTransitioning || showWisdomBreak) return false;
+    if (currentIndex >= playlist.length - 1) {
+      if (containerHeight > 0) {
+        trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+      }
+      return false;
+    }
 
     const xp = markVideoWatched(currentVideo.id);
     addXp(xp);
 
     if (shouldShowWisdomBreak()) {
       setShowWisdomBreak(true);
-      return;
+      if (containerHeight > 0) {
+        trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+      }
+      return false;
     }
 
-    setIsTransitioning(true);
-    setDirection('up');
-    setCurrentIndex(prev => prev + 1);
-    setTimeout(() => setIsTransitioning(false), 350);
-  }, [currentIndex, playlist.length, isTransitioning, showWisdomBreak, currentVideo, markVideoWatched, addXp, shouldShowWisdomBreak]);
+    await animateTo('up');
+    return true;
+  }, [isTransitioning, showWisdomBreak, currentIndex, playlist.length, currentVideo, markVideoWatched, addXp, shouldShowWisdomBreak, animateTo, containerHeight, baseOffset, trackControls]);
 
   // Navigate to previous video
-  const goPrevious = useCallback(() => {
-    if (isTransitioning || showWisdomBreak) return;
-    if (currentIndex <= 0) return;
-
-    setIsTransitioning(true);
-    setDirection('down');
-    setCurrentIndex(prev => prev - 1);
-    setTimeout(() => setIsTransitioning(false), 350);
-  }, [currentIndex, isTransitioning, showWisdomBreak]);
+  const goPrevious = useCallback(async () => {
+    if (isTransitioning || showWisdomBreak) return false;
+    if (currentIndex <= 0) {
+      if (containerHeight > 0) {
+        trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+      }
+      return false;
+    }
+    await animateTo('down');
+    return true;
+  }, [isTransitioning, showWisdomBreak, currentIndex, animateTo, containerHeight, baseOffset, trackControls]);
 
   // Handle wisdom break choices
   const handleWisdomBreakLeave = useCallback(() => {
@@ -117,12 +149,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       onExit();
       return;
     }
-
-    setIsTransitioning(true);
-    setDirection('up');
-    setCurrentIndex(prev => prev + 1);
-    setTimeout(() => setIsTransitioning(false), 350);
-  }, [recordWisdomBreakChoice, onExit]);
+    animateTo('up');
+  }, [recordWisdomBreakChoice, onExit, animateTo]);
 
   // Double-tap to save
   const handleDoubleTap = useCallback(() => {
@@ -184,45 +212,27 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [goNext, goPrevious]);
 
-  // Touch/swipe navigation — with velocity detection + double-tap
+  // Track container height for snap distances
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY;
-      touchStartTime.current = Date.now();
-
-      // Double-tap detection
-      const now = Date.now();
-      if (now - lastTapTime.current < 300) {
-        handleDoubleTap();
-      }
-      lastTapTime.current = now;
+    const updateSize = () => {
+      setContainerHeight(container.clientHeight);
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      const deltaY = touchStartY.current - e.changedTouches[0].clientY;
-      const deltaTime = Date.now() - touchStartTime.current;
-      const velocity = Math.abs(deltaY) / deltaTime;
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(container);
 
-      // Lower threshold (30px) + velocity check for faster swipes
-      const minDistance = velocity > 0.5 ? 20 : 30;
+    return () => observer.disconnect();
+  }, []);
 
-      if (deltaY > minDistance) {
-        goNext();
-      } else if (deltaY < -minDistance) {
-        goPrevious();
-      }
-    };
-
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchend', handleTouchEnd, { passive: true });
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [goNext, goPrevious, handleDoubleTap]);
+  useEffect(() => {
+    if (containerHeight > 0) {
+      trackControls.set({ y: -containerHeight });
+    }
+  }, [containerHeight, currentIndex, trackControls]);
 
   // Check if forced closed
   useEffect(() => {
@@ -254,40 +264,73 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       ref={containerRef}
       className="fixed inset-0 bg-black z-50 overflow-hidden"
       style={{
-        touchAction: 'none',
-        // Use dvh for proper mobile viewport height
+        touchAction: 'pan-y',
+        overscrollBehaviorY: 'contain',
         height: '100dvh',
+      }}
+      onPointerDown={(e) => {
+        if (e.pointerType !== 'touch') return;
+        const now = Date.now();
+        if (now - lastTapTime.current < 280) {
+          handleDoubleTap();
+        }
+        lastTapTime.current = now;
       }}
     >
       {/* 9:16 phone-column container — centered */}
       <div className="relative w-full h-full max-w-[430px] mx-auto">
-        {/* Video player with spring transition */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentVideo.id}
-            className="absolute inset-0"
-            initial={{
-              opacity: 0,
-              y: direction === 'up' ? '100%' : '-100%',
-            }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{
-              opacity: 0,
-              y: direction === 'up' ? '-100%' : '100%',
-            }}
-            transition={{
-              type: 'spring',
-              stiffness: 300,
-              damping: 30,
-              mass: 0.8,
-            }}
-          >
-            <SparkVideoPlayer
-              youtubeId={currentVideo.youtubeId}
-              isActive={!showWisdomBreak && !isTransitioning}
-            />
-          </motion.div>
-        </AnimatePresence>
+        {/* Swipeable track with preloaded neighbors */}
+        <motion.div
+          className="absolute inset-0"
+          initial={{ y: baseOffset }}
+          animate={trackControls}
+          drag={showWisdomBreak ? false : 'y'}
+          dragElastic={0.12}
+          dragMomentum={false}
+          dragConstraints={{
+            top: baseOffset - containerHeight,
+            bottom: baseOffset + containerHeight,
+          }}
+          onDragEnd={(_, info) => {
+            if (showWisdomBreak || isTransitioning) {
+              trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+              return;
+            }
+            const swipeThreshold = Math.min(120, Math.max(60, containerHeight * 0.18));
+            if (info.offset.y < -swipeThreshold || info.velocity.y < -600) {
+              goNext();
+              return;
+            }
+            if (info.offset.y > swipeThreshold || info.velocity.y > 600) {
+              goPrevious();
+              return;
+            }
+            trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+          }}
+        >
+          {[previousVideo, currentVideo, nextVideo].map((video, index) => {
+            const slotOffset = (index - 1) * (containerHeight || 0);
+            return (
+              <div
+                key={video ? video.id : `spark-slot-${index}`}
+                className="absolute inset-0"
+                style={{ transform: `translateY(${slotOffset}px)` }}
+              >
+                {video ? (
+                  <SparkVideoPlayer
+                    youtubeId={video.youtubeId}
+                    isActive={index === 1 && !showWisdomBreak && !isTransitioning}
+                    preload={index !== 1}
+                    soundEnabled={soundEnabled}
+                    onEnableSound={() => setSoundEnabled(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-black" />
+                )}
+              </div>
+            );
+          })}
+        </motion.div>
 
         {/* Overlay controls */}
         {!showWisdomBreak && (

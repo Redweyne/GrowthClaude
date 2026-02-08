@@ -99,7 +99,10 @@ export function SparkOverlay({
       </div>
 
       {/* Right side icon stack — TikTok style */}
-      <div className="absolute right-3 bottom-36 flex flex-col items-center gap-6 pointer-events-auto">
+      <div
+        className="absolute right-3 flex flex-col items-center gap-6 pointer-events-auto"
+        style={{ bottom: 'calc(9rem + env(safe-area-inset-bottom))' }}
+      >
         {/* Save/Bookmark */}
         <button
           onClick={handleSave}
@@ -152,7 +155,10 @@ export function SparkOverlay({
       </div>
 
       {/* Bottom left — creator info, caption, tags */}
-      <div className="absolute bottom-6 left-4 right-20 pointer-events-auto">
+      <div
+        className="absolute left-4 right-20 pointer-events-auto"
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+      >
         {video.creatorName && (
           <p className="text-white font-bold text-[15px] mb-1.5 drop-shadow-lg">
             @{video.creatorName.replace(/\s+/g, '').toLowerCase()}

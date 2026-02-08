@@ -12,25 +12,35 @@ import { Play, Pause, AlertCircle, Loader2 } from 'lucide-react';
 interface SparkVideoPlayerProps {
   youtubeId: string;
   isActive: boolean;
-  onVideoEnd?: () => void;
+  preload?: boolean;
+  soundEnabled: boolean;
+  onEnableSound: () => void;
 }
 
-export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideoPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(true);
+export function SparkVideoPlayer({
+  youtubeId,
+  isActive,
+  preload = false,
+  soundEnabled,
+  onEnableSound,
+}: SparkVideoPlayerProps) {
+  const [isPlaying, setIsPlaying] = useState(isActive);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [showPlayPause, setShowPlayPause] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playPauseTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
   const loadTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // YouTube embed URL — optimized for Shorts playback
   const embedUrl = `https://www.youtube.com/embed/${youtubeId}?` +
-    'autoplay=1' +
-    '&mute=0' +
+    'autoplay=0' +
+    '&mute=1' +
     '&modestbranding=1' +
     '&rel=0' +
     '&playsinline=1' +
+    '&disablekb=1' +
     '&loop=1' +
     `&playlist=${youtubeId}` +
     '&enablejsapi=1' +
@@ -42,6 +52,7 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
   const handleLoad = useCallback(() => {
     setIsLoading(false);
     setHasError(false);
+    setIsPlayerReady(true);
     if (loadTimeout.current) clearTimeout(loadTimeout.current);
   }, []);
 
@@ -51,9 +62,10 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
   }, []);
 
   useEffect(() => {
-    if (isActive) {
+    if (isActive || preload) {
       setIsLoading(true);
       setHasError(false);
+      setIsPlayerReady(false);
       loadTimeout.current = setTimeout(() => {
         setHasError(true);
         setIsLoading(false);
@@ -63,7 +75,7 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
       if (loadTimeout.current) clearTimeout(loadTimeout.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [youtubeId, isActive]);
+  }, [youtubeId, isActive, preload]);
 
   const sendCommand = useCallback((command: string) => {
     if (iframeRef.current?.contentWindow) {
@@ -87,16 +99,33 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
     playPauseTimeout.current = setTimeout(() => setShowPlayPause(false), 600);
   }, [isPlaying, sendCommand]);
 
-  useEffect(() => {
-    if (!isActive && isPlaying) {
-      sendCommand('pauseVideo');
-      setIsPlaying(false);
-    } else if (isActive && !isPlaying) {
+  const handleTap = useCallback(() => {
+    if (!soundEnabled) {
+      onEnableSound();
+      sendCommand('unMute');
       sendCommand('playVideo');
       setIsPlaying(true);
+      return;
     }
+    togglePlayPause();
+  }, [soundEnabled, onEnableSound, sendCommand, togglePlayPause]);
+
+  useEffect(() => {
+    if (!isPlayerReady) return;
+    if (!isActive) {
+      sendCommand('pauseVideo');
+      setIsPlaying(false);
+      return;
+    }
+    sendCommand('playVideo');
+    if (soundEnabled) {
+      sendCommand('unMute');
+    } else {
+      sendCommand('mute');
+    }
+    setIsPlaying(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive]);
+  }, [isActive, soundEnabled, isPlayerReady]);
 
   useEffect(() => {
     return () => {
@@ -115,24 +144,32 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
     );
   }
 
+  const shouldRender = isActive || preload;
+
   return (
     <div className="relative w-full h-full bg-black overflow-hidden">
-      {isActive && (
-        <iframe
-          ref={iframeRef}
-          src={embedUrl}
-          className="absolute inset-0 w-full h-full"
-          style={{
-            border: 'none',
-            transform: 'scale(1.03)',
-            transformOrigin: 'center center',
-          }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          onLoad={handleLoad}
-          onError={handleError}
-          title="Spark motivational video"
-        />
+      {shouldRender && (
+        <div className="absolute inset-0 overflow-hidden">
+          <iframe
+            ref={iframeRef}
+            src={embedUrl}
+            className="absolute"
+            style={{
+              border: 'none',
+              width: '120%',
+              height: '120%',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) scale(1.05)',
+              pointerEvents: 'none',
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            onLoad={handleLoad}
+            onError={handleError}
+            title="Spark motivational video"
+          />
+        </div>
       )}
 
       <AnimatePresence>
@@ -155,14 +192,14 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
 
       <div
         className="absolute inset-0 z-20"
-        onClick={togglePlayPause}
+        onClick={handleTap}
         role="button"
         tabIndex={0}
-        aria-label={isPlaying ? 'Pause video' : 'Play video'}
+        aria-label={soundEnabled ? (isPlaying ? 'Pause video' : 'Play video') : 'Enable sound'}
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
-            togglePlayPause();
+            handleTap();
           }
         }}
       />
@@ -182,6 +219,22 @@ export function SparkVideoPlayer({ youtubeId, isActive, onVideoEnd }: SparkVideo
               ) : (
                 <Pause size={28} className="text-white" />
               )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isActive && !soundEnabled && (
+          <motion.div
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="px-4 py-2 rounded-full bg-black/50 backdrop-blur-md text-white/80 text-xs font-medium">
+              Tap for sound
             </div>
           </motion.div>
         )}
