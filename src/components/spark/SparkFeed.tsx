@@ -39,7 +39,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
   const feedRef = useRef<HTMLDivElement>(null);
   const watchedInSessionRef = useRef<Set<string>>(new Set());
