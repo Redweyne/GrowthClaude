@@ -2,163 +2,241 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, Loader2, Pause, Play } from 'lucide-react';
+import { AlertCircle, Loader2, Pause, Play, Volume2 } from 'lucide-react';
+import {
+  type YouTubeApi,
+  type YouTubePlayer,
+  loadYouTubeApi,
+} from './youtubeApi';
+
+type PlayerStatus = 'idle' | 'ready' | 'error';
+
+type PlayIndicator = 'play' | 'pause' | null;
 
 interface SparkVideoPlayerProps {
   youtubeId: string;
   isActive: boolean;
-  preload?: boolean;
+  shouldMount: boolean;
   soundEnabled: boolean;
 }
 
 export function SparkVideoPlayer({
   youtubeId,
   isActive,
-  preload = false,
+  shouldMount,
   soundEnabled,
 }: SparkVideoPlayerProps) {
-  const shouldRender = isActive || preload;
+  const hostRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<YouTubePlayer | null>(null);
+  const apiRef = useRef<YouTubeApi | null>(null);
+  const activeRef = useRef(isActive);
+  const soundRef = useRef(soundEnabled);
+  const userPausedRef = useRef(false);
+  const replayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const indicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [isPlaying, setIsPlaying] = useState(isActive);
-  const [hasError, setHasError] = useState(false);
-  const [showPlayPause, setShowPlayPause] = useState(false);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
-
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const playPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const embedUrl = useMemo(() => {
-    if (!shouldRender) return '';
-
-    const params = new URLSearchParams({
-      autoplay: isActive ? '1' : '0',
-      mute: '1',
-      modestbranding: '1',
-      rel: '0',
-      playsinline: '1',
-      disablekb: '1',
-      loop: '1',
-      playlist: youtubeId,
-      enablejsapi: '1',
-      controls: '0',
-      iv_load_policy: '3',
-      origin: typeof window !== 'undefined' ? window.location.origin : '',
-    });
-
-    return `https://www.youtube.com/embed/${youtubeId}?${params.toString()}`;
-  }, [youtubeId, isActive, shouldRender]);
-
-  const clearTimeouts = useCallback(() => {
-    if (loadTimeoutRef.current) {
-      clearTimeout(loadTimeoutRef.current);
-      loadTimeoutRef.current = null;
-    }
-
-    if (playPauseTimeoutRef.current) {
-      clearTimeout(playPauseTimeoutRef.current);
-      playPauseTimeoutRef.current = null;
-    }
-  }, []);
-
-  const sendCommand = useCallback((command: 'playVideo' | 'pauseVideo' | 'mute' | 'unMute') => {
-    if (!iframeRef.current?.contentWindow) return;
-
-    iframeRef.current.contentWindow.postMessage(
-      JSON.stringify({
-        event: 'command',
-        func: command,
-        args: [],
-      }),
-      '*'
-    );
-  }, []);
+  const [status, setStatus] = useState<PlayerStatus>('idle');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playIndicator, setPlayIndicator] = useState<PlayIndicator>(null);
 
   useEffect(() => {
-    if (!shouldRender) return;
+    activeRef.current = isActive;
+    soundRef.current = soundEnabled;
+  }, [isActive, soundEnabled]);
 
-    loadTimeoutRef.current = setTimeout(() => {
-      setHasError(true);
-    }, 15000);
+  const clearReplayTimer = useCallback(() => {
+    if (!replayTimerRef.current) return;
+    clearTimeout(replayTimerRef.current);
+    replayTimerRef.current = null;
+  }, []);
 
-    return () => {
-      if (loadTimeoutRef.current) {
-        clearTimeout(loadTimeoutRef.current);
-        loadTimeoutRef.current = null;
-      }
-    };
-  }, [shouldRender, embedUrl]);
+  const clearIndicatorTimer = useCallback(() => {
+    if (!indicatorTimerRef.current) return;
+    clearTimeout(indicatorTimerRef.current);
+    indicatorTimerRef.current = null;
+  }, []);
 
-  useEffect(() => {
-    if (!isIframeLoaded) return;
+  const setTransientIndicator = useCallback((indicator: PlayIndicator) => {
+    setPlayIndicator(indicator);
+    clearIndicatorTimer();
+    indicatorTimerRef.current = setTimeout(() => {
+      setPlayIndicator(null);
+    }, 580);
+  }, [clearIndicatorTimer]);
 
-    if (!isActive || !isPlaying) {
-      sendCommand('mute');
-      sendCommand('pauseVideo');
+  const syncPlayback = useCallback((allowAutoRetry: boolean) => {
+    const player = playerRef.current;
+    const api = apiRef.current;
+
+    if (!player || !api || status !== 'ready') {
       return;
     }
 
-    // Always start muted first so autoplay never gets blocked.
-    sendCommand('mute');
-    sendCommand('playVideo');
+    const shouldPlay = activeRef.current && !userPausedRef.current;
 
-    if (soundEnabled) {
-      const unmuteTimer = setTimeout(() => {
-        sendCommand('unMute');
-      }, 140);
-
-      return () => clearTimeout(unmuteTimer);
-    }
-  }, [isIframeLoaded, isActive, isPlaying, soundEnabled, sendCommand]);
-
-  const handleLoad = useCallback(() => {
-    setHasError(false);
-    setIsIframeLoaded(true);
-    if (isActive) {
-      setIsPlaying(true);
-    }
-
-    if (loadTimeoutRef.current) {
-      clearTimeout(loadTimeoutRef.current);
-      loadTimeoutRef.current = null;
-    }
-  }, [isActive]);
-
-  const handleError = useCallback(() => {
-    setHasError(true);
-  }, []);
-
-  const togglePlayPause = useCallback(() => {
-    if (!isActive || !isIframeLoaded) return;
-
-    if (isPlaying) {
-      sendCommand('pauseVideo');
-      setIsPlaying(false);
-    } else {
-      sendCommand('playVideo');
-      if (soundEnabled) {
-        sendCommand('unMute');
+    try {
+      if (!shouldPlay) {
+        player.mute();
+        player.pauseVideo();
+        clearReplayTimer();
+        return;
       }
-      setIsPlaying(true);
-    }
 
-    setShowPlayPause(true);
-    if (playPauseTimeoutRef.current) {
-      clearTimeout(playPauseTimeoutRef.current);
-    }
+      player.mute();
+      player.playVideo();
 
-    playPauseTimeoutRef.current = setTimeout(() => {
-      setShowPlayPause(false);
-    }, 600);
-  }, [isActive, isIframeLoaded, isPlaying, soundEnabled, sendCommand]);
+      if (soundRef.current) {
+        setTimeout(() => {
+          if (!activeRef.current) return;
+          try {
+            player.unMute();
+          } catch {
+            // no-op
+          }
+        }, 120);
+      }
+
+      if (allowAutoRetry) {
+        clearReplayTimer();
+        replayTimerRef.current = setTimeout(() => {
+          if (!activeRef.current || userPausedRef.current) return;
+          const currentState = player.getPlayerState();
+          const isPlayingNow = currentState === api.PlayerState.PLAYING || currentState === api.PlayerState.BUFFERING;
+          if (!isPlayingNow) {
+            try {
+              player.mute();
+              player.playVideo();
+              if (soundRef.current) {
+                player.unMute();
+              }
+            } catch {
+              // no-op: external player retries on next active sync
+            }
+          }
+        }, 700);
+      }
+    } catch {
+      // no-op: external player retries on next active sync
+    }
+  }, [clearReplayTimer, status]);
 
   useEffect(() => {
-    return () => {
-      clearTimeouts();
-    };
-  }, [clearTimeouts]);
+    if (!shouldMount || !hostRef.current || playerRef.current) {
+      return;
+    }
 
-  if (hasError) {
+    let isDisposed = false;
+
+    loadYouTubeApi()
+      .then((ytApi) => {
+        if (isDisposed || !hostRef.current) return;
+
+        apiRef.current = ytApi;
+        userPausedRef.current = false;
+
+        playerRef.current = new ytApi.Player(hostRef.current, {
+          width: '100%',
+          height: '100%',
+          videoId: youtubeId,
+          playerVars: {
+            autoplay: 0,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            loop: 1,
+            modestbranding: 1,
+            playsinline: 1,
+            playlist: youtubeId,
+            rel: 0,
+            mute: 1,
+            origin: typeof window !== 'undefined' ? window.location.origin : '',
+          },
+          events: {
+            onReady: () => {
+              if (isDisposed) return;
+              setStatus('ready');
+              syncPlayback(true);
+            },
+            onStateChange: (event) => {
+              if (isDisposed || !apiRef.current) return;
+              const isNowPlaying = event.data === apiRef.current.PlayerState.PLAYING;
+              setIsPlaying(isNowPlaying);
+            },
+            onError: () => {
+              if (isDisposed) return;
+              setStatus('error');
+              setIsPlaying(false);
+            },
+          },
+        });
+      })
+      .catch(() => {
+        if (isDisposed) return;
+        setStatus('error');
+      });
+
+    return () => {
+      isDisposed = true;
+      clearReplayTimer();
+      clearIndicatorTimer();
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+      setStatus('idle');
+      setIsPlaying(false);
+    };
+  }, [clearIndicatorTimer, clearReplayTimer, shouldMount, syncPlayback, youtubeId]);
+
+  useEffect(() => {
+    if (!isActive) {
+      userPausedRef.current = false;
+    }
+    syncPlayback(true);
+  }, [isActive, soundEnabled, syncPlayback]);
+
+  const handleTogglePlayback = useCallback(() => {
+    if (!isActive || status !== 'ready' || !playerRef.current) return;
+
+    const player = playerRef.current;
+    const shouldPause = isPlaying;
+
+    try {
+      if (shouldPause) {
+        userPausedRef.current = true;
+        player.pauseVideo();
+        setIsPlaying(false);
+        setTransientIndicator('pause');
+        return;
+      }
+
+      userPausedRef.current = false;
+      if (soundEnabled) {
+        player.unMute();
+      } else {
+        player.mute();
+      }
+      player.playVideo();
+      setIsPlaying(true);
+      setTransientIndicator('play');
+      syncPlayback(true);
+    } catch {
+      setStatus('error');
+      setIsPlaying(false);
+    }
+  }, [isActive, isPlaying, setTransientIndicator, soundEnabled, status, syncPlayback]);
+
+  const loading = shouldMount && status !== 'ready' && status !== 'error';
+  const showSoundBadge = isActive && status === 'ready' && soundEnabled;
+
+  const icon = useMemo(() => {
+    if (playIndicator === 'play') return <Play size={28} className="text-white ml-1" />;
+    if (playIndicator === 'pause') return <Pause size={28} className="text-white" />;
+    return null;
+  }, [playIndicator]);
+
+  if (status === 'error') {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-black px-8">
         <AlertCircle size={40} className="text-stone-700 mb-3" />
@@ -169,45 +247,38 @@ export function SparkVideoPlayer({
   }
 
   return (
-    <div className="relative w-full h-full bg-black overflow-hidden">
-      {shouldRender && (
+    <div className="relative w-full h-full bg-black overflow-hidden" data-testid="spark-video-player">
+      {shouldMount && (
         <div className="absolute inset-0 overflow-hidden">
-          <iframe
-            key={embedUrl}
-            ref={iframeRef}
-            src={embedUrl}
-            className="absolute"
+          <div
+            ref={hostRef}
+            className="absolute inset-0"
+            data-testid="spark-video-host"
             style={{
-              border: 'none',
               width: '120%',
               height: '120%',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%) scale(1.05)',
-              pointerEvents: 'none',
             }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            onLoad={handleLoad}
-            onError={handleError}
-            title="Spark motivational video"
           />
         </div>
       )}
 
       <AnimatePresence>
-        {shouldRender && !isIframeLoaded && !hasError && (
+        {loading && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center bg-black z-10"
+            className="absolute inset-0 z-20 flex items-center justify-center bg-black"
+            data-testid="spark-video-loading"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+            transition={{ duration: 0.25 }}
           >
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             >
-              <Loader2 size={32} className="text-white/25" />
+              <Loader2 size={30} className="text-white/25" />
             </motion.div>
           </motion.div>
         )}
@@ -215,26 +286,39 @@ export function SparkVideoPlayer({
 
       <button
         type="button"
-        className="absolute inset-0 z-20"
-        onClick={togglePlayPause}
+        className="absolute inset-0 z-30"
+        onClick={handleTogglePlayback}
         aria-label={isPlaying ? 'Pause video' : 'Play video'}
       />
 
       <AnimatePresence>
-        {showPlayPause && (
+        {icon && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none"
-            initial={{ opacity: 0, scale: 0.5 }}
+            className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0, scale: 0.55 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.15 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.16 }}
           >
             <div className="w-16 h-16 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
-              {isPlaying ? (
-                <Pause size={28} className="text-white" />
-              ) : (
-                <Play size={28} className="text-white ml-1" />
-              )}
+              {icon}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSoundBadge && (
+          <motion.div
+            className="absolute top-[max(4.25rem,calc(2.5rem+env(safe-area-inset-top)))] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="px-3 py-1.5 rounded-full bg-black/60 border border-white/15 text-white/90 text-xs font-medium backdrop-blur-md flex items-center gap-1.5">
+              <Volume2 size={14} className="text-emerald-300" />
+              Sound on
             </div>
           </motion.div>
         )}

@@ -1,11 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion, useAnimationControls } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { SparkVideoPlayer } from './SparkVideoPlayer';
 import { SparkOverlay } from './SparkOverlay';
-import { SparkWisdomBreak } from './SparkWisdomBreak';
 import { useSparkStore } from '@/store/useSparkStore';
 import { useStore } from '@/store/useStore';
 import { getShuffledSparkVideos } from '@/content/sparkVideos';
@@ -15,19 +13,18 @@ interface SparkFeedProps {
   onExit: () => void;
 }
 
+const ACTIVE_VIDEO_THRESHOLD = 0.72;
+
 export function SparkFeed({ onExit }: SparkFeedProps) {
   const {
     watchedVideos,
     videosWatchedThisSession,
-    currentSessionBreakCount,
     isFirstSparkSession,
     markVideoWatched,
     toggleSaveVideo,
     isVideoSaved,
     startSession,
     endSession,
-    shouldShowWisdomBreak,
-    recordWisdomBreakChoice,
     isForcedClosedToday,
   } = useSparkStore();
 
@@ -39,24 +36,40 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   const playlist = useMemo(() => {
     return getShuffledSparkVideos(watchedVideos);
-    // Keep one stable playlist per Spark session.
+    // Keep this playlist fixed during one Spark session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showWisdomBreak, setShowWisdomBreak] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const [containerHeight, setContainerHeight] = useState(0);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const lastScrollTime = useRef(0);
-  const trackControls = useAnimationControls();
+  const feedRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const watchedInSessionRef = useRef<Set<string>>(new Set());
 
-  const currentVideo = playlist[currentIndex];
-  const previousVideo = currentIndex > 0 ? playlist[currentIndex - 1] : null;
-  const nextVideo = currentIndex < playlist.length - 1 ? playlist[currentIndex + 1] : null;
-  const baseOffset = -containerHeight;
+  const activeVideo = playlist[activeIndex];
+
+  const markVideoAsWatched = useCallback((videoId: string) => {
+    if (watchedInSessionRef.current.has(videoId)) {
+      return;
+    }
+
+    watchedInSessionRef.current.add(videoId);
+    const xp = markVideoWatched(videoId);
+    addXp(xp);
+  }, [addXp, markVideoWatched]);
+
+  const scrollToIndex = useCallback((index: number) => {
+    const bounded = Math.max(0, Math.min(index, playlist.length - 1));
+    const target = cardRefs.current[bounded];
+
+    if (!target) return;
+
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [playlist.length]);
 
   useEffect(() => {
     startSession();
@@ -72,181 +85,66 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const resetTrackPosition = useCallback(() => {
-    if (containerHeight <= 0) return;
-
-    trackControls.start({
-      y: baseOffset,
-      transition: { type: 'spring', stiffness: 340, damping: 34, mass: 0.9 },
-    });
-  }, [containerHeight, baseOffset, trackControls]);
-
-  const animateTo = useCallback(async (direction: 'up' | 'down') => {
-    if (isTransitioning || showWisdomBreak) return;
-    if (direction === 'up' && currentIndex >= playlist.length - 1) return;
-    if (direction === 'down' && currentIndex <= 0) return;
-
-    if (containerHeight === 0) {
-      setCurrentIndex((prev) => prev + (direction === 'up' ? 1 : -1));
-      return;
-    }
-
-    setIsTransitioning(true);
-
-    const targetOffset = baseOffset + (direction === 'up' ? -containerHeight : containerHeight);
-
-    await trackControls.start({
-      y: targetOffset,
-      transition: { type: 'spring', stiffness: 340, damping: 34, mass: 0.9 },
-    });
-
-    setCurrentIndex((prev) => prev + (direction === 'up' ? 1 : -1));
-    trackControls.set({ y: baseOffset });
-    setIsTransitioning(false);
-  }, [isTransitioning, showWisdomBreak, currentIndex, playlist.length, containerHeight, baseOffset, trackControls]);
-
-  const goNext = useCallback(async () => {
-    if (isTransitioning || showWisdomBreak) return false;
-
-    if (currentIndex >= playlist.length - 1) {
-      resetTrackPosition();
-      return false;
-    }
-
-    const xp = markVideoWatched(currentVideo.id);
-    addXp(xp);
-
-    if (shouldShowWisdomBreak()) {
-      setShowWisdomBreak(true);
-      resetTrackPosition();
-      return false;
-    }
-
-    await animateTo('up');
-    return true;
-  }, [
-    isTransitioning,
-    showWisdomBreak,
-    currentIndex,
-    playlist.length,
-    currentVideo,
-    markVideoWatched,
-    addXp,
-    shouldShowWisdomBreak,
-    animateTo,
-    resetTrackPosition,
-  ]);
-
-  const goPrevious = useCallback(async () => {
-    if (isTransitioning || showWisdomBreak) return false;
-
-    if (currentIndex <= 0) {
-      resetTrackPosition();
-      return false;
-    }
-
-    await animateTo('down');
-    return true;
-  }, [isTransitioning, showWisdomBreak, currentIndex, animateTo, resetTrackPosition]);
-
-  const handleWisdomBreakLeave = useCallback(() => {
-    const { xpEarned } = recordWisdomBreakChoice('leave');
-    addXp(xpEarned);
-    setShowWisdomBreak(false);
-    onExit();
-  }, [recordWisdomBreakChoice, addXp, onExit]);
-
-  const handleWisdomBreakContinue = useCallback(() => {
-    const { shouldClose } = recordWisdomBreakChoice('continue');
-    setShowWisdomBreak(false);
-
-    if (shouldClose) {
-      onExit();
-      return;
-    }
-
-    animateTo('up');
-  }, [recordWisdomBreakChoice, onExit, animateTo]);
-
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (showWisdomBreak) return;
+    if (!feedRef.current || playlist.length === 0) {
+      return;
+    }
 
-      switch (event.key) {
-        case 'ArrowDown':
-        case 'j':
-          event.preventDefault();
-          goNext();
-          break;
-        case 'ArrowUp':
-        case 'k':
-          event.preventDefault();
-          goPrevious();
-          break;
-        case 'Escape':
-          event.preventDefault();
-          onExit();
-          break;
-        case 's':
-          event.preventDefault();
-          if (currentVideo) {
-            toggleSaveVideo(currentVideo.id);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let candidateIndex: number | null = null;
+        let candidateRatio = 0;
+
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          if (entry.intersectionRatio < ACTIVE_VIDEO_THRESHOLD) continue;
+
+          const indexValue = Number((entry.target as HTMLElement).dataset.index);
+          if (Number.isNaN(indexValue)) continue;
+
+          if (entry.intersectionRatio > candidateRatio) {
+            candidateRatio = entry.intersectionRatio;
+            candidateIndex = indexValue;
           }
-          break;
-        case 'm':
-          event.preventDefault();
-          setSoundEnabled((prev) => !prev);
-          break;
+        }
+
+        if (candidateIndex === null) {
+          return;
+        }
+
+        setActiveIndex((previous) => {
+          if (previous === candidateIndex) return previous;
+          return candidateIndex;
+        });
+      },
+      {
+        root: feedRef.current,
+        threshold: [0.55, 0.72, 0.9],
       }
-    };
+    );
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goNext, goPrevious, onExit, showWisdomBreak, currentVideo, toggleSaveVideo]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-
-      const now = Date.now();
-      if (now - lastScrollTime.current < 420) return;
-
-      if (event.deltaY > 20) {
-        lastScrollTime.current = now;
-        goNext();
-      } else if (event.deltaY < -20) {
-        lastScrollTime.current = now;
-        goPrevious();
+    for (const card of cardRefs.current) {
+      if (card) {
+        observer.observe(card);
       }
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
-  }, [goNext, goPrevious]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const updateSize = () => {
-      setContainerHeight(container.clientHeight);
-    };
-
-    updateSize();
-    const observer = new ResizeObserver(updateSize);
-    observer.observe(container);
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (containerHeight > 0) {
-      trackControls.set({ y: -containerHeight });
     }
-  }, [containerHeight, trackControls]);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [playlist.length]);
+
+  useEffect(() => {
+    if (!activeVideo) return;
+
+    const watchTimer = window.setTimeout(() => {
+      markVideoAsWatched(activeVideo.id);
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(watchTimer);
+    };
+  }, [activeVideo, markVideoAsWatched]);
 
   useEffect(() => {
     if (isForcedClosedToday()) {
@@ -254,7 +152,41 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     }
   }, [isForcedClosedToday, onExit]);
 
-  if (!currentVideo) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'ArrowDown':
+        case 'j':
+          event.preventDefault();
+          scrollToIndex(activeIndex + 1);
+          break;
+        case 'ArrowUp':
+        case 'k':
+          event.preventDefault();
+          scrollToIndex(activeIndex - 1);
+          break;
+        case 's':
+          event.preventDefault();
+          if (activeVideo) {
+            toggleSaveVideo(activeVideo.id);
+          }
+          break;
+        case 'm':
+          event.preventDefault();
+          setSoundEnabled((previous) => !previous);
+          break;
+        case 'Escape':
+          event.preventDefault();
+          onExit();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeIndex, activeVideo, onExit, scrollToIndex, toggleSaveVideo]);
+
+  if (playlist.length === 0 || !activeVideo) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div className="text-center px-8">
@@ -274,96 +206,60 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 bg-black z-50 overflow-hidden"
-      style={{
-        touchAction: 'pan-y',
-        overscrollBehaviorY: 'contain',
-        height: '100dvh',
-      }}
-    >
-      <div className="relative w-full h-full max-w-[430px] mx-auto">
-        <motion.div
-          className="absolute inset-0"
-          initial={{ y: baseOffset }}
-          animate={trackControls}
-          drag={showWisdomBreak ? false : 'y'}
-          dragElastic={0.12}
-          dragMomentum={false}
-          dragConstraints={{
-            top: baseOffset - containerHeight,
-            bottom: baseOffset + containerHeight,
-          }}
-          onDragEnd={(_, info) => {
-            if (showWisdomBreak || isTransitioning) {
-              resetTrackPosition();
-              return;
-            }
+    <div className="fixed inset-0 z-50 bg-black" data-testid="spark-feed">
+      <div
+        ref={feedRef}
+        className="absolute inset-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{
+          height: '100dvh',
+          scrollSnapType: 'y mandatory',
+          overscrollBehaviorY: 'contain',
+          touchAction: 'pan-y',
+        }}
+      >
+        {playlist.map((video, index) => {
+          const isActive = index === activeIndex;
+          const shouldMount = Math.abs(index - activeIndex) <= 1;
 
-            const swipeThreshold = Math.min(120, Math.max(60, containerHeight * 0.18));
+          return (
+            <section
+              key={video.id}
+              ref={(element) => {
+                cardRefs.current[index] = element;
+              }}
+              data-index={index}
+              data-testid={`spark-card-${index}`}
+              className="relative h-[100dvh]"
+              style={{
+                scrollSnapAlign: 'start',
+                scrollSnapStop: 'always',
+              }}
+            >
+              <div className="relative w-full h-full max-w-[430px] mx-auto">
+                <SparkVideoPlayer
+                  youtubeId={video.youtubeId}
+                  isActive={isActive}
+                  shouldMount={shouldMount}
+                  soundEnabled={soundEnabled}
+                />
 
-            if (info.offset.y < -swipeThreshold || info.velocity.y < -600) {
-              goNext();
-              return;
-            }
-
-            if (info.offset.y > swipeThreshold || info.velocity.y > 600) {
-              goPrevious();
-              return;
-            }
-
-            resetTrackPosition();
-          }}
-        >
-          {[previousVideo, currentVideo, nextVideo].map((video, index) => {
-            const slotOffset = (index - 1) * (containerHeight || 0);
-
-            return (
-              <div
-                key={video ? video.id : `spark-slot-${index}`}
-                className="absolute inset-0"
-                style={{ transform: `translateY(${slotOffset}px)` }}
-              >
-                {video ? (
-                  <SparkVideoPlayer
-                    key={`${video.id}-${index === 1 ? 'active' : 'preload'}`}
-                    youtubeId={video.youtubeId}
-                    isActive={index === 1 && !showWisdomBreak && !isTransitioning}
-                    preload={index !== 1}
+                {isActive && (
+                  <SparkOverlay
+                    video={video}
+                    videoIndex={index}
+                    totalVideos={playlist.length}
+                    isSaved={isVideoSaved(video.id)}
                     soundEnabled={soundEnabled}
+                    videosWatchedSession={videosWatchedThisSession}
+                    onSave={() => toggleSaveVideo(video.id)}
+                    onToggleSound={() => setSoundEnabled((previous) => !previous)}
+                    onExit={onExit}
                   />
-                ) : (
-                  <div className="w-full h-full bg-black" />
                 )}
               </div>
-            );
-          })}
-        </motion.div>
-
-        {!showWisdomBreak && (
-          <SparkOverlay
-            video={currentVideo}
-            videoIndex={currentIndex}
-            totalVideos={playlist.length}
-            isSaved={isVideoSaved(currentVideo.id)}
-            soundEnabled={soundEnabled}
-            videosWatchedSession={videosWatchedThisSession}
-            onSave={() => toggleSaveVideo(currentVideo.id)}
-            onToggleSound={() => setSoundEnabled((prev) => !prev)}
-            onExit={onExit}
-          />
-        )}
-
-        {showWisdomBreak && (
-          <SparkWisdomBreak
-            videosWatched={videosWatchedThisSession}
-            breakNumber={currentSessionBreakCount + 1}
-            onLeave={handleWisdomBreakLeave}
-            onContinue={handleWisdomBreakContinue}
-            isFinalBreak={currentSessionBreakCount + 1 >= 3}
-          />
-        )}
+            </section>
+          );
+        })}
       </div>
     </div>
   );

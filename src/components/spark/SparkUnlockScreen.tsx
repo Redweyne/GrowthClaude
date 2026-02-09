@@ -1,18 +1,24 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Zap, ArrowRight } from 'lucide-react';
+import { ArrowRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SPARK UNLOCK SCREEN — Redesigned
-// Clean, bold celebration. Mobile-first, TikTok energy.
-// ═══════════════════════════════════════════════════════════════════════════
 
 interface SparkUnlockScreenProps {
   onEnterSpark: () => void;
   onSkip: () => void;
 }
+
+const PARTICLES = [
+  { left: '18%', top: '20%', duration: 2.8, delay: 0.1 },
+  { left: '28%', top: '62%', duration: 3.1, delay: 0.6 },
+  { left: '40%', top: '34%', duration: 2.6, delay: 1.1 },
+  { left: '52%', top: '70%', duration: 3.3, delay: 1.6 },
+  { left: '63%', top: '28%', duration: 2.9, delay: 0.35 },
+  { left: '74%', top: '58%', duration: 3.0, delay: 1.4 },
+  { left: '82%', top: '36%', duration: 2.7, delay: 0.8 },
+  { left: '66%', top: '80%', duration: 3.2, delay: 1.9 },
+] as const;
 
 export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenProps) {
   return (
@@ -24,13 +30,13 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
         }}
       />
 
-      {Array.from({ length: 8 }).map((_, i) => (
+      {PARTICLES.map((particle, index) => (
         <motion.div
-          key={i}
+          key={index}
           className="absolute w-0.5 h-0.5 rounded-full bg-amber-400/60"
           style={{
-            left: `${15 + Math.random() * 70}%`,
-            top: `${15 + Math.random() * 70}%`,
+            left: particle.left,
+            top: particle.top,
           }}
           animate={{
             y: [0, -20, 0],
@@ -38,9 +44,9 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
             scale: [0, 1.5, 0],
           }}
           transition={{
-            duration: 2.5 + Math.random() * 2,
+            duration: particle.duration,
             repeat: Infinity,
-            delay: Math.random() * 3,
+            delay: particle.delay,
             ease: 'easeInOut',
           }}
         />
@@ -82,10 +88,10 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           transition={{ delay: 0.7 }}
         >
           <p className="text-white/60 text-base leading-relaxed mb-2">
-            Your daily dose of wisdom and motivation from the world&apos;s greatest minds.
+            Your daily feed of short, high-energy wisdom.
           </p>
           <p className="text-white/30 text-sm leading-relaxed mb-10">
-            But remember — watching isn&apos;t growing. We&apos;ll remind you when it&apos;s time to act.
+            Swipe vertically, stay focused, and act on what resonates.
           </p>
         </motion.div>
 
@@ -108,6 +114,7 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           </Button>
 
           <button
+            type="button"
             onClick={onSkip}
             className="text-white/20 text-sm hover:text-white/40 transition-colors"
           >

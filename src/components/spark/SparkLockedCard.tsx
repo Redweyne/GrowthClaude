@@ -1,22 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Zap, Lock, CheckCircle, ChevronRight } from 'lucide-react';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SPARK LOCKED CARD — Redesigned
-// Cleaner card with TikTok-style energy
-// ═══════════════════════════════════════════════════════════════════════════
-
-const LOCKED_TEASERS = [
-  '"Stay hard." — Goggins',
-  '"Discipline equals freedom." — Jocko',
-  '"The obstacle is the way."',
-  '"Begin at once to live."',
-  '"Where focus goes, energy flows."',
-  '"Pain + Reflection = Progress."',
-  '"What color is your Bugatti?"',
-];
+import { CheckCircle, ChevronRight, Lock, Zap } from 'lucide-react';
 
 interface SparkLockedCardProps {
   isUnlocked: boolean;
@@ -24,12 +9,9 @@ interface SparkLockedCardProps {
   onOpen: () => void;
 }
 
-export function SparkLockedCard({ isUnlocked, isForcedClosed, onOpen }: SparkLockedCardProps) {
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
-  );
-  const teaser = LOCKED_TEASERS[dayOfYear % LOCKED_TEASERS.length];
+const LOCKED_TEASER = 'Complete your daily flow to unlock Spark.';
 
+export function SparkLockedCard({ isUnlocked, isForcedClosed, onOpen }: SparkLockedCardProps) {
   if (isForcedClosed) {
     return (
       <div className="p-4 rounded-2xl bg-stone-900/30 border border-stone-800/50">
@@ -38,7 +20,7 @@ export function SparkLockedCard({ isUnlocked, isForcedClosed, onOpen }: SparkLoc
             <CheckCircle size={18} className="text-stone-600" />
           </div>
           <div className="flex-1">
-            <p className="text-stone-500 font-medium text-sm">Spark — Done for today</p>
+            <p className="text-stone-500 font-medium text-sm">Spark - Done for today</p>
             <p className="text-stone-600 text-xs">Time to act on what you watched.</p>
           </div>
         </div>
@@ -59,13 +41,14 @@ export function SparkLockedCard({ isUnlocked, isForcedClosed, onOpen }: SparkLoc
           </div>
           <Zap size={16} className="text-stone-800" />
         </div>
-        <p className="mt-2 text-stone-700/60 text-[11px] italic pl-[52px]">{teaser}</p>
+        <p className="mt-2 text-stone-700/60 text-[11px] italic pl-[52px]">{LOCKED_TEASER}</p>
       </div>
     );
   }
 
   return (
     <motion.button
+      type="button"
       onClick={onOpen}
       className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-500/8 to-orange-500/8 border border-amber-500/15 hover:border-amber-500/30 transition-all text-left"
       whileTap={{ scale: 0.98 }}

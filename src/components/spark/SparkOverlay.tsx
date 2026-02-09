@@ -2,7 +2,15 @@
 
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bookmark, BookmarkCheck, Share2, Volume2, VolumeX, X, Zap } from 'lucide-react';
+import {
+  Bookmark,
+  BookmarkCheck,
+  Share2,
+  Volume2,
+  VolumeX,
+  X,
+  Zap,
+} from 'lucide-react';
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
 import type { SparkVideo } from '@/types/spark';
@@ -24,20 +32,29 @@ interface ActionButtonProps {
   label: string;
   onClick: () => void;
   children: ReactNode;
+  active?: boolean;
+  testId?: string;
 }
 
-function ActionButton({ label, onClick, children }: ActionButtonProps) {
+function ActionButton({ label, onClick, children, active = false, testId }: ActionButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+      className="flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
       aria-label={label}
+      data-testid={testId}
     >
-      <div className="w-12 h-12 rounded-full bg-black/35 border border-white/10 backdrop-blur-sm flex items-center justify-center">
+      <div
+        className={`w-12 h-12 rounded-full border backdrop-blur-sm flex items-center justify-center ${
+          active
+            ? 'bg-emerald-500/25 border-emerald-300/50'
+            : 'bg-black/35 border-white/15'
+        }`}
+      >
         {children}
       </div>
-      <span className="text-white/75 text-[10px] font-medium">{label}</span>
+      <span className="text-white/80 text-[10px] font-medium">{label}</span>
     </button>
   );
 }
@@ -53,7 +70,7 @@ export function SparkOverlay({
   onToggleSound,
   onExit,
 }: SparkOverlayProps) {
-  const [showSavePulse, setShowSavePulse] = useState(false);
+  const [savePulse, setSavePulse] = useState(false);
   const [shareStatus, setShareStatus] = useState<'copied' | 'shared' | null>(null);
 
   const audio = useAudio();
@@ -66,21 +83,21 @@ export function SparkOverlay({
     return video.creatorName.replace(/\s+/g, '').toLowerCase();
   }, [video.creatorName]);
 
-  const showShareFeedback = useCallback((status: 'copied' | 'shared') => {
+  const showShareStatus = useCallback((status: 'copied' | 'shared') => {
     setShareStatus(status);
     window.setTimeout(() => {
       setShareStatus(null);
-    }, 1300);
+    }, 1200);
   }, []);
 
   const handleSave = useCallback(() => {
     onSave();
 
     if (!isSaved) {
-      setShowSavePulse(true);
+      setSavePulse(true);
       window.setTimeout(() => {
-        setShowSavePulse(false);
-      }, 650);
+        setSavePulse(false);
+      }, 580);
       audio.playTapConfirm();
       hapticMedium();
       return;
@@ -88,38 +105,37 @@ export function SparkOverlay({
 
     audio.playTap();
     hapticTap();
-  }, [onSave, isSaved, audio, hapticMedium, hapticTap]);
+  }, [audio, hapticMedium, hapticTap, isSaved, onSave]);
 
   const handleShare = useCallback(async () => {
-    const shareUrl = `https://www.youtube.com/shorts/${video.youtubeId}`;
-    const shareText = video.caption || 'Check this spark from the app.';
+    const url = `https://www.youtube.com/shorts/${video.youtubeId}`;
+    const text = video.caption || 'Check this Spark video.';
 
     try {
       if (navigator.share) {
         await navigator.share({
           title: 'Spark',
-          text: shareText,
-          url: shareUrl,
+          text,
+          url,
         });
-
+        showShareStatus('shared');
         audio.playTapConfirm();
         hapticMedium();
-        showShareFeedback('shared');
         return;
       }
 
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
+        await navigator.clipboard.writeText(url);
+        showShareStatus('copied');
         audio.playTapConfirm();
         hapticMedium();
-        showShareFeedback('copied');
         return;
       }
 
-      window.open(shareUrl, '_blank', 'noopener,noreferrer');
+      window.open(url, '_blank', 'noopener,noreferrer');
+      showShareStatus('shared');
       audio.playTap();
       hapticTap();
-      showShareFeedback('shared');
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return;
@@ -127,97 +143,103 @@ export function SparkOverlay({
       audio.playTap();
       hapticTap();
     }
-  }, [video.youtubeId, video.caption, audio, hapticMedium, hapticTap, showShareFeedback]);
+  }, [audio, hapticMedium, hapticTap, showShareStatus, video.caption, video.youtubeId]);
 
   const handleToggleSound = useCallback(() => {
     onToggleSound();
     audio.playTap();
     hapticTap();
-  }, [onToggleSound, audio, hapticTap]);
+  }, [audio, hapticTap, onToggleSound]);
 
   return (
     <div className="absolute inset-0 z-40 pointer-events-none select-none">
       <div
         className="absolute top-0 left-0 right-0 h-32"
         style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 65%, transparent 100%)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.26) 62%, transparent 100%)',
         }}
       />
 
       <div
         className="absolute bottom-0 left-0 right-0 h-56"
         style={{
-          background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 45%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.44) 45%, transparent 100%)',
         }}
       />
 
       <div
-        className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 pointer-events-auto"
+        className="absolute top-0 left-0 right-0 p-4 pointer-events-auto flex items-center justify-between"
         style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
       >
         <button
           type="button"
           onClick={onExit}
-          className="w-10 h-10 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
-          aria-label="Close"
+          className="w-10 h-10 rounded-full bg-black/45 border border-white/15 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
+          aria-label="Close Spark"
+          data-testid="spark-close-btn"
         >
           <X size={18} />
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm text-[11px] text-white/85 font-semibold tracking-wide">
+          <div className="px-3 py-1.5 rounded-full bg-black/45 border border-white/15 backdrop-blur-sm text-white/90 text-[11px] font-semibold tracking-wide">
             {videoIndex + 1} / {totalVideos}
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/45 border border-white/15 backdrop-blur-sm">
             <Zap size={12} className="text-amber-400" />
-            <span className="text-white/85 text-[11px] font-semibold">{videosWatchedSession}</span>
+            <span className="text-white/90 text-[11px] font-semibold">{videosWatchedSession}</span>
           </div>
         </div>
       </div>
 
       <div
-        className="absolute right-3 flex flex-col items-center gap-6 pointer-events-auto"
+        className="absolute right-3 pointer-events-auto flex flex-col items-center gap-6"
         style={{ bottom: 'calc(8.75rem + env(safe-area-inset-bottom))' }}
       >
         <div className="relative">
-          <ActionButton label={isSaved ? 'Saved' : 'Save'} onClick={handleSave}>
+          <ActionButton label={isSaved ? 'Saved' : 'Save'} onClick={handleSave} testId="spark-save-btn">
             {isSaved ? (
-              <BookmarkCheck size={23} className="text-amber-400" />
+              <BookmarkCheck size={22} className="text-amber-300" />
             ) : (
-              <Bookmark size={23} className="text-white" />
+              <Bookmark size={22} className="text-white" />
             )}
           </ActionButton>
 
           <AnimatePresence>
-            {showSavePulse && (
+            {savePulse && (
               <motion.div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full border-2 border-amber-400"
-                initial={{ scale: 1, opacity: 0.8 }}
-                animate={{ scale: 1.85, opacity: 0 }}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full border-2 border-amber-300"
+                initial={{ opacity: 0.85, scale: 1 }}
+                animate={{ opacity: 0, scale: 1.85 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.45 }}
               />
             )}
           </AnimatePresence>
         </div>
 
-        <ActionButton label="Share" onClick={handleShare}>
-          <Share2 size={22} className="text-white" />
+        <ActionButton label="Share" onClick={handleShare} testId="spark-share-btn">
+          <Share2 size={21} className="text-white" />
         </ActionButton>
 
-        <ActionButton label={soundEnabled ? 'Sound on' : 'Sound off'} onClick={handleToggleSound}>
+        <ActionButton
+          label={soundEnabled ? 'Sound on' : 'Sound off'}
+          onClick={handleToggleSound}
+          active={soundEnabled}
+          testId="spark-sound-btn"
+        >
           {soundEnabled ? (
-            <Volume2 size={22} className="text-emerald-300" />
+            <Volume2 size={21} className="text-emerald-100" />
           ) : (
-            <VolumeX size={22} className="text-white" />
+            <VolumeX size={21} className="text-white" />
           )}
         </ActionButton>
 
         <div className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full bg-black/35 border border-white/10 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full border border-white/15 bg-black/35 backdrop-blur-sm flex items-center justify-center">
             <span className="text-xl" role="img" aria-label={categoryInfo.label}>{categoryInfo.emoji}</span>
           </div>
-          <span className="text-white/75 text-[10px] font-medium">{categoryInfo.label}</span>
+          <span className="text-white/80 text-[10px] font-medium">{categoryInfo.label}</span>
         </div>
       </div>
 
@@ -230,38 +252,22 @@ export function SparkOverlay({
         )}
 
         {video.caption && (
-          <p className="text-white/90 text-[13px] leading-[1.4] drop-shadow-lg mb-2 line-clamp-3">{video.caption}</p>
+          <p className="text-white/92 text-[13px] leading-[1.45] mb-2 drop-shadow-lg line-clamp-3">{video.caption}</p>
         )}
 
         {video.tags && video.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {video.tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="text-white/60 text-[11px] font-medium">#{tag}</span>
+              <span key={tag} className="text-white/65 text-[11px] font-medium">#{tag}</span>
             ))}
           </div>
         )}
       </div>
 
-      <motion.div
-        className="absolute bottom-24 left-1/2 -translate-x-1/2 pointer-events-none"
-        initial={{ opacity: 0.8, y: 0 }}
-        animate={{ opacity: 0, y: -10 }}
-        transition={{ delay: 2.4, duration: 1.4 }}
-      >
-        <div className="flex flex-col items-center gap-1">
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 1.1, repeat: 2 }}
-            className="w-1 h-6 rounded-full bg-white/35"
-          />
-          <span className="text-white/45 text-[10px] font-medium">Swipe up</span>
-        </div>
-      </motion.div>
-
       <AnimatePresence>
         {shareStatus && (
           <motion.div
-            className="absolute top-[max(5rem,calc(2.75rem+env(safe-area-inset-top)))] left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-black/60 border border-white/15 text-xs text-white/90 backdrop-blur-md"
+            className="absolute left-1/2 -translate-x-1/2 top-[max(5rem,calc(2.7rem+env(safe-area-inset-top)))] px-3 py-1.5 rounded-full bg-black/65 border border-white/15 text-white/90 text-xs font-medium backdrop-blur-md"
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
