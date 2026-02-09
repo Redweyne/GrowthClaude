@@ -13,6 +13,8 @@ interface SparkFeedProps {
   onExit: () => void;
 }
 
+const SNAP_SWITCH_THRESHOLD = 0.62;
+
 export function SparkFeed({ onExit }: SparkFeedProps) {
   const {
     watchedVideos,
@@ -99,9 +101,23 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       const cardHeight = resolveCardHeight();
       if (cardHeight <= 0) return;
 
-      const rawIndex = Math.round(feed.scrollTop / cardHeight);
-      const boundedIndex = Math.max(0, Math.min(rawIndex, playlist.length - 1));
-      setActiveIndex((previous) => (previous === boundedIndex ? previous : boundedIndex));
+      const maxIndex = playlist.length - 1;
+      const scrollRatio = feed.scrollTop / cardHeight;
+
+      setActiveIndex((previous) => {
+        let next = previous;
+
+        if (Math.abs(scrollRatio - previous) > 1.2) {
+          next = Math.round(scrollRatio);
+        } else if (scrollRatio >= previous + SNAP_SWITCH_THRESHOLD) {
+          next = previous + 1;
+        } else if (scrollRatio <= previous - SNAP_SWITCH_THRESHOLD) {
+          next = previous - 1;
+        }
+
+        const bounded = Math.max(0, Math.min(next, maxIndex));
+        return bounded === previous ? previous : bounded;
+      });
     };
 
     const handleScroll = () => {

@@ -20,7 +20,6 @@ interface SparkVideoPlayerProps {
 }
 
 const TAP_MAX_MOVE_PX = 10;
-const MAX_RECOVERY_ATTEMPTS = 2;
 
 export function SparkVideoPlayer({
   youtubeId,
@@ -37,7 +36,6 @@ export function SparkVideoPlayer({
   const indicatorTimerRef = useRef<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const readyRef = useRef(false);
-  const recoveryAttemptRef = useRef(0);
 
   const [status, setStatus] = useState<PlayerStatus>('loading');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,9 +44,6 @@ export function SparkVideoPlayer({
   useEffect(() => {
     activeRef.current = isActive;
     soundRef.current = soundEnabled;
-    if (!isActive) {
-      recoveryAttemptRef.current = 0;
-    }
   }, [isActive, soundEnabled]);
 
   const clearAutoplayRetry = useCallback(() => {
@@ -125,7 +120,6 @@ export function SparkVideoPlayer({
         // no-op
       }
       setIsPlaying(false);
-      recoveryAttemptRef.current = 0;
       clearAutoplayRetry();
       return;
     }
@@ -140,39 +134,11 @@ export function SparkVideoPlayer({
       if (!activeRef.current || userPausedRef.current || !apiRef.current || !playerRef.current) return;
       const state = playerRef.current.getPlayerState();
       const isRunning = state === apiRef.current.PlayerState.PLAYING || state === apiRef.current.PlayerState.BUFFERING;
-      if (isRunning) {
-        recoveryAttemptRef.current = 0;
-        return;
+      if (!isRunning) {
+        attemptPlay();
       }
-      if (recoveryAttemptRef.current >= MAX_RECOVERY_ATTEMPTS) {
-        return;
-      }
-      recoveryAttemptRef.current += 1;
-      attemptPlay();
     }, 520);
   }, [attemptPlay, clearAutoplayRetry]);
-
-  const queuePlaybackRecovery = useCallback(() => {
-    if (!activeRef.current || userPausedRef.current) return;
-    if (recoveryAttemptRef.current >= MAX_RECOVERY_ATTEMPTS) return;
-    if (autoplayRetryRef.current !== null) return;
-
-    autoplayRetryRef.current = window.setTimeout(() => {
-      autoplayRetryRef.current = null;
-      if (!activeRef.current || userPausedRef.current || !apiRef.current || !playerRef.current) return;
-
-      const state = playerRef.current.getPlayerState();
-      const isRunning = state === apiRef.current.PlayerState.PLAYING || state === apiRef.current.PlayerState.BUFFERING;
-
-      if (isRunning) {
-        recoveryAttemptRef.current = 0;
-        return;
-      }
-
-      recoveryAttemptRef.current += 1;
-      syncPlayback(false);
-    }, 360);
-  }, [syncPlayback]);
 
   useEffect(() => {
     if (!hostRef.current || playerRef.current) {
@@ -224,7 +190,6 @@ export function SparkVideoPlayer({
               if (event.data === api.PlayerState.PLAYING) {
                 setStatus('ready');
                 setIsPlaying(true);
-                recoveryAttemptRef.current = 0;
                 clearAutoplayRetry();
                 return;
               }
@@ -238,34 +203,26 @@ export function SparkVideoPlayer({
               if (event.data === api.PlayerState.ENDED) {
                 setIsPlaying(false);
                 if (!activeRef.current || !player) return;
-                recoveryAttemptRef.current = 0;
                 try {
                   player.seekTo(0, true);
                 } catch {
                   // no-op
                 }
-                queuePlaybackRecovery();
+                syncPlayback(false);
                 return;
               }
 
               if (event.data === api.PlayerState.PAUSED) {
                 setIsPlaying(false);
-                if (activeRef.current && !userPausedRef.current) {
-                  queuePlaybackRecovery();
-                }
                 return;
               }
 
               if (event.data === api.PlayerState.CUED || event.data === api.PlayerState.UNSTARTED) {
                 setIsPlaying(false);
-                if (activeRef.current && !userPausedRef.current) {
-                  queuePlaybackRecovery();
-                }
               }
             },
             onError: () => {
               if (isDisposed) return;
-              recoveryAttemptRef.current = 0;
               clearAutoplayRetry();
               setStatus('error');
               setIsPlaying(false);
@@ -275,7 +232,6 @@ export function SparkVideoPlayer({
       })
       .catch(() => {
         if (isDisposed) return;
-        recoveryAttemptRef.current = 0;
         clearAutoplayRetry();
         setStatus('error');
         setIsPlaying(false);
@@ -286,7 +242,6 @@ export function SparkVideoPlayer({
       clearAutoplayRetry();
       clearIndicatorTimer();
       readyRef.current = false;
-      recoveryAttemptRef.current = 0;
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -295,7 +250,7 @@ export function SparkVideoPlayer({
       setStatus('loading');
       setIsPlaying(false);
     };
-  }, [clearAutoplayRetry, clearIndicatorTimer, queuePlaybackRecovery, syncPlayback, youtubeId]);
+  }, [clearAutoplayRetry, clearIndicatorTimer, syncPlayback, youtubeId]);
 
   useEffect(() => {
     if (!isActive) {
@@ -321,7 +276,6 @@ export function SparkVideoPlayer({
     try {
       if (isPlaying) {
         userPausedRef.current = true;
-        recoveryAttemptRef.current = 0;
         player.pauseVideo();
         setIsPlaying(false);
         setTransientIndicator('pause');
@@ -330,7 +284,6 @@ export function SparkVideoPlayer({
       }
 
       userPausedRef.current = false;
-      recoveryAttemptRef.current = 0;
       setTransientIndicator('play');
       syncPlayback(true);
     } catch {
