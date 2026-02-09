@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Compass, Zap, MessageCircleHeart, User } from 'lucide-react';
 import { useSparkStore } from '@/store/useSparkStore';
@@ -31,45 +30,11 @@ export function BottomNavBar({
   const { isForcedClosedToday } = useSparkStore();
   const sparkForcedClosed = isForcedClosedToday();
 
-  const [bottomOffset, setBottomOffset] = useState(0);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    let raf = 0;
-
-    const updateOffset = () => {
-      cancelAnimationFrame(raf);
-
-      raf = window.requestAnimationFrame(() => {
-        const viewportBottom = viewport.height + viewport.offsetTop;
-        const offset = Math.max(0, window.innerHeight - viewportBottom);
-        setBottomOffset(offset);
-      });
-    };
-
-    updateOffset();
-
-    viewport.addEventListener('resize', updateOffset);
-    viewport.addEventListener('scroll', updateOffset);
-    window.addEventListener('orientationchange', updateOffset);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      viewport.removeEventListener('resize', updateOffset);
-      viewport.removeEventListener('scroll', updateOffset);
-      window.removeEventListener('orientationchange', updateOffset);
-    };
-  }, []);
-
   return (
     <nav
       className="fixed left-0 right-0 z-40"
       style={{
-        bottom: `${bottomOffset}px`,
+        bottom: 0,
         paddingBottom: 'max(env(safe-area-inset-bottom), 6px)',
         transform: 'translateZ(0)',
       }}

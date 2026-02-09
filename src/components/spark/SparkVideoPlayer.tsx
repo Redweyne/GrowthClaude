@@ -9,21 +9,21 @@ import {
   loadYouTubeApi,
 } from './youtubeApi';
 
-type PlayerStatus = 'idle' | 'ready' | 'error';
+type PlayerStatus = 'loading' | 'ready' | 'error';
 
 type PlayIndicator = 'play' | 'pause' | null;
 
 interface SparkVideoPlayerProps {
   youtubeId: string;
   isActive: boolean;
-  shouldMount: boolean;
   soundEnabled: boolean;
 }
+
+const TAP_MAX_MOVE_PX = 10;
 
 export function SparkVideoPlayer({
   youtubeId,
   isActive,
-  shouldMount,
   soundEnabled,
 }: SparkVideoPlayerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -32,10 +32,12 @@ export function SparkVideoPlayer({
   const activeRef = useRef(isActive);
   const soundRef = useRef(soundEnabled);
   const userPausedRef = useRef(false);
-  const replayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoplayRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const indicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const readyRef = useRef(false);
 
-  const [status, setStatus] = useState<PlayerStatus>('idle');
+  const [status, setStatus] = useState<PlayerStatus>('loading');
   const [isPlaying, setIsPlaying] = useState(false);
   const [playIndicator, setPlayIndicator] = useState<PlayIndicator>(null);
 
@@ -44,10 +46,10 @@ export function SparkVideoPlayer({
     soundRef.current = soundEnabled;
   }, [isActive, soundEnabled]);
 
-  const clearReplayTimer = useCallback(() => {
-    if (!replayTimerRef.current) return;
-    clearTimeout(replayTimerRef.current);
-    replayTimerRef.current = null;
+  const clearAutoplayRetry = useCallback(() => {
+    if (!autoplayRetryRef.current) return;
+    clearTimeout(autoplayRetryRef.current);
+    autoplayRetryRef.current = null;
   }, []);
 
   const clearIndicatorTimer = useCallback(() => {
@@ -64,64 +66,81 @@ export function SparkVideoPlayer({
     }, 580);
   }, [clearIndicatorTimer]);
 
+  const applySoundState = useCallback(() => {
+    const player = playerRef.current;
+    if (!player || !readyRef.current) return;
+
+    try {
+      if (!soundRef.current) {
+        player.mute();
+        return;
+      }
+      player.unMute();
+    } catch {
+      try {
+        player.mute();
+      } catch {
+        // no-op
+      }
+    }
+  }, []);
+
+  const attemptPlay = useCallback(() => {
+    const player = playerRef.current;
+    if (!player || !readyRef.current) return;
+
+    try {
+      player.mute();
+      player.playVideo();
+    } catch {
+      return;
+    }
+
+    if (!soundRef.current) return;
+
+    window.setTimeout(() => {
+      if (!activeRef.current || userPausedRef.current) return;
+      applySoundState();
+    }, 140);
+  }, [applySoundState]);
+
   const syncPlayback = useCallback((allowAutoRetry: boolean) => {
     const player = playerRef.current;
     const api = apiRef.current;
 
-    if (!player || !api || status !== 'ready') {
-      return;
-    }
+    if (!player || !api || !readyRef.current) return;
 
     const shouldPlay = activeRef.current && !userPausedRef.current;
 
-    try {
-      if (!shouldPlay) {
+    if (!shouldPlay) {
+      try {
         player.mute();
         player.pauseVideo();
-        clearReplayTimer();
-        return;
+      } catch {
+        // no-op
       }
-
-      player.mute();
-      player.playVideo();
-
-      if (soundRef.current) {
-        setTimeout(() => {
-          if (!activeRef.current) return;
-          try {
-            player.unMute();
-          } catch {
-            // no-op
-          }
-        }, 120);
-      }
-
-      if (allowAutoRetry) {
-        clearReplayTimer();
-        replayTimerRef.current = setTimeout(() => {
-          if (!activeRef.current || userPausedRef.current) return;
-          const currentState = player.getPlayerState();
-          const isPlayingNow = currentState === api.PlayerState.PLAYING || currentState === api.PlayerState.BUFFERING;
-          if (!isPlayingNow) {
-            try {
-              player.mute();
-              player.playVideo();
-              if (soundRef.current) {
-                player.unMute();
-              }
-            } catch {
-              // no-op: external player retries on next active sync
-            }
-          }
-        }, 700);
-      }
-    } catch {
-      // no-op: external player retries on next active sync
+      setIsPlaying(false);
+      clearAutoplayRetry();
+      return;
     }
-  }, [clearReplayTimer, status]);
+
+    attemptPlay();
+
+    if (!allowAutoRetry) return;
+
+    clearAutoplayRetry();
+    autoplayRetryRef.current = window.setTimeout(() => {
+      if (!activeRef.current || userPausedRef.current || !apiRef.current || !playerRef.current) return;
+      const state = playerRef.current.getPlayerState();
+      const isRunning = state === apiRef.current.PlayerState.PLAYING || state === apiRef.current.PlayerState.BUFFERING;
+      if (!isRunning) {
+        attemptPlay();
+      }
+    }, 520);
+  }, [attemptPlay, clearAutoplayRetry]);
 
   useEffect(() => {
-    if (!shouldMount || !hostRef.current || playerRef.current) {
+    if (!hostRef.current || playerRef.current) {
       return;
     }
 
@@ -133,17 +152,19 @@ export function SparkVideoPlayer({
 
         apiRef.current = ytApi;
         userPausedRef.current = false;
+        setIsPlaying(false);
 
         playerRef.current = new ytApi.Player(hostRef.current, {
           width: '100%',
           height: '100%',
           videoId: youtubeId,
           playerVars: {
-            autoplay: 0,
+            autoplay: 1,
             controls: 0,
             disablekb: 1,
             fs: 0,
             iv_load_policy: 3,
+            cc_load_policy: 0,
             loop: 1,
             modestbranding: 1,
             playsinline: 1,
@@ -155,13 +176,55 @@ export function SparkVideoPlayer({
           events: {
             onReady: () => {
               if (isDisposed) return;
-              setStatus('ready');
+              readyRef.current = true;
+              setStatus(activeRef.current ? 'loading' : 'ready');
               syncPlayback(true);
             },
             onStateChange: (event) => {
               if (isDisposed || !apiRef.current) return;
-              const isNowPlaying = event.data === apiRef.current.PlayerState.PLAYING;
-              setIsPlaying(isNowPlaying);
+
+              const player = playerRef.current;
+              const api = apiRef.current;
+
+              if (event.data === api.PlayerState.PLAYING) {
+                setStatus('ready');
+                setIsPlaying(true);
+                clearAutoplayRetry();
+                return;
+              }
+
+              if (event.data === api.PlayerState.BUFFERING) {
+                setStatus('ready');
+                setIsPlaying(true);
+                return;
+              }
+
+              if (event.data === api.PlayerState.ENDED) {
+                setIsPlaying(false);
+                if (!activeRef.current || !player) return;
+                try {
+                  player.seekTo(0, true);
+                } catch {
+                  // no-op
+                }
+                syncPlayback(true);
+                return;
+              }
+
+              if (event.data === api.PlayerState.PAUSED) {
+                setIsPlaying(false);
+                if (activeRef.current && !userPausedRef.current) {
+                  syncPlayback(true);
+                }
+                return;
+              }
+
+              if (event.data === api.PlayerState.CUED || event.data === api.PlayerState.UNSTARTED) {
+                setIsPlaying(false);
+                if (activeRef.current && !userPausedRef.current) {
+                  syncPlayback(true);
+                }
+              }
             },
             onError: () => {
               if (isDisposed) return;
@@ -174,60 +237,65 @@ export function SparkVideoPlayer({
       .catch(() => {
         if (isDisposed) return;
         setStatus('error');
+        setIsPlaying(false);
       });
 
     return () => {
       isDisposed = true;
-      clearReplayTimer();
+      clearAutoplayRetry();
       clearIndicatorTimer();
+      readyRef.current = false;
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
-      setStatus('idle');
+      apiRef.current = null;
+      setStatus('loading');
       setIsPlaying(false);
     };
-  }, [clearIndicatorTimer, clearReplayTimer, shouldMount, syncPlayback, youtubeId]);
+  }, [clearAutoplayRetry, clearIndicatorTimer, syncPlayback, youtubeId]);
 
   useEffect(() => {
     if (!isActive) {
       userPausedRef.current = false;
     }
-    syncPlayback(true);
+
+    if (!readyRef.current) return;
+
+    const syncTimer = window.setTimeout(() => {
+      syncPlayback(true);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(syncTimer);
+    };
   }, [isActive, soundEnabled, syncPlayback]);
 
   const handleTogglePlayback = useCallback(() => {
-    if (!isActive || status !== 'ready' || !playerRef.current) return;
+    if (!isActive || !readyRef.current || !playerRef.current) return;
 
     const player = playerRef.current;
-    const shouldPause = isPlaying;
 
     try {
-      if (shouldPause) {
+      if (isPlaying) {
         userPausedRef.current = true;
         player.pauseVideo();
         setIsPlaying(false);
         setTransientIndicator('pause');
+        clearAutoplayRetry();
         return;
       }
 
       userPausedRef.current = false;
-      if (soundEnabled) {
-        player.unMute();
-      } else {
-        player.mute();
-      }
-      player.playVideo();
-      setIsPlaying(true);
       setTransientIndicator('play');
       syncPlayback(true);
     } catch {
       setStatus('error');
       setIsPlaying(false);
     }
-  }, [isActive, isPlaying, setTransientIndicator, soundEnabled, status, syncPlayback]);
+  }, [clearAutoplayRetry, isActive, isPlaying, setTransientIndicator, syncPlayback]);
 
-  const loading = shouldMount && status !== 'ready' && status !== 'error';
+  const loading = isActive && status === 'loading';
   const showSoundBadge = isActive && status === 'ready' && soundEnabled;
 
   const icon = useMemo(() => {
@@ -248,22 +316,49 @@ export function SparkVideoPlayer({
 
   return (
     <div className="relative w-full h-full bg-black overflow-hidden" data-testid="spark-video-player">
-      {shouldMount && (
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            ref={hostRef}
-            className="absolute inset-0"
-            data-testid="spark-video-host"
-            style={{
-              width: '120%',
-              height: '120%',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%) scale(1.05)',
-            }}
-          />
-        </div>
-      )}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          ref={hostRef}
+          className="absolute inset-0"
+          data-testid="spark-video-host"
+          style={{
+            width: '120%',
+            height: '120%',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) scale(1.05)',
+            backgroundColor: 'black',
+          }}
+        />
+      </div>
+
+      <div
+        className="absolute inset-0 z-30"
+        role="button"
+        tabIndex={0}
+        aria-label={isPlaying ? 'Pause video' : 'Play video'}
+        style={{ touchAction: 'pan-y' }}
+        onPointerDown={(event) => {
+          pointerStartRef.current = { x: event.clientX, y: event.clientY };
+        }}
+        onPointerCancel={() => {
+          pointerStartRef.current = null;
+        }}
+        onPointerUp={(event) => {
+          const start = pointerStartRef.current;
+          pointerStartRef.current = null;
+          if (!start) return;
+          const movedX = Math.abs(event.clientX - start.x);
+          const movedY = Math.abs(event.clientY - start.y);
+          if (movedX > TAP_MAX_MOVE_PX || movedY > TAP_MAX_MOVE_PX) return;
+          handleTogglePlayback();
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          handleTogglePlayback();
+        }}
+      />
 
       <AnimatePresence>
         {loading && (
@@ -283,13 +378,6 @@ export function SparkVideoPlayer({
           </motion.div>
         )}
       </AnimatePresence>
-
-      <button
-        type="button"
-        className="absolute inset-0 z-30"
-        onClick={handleTogglePlayback}
-        aria-label={isPlaying ? 'Pause video' : 'Play video'}
-      />
 
       <AnimatePresence>
         {icon && (

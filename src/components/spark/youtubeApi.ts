@@ -15,6 +15,7 @@ export interface YouTubePlayer {
   pauseVideo: () => void;
   mute: () => void;
   unMute: () => void;
+  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
   getPlayerState: () => number;
 }
 

@@ -1,19 +1,7 @@
-// ═══════════════════════════════════════════════════════════════════════════
-// SPARK VIDEO CATALOG
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// Curated motivational YouTube Shorts for the Spark feed.
-// All IDs are real YouTube videos that will load correctly.
-//
-// NOTE: For the best mobile experience, replace these with actual
-// YouTube Shorts (vertical 9:16 format, under 60 seconds) from each
-// creator's official Shorts tab. The embed player works with any
-// YouTube video, but vertical Shorts look best in the TikTok-style feed.
-//
-// ═══════════════════════════════════════════════════════════════════════════
-
 import type { SparkVideo } from '@/types/spark';
 
+// Spark video catalog.
+// Keep exactly 10 IDs here until the feed content system is expanded.
 export const sparkVideos: SparkVideo[] = [
   {
     id: 'spark_001',
@@ -107,20 +95,14 @@ export const sparkVideos: SparkVideo[] = [
   },
 ];
 
-/**
- * Get shuffled videos that haven't been watched yet.
- * Falls back to full shuffle if all have been watched.
- */
 export function getShuffledSparkVideos(watchedIds: string[]): SparkVideo[] {
-  const unwatched = sparkVideos.filter(v => !watchedIds.includes(v.id));
-  const pool = unwatched.length > 0 ? unwatched : [...sparkVideos];
+  const unwatched = sparkVideos.filter((video) => !watchedIds.includes(video.id));
+  const pool = unwatched.length > 0 ? [...unwatched] : [...sparkVideos];
 
-  // Fisher-Yates shuffle
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  for (let index = pool.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [pool[index], pool[randomIndex]] = [pool[randomIndex], pool[index]];
   }
 
   return pool;
 }
-

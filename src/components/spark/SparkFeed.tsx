@@ -13,8 +13,6 @@ interface SparkFeedProps {
   onExit: () => void;
 }
 
-const ACTIVE_VIDEO_THRESHOLD = 0.72;
-
 export function SparkFeed({ onExit }: SparkFeedProps) {
   const {
     watchedVideos,
@@ -41,11 +39,11 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const feedRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<Array<HTMLElement | null>>([]);
   const watchedInSessionRef = useRef<Set<string>>(new Set());
+  const scrollRafRef = useRef<number | null>(null);
 
   const activeVideo = playlist[activeIndex];
 
@@ -59,17 +57,25 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     addXp(xp);
   }, [addXp, markVideoWatched]);
 
+  const resolveCardHeight = useCallback(() => {
+    const feed = feedRef.current;
+    if (!feed) return 0;
+    return feed.clientHeight || window.innerHeight || 0;
+  }, []);
+
   const scrollToIndex = useCallback((index: number) => {
+    const feed = feedRef.current;
+    if (!feed) return;
+
+    const cardHeight = resolveCardHeight();
+    if (cardHeight <= 0) return;
+
     const bounded = Math.max(0, Math.min(index, playlist.length - 1));
-    const target = cardRefs.current[bounded];
-
-    if (!target) return;
-
-    target.scrollIntoView({
+    feed.scrollTo({
+      top: bounded * cardHeight,
       behavior: 'smooth',
-      block: 'start',
     });
-  }, [playlist.length]);
+  }, [playlist.length, resolveCardHeight]);
 
   useEffect(() => {
     startSession();
@@ -86,53 +92,36 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, []);
 
   useEffect(() => {
-    if (!feedRef.current || playlist.length === 0) {
-      return;
-    }
+    const feed = feedRef.current;
+    if (!feed) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let candidateIndex: number | null = null;
-        let candidateRatio = 0;
+    const updateActiveIndex = () => {
+      const cardHeight = resolveCardHeight();
+      if (cardHeight <= 0) return;
 
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          if (entry.intersectionRatio < ACTIVE_VIDEO_THRESHOLD) continue;
-
-          const indexValue = Number((entry.target as HTMLElement).dataset.index);
-          if (Number.isNaN(indexValue)) continue;
-
-          if (entry.intersectionRatio > candidateRatio) {
-            candidateRatio = entry.intersectionRatio;
-            candidateIndex = indexValue;
-          }
-        }
-
-        if (candidateIndex === null) {
-          return;
-        }
-
-        setActiveIndex((previous) => {
-          if (previous === candidateIndex) return previous;
-          return candidateIndex;
-        });
-      },
-      {
-        root: feedRef.current,
-        threshold: [0.55, 0.72, 0.9],
-      }
-    );
-
-    for (const card of cardRefs.current) {
-      if (card) {
-        observer.observe(card);
-      }
-    }
-
-    return () => {
-      observer.disconnect();
+      const rawIndex = Math.round(feed.scrollTop / cardHeight);
+      const boundedIndex = Math.max(0, Math.min(rawIndex, playlist.length - 1));
+      setActiveIndex((previous) => (previous === boundedIndex ? previous : boundedIndex));
     };
-  }, [playlist.length]);
+
+    const handleScroll = () => {
+      if (scrollRafRef.current !== null) {
+        cancelAnimationFrame(scrollRafRef.current);
+      }
+      scrollRafRef.current = requestAnimationFrame(updateActiveIndex);
+    };
+
+    handleScroll();
+
+    feed.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      feed.removeEventListener('scroll', handleScroll);
+      if (scrollRafRef.current !== null) {
+        cancelAnimationFrame(scrollRafRef.current);
+        scrollRafRef.current = null;
+      }
+    };
+  }, [playlist.length, resolveCardHeight]);
 
   useEffect(() => {
     if (!activeVideo) return;
@@ -151,6 +140,13 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       onExit();
     }
   }, [isForcedClosedToday, onExit]);
+
+  useEffect(() => {
+    const feed = feedRef.current;
+    if (!feed) return;
+    feed.scrollTop = 0;
+    setActiveIndex(0);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -211,37 +207,37 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
         ref={feedRef}
         className="absolute inset-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{
-          height: '100dvh',
+          height: '100svh',
           scrollSnapType: 'y mandatory',
-          overscrollBehaviorY: 'contain',
+          overscrollBehaviorY: 'none',
           touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {playlist.map((video, index) => {
           const isActive = index === activeIndex;
-          const shouldMount = Math.abs(index - activeIndex) <= 1;
+          const shouldRenderPlayer = Math.abs(index - activeIndex) <= 1;
 
           return (
             <section
               key={video.id}
-              ref={(element) => {
-                cardRefs.current[index] = element;
-              }}
-              data-index={index}
               data-testid={`spark-card-${index}`}
-              className="relative h-[100dvh]"
+              className="relative h-[100svh]"
               style={{
                 scrollSnapAlign: 'start',
                 scrollSnapStop: 'always',
               }}
             >
               <div className="relative w-full h-full max-w-[430px] mx-auto">
-                <SparkVideoPlayer
-                  youtubeId={video.youtubeId}
-                  isActive={isActive}
-                  shouldMount={shouldMount}
-                  soundEnabled={soundEnabled}
-                />
+                {shouldRenderPlayer ? (
+                  <SparkVideoPlayer
+                    youtubeId={video.youtubeId}
+                    isActive={isActive}
+                    soundEnabled={soundEnabled}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-black" />
+                )}
 
                 {isActive && (
                   <SparkOverlay
