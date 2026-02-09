@@ -257,7 +257,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       >
         {playlist.map((video, index) => {
           const isActive = index === activeIndex;
-          const shouldRenderPlayer = isActive;
+          const shouldRenderPlayer = Math.abs(index - activeIndex) <= 1;
 
           return (
             <section
