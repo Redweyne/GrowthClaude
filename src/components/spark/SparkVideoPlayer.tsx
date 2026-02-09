@@ -32,8 +32,8 @@ export function SparkVideoPlayer({
   const activeRef = useRef(isActive);
   const soundRef = useRef(soundEnabled);
   const userPausedRef = useRef(false);
-  const autoplayRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const indicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoplayRetryRef = useRef<number | null>(null);
+  const indicatorTimerRef = useRef<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const readyRef = useRef(false);
 
@@ -48,20 +48,20 @@ export function SparkVideoPlayer({
 
   const clearAutoplayRetry = useCallback(() => {
     if (!autoplayRetryRef.current) return;
-    clearTimeout(autoplayRetryRef.current);
+    window.clearTimeout(autoplayRetryRef.current);
     autoplayRetryRef.current = null;
   }, []);
 
   const clearIndicatorTimer = useCallback(() => {
     if (!indicatorTimerRef.current) return;
-    clearTimeout(indicatorTimerRef.current);
+    window.clearTimeout(indicatorTimerRef.current);
     indicatorTimerRef.current = null;
   }, []);
 
   const setTransientIndicator = useCallback((indicator: PlayIndicator) => {
     setPlayIndicator(indicator);
     clearIndicatorTimer();
-    indicatorTimerRef.current = setTimeout(() => {
+    indicatorTimerRef.current = window.setTimeout(() => {
       setPlayIndicator(null);
     }, 580);
   }, [clearIndicatorTimer]);
