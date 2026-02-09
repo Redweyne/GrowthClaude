@@ -82,7 +82,7 @@ export function SparkVideoPlayer({
     if (!player || !readyRef.current) return;
 
     try {
-      if (!soundRef.current || !allowAutoplaySoundRef.current) {
+      if (!activeRef.current || !soundRef.current || !allowAutoplaySoundRef.current) {
         player.mute();
         return;
       }
@@ -264,38 +264,29 @@ export function SparkVideoPlayer({
 
     if (!readyRef.current) return;
 
-    let activationAttempts = 0;
-    let activationRetryTimer: number | null = null;
-
-    const ensureActivePlayback = () => {
-      if (!activeRef.current || userPausedRef.current || !apiRef.current || !playerRef.current || !readyRef.current) {
-        return;
-      }
-
-      const state = playerRef.current.getPlayerState();
-      const isRunning = state === apiRef.current.PlayerState.PLAYING || state === apiRef.current.PlayerState.BUFFERING;
-
-      if (isRunning || activationAttempts >= 3) {
-        return;
-      }
-
-      activationAttempts += 1;
-      syncPlayback(false);
-      activationRetryTimer = window.setTimeout(ensureActivePlayback, 320);
-    };
-
+    let settleRetryTimer: number | null = null;
     const syncTimer = window.setTimeout(() => {
       syncPlayback(true);
 
       if (activeRef.current && !userPausedRef.current) {
-        activationRetryTimer = window.setTimeout(ensureActivePlayback, 280);
+        settleRetryTimer = window.setTimeout(() => {
+          if (!activeRef.current || userPausedRef.current || !apiRef.current || !playerRef.current) {
+            return;
+          }
+
+          const state = playerRef.current.getPlayerState();
+          const isRunning = state === apiRef.current.PlayerState.PLAYING || state === apiRef.current.PlayerState.BUFFERING;
+          if (!isRunning) {
+            syncPlayback(false);
+          }
+        }, 420);
       }
     }, 0);
 
     return () => {
       window.clearTimeout(syncTimer);
-      if (activationRetryTimer !== null) {
-        window.clearTimeout(activationRetryTimer);
+      if (settleRetryTimer !== null) {
+        window.clearTimeout(settleRetryTimer);
       }
     };
   }, [isActive, syncPlayback]);
