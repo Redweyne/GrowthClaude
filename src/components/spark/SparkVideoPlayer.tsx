@@ -47,6 +47,8 @@ export function SparkVideoPlayer({
   const soundAppliedForActiveRef = useRef(false);
   const activationIdRef = useRef(0);
   const hasPlayedForActivationRef = useRef(false);
+  const prePlayRecoveryCountRef = useRef(0);
+  const lastPrePlayRecoveryAtRef = useRef(0);
   const lastAutoUnmuteAtRef = useRef(0);
   const autoplaySoundBlockedNotifiedRef = useRef(false);
   const previousIsActiveRef = useRef(isActive);
@@ -157,6 +159,8 @@ export function SparkVideoPlayer({
     const player = playerRef.current;
     activationIdRef.current += 1;
     hasPlayedForActivationRef.current = false;
+    prePlayRecoveryCountRef.current = 0;
+    lastPrePlayRecoveryAtRef.current = 0;
     clearPlayRetryTimer();
     clearDeferredSoundTimer();
     soundAppliedForActiveRef.current = false;
@@ -175,11 +179,45 @@ export function SparkVideoPlayer({
   const activateForPlayback = useCallback(() => {
     activationIdRef.current += 1;
     hasPlayedForActivationRef.current = false;
+    prePlayRecoveryCountRef.current = 0;
+    lastPrePlayRecoveryAtRef.current = 0;
     soundAppliedForActiveRef.current = false;
     autoplaySoundBlockedNotifiedRef.current = false;
     lastAutoUnmuteAtRef.current = 0;
     ensurePlaying(2, activationIdRef.current);
   }, [ensurePlaying]);
+
+  const recoverBeforeFirstPlay = useCallback(() => {
+    if (!activeRef.current || userPausedRef.current || hasPlayedForActivationRef.current) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastPrePlayRecoveryAtRef.current < PLAY_RETRY_DELAY_MS) {
+      return;
+    }
+    lastPrePlayRecoveryAtRef.current = now;
+
+    prePlayRecoveryCountRef.current += 1;
+
+    if (prePlayRecoveryCountRef.current > 3 && soundRef.current) {
+      soundRef.current = false;
+      soundAppliedForActiveRef.current = false;
+      lastAutoUnmuteAtRef.current = 0;
+      syncSound();
+
+      if (!autoplaySoundBlockedNotifiedRef.current) {
+        autoplaySoundBlockedNotifiedRef.current = true;
+        onAutoplaySoundBlockedRef.current?.();
+      }
+    }
+
+    if (prePlayRecoveryCountRef.current > 6) {
+      return;
+    }
+
+    ensurePlaying(1, activationIdRef.current);
+  }, [ensurePlaying, syncSound]);
 
   useEffect(() => {
     activeRef.current = isActive;
@@ -253,6 +291,8 @@ export function SparkVideoPlayer({
                 setStatus('ready');
                 setIsPlaying(true);
                 hasPlayedForActivationRef.current = true;
+                prePlayRecoveryCountRef.current = 0;
+                lastPrePlayRecoveryAtRef.current = 0;
                 clearPlayRetryTimer();
 
                 if (activeRef.current && soundRef.current && allowAutoplaySoundRef.current && !userPausedRef.current) {
@@ -312,17 +352,13 @@ export function SparkVideoPlayer({
                   }
                 }
 
-                if (activeRef.current && !userPausedRef.current && !hasPlayedForActivationRef.current) {
-                  ensurePlaying(1, activationIdRef.current);
-                }
+                recoverBeforeFirstPlay();
                 return;
               }
 
               if (event.data === api.PlayerState.CUED || event.data === api.PlayerState.UNSTARTED) {
                 setIsPlaying(false);
-                if (activeRef.current && !userPausedRef.current && !hasPlayedForActivationRef.current) {
-                  ensurePlaying(1, activationIdRef.current);
-                }
+                recoverBeforeFirstPlay();
               }
             },
             onError: () => {
@@ -330,6 +366,8 @@ export function SparkVideoPlayer({
               clearPlayRetryTimer();
               clearDeferredSoundTimer();
               hasPlayedForActivationRef.current = false;
+              prePlayRecoveryCountRef.current = 0;
+              lastPrePlayRecoveryAtRef.current = 0;
               setStatus('error');
               setIsPlaying(false);
             },
@@ -341,6 +379,8 @@ export function SparkVideoPlayer({
         clearPlayRetryTimer();
         clearDeferredSoundTimer();
         hasPlayedForActivationRef.current = false;
+        prePlayRecoveryCountRef.current = 0;
+        lastPrePlayRecoveryAtRef.current = 0;
         setStatus('error');
         setIsPlaying(false);
       });
@@ -352,6 +392,8 @@ export function SparkVideoPlayer({
       clearIndicatorTimer();
       readyRef.current = false;
       hasPlayedForActivationRef.current = false;
+      prePlayRecoveryCountRef.current = 0;
+      lastPrePlayRecoveryAtRef.current = 0;
       soundAppliedForActiveRef.current = false;
 
       if (playerRef.current) {
@@ -368,6 +410,7 @@ export function SparkVideoPlayer({
     clearPlayRetryTimer,
     ensurePlaying,
     pauseForInactive,
+    recoverBeforeFirstPlay,
     syncSound,
     youtubeId,
   ]);
@@ -434,6 +477,8 @@ export function SparkVideoPlayer({
         userPausedRef.current = true;
         clearPlayRetryTimer();
         clearDeferredSoundTimer();
+        prePlayRecoveryCountRef.current = 0;
+        lastPrePlayRecoveryAtRef.current = 0;
         lastAutoUnmuteAtRef.current = 0;
         player.pauseVideo();
         setIsPlaying(false);
@@ -443,6 +488,8 @@ export function SparkVideoPlayer({
 
       userPausedRef.current = false;
       hasPlayedForActivationRef.current = false;
+      prePlayRecoveryCountRef.current = 0;
+      lastPrePlayRecoveryAtRef.current = 0;
       soundAppliedForActiveRef.current = false;
       lastAutoUnmuteAtRef.current = 0;
       setTransientIndicator('play');
