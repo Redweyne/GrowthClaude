@@ -24,7 +24,6 @@ interface SparkVideoPlayerProps {
 
 const TAP_MAX_MOVE_PX = 10;
 const PLAY_RETRY_DELAY_MS = 320;
-const MAX_AUTOPLAY_RECOVERY = 6;
 const UNMUTE_BLOCK_WINDOW_MS = 900;
 
 export function SparkVideoPlayer({
@@ -47,7 +46,7 @@ export function SparkVideoPlayer({
   const readyRef = useRef(false);
   const soundAppliedForActiveRef = useRef(false);
   const activationIdRef = useRef(0);
-  const recoveryBudgetRef = useRef(MAX_AUTOPLAY_RECOVERY);
+  const hasPlayedForActivationRef = useRef(false);
   const lastAutoUnmuteAtRef = useRef(0);
   const autoplaySoundBlockedNotifiedRef = useRef(false);
   const previousIsActiveRef = useRef(isActive);
@@ -133,11 +132,6 @@ export function SparkVideoPlayer({
         return;
       }
 
-      if (recoveryBudgetRef.current <= 0) {
-        return;
-      }
-      recoveryBudgetRef.current -= 1;
-
       try {
         player.mute();
         player.playVideo();
@@ -162,7 +156,7 @@ export function SparkVideoPlayer({
   const pauseForInactive = useCallback(() => {
     const player = playerRef.current;
     activationIdRef.current += 1;
-    recoveryBudgetRef.current = MAX_AUTOPLAY_RECOVERY;
+    hasPlayedForActivationRef.current = false;
     clearPlayRetryTimer();
     clearDeferredSoundTimer();
     soundAppliedForActiveRef.current = false;
@@ -180,11 +174,11 @@ export function SparkVideoPlayer({
 
   const activateForPlayback = useCallback(() => {
     activationIdRef.current += 1;
-    recoveryBudgetRef.current = MAX_AUTOPLAY_RECOVERY;
+    hasPlayedForActivationRef.current = false;
     soundAppliedForActiveRef.current = false;
     autoplaySoundBlockedNotifiedRef.current = false;
     lastAutoUnmuteAtRef.current = 0;
-    ensurePlaying(3, activationIdRef.current);
+    ensurePlaying(2, activationIdRef.current);
   }, [ensurePlaying]);
 
   useEffect(() => {
@@ -258,6 +252,7 @@ export function SparkVideoPlayer({
               if (event.data === api.PlayerState.PLAYING) {
                 setStatus('ready');
                 setIsPlaying(true);
+                hasPlayedForActivationRef.current = true;
                 clearPlayRetryTimer();
 
                 if (activeRef.current && soundRef.current && allowAutoplaySoundRef.current && !userPausedRef.current) {
@@ -294,7 +289,7 @@ export function SparkVideoPlayer({
                   } catch {
                     // no-op
                   }
-                  ensurePlaying(2, activationIdRef.current);
+                  ensurePlaying(1, activationIdRef.current);
                 }
                 return;
               }
@@ -317,15 +312,15 @@ export function SparkVideoPlayer({
                   }
                 }
 
-                if (activeRef.current && !userPausedRef.current) {
-                  ensurePlaying(2, activationIdRef.current);
+                if (activeRef.current && !userPausedRef.current && !hasPlayedForActivationRef.current) {
+                  ensurePlaying(1, activationIdRef.current);
                 }
                 return;
               }
 
               if (event.data === api.PlayerState.CUED || event.data === api.PlayerState.UNSTARTED) {
                 setIsPlaying(false);
-                if (activeRef.current && !userPausedRef.current) {
+                if (activeRef.current && !userPausedRef.current && !hasPlayedForActivationRef.current) {
                   ensurePlaying(1, activationIdRef.current);
                 }
               }
@@ -334,6 +329,7 @@ export function SparkVideoPlayer({
               if (isDisposed) return;
               clearPlayRetryTimer();
               clearDeferredSoundTimer();
+              hasPlayedForActivationRef.current = false;
               setStatus('error');
               setIsPlaying(false);
             },
@@ -344,6 +340,7 @@ export function SparkVideoPlayer({
         if (isDisposed) return;
         clearPlayRetryTimer();
         clearDeferredSoundTimer();
+        hasPlayedForActivationRef.current = false;
         setStatus('error');
         setIsPlaying(false);
       });
@@ -354,6 +351,7 @@ export function SparkVideoPlayer({
       clearDeferredSoundTimer();
       clearIndicatorTimer();
       readyRef.current = false;
+      hasPlayedForActivationRef.current = false;
       soundAppliedForActiveRef.current = false;
 
       if (playerRef.current) {
@@ -444,11 +442,11 @@ export function SparkVideoPlayer({
       }
 
       userPausedRef.current = false;
+      hasPlayedForActivationRef.current = false;
       soundAppliedForActiveRef.current = false;
-      recoveryBudgetRef.current = MAX_AUTOPLAY_RECOVERY;
       lastAutoUnmuteAtRef.current = 0;
       setTransientIndicator('play');
-      ensurePlaying(3, activationIdRef.current);
+      ensurePlaying(2, activationIdRef.current);
     } catch {
       setStatus('error');
       setIsPlaying(false);
