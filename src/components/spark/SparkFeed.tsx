@@ -13,8 +13,6 @@ interface SparkFeedProps {
   onExit: () => void;
 }
 
-const SNAP_SWITCH_THRESHOLD = 0.62;
-
 export function SparkFeed({ onExit }: SparkFeedProps) {
   const {
     watchedVideos,
@@ -48,6 +46,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const watchedInSessionRef = useRef<Set<string>>(new Set());
   const scrollRafRef = useRef<number | null>(null);
   const scrollIdleTimerRef = useRef<number | null>(null);
+  const pendingIndexRef = useRef(0);
 
   const activeVideo = playlist[activeIndex];
 
@@ -75,6 +74,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     if (cardHeight <= 0) return;
 
     const bounded = Math.max(0, Math.min(index, playlist.length - 1));
+    pendingIndexRef.current = bounded;
+    setActiveIndex(bounded);
     feed.scrollTo({
       top: bounded * cardHeight,
       behavior: 'smooth',
@@ -99,27 +100,19 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     const feed = feedRef.current;
     if (!feed) return;
 
-    const updateActiveIndex = () => {
+    const updatePendingIndex = () => {
       const cardHeight = resolveCardHeight();
       if (cardHeight <= 0) return;
 
-      const maxIndex = playlist.length - 1;
-      const scrollRatio = feed.scrollTop / cardHeight;
+      const rawIndex = Math.round(feed.scrollTop / cardHeight);
+      const bounded = Math.max(0, Math.min(rawIndex, playlist.length - 1));
+      pendingIndexRef.current = bounded;
+    };
 
-      setActiveIndex((previous) => {
-        let next = previous;
-
-        if (Math.abs(scrollRatio - previous) > 1.2) {
-          next = Math.round(scrollRatio);
-        } else if (scrollRatio >= previous + SNAP_SWITCH_THRESHOLD) {
-          next = previous + 1;
-        } else if (scrollRatio <= previous - SNAP_SWITCH_THRESHOLD) {
-          next = previous - 1;
-        }
-
-        const bounded = Math.max(0, Math.min(next, maxIndex));
-        return bounded === previous ? previous : bounded;
-      });
+    const commitPendingIndex = () => {
+      setActiveIndex((previous) => (
+        previous === pendingIndexRef.current ? previous : pendingIndexRef.current
+      ));
     };
 
     const handleScroll = () => {
@@ -129,16 +122,17 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       }
       scrollIdleTimerRef.current = window.setTimeout(() => {
         setIsScrolling(false);
+        commitPendingIndex();
         scrollIdleTimerRef.current = null;
-      }, 140);
+      }, 120);
 
       if (scrollRafRef.current !== null) {
         cancelAnimationFrame(scrollRafRef.current);
       }
-      scrollRafRef.current = requestAnimationFrame(updateActiveIndex);
+      scrollRafRef.current = requestAnimationFrame(updatePendingIndex);
     };
 
-    handleScroll();
+    updatePendingIndex();
 
     feed.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
@@ -151,7 +145,6 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
         window.clearTimeout(scrollIdleTimerRef.current);
         scrollIdleTimerRef.current = null;
       }
-      setIsScrolling(false);
     };
   }, [playlist.length, resolveCardHeight]);
 
@@ -177,6 +170,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     const feed = feedRef.current;
     if (!feed) return;
     feed.scrollTop = 0;
+    pendingIndexRef.current = 0;
     setActiveIndex(0);
   }, []);
 
