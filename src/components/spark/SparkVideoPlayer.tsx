@@ -1,20 +1,14 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, AlertCircle, Loader2 } from 'lucide-react';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SPARK VIDEO PLAYER — TikTok-Style
-// 9:16 vertical YouTube Shorts embed with tap-to-pause
-// ═══════════════════════════════════════════════════════════════════════════
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, Loader2, Pause, Play } from 'lucide-react';
 
 interface SparkVideoPlayerProps {
   youtubeId: string;
   isActive: boolean;
   preload?: boolean;
   soundEnabled: boolean;
-  onEnableSound: () => void;
 }
 
 export function SparkVideoPlayer({
@@ -22,117 +16,147 @@ export function SparkVideoPlayer({
   isActive,
   preload = false,
   soundEnabled,
-  onEnableSound,
 }: SparkVideoPlayerProps) {
+  const shouldRender = isActive || preload;
+
   const [isPlaying, setIsPlaying] = useState(isActive);
-  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [showPlayPause, setShowPlayPause] = useState(false);
-  const [isPlayerReady, setIsPlayerReady] = useState(false);
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playPauseTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const loadTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // YouTube embed URL — optimized for Shorts playback
-  const embedUrl = `https://www.youtube.com/embed/${youtubeId}?` +
-    'autoplay=0' +
-    '&mute=1' +
-    '&modestbranding=1' +
-    '&rel=0' +
-    '&playsinline=1' +
-    '&disablekb=1' +
-    '&loop=1' +
-    `&playlist=${youtubeId}` +
-    '&enablejsapi=1' +
-    '&controls=0' +
-    '&showinfo=0' +
-    '&iv_load_policy=3' +
-    '&origin=' + (typeof window !== 'undefined' ? window.location.origin : '');
+  const embedUrl = useMemo(() => {
+    if (!shouldRender) return '';
 
-  const handleLoad = useCallback(() => {
-    setIsLoading(false);
-    setHasError(false);
-    setIsPlayerReady(true);
-    if (loadTimeout.current) clearTimeout(loadTimeout.current);
+    const params = new URLSearchParams({
+      autoplay: isActive ? '1' : '0',
+      mute: '1',
+      modestbranding: '1',
+      rel: '0',
+      playsinline: '1',
+      disablekb: '1',
+      loop: '1',
+      playlist: youtubeId,
+      enablejsapi: '1',
+      controls: '0',
+      iv_load_policy: '3',
+      origin: typeof window !== 'undefined' ? window.location.origin : '',
+    });
+
+    return `https://www.youtube.com/embed/${youtubeId}?${params.toString()}`;
+  }, [youtubeId, isActive, shouldRender]);
+
+  const clearTimeouts = useCallback(() => {
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+      loadTimeoutRef.current = null;
+    }
+
+    if (playPauseTimeoutRef.current) {
+      clearTimeout(playPauseTimeoutRef.current);
+      playPauseTimeoutRef.current = null;
+    }
   }, []);
 
-  const handleError = useCallback(() => {
-    setIsLoading(false);
-    setHasError(true);
+  const sendCommand = useCallback((command: 'playVideo' | 'pauseVideo' | 'mute' | 'unMute') => {
+    if (!iframeRef.current?.contentWindow) return;
+
+    iframeRef.current.contentWindow.postMessage(
+      JSON.stringify({
+        event: 'command',
+        func: command,
+        args: [],
+      }),
+      '*'
+    );
   }, []);
 
   useEffect(() => {
-    if (isActive || preload) {
-      setIsLoading(true);
-      setHasError(false);
-      setIsPlayerReady(false);
-      loadTimeout.current = setTimeout(() => {
-        setHasError(true);
-        setIsLoading(false);
-      }, 12000);
-    }
-    return () => {
-      if (loadTimeout.current) clearTimeout(loadTimeout.current);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [youtubeId, isActive, preload]);
+    if (!shouldRender) return;
 
-  const sendCommand = useCallback((command: string) => {
-    if (iframeRef.current?.contentWindow) {
-      iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'command', func: command }),
-        '*'
-      );
+    loadTimeoutRef.current = setTimeout(() => {
+      setHasError(true);
+    }, 15000);
+
+    return () => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+        loadTimeoutRef.current = null;
+      }
+    };
+  }, [shouldRender, embedUrl]);
+
+  useEffect(() => {
+    if (!isIframeLoaded) return;
+
+    if (!isActive || !isPlaying) {
+      sendCommand('mute');
+      sendCommand('pauseVideo');
+      return;
     }
+
+    // Always start muted first so autoplay never gets blocked.
+    sendCommand('mute');
+    sendCommand('playVideo');
+
+    if (soundEnabled) {
+      const unmuteTimer = setTimeout(() => {
+        sendCommand('unMute');
+      }, 140);
+
+      return () => clearTimeout(unmuteTimer);
+    }
+  }, [isIframeLoaded, isActive, isPlaying, soundEnabled, sendCommand]);
+
+  const handleLoad = useCallback(() => {
+    setHasError(false);
+    setIsIframeLoaded(true);
+    if (isActive) {
+      setIsPlaying(true);
+    }
+
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+      loadTimeoutRef.current = null;
+    }
+  }, [isActive]);
+
+  const handleError = useCallback(() => {
+    setHasError(true);
   }, []);
 
   const togglePlayPause = useCallback(() => {
+    if (!isActive || !isIframeLoaded) return;
+
     if (isPlaying) {
       sendCommand('pauseVideo');
       setIsPlaying(false);
     } else {
       sendCommand('playVideo');
+      if (soundEnabled) {
+        sendCommand('unMute');
+      }
       setIsPlaying(true);
     }
+
     setShowPlayPause(true);
-    if (playPauseTimeout.current) clearTimeout(playPauseTimeout.current);
-    playPauseTimeout.current = setTimeout(() => setShowPlayPause(false), 600);
-  }, [isPlaying, sendCommand]);
+    if (playPauseTimeoutRef.current) {
+      clearTimeout(playPauseTimeoutRef.current);
+    }
 
-  const handleTap = useCallback(() => {
-    if (!soundEnabled) {
-      onEnableSound();
-      sendCommand('unMute');
-      sendCommand('playVideo');
-      setIsPlaying(true);
-      return;
-    }
-    togglePlayPause();
-  }, [soundEnabled, onEnableSound, sendCommand, togglePlayPause]);
-
-  useEffect(() => {
-    if (!isPlayerReady) return;
-    if (!isActive) {
-      sendCommand('pauseVideo');
-      setIsPlaying(false);
-      return;
-    }
-    sendCommand('playVideo');
-    if (soundEnabled) {
-      sendCommand('unMute');
-    } else {
-      sendCommand('mute');
-    }
-    setIsPlaying(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, soundEnabled, isPlayerReady]);
+    playPauseTimeoutRef.current = setTimeout(() => {
+      setShowPlayPause(false);
+    }, 600);
+  }, [isActive, isIframeLoaded, isPlaying, soundEnabled, sendCommand]);
 
   useEffect(() => {
     return () => {
-      if (playPauseTimeout.current) clearTimeout(playPauseTimeout.current);
-      if (loadTimeout.current) clearTimeout(loadTimeout.current);
+      clearTimeouts();
     };
-  }, []);
+  }, [clearTimeouts]);
 
   if (hasError) {
     return (
@@ -144,13 +168,12 @@ export function SparkVideoPlayer({
     );
   }
 
-  const shouldRender = isActive || preload;
-
   return (
     <div className="relative w-full h-full bg-black overflow-hidden">
       {shouldRender && (
         <div className="absolute inset-0 overflow-hidden">
           <iframe
+            key={embedUrl}
             ref={iframeRef}
             src={embedUrl}
             className="absolute"
@@ -173,35 +196,28 @@ export function SparkVideoPlayer({
       )}
 
       <AnimatePresence>
-        {isLoading && (
+        {shouldRender && !isIframeLoaded && !hasError && (
           <motion.div
             className="absolute inset-0 flex items-center justify-center bg-black z-10"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.35 }}
           >
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             >
-              <Loader2 size={32} className="text-white/20" />
+              <Loader2 size={32} className="text-white/25" />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div
+      <button
+        type="button"
         className="absolute inset-0 z-20"
-        onClick={handleTap}
-        role="button"
-        tabIndex={0}
-        aria-label={soundEnabled ? (isPlaying ? 'Pause video' : 'Play video') : 'Enable sound'}
-        onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            handleTap();
-          }
-        }}
+        onClick={togglePlayPause}
+        aria-label={isPlaying ? 'Pause video' : 'Play video'}
       />
 
       <AnimatePresence>
@@ -213,28 +229,12 @@ export function SparkVideoPlayer({
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
               {isPlaying ? (
-                <Play size={28} className="text-white ml-1" />
-              ) : (
                 <Pause size={28} className="text-white" />
+              ) : (
+                <Play size={28} className="text-white ml-1" />
               )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isActive && !soundEnabled && (
-          <motion.div
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.25 }}
-          >
-            <div className="px-4 py-2 rounded-full bg-black/50 backdrop-blur-md text-white/80 text-xs font-medium">
-              Tap for sound
             </div>
           </motion.div>
         )}

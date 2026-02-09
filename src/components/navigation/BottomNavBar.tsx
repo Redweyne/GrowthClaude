@@ -1,14 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Compass, Zap, MessageCircleHeart, User } from 'lucide-react';
 import { useSparkStore } from '@/store/useSparkStore';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// BOTTOM NAVIGATION BAR
-// iOS/Android-style persistent bottom tab bar
-// Spark button is elevated center — like TikTok's create button
-// ═══════════════════════════════════════════════════════════════════════════
 
 export type NavTab = 'home' | 'journey' | 'spark' | 'echoes' | 'profile';
 
@@ -36,24 +31,57 @@ export function BottomNavBar({
   const { isForcedClosedToday } = useSparkStore();
   const sparkForcedClosed = isForcedClosedToday();
 
+  const [bottomOffset, setBottomOffset] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    let raf = 0;
+
+    const updateOffset = () => {
+      cancelAnimationFrame(raf);
+
+      raf = window.requestAnimationFrame(() => {
+        const viewportBottom = viewport.height + viewport.offsetTop;
+        const offset = Math.max(0, window.innerHeight - viewportBottom);
+        setBottomOffset(offset);
+      });
+    };
+
+    updateOffset();
+
+    viewport.addEventListener('resize', updateOffset);
+    viewport.addEventListener('scroll', updateOffset);
+    window.addEventListener('orientationchange', updateOffset);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      viewport.removeEventListener('resize', updateOffset);
+      viewport.removeEventListener('scroll', updateOffset);
+      window.removeEventListener('orientationchange', updateOffset);
+    };
+  }, []);
+
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40"
+      className="fixed left-0 right-0 z-40"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        bottom: `${bottomOffset}px`,
+        paddingBottom: 'max(env(safe-area-inset-bottom), 6px)',
+        transform: 'translateZ(0)',
       }}
     >
-      {/* Glassmorphic background */}
       <div className="absolute inset-0 bg-stone-950/90 backdrop-blur-xl border-t border-stone-800/60" />
 
-      {/* Tab bar content */}
       <div className="relative max-w-lg mx-auto flex items-end justify-around px-2 pt-1 pb-2">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const isSpark = tab.id === 'spark';
           const Icon = tab.icon;
 
-          // Spark center button — elevated
           if (isSpark) {
             const isLocked = !isSparkUnlocked;
             const isDone = sparkForcedClosed;
@@ -61,18 +89,18 @@ export function BottomNavBar({
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => onTabChange(tab.id)}
                 className="relative flex flex-col items-center -mt-4"
                 aria-label="Spark"
               >
-                {/* Elevated circle button */}
                 <motion.div
                   className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${
                     isActive
                       ? 'bg-gradient-to-br from-amber-400 to-orange-500'
                       : isLocked || isDone
-                      ? 'bg-stone-800 border border-stone-700'
-                      : 'bg-gradient-to-br from-amber-500/80 to-orange-500/80'
+                        ? 'bg-stone-800 border border-stone-700'
+                        : 'bg-gradient-to-br from-amber-500/80 to-orange-500/80'
                   }`}
                   whileTap={{ scale: 0.9 }}
                   animate={
@@ -98,21 +126,20 @@ export function BottomNavBar({
                       isActive
                         ? 'text-stone-950'
                         : isLocked || isDone
-                        ? 'text-stone-600'
-                        : 'text-stone-950'
+                          ? 'text-stone-600'
+                          : 'text-stone-950'
                     }
                     fill={isActive || (!isLocked && !isDone) ? 'currentColor' : 'none'}
                   />
                 </motion.div>
 
-                {/* Label */}
                 <span
                   className={`text-[10px] mt-1 font-medium ${
                     isActive
                       ? 'text-amber-400'
                       : isLocked || isDone
-                      ? 'text-stone-700'
-                      : 'text-stone-400'
+                        ? 'text-stone-700'
+                        : 'text-stone-400'
                   }`}
                 >
                   Spark
@@ -121,15 +148,14 @@ export function BottomNavBar({
             );
           }
 
-          // Regular tabs
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => onTabChange(tab.id)}
               className="relative flex flex-col items-center py-2 px-3 min-w-[60px]"
               aria-label={tab.label}
             >
-              {/* Icon */}
               <motion.div
                 className="relative"
                 whileTap={{ scale: 0.85 }}
@@ -144,7 +170,6 @@ export function BottomNavBar({
                   strokeWidth={isActive ? 2.5 : 2}
                 />
 
-                {/* Unread badge for echoes */}
                 {tab.id === 'echoes' && unreadEchoCount > 0 && (
                   <motion.div
                     className="absolute -top-1 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 flex items-center justify-center"
@@ -159,7 +184,6 @@ export function BottomNavBar({
                 )}
               </motion.div>
 
-              {/* Label */}
               <span
                 className={`text-[10px] mt-1 font-medium transition-colors duration-200 ${
                   isActive ? 'text-white' : 'text-stone-600'
@@ -168,7 +192,6 @@ export function BottomNavBar({
                 {tab.label}
               </span>
 
-              {/* Active indicator dot */}
               {isActive && (
                 <motion.div
                   className="absolute -bottom-0 w-1 h-1 rounded-full bg-white"

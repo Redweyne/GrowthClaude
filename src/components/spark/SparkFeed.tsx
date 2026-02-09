@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useAnimationControls } from 'framer-motion';
 import { Zap } from 'lucide-react';
 import { SparkVideoPlayer } from './SparkVideoPlayer';
@@ -10,11 +10,6 @@ import { useSparkStore } from '@/store/useSparkStore';
 import { useStore } from '@/store/useStore';
 import { getShuffledSparkVideos } from '@/content/sparkVideos';
 import { SPARK_XP_REWARDS } from '@/types/spark';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SPARK FEED — TikTok-Style
-// Full-screen 9:16 vertical feed with smooth swipe navigation
-// ═══════════════════════════════════════════════════════════════════════════
 
 interface SparkFeedProps {
   onExit: () => void;
@@ -38,14 +33,14 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   const addXp = useCallback((amount: number) => {
     if (amount > 0) {
-      useStore.setState(state => ({ totalXp: state.totalXp + amount }));
+      useStore.setState((state) => ({ totalXp: state.totalXp + amount }));
     }
   }, []);
 
-  // Generate shuffled playlist on mount
   const playlist = useMemo(() => {
     return getShuffledSparkVideos(watchedVideos);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Keep one stable playlist per Spark session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -53,9 +48,9 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [containerHeight, setContainerHeight] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrollTime = useRef(0);
-  const lastTapTime = useRef(0);
   const trackControls = useAnimationControls();
 
   const currentVideo = playlist[currentIndex];
@@ -63,16 +58,28 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const nextVideo = currentIndex < playlist.length - 1 ? playlist[currentIndex + 1] : null;
   const baseOffset = -containerHeight;
 
-  // Start session on mount
   useEffect(() => {
     startSession();
+
     if (isFirstSparkSession) {
       addXp(SPARK_XP_REWARDS.firstSession);
       useSparkStore.setState({ isFirstSparkSession: false });
     }
-    return () => { endSession(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      endSession();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const resetTrackPosition = useCallback(() => {
+    if (containerHeight <= 0) return;
+
+    trackControls.start({
+      y: baseOffset,
+      transition: { type: 'spring', stiffness: 340, damping: 34, mass: 0.9 },
+    });
+  }, [containerHeight, baseOffset, trackControls]);
 
   const animateTo = useCallback(async (direction: 'up' | 'down') => {
     if (isTransitioning || showWisdomBreak) return;
@@ -80,28 +87,29 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     if (direction === 'down' && currentIndex <= 0) return;
 
     if (containerHeight === 0) {
-      setCurrentIndex(prev => prev + (direction === 'up' ? 1 : -1));
+      setCurrentIndex((prev) => prev + (direction === 'up' ? 1 : -1));
       return;
     }
 
     setIsTransitioning(true);
+
     const targetOffset = baseOffset + (direction === 'up' ? -containerHeight : containerHeight);
+
     await trackControls.start({
       y: targetOffset,
-      transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 },
+      transition: { type: 'spring', stiffness: 340, damping: 34, mass: 0.9 },
     });
-    setCurrentIndex(prev => prev + (direction === 'up' ? 1 : -1));
+
+    setCurrentIndex((prev) => prev + (direction === 'up' ? 1 : -1));
     trackControls.set({ y: baseOffset });
     setIsTransitioning(false);
   }, [isTransitioning, showWisdomBreak, currentIndex, playlist.length, containerHeight, baseOffset, trackControls]);
 
-  // Navigate to next video
   const goNext = useCallback(async () => {
     if (isTransitioning || showWisdomBreak) return false;
+
     if (currentIndex >= playlist.length - 1) {
-      if (containerHeight > 0) {
-        trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
-      }
+      resetTrackPosition();
       return false;
     }
 
@@ -110,30 +118,37 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
     if (shouldShowWisdomBreak()) {
       setShowWisdomBreak(true);
-      if (containerHeight > 0) {
-        trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
-      }
+      resetTrackPosition();
       return false;
     }
 
     await animateTo('up');
     return true;
-  }, [isTransitioning, showWisdomBreak, currentIndex, playlist.length, currentVideo, markVideoWatched, addXp, shouldShowWisdomBreak, animateTo, containerHeight, baseOffset, trackControls]);
+  }, [
+    isTransitioning,
+    showWisdomBreak,
+    currentIndex,
+    playlist.length,
+    currentVideo,
+    markVideoWatched,
+    addXp,
+    shouldShowWisdomBreak,
+    animateTo,
+    resetTrackPosition,
+  ]);
 
-  // Navigate to previous video
   const goPrevious = useCallback(async () => {
     if (isTransitioning || showWisdomBreak) return false;
+
     if (currentIndex <= 0) {
-      if (containerHeight > 0) {
-        trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
-      }
+      resetTrackPosition();
       return false;
     }
+
     await animateTo('down');
     return true;
-  }, [isTransitioning, showWisdomBreak, currentIndex, animateTo, containerHeight, baseOffset, trackControls]);
+  }, [isTransitioning, showWisdomBreak, currentIndex, animateTo, resetTrackPosition]);
 
-  // Handle wisdom break choices
   const handleWisdomBreakLeave = useCallback(() => {
     const { xpEarned } = recordWisdomBreakChoice('leave');
     addXp(xpEarned);
@@ -149,39 +164,38 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       onExit();
       return;
     }
+
     animateTo('up');
   }, [recordWisdomBreakChoice, onExit, animateTo]);
 
-  // Double-tap to save
-  const handleDoubleTap = useCallback(() => {
-    if (currentVideo) {
-      toggleSaveVideo(currentVideo.id);
-    }
-  }, [currentVideo, toggleSaveVideo]);
-
-  // Keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (showWisdomBreak) return;
 
-      switch (e.key) {
+      switch (event.key) {
         case 'ArrowDown':
         case 'j':
-          e.preventDefault();
+          event.preventDefault();
           goNext();
           break;
         case 'ArrowUp':
         case 'k':
-          e.preventDefault();
+          event.preventDefault();
           goPrevious();
           break;
         case 'Escape':
-          e.preventDefault();
+          event.preventDefault();
           onExit();
           break;
         case 's':
-          e.preventDefault();
-          if (currentVideo) toggleSaveVideo(currentVideo.id);
+          event.preventDefault();
+          if (currentVideo) {
+            toggleSaveVideo(currentVideo.id);
+          }
+          break;
+        case 'm':
+          event.preventDefault();
+          setSoundEnabled((prev) => !prev);
           break;
       }
     };
@@ -190,20 +204,21 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goNext, goPrevious, onExit, showWisdomBreak, currentVideo, toggleSaveVideo]);
 
-  // Scroll/wheel navigation (debounced)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const now = Date.now();
-      if (now - lastScrollTime.current < 400) return;
-      lastScrollTime.current = now;
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
 
-      if (e.deltaY > 20) {
+      const now = Date.now();
+      if (now - lastScrollTime.current < 420) return;
+
+      if (event.deltaY > 20) {
+        lastScrollTime.current = now;
         goNext();
-      } else if (e.deltaY < -20) {
+      } else if (event.deltaY < -20) {
+        lastScrollTime.current = now;
         goPrevious();
       }
     };
@@ -212,7 +227,6 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     return () => container.removeEventListener('wheel', handleWheel);
   }, [goNext, goPrevious]);
 
-  // Track container height for snap distances
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -232,9 +246,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     if (containerHeight > 0) {
       trackControls.set({ y: -containerHeight });
     }
-  }, [containerHeight, currentIndex, trackControls]);
+  }, [containerHeight, trackControls]);
 
-  // Check if forced closed
   useEffect(() => {
     if (isForcedClosedToday()) {
       onExit();
@@ -249,6 +262,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
           <p className="text-white/50 text-lg">No more sparks available</p>
           <p className="text-white/30 text-sm mt-2">Come back tomorrow for fresh inspiration</p>
           <button
+            type="button"
             onClick={onExit}
             className="mt-6 px-6 py-3 rounded-2xl bg-white/10 text-white/70 hover:bg-white/15 transition-colors"
           >
@@ -268,18 +282,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
         overscrollBehaviorY: 'contain',
         height: '100dvh',
       }}
-      onPointerDown={(e) => {
-        if (e.pointerType !== 'touch') return;
-        const now = Date.now();
-        if (now - lastTapTime.current < 280) {
-          handleDoubleTap();
-        }
-        lastTapTime.current = now;
-      }}
     >
-      {/* 9:16 phone-column container — centered */}
       <div className="relative w-full h-full max-w-[430px] mx-auto">
-        {/* Swipeable track with preloaded neighbors */}
         <motion.div
           className="absolute inset-0"
           initial={{ y: baseOffset }}
@@ -293,23 +297,28 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
           }}
           onDragEnd={(_, info) => {
             if (showWisdomBreak || isTransitioning) {
-              trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+              resetTrackPosition();
               return;
             }
+
             const swipeThreshold = Math.min(120, Math.max(60, containerHeight * 0.18));
+
             if (info.offset.y < -swipeThreshold || info.velocity.y < -600) {
               goNext();
               return;
             }
+
             if (info.offset.y > swipeThreshold || info.velocity.y > 600) {
               goPrevious();
               return;
             }
-            trackControls.start({ y: baseOffset, transition: { type: 'spring', stiffness: 320, damping: 34, mass: 0.9 } });
+
+            resetTrackPosition();
           }}
         >
           {[previousVideo, currentVideo, nextVideo].map((video, index) => {
             const slotOffset = (index - 1) * (containerHeight || 0);
+
             return (
               <div
                 key={video ? video.id : `spark-slot-${index}`}
@@ -318,11 +327,11 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
               >
                 {video ? (
                   <SparkVideoPlayer
+                    key={`${video.id}-${index === 1 ? 'active' : 'preload'}`}
                     youtubeId={video.youtubeId}
                     isActive={index === 1 && !showWisdomBreak && !isTransitioning}
                     preload={index !== 1}
                     soundEnabled={soundEnabled}
-                    onEnableSound={() => setSoundEnabled(true)}
                   />
                 ) : (
                   <div className="w-full h-full bg-black" />
@@ -332,24 +341,20 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
           })}
         </motion.div>
 
-        {/* Overlay controls */}
         {!showWisdomBreak && (
           <SparkOverlay
             video={currentVideo}
             videoIndex={currentIndex}
             totalVideos={playlist.length}
             isSaved={isVideoSaved(currentVideo.id)}
+            soundEnabled={soundEnabled}
             videosWatchedSession={videosWatchedThisSession}
             onSave={() => toggleSaveVideo(currentVideo.id)}
-            onNext={goNext}
-            onPrevious={goPrevious}
+            onToggleSound={() => setSoundEnabled((prev) => !prev)}
             onExit={onExit}
-            hasPrevious={currentIndex > 0}
-            hasNext={currentIndex < playlist.length - 1}
           />
         )}
 
-        {/* Wisdom Break interstitial */}
         {showWisdomBreak && (
           <SparkWisdomBreak
             videosWatched={videosWatchedThisSession}

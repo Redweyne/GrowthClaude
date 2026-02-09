@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { SparkAnalyticsEvent, SparkCategory } from '@/types/spark';
+import type { SparkAnalyticsEvent } from '@/types/spark';
 import { WISDOM_BREAK_CONFIG, SPARK_XP_REWARDS } from '@/types/spark';
 
 // ═══════════════════════════════════════════════════════════════════════════
