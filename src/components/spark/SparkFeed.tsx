@@ -42,10 +42,12 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const feedRef = useRef<HTMLDivElement>(null);
   const watchedInSessionRef = useRef<Set<string>>(new Set());
   const scrollRafRef = useRef<number | null>(null);
+  const scrollIdleTimerRef = useRef<number | null>(null);
 
   const activeVideo = playlist[activeIndex];
 
@@ -121,6 +123,15 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     };
 
     const handleScroll = () => {
+      setIsScrolling(true);
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+      }
+      scrollIdleTimerRef.current = window.setTimeout(() => {
+        setIsScrolling(false);
+        scrollIdleTimerRef.current = null;
+      }, 140);
+
       if (scrollRafRef.current !== null) {
         cancelAnimationFrame(scrollRafRef.current);
       }
@@ -136,6 +147,11 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
         cancelAnimationFrame(scrollRafRef.current);
         scrollRafRef.current = null;
       }
+      if (scrollIdleTimerRef.current !== null) {
+        window.clearTimeout(scrollIdleTimerRef.current);
+        scrollIdleTimerRef.current = null;
+      }
+      setIsScrolling(false);
     };
   }, [playlist.length, resolveCardHeight]);
 
@@ -250,6 +266,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
                     youtubeId={video.youtubeId}
                     isActive={isActive}
                     soundEnabled={soundEnabled}
+                    disableTapToggle={isScrolling}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-black" />

@@ -17,6 +17,7 @@ interface SparkVideoPlayerProps {
   youtubeId: string;
   isActive: boolean;
   soundEnabled: boolean;
+  disableTapToggle?: boolean;
 }
 
 const TAP_MAX_MOVE_PX = 10;
@@ -25,6 +26,7 @@ export function SparkVideoPlayer({
   youtubeId,
   isActive,
   soundEnabled,
+  disableTapToggle = false,
 }: SparkVideoPlayerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
@@ -259,12 +261,39 @@ export function SparkVideoPlayer({
 
     if (!readyRef.current) return;
 
+    let activationAttempts = 0;
+    let activationRetryTimer: number | null = null;
+
+    const ensureActivePlayback = () => {
+      if (!activeRef.current || userPausedRef.current || !apiRef.current || !playerRef.current || !readyRef.current) {
+        return;
+      }
+
+      const state = playerRef.current.getPlayerState();
+      const isRunning = state === apiRef.current.PlayerState.PLAYING || state === apiRef.current.PlayerState.BUFFERING;
+
+      if (isRunning || activationAttempts >= 3) {
+        return;
+      }
+
+      activationAttempts += 1;
+      syncPlayback(false);
+      activationRetryTimer = window.setTimeout(ensureActivePlayback, 320);
+    };
+
     const syncTimer = window.setTimeout(() => {
       syncPlayback(true);
+
+      if (activeRef.current && !userPausedRef.current) {
+        activationRetryTimer = window.setTimeout(ensureActivePlayback, 280);
+      }
     }, 0);
 
     return () => {
       window.clearTimeout(syncTimer);
+      if (activationRetryTimer !== null) {
+        window.clearTimeout(activationRetryTimer);
+      }
     };
   }, [isActive, soundEnabled, syncPlayback]);
 
@@ -336,6 +365,7 @@ export function SparkVideoPlayer({
         aria-label={isPlaying ? 'Pause video' : 'Play video'}
         style={{ touchAction: 'pan-y' }}
         onPointerDown={(event) => {
+          if (disableTapToggle) return;
           pointerStartRef.current = { x: event.clientX, y: event.clientY };
         }}
         onPointerCancel={() => {
@@ -344,6 +374,7 @@ export function SparkVideoPlayer({
         onPointerUp={(event) => {
           const start = pointerStartRef.current;
           pointerStartRef.current = null;
+          if (disableTapToggle) return;
           if (!start) return;
           const movedX = Math.abs(event.clientX - start.x);
           const movedY = Math.abs(event.clientY - start.y);
