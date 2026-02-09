@@ -17,6 +17,7 @@ interface SparkVideoPlayerProps {
   youtubeId: string;
   isActive: boolean;
   soundEnabled: boolean;
+  allowAutoplaySound?: boolean;
   disableTapToggle?: boolean;
 }
 
@@ -26,6 +27,7 @@ export function SparkVideoPlayer({
   youtubeId,
   isActive,
   soundEnabled,
+  allowAutoplaySound = false,
   disableTapToggle = false,
 }: SparkVideoPlayerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -33,11 +35,13 @@ export function SparkVideoPlayer({
   const apiRef = useRef<YouTubeApi | null>(null);
   const activeRef = useRef(isActive);
   const soundRef = useRef(soundEnabled);
+  const allowAutoplaySoundRef = useRef(allowAutoplaySound);
   const userPausedRef = useRef(false);
   const autoplayRetryRef = useRef<number | null>(null);
   const indicatorTimerRef = useRef<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const readyRef = useRef(false);
+  const soundAppliedForActiveRef = useRef(false);
 
   const [status, setStatus] = useState<PlayerStatus>('loading');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,7 +50,12 @@ export function SparkVideoPlayer({
   useEffect(() => {
     activeRef.current = isActive;
     soundRef.current = soundEnabled;
-  }, [isActive, soundEnabled]);
+    allowAutoplaySoundRef.current = allowAutoplaySound;
+
+    if (!isActive || !soundEnabled) {
+      soundAppliedForActiveRef.current = false;
+    }
+  }, [allowAutoplaySound, isActive, soundEnabled]);
 
   const clearAutoplayRetry = useCallback(() => {
     if (!autoplayRetryRef.current) return;
@@ -73,7 +82,7 @@ export function SparkVideoPlayer({
     if (!player || !readyRef.current) return;
 
     try {
-      if (!soundRef.current) {
+      if (!soundRef.current || !allowAutoplaySoundRef.current) {
         player.mute();
         return;
       }
@@ -97,14 +106,7 @@ export function SparkVideoPlayer({
     } catch {
       return;
     }
-
-    if (!soundRef.current) return;
-
-    window.setTimeout(() => {
-      if (!activeRef.current || userPausedRef.current) return;
-      applySoundState();
-    }, 140);
-  }, [applySoundState]);
+  }, []);
 
   const syncPlayback = useCallback((allowAutoRetry: boolean) => {
     const player = playerRef.current;
@@ -249,6 +251,7 @@ export function SparkVideoPlayer({
         playerRef.current = null;
       }
       apiRef.current = null;
+      soundAppliedForActiveRef.current = false;
       setStatus('loading');
       setIsPlaying(false);
     };
@@ -295,7 +298,35 @@ export function SparkVideoPlayer({
         window.clearTimeout(activationRetryTimer);
       }
     };
-  }, [isActive, soundEnabled, syncPlayback]);
+  }, [isActive, syncPlayback]);
+
+  useEffect(() => {
+    if (!readyRef.current || !playerRef.current) return;
+
+    if (!isActive) {
+      soundAppliedForActiveRef.current = false;
+      applySoundState();
+      return;
+    }
+
+    if (!soundEnabled || !allowAutoplaySound) {
+      soundAppliedForActiveRef.current = false;
+      applySoundState();
+      return;
+    }
+
+    if (!isPlaying || soundAppliedForActiveRef.current) return;
+
+    soundAppliedForActiveRef.current = true;
+    const soundTimer = window.setTimeout(() => {
+      if (!activeRef.current || userPausedRef.current) return;
+      applySoundState();
+    }, 120);
+
+    return () => {
+      window.clearTimeout(soundTimer);
+    };
+  }, [allowAutoplaySound, applySoundState, isActive, isPlaying, soundEnabled]);
 
   const handleTogglePlayback = useCallback(() => {
     if (!isActive || !readyRef.current || !playerRef.current) return;

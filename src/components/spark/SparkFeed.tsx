@@ -40,6 +40,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundUnlocked, setSoundUnlocked] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
 
   const feedRef = useRef<HTMLDivElement>(null);
@@ -81,6 +82,16 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       behavior: 'smooth',
     });
   }, [playlist.length, resolveCardHeight]);
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((previous) => {
+      const next = !previous;
+      if (next) {
+        setSoundUnlocked(true);
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     startSession();
@@ -195,7 +206,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
           break;
         case 'm':
           event.preventDefault();
-          setSoundEnabled((previous) => !previous);
+          toggleSound();
           break;
         case 'Escape':
           event.preventDefault();
@@ -206,7 +217,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeIndex, activeVideo, onExit, scrollToIndex, toggleSaveVideo]);
+  }, [activeIndex, activeVideo, onExit, scrollToIndex, toggleSaveVideo, toggleSound]);
 
   if (playlist.length === 0 || !activeVideo) {
     return (
@@ -260,6 +271,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
                     youtubeId={video.youtubeId}
                     isActive={isActive}
                     soundEnabled={soundEnabled}
+                    allowAutoplaySound={soundUnlocked}
                     disableTapToggle={isScrolling}
                   />
                 ) : (
@@ -275,7 +287,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
                     soundEnabled={soundEnabled}
                     videosWatchedSession={videosWatchedThisSession}
                     onSave={() => toggleSaveVideo(video.id)}
-                    onToggleSound={() => setSoundEnabled((previous) => !previous)}
+                    onToggleSound={toggleSound}
                     onExit={onExit}
                   />
                 )}
