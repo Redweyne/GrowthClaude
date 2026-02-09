@@ -44,7 +44,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const [soundEnabled, setSoundEnabled] = useState(false);
 
   const feedRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const cardRefs = useRef<Array<HTMLElement | null>>([]);
   const watchedInSessionRef = useRef<Set<string>>(new Set());
 
   const activeVideo = playlist[activeIndex];
