@@ -25,7 +25,6 @@ interface SparkVideoPlayerProps {
 const TAP_MAX_MOVE_PX = 10;
 const PLAY_RETRY_DELAY_MS = 340;
 const UNMUTE_DELAY_MS = 120;
-const UNMUTE_PROBE_DELAY_MS = 260;
 const UNMUTE_BLOCK_WINDOW_MS = 900;
 const RECOVERY_THROTTLE_MS = 420;
 const MAX_STATE_RECOVERY = 3;
@@ -60,7 +59,6 @@ export function SparkVideoPlayer({
 
   const playRetryTimerRef = useRef<number | null>(null);
   const unmuteTimerRef = useRef<number | null>(null);
-  const unmuteProbeTimerRef = useRef<number | null>(null);
   const indicatorTimerRef = useRef<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -78,11 +76,6 @@ export function SparkVideoPlayer({
     if (unmuteTimerRef.current !== null) {
       window.clearTimeout(unmuteTimerRef.current);
       unmuteTimerRef.current = null;
-    }
-
-    if (unmuteProbeTimerRef.current !== null) {
-      window.clearTimeout(unmuteProbeTimerRef.current);
-      unmuteProbeTimerRef.current = null;
     }
   }, []);
 
@@ -203,27 +196,8 @@ export function SparkVideoPlayer({
 
       safeUnmute();
       unmuteAttemptAtRef.current = Date.now();
-
-      unmuteProbeTimerRef.current = window.setTimeout(() => {
-        const livePlayer = playerRef.current;
-        const liveApi = apiRef.current;
-        if (!livePlayer || !liveApi || !readyRef.current || !activeRef.current || userPausedRef.current) return;
-
-        const probeState = livePlayer.getPlayerState();
-        const pausedByPolicy = probeState === liveApi.PlayerState.PAUSED
-          || probeState === liveApi.PlayerState.UNSTARTED
-          || probeState === liveApi.PlayerState.CUED;
-
-        if (!pausedByPolicy) return;
-
-        soundBlockedForActivationRef.current = true;
-        soundRef.current = false;
-        safeMute();
-        notifyAutoplaySoundBlocked();
-        recoverPlayback();
-      }, UNMUTE_PROBE_DELAY_MS);
     }, UNMUTE_DELAY_MS);
-  }, [clearUnmuteTimers, notifyAutoplaySoundBlocked, recoverPlayback, safeMute, safeUnmute]);
+  }, [clearUnmuteTimers, safeMute, safeUnmute]);
 
   const runActivationPlayback = useCallback((activationToken: number, retryCount: number) => {
     const attempt = (remaining: number) => {
