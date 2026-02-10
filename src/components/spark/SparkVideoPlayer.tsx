@@ -25,7 +25,7 @@ interface SparkVideoPlayerProps {
 const TAP_MAX_MOVE_PX = 10;
 const PLAY_RETRY_DELAY_MS = 340;
 const UNMUTE_DELAY_MS = 120;
-const UNMUTE_BLOCK_WINDOW_MS = 900;
+const UNMUTE_PROBE_DELAY_MS = 220;
 const RECOVERY_THROTTLE_MS = 420;
 const MAX_STATE_RECOVERY = 3;
 
@@ -51,13 +51,13 @@ export function SparkVideoPlayer({
   const activationTokenRef = useRef(0);
   const recoveryCountRef = useRef(0);
   const lastRecoveryAtRef = useRef(0);
-  const unmuteAttemptAtRef = useRef(0);
   const soundBlockedForActivationRef = useRef(false);
   const previousIsActiveRef = useRef(isActive);
   const previousSoundEnabledRef = useRef(soundEnabled);
 
   const playRetryTimerRef = useRef<number | null>(null);
   const unmuteTimerRef = useRef<number | null>(null);
+  const unmuteProbeTimerRef = useRef<number | null>(null);
   const indicatorTimerRef = useRef<number | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -75,6 +75,11 @@ export function SparkVideoPlayer({
     if (unmuteTimerRef.current !== null) {
       window.clearTimeout(unmuteTimerRef.current);
       unmuteTimerRef.current = null;
+    }
+
+    if (unmuteProbeTimerRef.current !== null) {
+      window.clearTimeout(unmuteProbeTimerRef.current);
+      unmuteProbeTimerRef.current = null;
     }
   }, []);
 
@@ -177,7 +182,6 @@ export function SparkVideoPlayer({
       && !userPausedRef.current;
 
     if (!shouldEnableSound) {
-      unmuteAttemptAtRef.current = 0;
       clearUnmuteTimers();
       safeMute();
       return;
@@ -192,9 +196,23 @@ export function SparkVideoPlayer({
       if (!activeRef.current || userPausedRef.current) return;
 
       safeUnmute();
-      unmuteAttemptAtRef.current = Date.now();
+      unmuteProbeTimerRef.current = window.setTimeout(() => {
+        const livePlayer = playerRef.current;
+        if (!livePlayer || !readyRef.current || !activeRef.current || userPausedRef.current) return;
+
+        try {
+          if (!livePlayer.isMuted()) return;
+        } catch {
+          return;
+        }
+
+        soundBlockedForActivationRef.current = true;
+        soundRef.current = false;
+        safeMute();
+        notifyAutoplaySoundBlocked();
+      }, UNMUTE_PROBE_DELAY_MS);
     }, UNMUTE_DELAY_MS);
-  }, [clearUnmuteTimers, safeMute, safeUnmute]);
+  }, [clearUnmuteTimers, notifyAutoplaySoundBlocked, safeMute, safeUnmute]);
 
   const runActivationPlayback = useCallback((activationToken: number, retryCount: number) => {
     const attempt = (remaining: number) => {
@@ -235,7 +253,6 @@ export function SparkVideoPlayer({
     userPausedRef.current = false;
     recoveryCountRef.current = 0;
     lastRecoveryAtRef.current = 0;
-    unmuteAttemptAtRef.current = 0;
     soundBlockedForActivationRef.current = false;
 
     clearPlayRetryTimer();
@@ -247,7 +264,6 @@ export function SparkVideoPlayer({
     activationTokenRef.current += 1;
     recoveryCountRef.current = 0;
     lastRecoveryAtRef.current = 0;
-    unmuteAttemptAtRef.current = 0;
     soundBlockedForActivationRef.current = false;
 
     clearPlayRetryTimer();
@@ -272,7 +288,6 @@ export function SparkVideoPlayer({
 
     if (!isActive) {
       userPausedRef.current = false;
-      unmuteAttemptAtRef.current = 0;
       soundBlockedForActivationRef.current = false;
     }
   }, [allowAutoplaySound, isActive, onAutoplaySoundBlocked, soundEnabled]);
@@ -356,18 +371,6 @@ export function SparkVideoPlayer({
               if (event.data === api.PlayerState.PAUSED) {
                 setIsPlaying(false);
                 if (userPausedRef.current) return;
-
-                const pausedAfterUnmute = unmuteAttemptAtRef.current > 0
-                  && Date.now() - unmuteAttemptAtRef.current < UNMUTE_BLOCK_WINDOW_MS;
-
-                if (pausedAfterUnmute && activeRef.current) {
-                  unmuteAttemptAtRef.current = 0;
-                  soundBlockedForActivationRef.current = true;
-                  soundRef.current = false;
-                  clearUnmuteTimers();
-                  safeMute();
-                  notifyAutoplaySoundBlocked();
-                }
 
                 recoverPlayback();
                 return;
