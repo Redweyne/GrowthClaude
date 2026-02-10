@@ -39,8 +39,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [soundUnlocked, setSoundUnlocked] = useState(false);
+  const [soundWanted, setSoundWanted] = useState(false);
+  const [soundGestureUnlocked, setSoundGestureUnlocked] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
 
   const feedRef = useRef<HTMLDivElement>(null);
@@ -84,18 +84,16 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, [playlist.length, resolveCardHeight]);
 
   const toggleSound = useCallback(() => {
-    setSoundEnabled((previous) => {
+    setSoundWanted((previous) => {
       const next = !previous;
-      if (next) {
-        setSoundUnlocked(true);
+      if (next && !soundGestureUnlocked) {
+        setSoundGestureUnlocked(true);
       }
       return next;
     });
-  }, []);
+  }, [soundGestureUnlocked]);
 
-  const handleAutoplaySoundBlocked = useCallback(() => {
-    setSoundEnabled(false);
-  }, []);
+  const soundEnabled = soundWanted && soundGestureUnlocked;
 
   useEffect(() => {
     startSession();
@@ -275,9 +273,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
                     youtubeId={video.youtubeId}
                     isActive={isActive}
                     soundEnabled={soundEnabled}
-                    allowAutoplaySound={soundUnlocked}
+                    allowAutoplaySound={soundGestureUnlocked}
                     disableTapToggle={isScrolling}
-                    onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-black" />

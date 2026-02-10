@@ -19,7 +19,6 @@ interface SparkVideoPlayerProps {
   soundEnabled: boolean;
   allowAutoplaySound?: boolean;
   disableTapToggle?: boolean;
-  onAutoplaySoundBlocked?: () => void;
 }
 
 const TAP_MAX_MOVE_PX = 10;
@@ -35,7 +34,6 @@ export function SparkVideoPlayer({
   soundEnabled,
   allowAutoplaySound = false,
   disableTapToggle = false,
-  onAutoplaySoundBlocked,
 }: SparkVideoPlayerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
@@ -44,7 +42,6 @@ export function SparkVideoPlayer({
   const activeRef = useRef(isActive);
   const soundRef = useRef(soundEnabled);
   const allowAutoplaySoundRef = useRef(allowAutoplaySound);
-  const onAutoplaySoundBlockedRef = useRef(onAutoplaySoundBlocked);
   const userPausedRef = useRef(false);
   const readyRef = useRef(false);
 
@@ -53,7 +50,6 @@ export function SparkVideoPlayer({
   const lastRecoveryAtRef = useRef(0);
   const unmuteAttemptAtRef = useRef(0);
   const soundBlockedForActivationRef = useRef(false);
-  const autoplaySoundBlockedNotifiedRef = useRef(false);
   const previousIsActiveRef = useRef(isActive);
   const previousSoundEnabledRef = useRef(soundEnabled);
 
@@ -93,12 +89,6 @@ export function SparkVideoPlayer({
     }, 580);
   }, [clearIndicatorTimer]);
 
-  const notifyAutoplaySoundBlocked = useCallback(() => {
-    if (autoplaySoundBlockedNotifiedRef.current) return;
-    autoplaySoundBlockedNotifiedRef.current = true;
-    onAutoplaySoundBlockedRef.current?.();
-  }, []);
-
   const safeMute = useCallback(() => {
     const player = playerRef.current;
     if (!player || !readyRef.current) return;
@@ -119,9 +109,8 @@ export function SparkVideoPlayer({
     } catch {
       soundRef.current = false;
       safeMute();
-      notifyAutoplaySoundBlocked();
     }
-  }, [notifyAutoplaySoundBlocked, safeMute]);
+  }, [safeMute]);
 
   const safePlay = useCallback(() => {
     const player = playerRef.current;
@@ -240,7 +229,6 @@ export function SparkVideoPlayer({
     lastRecoveryAtRef.current = 0;
     unmuteAttemptAtRef.current = 0;
     soundBlockedForActivationRef.current = false;
-    autoplaySoundBlockedNotifiedRef.current = false;
 
     clearPlayRetryTimer();
     clearUnmuteTimers();
@@ -253,7 +241,6 @@ export function SparkVideoPlayer({
     lastRecoveryAtRef.current = 0;
     unmuteAttemptAtRef.current = 0;
     soundBlockedForActivationRef.current = false;
-    autoplaySoundBlockedNotifiedRef.current = false;
 
     clearPlayRetryTimer();
     clearUnmuteTimers();
@@ -269,11 +256,9 @@ export function SparkVideoPlayer({
     activeRef.current = isActive;
     soundRef.current = soundEnabled;
     allowAutoplaySoundRef.current = allowAutoplaySound;
-    onAutoplaySoundBlockedRef.current = onAutoplaySoundBlocked;
 
     if (!wasSoundEnabled && soundEnabled) {
       soundBlockedForActivationRef.current = false;
-      autoplaySoundBlockedNotifiedRef.current = false;
     }
 
     if (!isActive) {
@@ -281,7 +266,7 @@ export function SparkVideoPlayer({
       unmuteAttemptAtRef.current = 0;
       soundBlockedForActivationRef.current = false;
     }
-  }, [allowAutoplaySound, isActive, onAutoplaySoundBlocked, soundEnabled]);
+  }, [allowAutoplaySound, isActive, soundEnabled]);
 
   useEffect(() => {
     if (!hostRef.current || playerRef.current) return;
@@ -372,7 +357,6 @@ export function SparkVideoPlayer({
                   soundRef.current = false;
                   clearUnmuteTimers();
                   safeMute();
-                  notifyAutoplaySoundBlocked();
                 }
 
                 recoverPlayback();
@@ -423,7 +407,6 @@ export function SparkVideoPlayer({
     clearIndicatorTimer,
     clearPlayRetryTimer,
     clearUnmuteTimers,
-    notifyAutoplaySoundBlocked,
     pauseForInactive,
     recoverPlayback,
     safeMute,
