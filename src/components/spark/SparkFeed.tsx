@@ -93,6 +93,10 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     });
   }, []);
 
+  const handleAutoplaySoundBlocked = useCallback(() => {
+    setSoundEnabled(false);
+  }, []);
+
   useEffect(() => {
     startSession();
 
@@ -273,6 +277,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
                     soundEnabled={soundEnabled}
                     allowAutoplaySound={soundUnlocked}
                     disableTapToggle={isScrolling}
+                    onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-black" />
