@@ -37,6 +37,7 @@ export function SparkVideoPlayer({
   disableTapToggle = false,
   onAutoplaySoundBlocked,
 }: SparkVideoPlayerProps) {
+  const initialYoutubeIdRef = useRef(youtubeId);
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
   const apiRef = useRef<YouTubeApi | null>(null);
@@ -49,6 +50,7 @@ export function SparkVideoPlayer({
   const readyRef = useRef(false);
 
   const activationTokenRef = useRef(0);
+  const currentVideoIdRef = useRef<string | null>(null);
   const recoveryCountRef = useRef(0);
   const lastRecoveryAtRef = useRef(0);
   const soundBlockedForActivationRef = useRef(false);
@@ -246,6 +248,30 @@ export function SparkVideoPlayer({
     attempt(retryCount);
   }, [applySoundIntent, clearPlayRetryTimer, playMuted]);
 
+  const switchToVideo = useCallback((nextVideoId: string) => {
+    const player = playerRef.current;
+    if (!player || !readyRef.current) return;
+
+    currentVideoIdRef.current = nextVideoId;
+    userPausedRef.current = false;
+    soundBlockedForActivationRef.current = false;
+    recoveryCountRef.current = 0;
+    lastRecoveryAtRef.current = 0;
+
+    clearPlayRetryTimer();
+    clearUnmuteTimers();
+
+    try {
+      safeMute();
+      player.loadVideoById(nextVideoId, 0);
+    } catch {
+      return;
+    }
+
+    activationTokenRef.current += 1;
+    runActivationPlayback(activationTokenRef.current, 3);
+  }, [clearPlayRetryTimer, clearUnmuteTimers, runActivationPlayback, safeMute]);
+
   const beginActivation = useCallback(() => {
     activationTokenRef.current += 1;
     const token = activationTokenRef.current;
@@ -302,10 +328,11 @@ export function SparkVideoPlayer({
         if (isDisposed || !hostRef.current) return;
 
         apiRef.current = ytApi;
+        const initialYoutubeId = initialYoutubeIdRef.current;
         playerRef.current = new ytApi.Player(hostRef.current, {
           width: '100%',
           height: '100%',
-          videoId: youtubeId,
+          videoId: initialYoutubeId,
           playerVars: {
             autoplay: 1,
             controls: 0,
@@ -316,7 +343,7 @@ export function SparkVideoPlayer({
             loop: 1,
             modestbranding: 1,
             playsinline: 1,
-            playlist: youtubeId,
+            playlist: initialYoutubeId,
             rel: 0,
             mute: 1,
             origin: typeof window !== 'undefined' ? window.location.origin : '',
@@ -326,7 +353,8 @@ export function SparkVideoPlayer({
               if (isDisposed) return;
 
               readyRef.current = true;
-              setStatus('ready');
+              currentVideoIdRef.current = initialYoutubeId;
+              setStatus('loading');
 
               if (activeRef.current) {
                 beginActivation();
@@ -406,6 +434,7 @@ export function SparkVideoPlayer({
       clearIndicatorTimer();
       readyRef.current = false;
       activationTokenRef.current += 1;
+      currentVideoIdRef.current = null;
 
       if (playerRef.current) {
         playerRef.current.destroy();
@@ -424,8 +453,15 @@ export function SparkVideoPlayer({
     pauseForInactive,
     recoverPlayback,
     safeMute,
-    youtubeId,
   ]);
+
+  useEffect(() => {
+    if (!readyRef.current) return;
+    if (!isActive) return;
+    if (currentVideoIdRef.current === youtubeId) return;
+
+    switchToVideo(youtubeId);
+  }, [isActive, switchToVideo, youtubeId]);
 
   useEffect(() => {
     const wasActive = previousIsActiveRef.current;

@@ -13,6 +13,7 @@ export interface YouTubePlayer {
   destroy: () => void;
   playVideo: () => void;
   pauseVideo: () => void;
+  loadVideoById: (videoId: string, startSeconds?: number) => void;
   mute: () => void;
   unMute: () => void;
   isMuted: () => boolean;

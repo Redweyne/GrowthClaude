@@ -41,7 +41,6 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [soundWanted, setSoundWanted] = useState(false);
   const [soundGestureUnlocked, setSoundGestureUnlocked] = useState(false);
-  const [isScrolling, setIsScrolling] = useState(false);
 
   const feedRef = useRef<HTMLDivElement>(null);
   const watchedInSessionRef = useRef<Set<string>>(new Set());
@@ -133,12 +132,10 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     };
 
     const handleScroll = () => {
-      setIsScrolling(true);
       if (scrollIdleTimerRef.current !== null) {
         window.clearTimeout(scrollIdleTimerRef.current);
       }
       scrollIdleTimerRef.current = window.setTimeout(() => {
-        setIsScrolling(false);
         commitPendingIndex();
         scrollIdleTimerRef.current = null;
       }, 120);
@@ -246,9 +243,22 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black" data-testid="spark-feed">
+      <div className="absolute inset-0 z-10">
+        <div className="relative w-full h-full max-w-[430px] mx-auto">
+          <SparkVideoPlayer
+            youtubeId={activeVideo.youtubeId}
+            isActive
+            soundEnabled={soundEnabled}
+            allowAutoplaySound={soundGestureUnlocked}
+            disableTapToggle
+            onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
+          />
+        </div>
+      </div>
+
       <div
         ref={feedRef}
-        className="absolute inset-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="absolute inset-0 z-20 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         style={{
           height: '100svh',
           scrollSnapType: 'y mandatory',
@@ -257,51 +267,33 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        {playlist.map((video, index) => {
-          const isActive = index === activeIndex;
-          const shouldRenderPlayer = Math.abs(index - activeIndex) <= 1;
+        {playlist.map((video, index) => (
+          <section
+            key={video.id}
+            data-testid={`spark-card-${index}`}
+            className="relative h-[100svh]"
+            style={{
+              scrollSnapAlign: 'start',
+              scrollSnapStop: 'always',
+            }}
+          />
+        ))}
+      </div>
 
-          return (
-            <section
-              key={video.id}
-              data-testid={`spark-card-${index}`}
-              className="relative h-[100svh]"
-              style={{
-                scrollSnapAlign: 'start',
-                scrollSnapStop: 'always',
-              }}
-            >
-              <div className="relative w-full h-full max-w-[430px] mx-auto">
-                {shouldRenderPlayer ? (
-                  <SparkVideoPlayer
-                    youtubeId={video.youtubeId}
-                    isActive={isActive}
-                    soundEnabled={soundEnabled}
-                    allowAutoplaySound={soundGestureUnlocked}
-                    disableTapToggle={isScrolling}
-                    onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-black" />
-                )}
-
-                {isActive && (
-                  <SparkOverlay
-                    video={video}
-                    videoIndex={index}
-                    totalVideos={playlist.length}
-                    isSaved={isVideoSaved(video.id)}
-                    soundEnabled={soundEnabled}
-                    videosWatchedSession={videosWatchedThisSession}
-                    onSave={() => toggleSaveVideo(video.id)}
-                    onToggleSound={toggleSound}
-                    onExit={onExit}
-                  />
-                )}
-              </div>
-            </section>
-          );
-        })}
+      <div className="absolute inset-0 z-30 pointer-events-none">
+        <div className="relative w-full h-full max-w-[430px] mx-auto">
+          <SparkOverlay
+            video={activeVideo}
+            videoIndex={activeIndex}
+            totalVideos={playlist.length}
+            isSaved={isVideoSaved(activeVideo.id)}
+            soundEnabled={soundEnabled}
+            videosWatchedSession={videosWatchedThisSession}
+            onSave={() => toggleSaveVideo(activeVideo.id)}
+            onToggleSound={toggleSound}
+            onExit={onExit}
+          />
+        </div>
       </div>
     </div>
   );
