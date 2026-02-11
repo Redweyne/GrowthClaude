@@ -44,12 +44,24 @@ export function BottomNavBar({
         return;
       }
 
+      const rootStyles = window.getComputedStyle(document.documentElement);
+      const safeAreaBottom = Number.parseFloat(
+        rootStyles.getPropertyValue('--safe-area-inset-bottom') || '0'
+      ) || 0;
+      const layoutViewportHeight = Math.max(
+        window.innerHeight,
+        document.documentElement.clientHeight
+      );
+
       // Keep the nav pinned to the visible viewport when mobile browser chrome
       // expands/collapses (notably iPhone Chrome/Safari).
-      const nextInset = Math.max(
+      const rawInset = Math.max(
         0,
-        Math.round(window.innerHeight - viewport.height - viewport.offsetTop)
+        layoutViewportHeight - viewport.height - viewport.offsetTop
       );
+      // `rawInset` can include iOS safe-area; subtract it so we only track
+      // browser chrome displacement and avoid a persistent floating gap.
+      const nextInset = Math.max(0, Math.round(rawInset - safeAreaBottom));
       setViewportBottomInset((prev) => (prev === nextInset ? prev : nextInset));
     };
 

@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+
   /* ═══════════════════════════════════════════════════════════════
      TRANSFORMATION HUB DESIGN SYSTEM
      A visual language of depth, luminescence, and sacred warmth
