@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { TransformationGoal } from '@/types';
-import type { AchievementUnlock } from '@/types/achievements';
 import type { IdentityStatement, IdentityContext } from '@/types/identity';
-import { ACHIEVEMENTS } from '@/types/achievements';
 
 interface CheckinResponseData {
   promptId: string;
@@ -169,11 +167,9 @@ interface UserState {
   wisdomInActionLogs: WisdomInAction[];
   lastAssessmentMonth: string | null;
 
-  // Phase 3: Identity & Achievements
+  // Phase 3: Identity & Activity
   identityStatements: IdentityStatement[];
-  unlockedAchievements: AchievementUnlock[];
   activityLog: ActivityDay[];
-  pendingAchievementCelebration: string | null; // Achievement ID to celebrate
 
   // Pending lesson action (for GoDoIt lessons)
   pendingLessonAction: PendingLessonAction | null;
@@ -248,14 +244,6 @@ interface UserActions {
   saveIdentityStatement: (statement: string, context: IdentityContext, tags?: string[]) => void;
   getIdentityStatements: () => IdentityStatement[];
 
-  // Phase 3: Achievements
-  checkAndUnlockAchievements: () => string[]; // Returns newly unlocked achievement IDs
-  isAchievementUnlocked: (achievementId: string) => boolean;
-  getUnlockedAchievements: () => AchievementUnlock[];
-  markAchievementCelebrated: (achievementId: string) => void;
-  getPendingCelebration: () => string | null;
-  clearPendingCelebration: () => void;
-
   // Phase 3: Activity Log
   getActivityLog: (days?: number) => ActivityDay[];
   getStreakCalendarData: (months?: number) => ActivityDay[];
@@ -266,7 +254,6 @@ interface UserActions {
     totalReflections: number;
     totalWords: number;
     totalIdentityStatements: number;
-    totalAchievements: number;
     daysSinceStart: number;
     averageReflectionLength: number;
   };
@@ -334,9 +321,7 @@ const initialState: UserState = {
   lastAssessmentMonth: null,
   // Phase 3
   identityStatements: [],
-  unlockedAchievements: [],
   activityLog: [],
-  pendingAchievementCelebration: null,
   // Pending lesson action
   pendingLessonAction: null,
   // In-progress lesson (for page refresh persistence)
@@ -496,8 +481,6 @@ export const useStore = create<UserState & UserActions>()(
           activityLog: newActivityLog,
         });
 
-        // Check for new achievements after lesson completion
-        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       setCurrentLesson: (lessonId) => set({ currentLessonId: lessonId }),
@@ -573,8 +556,6 @@ export const useStore = create<UserState & UserActions>()(
           totalXp: state.totalXp + xpEarned,
         });
 
-        // Check for first-checkin achievement
-        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       // ============================================
@@ -618,8 +599,6 @@ export const useStore = create<UserState & UserActions>()(
           activityLog: newActivityLog,
         });
 
-        // Check for reflection achievements
-        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       getRecentReflections: (count = 14) => {
@@ -650,8 +629,6 @@ export const useStore = create<UserState & UserActions>()(
           totalXp: state.totalXp + xpEarned,
         });
 
-        // Check for first-assessment achievement
-        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       isAssessmentDue: () => {
@@ -699,8 +676,6 @@ export const useStore = create<UserState & UserActions>()(
           totalXp: state.totalXp + xpBonus,
         });
 
-        // Check for wisdom-action achievement
-        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       getWisdomInActionLogs: (limit = 50) => {
@@ -777,8 +752,6 @@ export const useStore = create<UserState & UserActions>()(
           totalXp: state.totalXp + xpBonus,
         });
 
-        // Check for identity achievements
-        setTimeout(() => get().checkAndUnlockAchievements(), 100);
       },
 
       getIdentityStatements: () => {
@@ -786,120 +759,6 @@ export const useStore = create<UserState & UserActions>()(
         return [...state.identityStatements].sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-      },
-
-      // ============================================
-      // PHASE 3: ACHIEVEMENTS
-      // ============================================
-      checkAndUnlockAchievements: () => {
-        const state = get();
-        const newlyUnlocked: string[] = [];
-        const alreadyUnlocked = state.unlockedAchievements.map(a => a.achievementId);
-
-        const lessonCount = Object.keys(state.completedLessons).length;
-        const reflectionCount = state.allReflections.length;
-        const identityCount = state.identityStatements.length;
-        const currentXp = state.totalXp;
-        const streak = state.currentStreak;
-
-        for (const achievement of ACHIEVEMENTS) {
-          if (alreadyUnlocked.includes(achievement.id)) continue;
-
-          let shouldUnlock = false;
-          const { type, value, specialCondition } = achievement.requirement;
-
-          switch (type) {
-            case 'streak':
-              shouldUnlock = streak >= value;
-              break;
-            case 'lessons':
-              shouldUnlock = lessonCount >= value;
-              break;
-            case 'reflections':
-              shouldUnlock = reflectionCount >= value;
-              break;
-            case 'identity':
-              shouldUnlock = identityCount >= value;
-              break;
-            case 'xp':
-              shouldUnlock = currentXp >= value;
-              break;
-            case 'special':
-              switch (specialCondition) {
-                case 'first-practice':
-                  // Check if any practice lessons completed
-                  shouldUnlock = Object.keys(state.completedLessons).some(id => id.startsWith('practice-'));
-                  break;
-                case 'first-checkin':
-                  shouldUnlock = state.weeklyCheckins.length >= 1;
-                  break;
-                case 'first-assessment':
-                  shouldUnlock = state.monthlyAssessments.length >= 1;
-                  break;
-                case 'first-wisdom-action':
-                  shouldUnlock = state.wisdomInActionLogs.length >= 1;
-                  break;
-              }
-              break;
-          }
-
-          if (shouldUnlock) {
-            newlyUnlocked.push(achievement.id);
-          }
-        }
-
-        if (newlyUnlocked.length > 0) {
-          const now = new Date().toISOString();
-          const newUnlocks: AchievementUnlock[] = newlyUnlocked.map(id => ({
-            achievementId: id,
-            unlockedAt: now,
-            celebrated: false,
-          }));
-
-          // Calculate bonus XP from achievements
-          const bonusXp = newlyUnlocked.reduce((sum, id) => {
-            const achievement = ACHIEVEMENTS.find(a => a.id === id);
-            return sum + (achievement?.xpBonus || 0);
-          }, 0);
-
-          set({
-            unlockedAchievements: [...state.unlockedAchievements, ...newUnlocks],
-            totalXp: state.totalXp + bonusXp,
-            pendingAchievementCelebration: newlyUnlocked[0], // Queue first one for celebration
-          });
-        }
-
-        return newlyUnlocked;
-      },
-
-      isAchievementUnlocked: (achievementId) => {
-        const state = get();
-        return state.unlockedAchievements.some(a => a.achievementId === achievementId);
-      },
-
-      getUnlockedAchievements: () => {
-        const state = get();
-        return [...state.unlockedAchievements].sort((a, b) =>
-          new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime()
-        );
-      },
-
-      markAchievementCelebrated: (achievementId) => {
-        const state = get();
-        set({
-          unlockedAchievements: state.unlockedAchievements.map(a =>
-            a.achievementId === achievementId ? { ...a, celebrated: true } : a
-          ),
-        });
-      },
-
-      getPendingCelebration: () => {
-        const state = get();
-        return state.pendingAchievementCelebration;
-      },
-
-      clearPendingCelebration: () => {
-        set({ pendingAchievementCelebration: null });
       },
 
       // ============================================
@@ -935,7 +794,6 @@ export const useStore = create<UserState & UserActions>()(
           (sum, r) => sum + r.reflection.split(/\s+/).length, 0
         );
         const totalIdentityStatements = state.identityStatements.length;
-        const totalAchievements = state.unlockedAchievements.length;
 
         // Calculate days since start
         const firstActivity = state.activityLog[0];
@@ -952,7 +810,6 @@ export const useStore = create<UserState & UserActions>()(
           totalReflections,
           totalWords,
           totalIdentityStatements,
-          totalAchievements,
           daysSinceStart,
           averageReflectionLength,
         };
@@ -1091,13 +948,6 @@ export const useStore = create<UserState & UserActions>()(
           }
         ];
 
-        const demoAchievements: AchievementUnlock[] = [
-          { achievementId: 'first-lesson', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true },
-          { achievementId: 'first-reflection', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true },
-          { achievementId: 'week-streak', unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true },
-          { achievementId: 'deep-thinker', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), celebrated: true }
-        ];
-
         const completedLessons: Record<string, boolean> = {};
         demoReflections.forEach(r => {
           completedLessons[r.lessonId] = true;
@@ -1111,7 +961,6 @@ export const useStore = create<UserState & UserActions>()(
           allReflections: demoReflections,
           reflections: demoReflections.slice(-5),
           identityStatements: demoIdentityStatements,
-          unlockedAchievements: demoAchievements,
           completedLessons,
           totalXp: 350,
           currentStreak: 7,

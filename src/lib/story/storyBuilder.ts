@@ -21,7 +21,6 @@ import {
   PatternShiftSlide,
   IdentityMomentSlide,
   StreakHighlightSlide,
-  AchievementSlide,
   StatRevealSlide,
   AssessmentGrowthSlide,
   WordCloudSlide,
@@ -273,27 +272,22 @@ function buildSlides(
     slides.push(buildIdentityMomentSlide(context, order++));
   }
 
-  // 8. ACHIEVEMENT SLIDE (if they have achievements)
-  if (context.achievements.length > 0) {
-    slides.push(buildAchievementSlide(context, order++));
-  }
-
-  // 9. ASSESSMENT GROWTH (if multiple assessments with improvement)
+  // 8. ASSESSMENT GROWTH (if multiple assessments with improvement)
   const assessmentSlide = buildAssessmentGrowthSlide(context, order);
   if (assessmentSlide) {
     slides.push(assessmentSlide);
     order++;
   }
 
-  // 10. WORD CLOUD (if enough reflections)
+  // 9. WORD CLOUD (if enough reflections)
   if (context.reflections.length >= 5) {
     slides.push(buildWordCloudSlide(context, order++));
   }
 
-  // 11. CLOSING SLIDE (always)
+  // 10. CLOSING SLIDE (always)
   slides.push(buildClosingSlide(context, mood, order++));
 
-  // 12. CALL TO ACTION (always)
+  // 11. CALL TO ACTION (always)
   slides.push(buildCallToActionSlide(mood, order++));
 
   return slides;
@@ -528,28 +522,6 @@ function buildIdentityMomentSlide(context: StoryGenerationContext, order: number
     },
     message: 'Words shape reality. You\'re writing yourself into existence.',
     totalStatements: context.identityStatements.length
-  };
-}
-
-function buildAchievementSlide(context: StoryGenerationContext, order: number): AchievementSlide {
-  // Get recent achievements (up to 4)
-  const recentAchievements = context.achievements
-    .sort((a, b) => new Date(b.unlockedAt).getTime() - new Date(a.unlockedAt).getTime())
-    .slice(0, 4);
-
-  return {
-    id: uuidv4(),
-    type: 'achievement',
-    order,
-    duration: 5000,
-    background: BACKGROUNDS.celebration,
-    animation: ANIMATIONS.scaleIn,
-    achievements: recentAchievements,
-    totalUnlocked: context.achievements.length,
-    totalAvailable: 30, // Approximate total achievements
-    message: context.achievements.length >= 10
-      ? 'Each badge represents a moment you transcended your limits.'
-      : 'These aren\'t just badges. They\'re proof of who you\'re becoming.'
   };
 }
 

@@ -49,7 +49,6 @@ const fr = {
     lessons: 'Leçons',
     exercises: 'Exercices',
     reflections: 'Réflexions',
-    achievements: 'Accomplissements',
     milestones: 'Étapes',
     daily: 'quotidien',
     weekly: 'Hebdomadaire',
@@ -453,7 +452,6 @@ const fr = {
     ],
     navigation: {
       progress: 'Progrès',
-      achievements: 'Accomplissements',
       identity: 'Identité',
       practice: 'Pratique',
       growth: 'Croissance',
@@ -923,19 +921,6 @@ const fr = {
   // ─────────────────────────────────────────────────────────────────────────
   // ACHIEVEMENTS
   // ─────────────────────────────────────────────────────────────────────────
-  achievements: {
-    title: 'Accomplissements',
-    gallery: 'Galerie des Accomplissements',
-    unlocked: 'Débloqué',
-    locked: 'Verrouillé',
-    progress: 'Progrès',
-    earned: 'Gagné',
-    unlockedAt: 'Débloqué le {date}',
-    keepGoing: 'Continuez pour débloquer !',
-    celebration: 'Accomplissement Débloqué !',
-    newMilestone: 'Nouvelle Étape',
-    continue: 'Continuer',
-  },
 
   // ─────────────────────────────────────────────────────────────────────────
   // PROGRESS
@@ -948,7 +933,6 @@ const fr = {
       totalReflections: 'Réflexions Totales',
       totalWords: 'Mots Écrits',
       identityStatements: 'Déclarations d\'Identité',
-      achievements: 'Accomplissements',
       daysSinceStart: 'Jours Actifs',
       avgReflectionLength: 'Longueur Moy. des Réflexions',
     },
@@ -1157,7 +1141,6 @@ const fr = {
         totalDays: 'Total de jours',
         consistency: 'Régularité',
       },
-      achievementUnlockedCount: '{unlocked} sur {total} débloqués',
     },
   },
 
@@ -1177,15 +1160,6 @@ const fr = {
           days: 'Jours',
           lessons: 'Leçons',
           xp: 'XP',
-        },
-      },
-      achievement: {
-        titleFallback: 'Étape franchie',
-        messageFallback: "J'ai atteint une nouvelle étape dans mon parcours !",
-        stats: {
-          virtue: 'Vertu',
-          wisdom: 'sagesse',
-          totalXp: 'XP total',
         },
       },
       level: {

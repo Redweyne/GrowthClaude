@@ -186,22 +186,6 @@ export function ActivityLoggerProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // Achievement unlocked
-      if (state.unlockedAchievements.length > prev.unlockedAchievements.length) {
-        const newAchievements = state.unlockedAchievements.slice(prev.unlockedAchievements.length);
-        for (const a of newAchievements) {
-          logEvent('achievement_unlocked', { achievementId: a.achievementId });
-        }
-      }
-
-      // Achievement celebrated
-      const newlyCelebrated = state.unlockedAchievements.filter(
-        (a) => a.celebrated && !prev.unlockedAchievements.find((p) => p.achievementId === a.achievementId)?.celebrated
-      );
-      for (const a of newlyCelebrated) {
-        logEvent('achievement_celebrated', { achievementId: a.achievementId });
-      }
-
       // Sound toggled
       if (state.soundEnabled !== prev.soundEnabled) {
         logEvent('sound_toggled', { enabled: state.soundEnabled });

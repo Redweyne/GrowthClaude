@@ -4,7 +4,7 @@
 // CONFETTI - Colorful celebration effect
 // ============================================================================
 //
-// Used in onboarding and achievement celebrations.
+// Used in onboarding and milestone celebrations.
 // For the reward step, we now use GoldShimmer instead.
 // ============================================================================
 

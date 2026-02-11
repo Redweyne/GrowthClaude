@@ -1,1 +1,0 @@
-export { ShareableCard } from './ShareableCard';

@@ -17,11 +17,9 @@ import {
   IdentityForStory,
   AssessmentForStory,
   WisdomLogForStory,
-  AchievementForStory,
   MonthlyPatternForStory
 } from '@/types/story';
 import { buildTransformationStory } from '@/lib/story';
-import { ACHIEVEMENTS } from '@/types/achievements';
 
 export function useTransformationStory() {
   const store = useStore();
@@ -100,21 +98,6 @@ export function useTransformationStory() {
       date: w.date
     }));
 
-    // Transform achievements (milestones)
-    const unlockedIds = new Set((store.unlockedAchievements || []).map(a => a.achievementId));
-    const achievements: AchievementForStory[] = ACHIEVEMENTS
-      .filter(a => unlockedIds.has(a.id))
-      .map(a => {
-        const unlock = store.unlockedAchievements?.find(u => u.achievementId === a.id);
-        return {
-          id: a.id,
-          name: a.name,
-          icon: a.icon || a.symbol, // Use symbol as fallback (new name)
-          rarity: a.rarity || a.weight, // Use weight as fallback (new name)
-          unlockedAt: unlock?.unlockedAt || ''
-        };
-      });
-
     // Build pattern history (simplified - using reflection themes)
     const patternHistory = buildPatternHistory(reflections);
 
@@ -146,7 +129,6 @@ export function useTransformationStory() {
       assessmentsCompleted: assessments.length,
       identityStatementsCreated: identityStatements.length,
       wisdomApplications: wisdomLogs.length,
-      achievementsUnlocked: achievements.length,
       totalXpEarned: store.totalXp,
       currentLevel: getCurrentLevel(store.totalXp),
       dominantPatterns: getDominantPatterns(patternHistory),
@@ -166,7 +148,6 @@ export function useTransformationStory() {
       identityStatements,
       assessments,
       wisdomLogs,
-      achievements,
       patternHistory,
       metrics
     };
@@ -384,13 +365,6 @@ function buildDemoContext(): StoryGenerationContext {
     }
   ];
 
-  const demoAchievements: AchievementForStory[] = [
-    { id: 'first-lesson', name: 'First Steps', icon: '🌱', rarity: 'common', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString() },
-    { id: 'first-reflection', name: 'Inner Voice', icon: '💭', rarity: 'common', unlockedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString() },
-    { id: 'week-streak', name: 'Consistent', icon: '🔥', rarity: 'rare', unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() },
-    { id: 'deep-thinker', name: 'Deep Thinker', icon: '🧠', rarity: 'rare', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() }
-  ];
-
   const totalWords = demoReflections.reduce((sum, r) => sum + r.wordCount, 0);
 
   const metrics: StoryMetrics = {
@@ -407,7 +381,6 @@ function buildDemoContext(): StoryGenerationContext {
     assessmentsCompleted: 0,
     identityStatementsCreated: 2,
     wisdomApplications: 0,
-    achievementsUnlocked: 4,
     totalXpEarned: 350,
     currentLevel: 3,
     dominantPatterns: ['control', 'acceptance', 'growth'],
@@ -427,7 +400,6 @@ function buildDemoContext(): StoryGenerationContext {
     identityStatements: demoIdentity,
     assessments: [],
     wisdomLogs: [],
-    achievements: demoAchievements,
     patternHistory: buildPatternHistory(demoReflections),
     metrics
   };

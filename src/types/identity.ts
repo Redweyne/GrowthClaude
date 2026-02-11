@@ -124,7 +124,7 @@ export const IDENTITY_PROMPTS: IdentityPrompt[] = [
 export interface IdentityMilestone {
   id: string;
   trigger: {
-    type: 'streak' | 'lessons' | 'reflections' | 'achievement';
+    type: 'streak' | 'lessons' | 'reflections';
     value: number | string;
   };
   promptMessage: string;

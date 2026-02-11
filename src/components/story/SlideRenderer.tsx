@@ -16,7 +16,6 @@ import {
   StatRevealSlide,
   StreakHighlightSlide,
   IdentityMomentSlide,
-  AchievementSlide,
   PatternShiftSlide,
   AssessmentGrowthSlide,
   WordCloudSlide,
@@ -144,8 +143,6 @@ export function SlideRenderer({ slide, isActive, onAction }: SlideRendererProps)
       return <StreakHighlightSlideContent slide={slide as StreakHighlightSlide} />;
     case 'identity_moment':
       return <IdentityMomentSlideContent slide={slide as IdentityMomentSlide} />;
-    case 'achievement':
-      return <AchievementSlideContent slide={slide as AchievementSlide} />;
     case 'assessment_growth':
       return <AssessmentGrowthSlideContent slide={slide as AssessmentGrowthSlide} />;
     case 'word_cloud':
@@ -682,75 +679,6 @@ function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
 // ============================================================================
 // ACHIEVEMENT SLIDE - Victories earned
 // ============================================================================
-
-function AchievementSlideContent({ slide }: { slide: AchievementSlide }) {
-  const { t } = useTranslation();
-  return (
-    <motion.div
-      className="flex flex-col items-center justify-center h-full"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.h2
-        variants={fadeUpVariants}
-        className="text-2xl font-bold text-white mb-8"
-      >
-        Victories Earned
-      </motion.h2>
-
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        {slide.achievements.map((achievement, index) => (
-          <motion.div
-            key={achievement.id}
-            initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{
-              delay: 0.2 + index * 0.15,
-              duration: 0.5,
-              ease: [0.34, 1.56, 0.64, 1]
-            }}
-            className="flex flex-col items-center p-4 rounded-2xl bg-white/5 border border-white/10"
-          >
-            <motion.span
-              className="text-4xl mb-2"
-              animate={{
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                delay: 0.5 + index * 0.1,
-                duration: 1,
-                repeat: Infinity,
-                repeatDelay: 2
-              }}
-            >
-              {achievement.icon}
-            </motion.span>
-            <span className="text-sm text-white font-medium text-center">
-              {achievement.name}
-            </span>
-            <span className="text-xs text-white/40 capitalize mt-1">
-              {achievement.rarity}
-            </span>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.div
-        variants={fadeUpVariants}
-        className="text-center"
-      >
-        <p className="text-white/60 mb-2">{slide.message}</p>
-        <p className="text-white/30 text-sm">
-          {t('story.slides.achievementUnlockedCount', {
-            unlocked: slide.totalUnlocked,
-            total: slide.totalAvailable,
-          })}
-        </p>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 // ============================================================================
 // ASSESSMENT GROWTH - Measurable progress

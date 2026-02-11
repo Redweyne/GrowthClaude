@@ -38,7 +38,7 @@ const HAPTIC_PATTERNS = {
   // Heavy - for major milestones
   heavy: [40],
 
-  // Celebration - for achievements, level ups
+  // Celebration - for milestones, level ups
   celebration: [20, 30, 20, 30, 40],
 
   // Wisdom reveal - gentle pulsing for insights

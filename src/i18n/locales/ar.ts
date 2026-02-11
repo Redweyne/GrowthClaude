@@ -49,7 +49,6 @@ const ar = {
     lessons: 'الدروس',
     exercises: 'التمارين',
     reflections: 'التأملات',
-    achievements: 'الإنجازات',
     milestones: 'المراحل',
     daily: 'يومياً',
     weekly: 'أسبوعي',
@@ -453,7 +452,6 @@ const ar = {
     ],
     navigation: {
       progress: 'التقدم',
-      achievements: 'الإنجازات',
       identity: 'الهوية',
       practice: 'الممارسة',
       growth: 'النمو',
@@ -923,19 +921,6 @@ const ar = {
   // ─────────────────────────────────────────────────────────────────────────
   // ACHIEVEMENTS
   // ─────────────────────────────────────────────────────────────────────────
-  achievements: {
-    title: 'الإنجازات',
-    gallery: 'معرض الإنجازات',
-    unlocked: 'مفتوح',
-    locked: 'مقفل',
-    progress: 'التقدم',
-    earned: 'مكتسب',
-    unlockedAt: 'فُتح في {date}',
-    keepGoing: 'استمر للفتح!',
-    celebration: 'تم فتح إنجاز!',
-    newMilestone: 'مرحلة جديدة',
-    continue: 'متابعة',
-  },
 
   // ─────────────────────────────────────────────────────────────────────────
   // PROGRESS
@@ -948,7 +933,6 @@ const ar = {
       totalReflections: 'إجمالي التأملات',
       totalWords: 'الكلمات المكتوبة',
       identityStatements: 'بيانات الهوية',
-      achievements: 'الإنجازات',
       daysSinceStart: 'الأيام النشطة',
       avgReflectionLength: 'متوسط طول التأمل',
     },
@@ -1157,7 +1141,6 @@ const ar = {
         totalDays: 'إجمالي الأيام',
         consistency: 'الاتساق',
       },
-      achievementUnlockedCount: '{unlocked} من {total} مفتوحة',
     },
   },
 
@@ -1177,15 +1160,6 @@ const ar = {
           days: 'أيام',
           lessons: 'دروس',
           xp: 'XP',
-        },
-      },
-      achievement: {
-        titleFallback: 'تم تحقيق إنجاز',
-        messageFallback: 'حققت إنجازا جديدا في رحلتي!',
-        stats: {
-          virtue: 'فضيلة',
-          wisdom: 'الحكمة',
-          totalXp: 'إجمالي XP',
         },
       },
       level: {
