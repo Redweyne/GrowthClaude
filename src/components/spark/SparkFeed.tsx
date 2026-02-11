@@ -44,9 +44,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   const feedRef = useRef<HTMLDivElement>(null);
   const watchedInSessionRef = useRef<Set<string>>(new Set());
+  const activeIndexRef = useRef(0);
   const scrollRafRef = useRef<number | null>(null);
-  const scrollIdleTimerRef = useRef<number | null>(null);
-  const pendingIndexRef = useRef(0);
 
   const activeVideo = playlist[activeIndex];
 
@@ -74,7 +73,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     if (cardHeight <= 0) return;
 
     const bounded = Math.max(0, Math.min(index, playlist.length - 1));
-    pendingIndexRef.current = bounded;
+    activeIndexRef.current = bounded;
     setActiveIndex(bounded);
     feed.scrollTo({
       top: bounded * cardHeight,
@@ -99,6 +98,10 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, []);
 
   useEffect(() => {
+    activeIndexRef.current = activeIndex;
+  }, [activeIndex]);
+
+  useEffect(() => {
     startSession();
 
     if (isFirstSparkSession) {
@@ -116,37 +119,37 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     const feed = feedRef.current;
     if (!feed) return;
 
-    const updatePendingIndex = () => {
+    const updateActiveIndex = () => {
       const cardHeight = resolveCardHeight();
       if (cardHeight <= 0) return;
 
-      const rawIndex = Math.round(feed.scrollTop / cardHeight);
-      const bounded = Math.max(0, Math.min(rawIndex, playlist.length - 1));
-      pendingIndexRef.current = bounded;
-    };
+      const threshold = cardHeight * 0.9;
+      let nextIndex = activeIndexRef.current;
+      let delta = feed.scrollTop - nextIndex * cardHeight;
 
-    const commitPendingIndex = () => {
-      setActiveIndex((previous) => (
-        previous === pendingIndexRef.current ? previous : pendingIndexRef.current
-      ));
+      while (delta > threshold && nextIndex < playlist.length - 1) {
+        nextIndex += 1;
+        delta = feed.scrollTop - nextIndex * cardHeight;
+      }
+
+      while (delta < -threshold && nextIndex > 0) {
+        nextIndex -= 1;
+        delta = feed.scrollTop - nextIndex * cardHeight;
+      }
+
+      if (nextIndex === activeIndexRef.current) return;
+      activeIndexRef.current = nextIndex;
+      setActiveIndex(nextIndex);
     };
 
     const handleScroll = () => {
-      if (scrollIdleTimerRef.current !== null) {
-        window.clearTimeout(scrollIdleTimerRef.current);
-      }
-      scrollIdleTimerRef.current = window.setTimeout(() => {
-        commitPendingIndex();
-        scrollIdleTimerRef.current = null;
-      }, 120);
-
       if (scrollRafRef.current !== null) {
         cancelAnimationFrame(scrollRafRef.current);
       }
-      scrollRafRef.current = requestAnimationFrame(updatePendingIndex);
+      scrollRafRef.current = requestAnimationFrame(updateActiveIndex);
     };
 
-    updatePendingIndex();
+    updateActiveIndex();
 
     feed.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
@@ -154,10 +157,6 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       if (scrollRafRef.current !== null) {
         cancelAnimationFrame(scrollRafRef.current);
         scrollRafRef.current = null;
-      }
-      if (scrollIdleTimerRef.current !== null) {
-        window.clearTimeout(scrollIdleTimerRef.current);
-        scrollIdleTimerRef.current = null;
       }
     };
   }, [playlist.length, resolveCardHeight]);
@@ -184,7 +183,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     const feed = feedRef.current;
     if (!feed) return;
     feed.scrollTop = 0;
-    pendingIndexRef.current = 0;
+    activeIndexRef.current = 0;
     setActiveIndex(0);
   }, []);
 
@@ -243,19 +242,6 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black" data-testid="spark-feed">
-      <div className="absolute inset-0 z-10">
-        <div className="relative w-full h-full max-w-[430px] mx-auto">
-          <SparkVideoPlayer
-            youtubeId={activeVideo.youtubeId}
-            isActive
-            soundEnabled={soundEnabled}
-            allowAutoplaySound={soundGestureUnlocked}
-            disableTapToggle
-            onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
-          />
-        </div>
-      </div>
-
       <div
         ref={feedRef}
         className="absolute inset-0 z-20 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -267,6 +253,21 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        <div
+          className="absolute left-0 right-0 z-10 h-[100svh]"
+          style={{ top: `calc(${activeIndex} * 100svh)` }}
+        >
+          <div className="relative w-full h-full max-w-[430px] mx-auto">
+            <SparkVideoPlayer
+              youtubeId={activeVideo.youtubeId}
+              isActive
+              soundEnabled={soundEnabled}
+              allowAutoplaySound={soundGestureUnlocked}
+              onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
+            />
+          </div>
+        </div>
+
         {playlist.map((video, index) => (
           <section
             key={video.id}
