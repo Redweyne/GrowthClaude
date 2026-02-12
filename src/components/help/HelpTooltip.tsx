@@ -169,7 +169,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center justify-center rounded-full text-stone-500 hover:text-stone-400 hover:bg-stone-800/50 transition-all ${
+        className={`inline-flex items-center justify-center rounded-full text-stone-500 hover:text-stone-400 light:hover:text-stone-700 hover:bg-stone-800/50 transition-all ${
           size === 'sm' ? 'w-5 h-5' : 'w-6 h-6'
         } ${className}`}
         aria-label={`Help: ${content.title}`}
@@ -207,7 +207,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                 {/* Close button */}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-300 transition-colors"
+                  className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-300 light:hover:text-stone-900 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -282,7 +282,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                         dismissHelp(topic);
                         setIsOpen(false);
                       }}
-                      className="py-3 px-4 rounded-xl bg-stone-800 text-stone-400 hover:text-stone-300 transition-colors text-sm"
+                      className="py-3 px-4 rounded-xl bg-stone-800 text-stone-400 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm"
                     >
                       Don&apos;t show again
                     </button>

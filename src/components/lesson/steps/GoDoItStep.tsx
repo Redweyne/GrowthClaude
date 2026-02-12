@@ -181,19 +181,19 @@ export function GoDoItStep({ step, commitment, onDismiss }: GoDoItStepProps) {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-stone-900/60 border border-stone-700/50 rounded-xl p-4 mb-6"
+                  className="bg-stone-900/60 light:bg-stone-200/60 border border-stone-700/50 rounded-xl p-4 mb-6"
                 >
                   <p className="text-xs text-amber-400/70 tracking-[0.15em] uppercase mb-2">
                     Your Commitment
                   </p>
-                  <p className="text-stone-300 italic">&ldquo;{commitment}&rdquo;</p>
+                  <p className="text-stone-300 light:text-stone-700 italic">&ldquo;{commitment}&rdquo;</p>
                 </motion.div>
               )}
 
               {/* Sage's message with typewriter effect */}
               <div className="min-h-[120px]">
                 <motion.p
-                  className="text-xl sm:text-2xl text-stone-200 leading-relaxed font-light"
+                  className="text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed font-light"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -214,7 +214,7 @@ export function GoDoItStep({ step, commitment, onDismiss }: GoDoItStepProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-stone-500 text-sm"
+                  className="text-stone-500 light:text-stone-600 text-sm"
                 >
                   {step.sageSubtext}
                 </motion.p>
@@ -247,7 +247,7 @@ export function GoDoItStep({ step, commitment, onDismiss }: GoDoItStepProps) {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.5 }}
-                      className="text-stone-600 text-xs mt-4"
+                      className="text-stone-600 light:text-stone-500 text-xs mt-4"
                     >
                       The lesson will wait for you here
                     </motion.p>

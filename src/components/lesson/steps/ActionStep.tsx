@@ -346,14 +346,14 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="text-xl text-stone-300 font-light max-w-md"
+              className="text-xl text-stone-300 light:text-stone-700 font-light max-w-md"
             >
               {currentGuidance}
             </motion.p>
 
             {/* Loading bar */}
             <motion.div
-              className="w-48 h-1 bg-stone-800 rounded-full mx-auto mt-12 overflow-hidden"
+              className="w-48 h-1 bg-stone-800 light:bg-stone-200 rounded-full mx-auto mt-12 overflow-hidden"
             >
               <motion.div
                 className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
@@ -387,7 +387,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
               transition={{ delay: 0.2 }}
               className="mb-12"
             >
-              <p className="text-xl sm:text-2xl text-stone-100 leading-relaxed font-light">
+              <p className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed font-light">
                 {lesson.actionPrompt}
               </p>
             </motion.div>
@@ -411,7 +411,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.5 }}
-                className="text-stone-500 text-sm italic mt-10 h-6"
+                className="text-stone-500 light:text-stone-600 text-sm italic mt-10 h-6"
               >
                 {currentGuidance}
               </motion.p>
@@ -434,14 +434,14 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
               </div>
 
               {/* Time remaining */}
-              <p className="text-stone-600 text-xs">
+              <p className="text-stone-600 light:text-stone-500 text-xs">
                 {formatTime(timeRemaining)} {t('lessons.action.remaining')}
               </p>
 
               {/* Skip option */}
               <button
                 onClick={handleSkip}
-                className="text-stone-700 hover:text-stone-500 text-xs transition-colors"
+                className="text-stone-700 hover:text-stone-500 light:text-stone-600 text-xs transition-colors"
               >
                 {t('lessons.action.readyToContinue')}
               </button>
@@ -508,7 +508,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="text-xl text-stone-300 font-light"
+              className="text-xl text-stone-300 light:text-stone-700 font-light"
             >
               {integrationMessage}
             </motion.p>
@@ -547,7 +547,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-xl text-stone-200 mb-10"
+              className="text-xl text-stone-200 light:text-stone-800 mb-10"
             >
               {t('lessons.action.practiceComplete')}
             </motion.p>
@@ -575,13 +575,13 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
 
               <button
                 onClick={() => handleComplete(false)}
-                className={`w-full py-3 text-stone-500 hover:text-stone-400 text-sm transition-colors flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
+                className={`w-full py-3 text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700 text-sm transition-colors flex items-center justify-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
               >
                 <Minus size={14} />
                 {t('lessons.action.iStruggled')}
               </button>
 
-              <p className="text-xs text-stone-600 mt-4">
+              <p className="text-xs text-stone-600 light:text-stone-500 mt-4">
                 {t('lessons.action.honestyIsPractice')}
               </p>
             </motion.div>
@@ -669,7 +669,7 @@ function BreathingVisualization({ breathPhase, breathCount, t }: BreathingVisual
       </p>
 
       {/* Breath count */}
-      <p className="text-stone-600 text-sm mt-4">
+      <p className="text-stone-600 light:text-stone-500 text-sm mt-4">
         {breathCount} {breathCount === 1 ? t('lessons.action.breath') : t('lessons.action.breaths')} {t('lessons.action.breathsComplete')}
       </p>
     </div>

@@ -99,7 +99,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
         initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
+        className={`flex items-center text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
         <ChevronLeft size={20} className={`transition-transform ${isRTL ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
         <span className="text-sm">{t('common.back')}</span>
@@ -124,7 +124,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
         <p className="text-2xl sm:text-3xl text-amber-100 font-light mb-2">
           {name ? `${name}, ` : ''}{t('onboarding.goal.whoDoYouWant')}
         </p>
-        <p className="text-stone-500">{t('onboarding.goal.chooseTransformation')}</p>
+        <p className="text-stone-500 light:text-stone-600">{t('onboarding.goal.chooseTransformation')}</p>
       </motion.div>
 
       {/* Goal options - beautiful cards with depth */}
@@ -255,7 +255,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-stone-400 text-sm leading-relaxed italic"
+                className="text-stone-400 light:text-stone-600 text-sm leading-relaxed italic"
               >
                 &ldquo;{getGoalDescription(transformationGoal)}&rdquo;
               </motion.p>

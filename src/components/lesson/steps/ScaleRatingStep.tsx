@@ -97,7 +97,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
         <div className="space-y-8">
           {/* Prompt */}
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl text-stone-100 leading-relaxed">
+            <h2 className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
               {step.prompt}
             </h2>
           </div>
@@ -112,7 +112,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
             >
               {/* Scale track with fill */}
               <div className="relative px-2">
-                <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                   {selectedValue !== null && (
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-amber-600 to-amber-400"
@@ -145,7 +145,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                           ? 'bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/30 scale-110'
                           : selectedValue !== null && value <= selectedValue
                           ? 'bg-amber-500/30 text-amber-300 border border-amber-500/30'
-                          : 'bg-stone-800/80 text-stone-400 border border-stone-700/50 hover:border-stone-600'
+                          : 'bg-stone-800/80 text-stone-400 light:text-stone-600 border border-stone-700/50 hover:border-stone-600'
                         }
                       `}
                       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -158,8 +158,8 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
 
               {/* Labels */}
               <div className="flex justify-between px-1">
-                <span className="text-xs text-stone-500 max-w-[80px]">{step.lowLabel}</span>
-                <span className="text-xs text-stone-500 max-w-[80px] text-right">{step.highLabel}</span>
+                <span className="text-xs text-stone-500 light:text-stone-600 max-w-[80px]">{step.lowLabel}</span>
+                <span className="text-xs text-stone-500 light:text-stone-600 max-w-[80px] text-right">{step.highLabel}</span>
               </div>
             </motion.div>
           )}

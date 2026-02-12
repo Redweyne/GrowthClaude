@@ -751,7 +751,7 @@ return (
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`min-h-screen bg-stone-950 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Ambient background */}
       <AmbientBackground
         intensity="subtle"
@@ -771,7 +771,7 @@ return (
 
       {/* Progress indicator */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="h-1 bg-stone-900/80 backdrop-blur-sm">
+        <div className="h-1 bg-stone-900/80 light:bg-stone-200/80 backdrop-blur-sm">
           <motion.div
             className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
             initial={{ width: 0 }}
@@ -792,7 +792,7 @@ return (
             key={currentStep?.type}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
+            className="text-xs tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium"
           >
             {currentStep ? getStepLabel(currentStep.type) : getStepLabel('scenario')}
           </motion.span>

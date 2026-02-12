@@ -95,7 +95,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
   }, [isSubstantial, handleSend]);
 
   return (
-    <div className={`min-h-screen bg-stone-950 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Ambient background */}
       <AmbientBackground intensity="subtle" particleCount={6} orbCount={2} />
 
@@ -112,14 +112,14 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
+          className="text-xs tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium"
         >
           {t('echoes.reflectingOnJourney')}
         </motion.span>
 
         <button
           onClick={onSkip}
-          className={`flex items-center gap-1 text-stone-500 hover:text-stone-400 text-sm transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+          className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700 text-sm transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           <SkipForward size={16} />
           {t('common.skip')}
@@ -158,7 +158,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="p-6 sm:p-5 rounded-2xl bg-stone-900/80 border border-stone-800"
+                  className="p-6 sm:p-5 rounded-2xl bg-stone-900/80 light:bg-stone-200/80 border border-stone-800 light:border-stone-200"
                 >
                   <div className={`text-5xl text-amber-400/20 font-serif leading-none mb-3 ${isRTL ? 'text-right' : ''}`}>
                     &ldquo;
@@ -181,7 +181,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-center text-stone-400 text-sm"
+                  className="text-center text-stone-400 light:text-stone-600 text-sm"
                 >
                   {t('echoes.absorbWords')}
                 </motion.p>
@@ -221,12 +221,12 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="p-4 rounded-xl bg-stone-900/50 border border-stone-800/50"
+                  className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50"
                 >
-                  <p className={`text-stone-500 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}>
+                  <p className={`text-stone-500 light:text-stone-600 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}>
                     {t('echoes.fellowWrote').replace('{gender}', genderLabel)}
                   </p>
-                  <p className={`text-stone-400 text-sm leading-relaxed line-clamp-3 ${isRTL ? 'text-right' : ''}`}>
+                  <p className={`text-stone-400 light:text-stone-600 text-sm leading-relaxed line-clamp-3 ${isRTL ? 'text-right' : ''}`}>
                     &ldquo;{reflection.content}&rdquo;
                   </p>
                 </motion.div>
@@ -244,7 +244,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                       reflection.authorGender === 'sister' ? t('echoes.pronounHer') : t('echoes.pronounThem')
                     )}
                   </p>
-                  <p className="text-stone-300">
+                  <p className="text-stone-300 light:text-stone-700">
                     {t('echoes.whatDoesTheirJourney')}
                     <br />
                     {t('echoes.whatEncouragement')}
@@ -261,8 +261,8 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                     className={`
                       relative rounded-2xl transition-all duration-300 border-2
                       ${isFocused
-                        ? 'bg-stone-900/80 border-amber-500/30'
-                        : 'bg-stone-900/50 border-stone-700/50'}
+                        ? 'bg-stone-900/80 light:bg-stone-200/80 border-amber-500/30'
+                        : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50'}
                     `}
                   >
                     <textarea
@@ -274,7 +274,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                       placeholder={t('echoes.writeYourThoughts')}
                       className={`
                         w-full min-h-[160px] p-5
-                        bg-transparent text-lg text-stone-200
+                        bg-transparent text-lg text-stone-200 light:text-stone-800
                         placeholder-stone-600 leading-relaxed
                         focus:outline-none resize-none
                         font-light tracking-wide
@@ -286,10 +286,10 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
 
                     {/* Word count */}
                     <div className={`absolute bottom-4 left-5 right-5 flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <span className="text-stone-500 text-sm">
+                      <span className="text-stone-500 light:text-stone-600 text-sm">
                         {wordCount} {wordCount === 1 ? t('common.word') : t('common.words')}
                       </span>
-                      <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600'}`}>
+                      <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600 light:text-stone-500'}`}>
                         {isSubstantial ? t('echoes.readyToSend') : t('echoes.aBitMore')}
                       </span>
                     </div>
@@ -330,7 +330,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                           </motion.svg>
                         )}
                       </div>
-                      <span className="text-stone-400 text-sm">
+                      <span className="text-stone-400 light:text-stone-600 text-sm">
                         {t('echoes.openToConnecting').replace('{pronoun}',
                           reflection.authorGender === 'brother' ? t('echoes.pronounHe') :
                           reflection.authorGender === 'sister' ? t('echoes.pronounShe') : t('echoes.pronounThey')
@@ -360,7 +360,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   </Button>
 
                   {isSubstantial && (
-                    <p className="text-center text-xs text-stone-600">
+                    <p className="text-center text-xs text-stone-600 light:text-stone-500">
                       {t('echoes.pressToSend')}
                     </p>
                   )}
@@ -389,7 +389,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                 >
                   <Heart size={28} className="text-amber-400" />
                 </motion.div>
-                <p className="text-stone-400">{t('echoes.sendingReflection')}</p>
+                <p className="text-stone-400 light:text-stone-600">{t('echoes.sendingReflection')}</p>
               </motion.div>
             )}
 
@@ -430,7 +430,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="text-xl font-semibold text-stone-200 mb-2"
+                  className="text-xl font-semibold text-stone-200 light:text-stone-800 mb-2"
                 >
                   {t('echoes.reflectionSent')}
                 </motion.h3>
@@ -439,7 +439,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-stone-400"
+                  className="text-stone-400 light:text-stone-600"
                 >
                   {t('echoes.yourWordsWillReach')}
                 </motion.p>

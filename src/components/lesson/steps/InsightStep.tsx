@@ -197,7 +197,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
                 — {step.source}
               </p>
               {step.sourceBook && (
-                <p className="text-stone-500 text-sm">
+                <p className="text-stone-500 light:text-stone-600 text-sm">
                   {step.sourceBook}
                 </p>
               )}
@@ -210,7 +210,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="pt-6 border-t border-stone-800"
+              className="pt-6 border-t border-stone-800 light:border-stone-200"
             >
               <WisdomText
                 variant="instruction"

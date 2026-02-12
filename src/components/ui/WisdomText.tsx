@@ -55,13 +55,13 @@ function splitIntoSentences(text: string): string[] {
 // Variant styles - clean, readable typography
 const variantStyles = {
   narrative: {
-    base: 'text-stone-200',
+    base: 'text-stone-200 light:text-stone-800',
     leading: 'leading-[1.8] sm:leading-relaxed',
     size: 'text-lg sm:text-xl',
     spacing: 'space-y-4 sm:space-y-3',
   },
   insight: {
-    base: 'text-stone-100',
+    base: 'text-stone-100 light:text-stone-900',
     leading: 'leading-[1.9] sm:leading-relaxed',
     size: 'text-xl sm:text-2xl',
     spacing: 'space-y-5 sm:space-y-4',
@@ -73,7 +73,7 @@ const variantStyles = {
     spacing: 'space-y-4 sm:space-y-3',
   },
   instruction: {
-    base: 'text-stone-300',
+    base: 'text-stone-300 light:text-stone-700',
     leading: 'leading-[1.7] sm:leading-normal',
     size: 'text-base sm:text-lg',
     spacing: 'space-y-3 sm:space-y-2',

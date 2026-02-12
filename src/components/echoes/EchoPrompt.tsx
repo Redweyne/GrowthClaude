@@ -60,12 +60,12 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 30 }}
-        className="relative w-full max-w-md bg-stone-900/90 backdrop-blur-xl border border-stone-800 rounded-3xl p-8 shadow-2xl"
+        className="relative w-full max-w-md bg-stone-900/90 backdrop-blur-xl border border-stone-800 light:border-stone-200 rounded-3xl p-8 shadow-2xl"
       >
         {/* Close button */}
         <button
           onClick={handleDecline}
-          className={`absolute top-4 p-2 text-stone-500 hover:text-stone-300 transition-colors ${isRTL ? 'left-4' : 'right-4'}`}
+          className={`absolute top-4 p-2 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors ${isRTL ? 'left-4' : 'right-4'}`}
         >
           <X size={20} />
         </button>
@@ -109,10 +109,10 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
           transition={{ delay: 0.4 }}
           className="text-center mb-8"
         >
-          <p className="text-stone-300 leading-relaxed mb-4">
+          <p className="text-stone-300 light:text-stone-700 leading-relaxed mb-4">
             {t('echoes.roleOfTeacher')}
           </p>
-          <p className="text-stone-400 text-sm leading-relaxed">
+          <p className="text-stone-400 light:text-stone-600 text-sm leading-relaxed">
             {t('echoes.reflectOnJourney')}
           </p>
         </motion.div>
@@ -124,10 +124,10 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
           transition={{ delay: 0.5 }}
           className="mb-8 p-4 rounded-xl bg-stone-800/50 border border-stone-700/50"
         >
-          <p className="text-stone-400 text-sm italic text-center">
+          <p className="text-stone-400 light:text-stone-600 text-sm italic text-center">
             &ldquo;{t('echoes.byTeachingOthers')}&rdquo;
           </p>
-          <p className="text-stone-500 text-xs text-center mt-2">
+          <p className="text-stone-500 light:text-stone-600 text-xs text-center mt-2">
             — {t('echoes.proverb')}
           </p>
         </motion.div>
@@ -151,7 +151,7 @@ export function EchoPrompt({ onAccept, onDecline }: EchoPromptProps) {
 
           <button
             onClick={handleDecline}
-            className="w-full py-3 text-stone-500 hover:text-stone-400 text-sm transition-colors"
+            className="w-full py-3 text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700 text-sm transition-colors"
           >
             {t('echoes.notRightNow')}
           </button>

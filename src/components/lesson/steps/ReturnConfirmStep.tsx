@@ -85,7 +85,7 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-2xl text-stone-100 font-light"
+                className="text-2xl text-stone-100 light:text-stone-900 font-light"
               >
                 {step.welcomeMessage}
               </motion.p>
@@ -96,12 +96,12 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="bg-stone-900/50 border border-stone-700/50 rounded-xl p-4"
+                  className="bg-stone-900/50 light:bg-stone-200/50 border border-stone-700/50 rounded-xl p-4"
                 >
                   <p className="text-xs text-amber-400/70 tracking-[0.15em] uppercase mb-2">
                     You committed to
                   </p>
-                  <p className="text-stone-300 italic">&ldquo;{commitment}&rdquo;</p>
+                  <p className="text-stone-300 light:text-stone-700 italic">&ldquo;{commitment}&rdquo;</p>
                 </motion.div>
               )}
             </motion.div>
@@ -121,7 +121,7 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-2xl text-stone-100 font-light leading-relaxed"
+                className="text-2xl text-stone-100 light:text-stone-900 font-light leading-relaxed"
               >
                 {step.confirmationQuestion}
               </motion.p>
@@ -139,14 +139,14 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                   data-testid="return-completed-btn"
                   className="
                     w-full p-5 rounded-2xl text-left transition-all duration-300
-                    border-2 bg-stone-900/50 border-stone-700/50
+                    border-2 bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50
                     hover:bg-emerald-500/10 hover:border-emerald-500/30
                     group
                   "
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <span className="text-lg font-medium text-stone-100 group-hover:text-emerald-300 transition-colors">
+                  <span className="text-lg font-medium text-stone-100 light:text-stone-900 group-hover:text-emerald-300 transition-colors">
                     {step.completedOption.label}
                   </span>
                 </motion.button>
@@ -157,14 +157,14 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                   data-testid="return-not-completed-btn"
                   className="
                     w-full p-5 rounded-2xl text-left transition-all duration-300
-                    border-2 bg-stone-900/50 border-stone-700/50
+                    border-2 bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50
                     hover:bg-amber-500/10 hover:border-amber-500/30
                     group
                   "
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <span className="text-lg font-medium text-stone-100 group-hover:text-amber-300 transition-colors">
+                  <span className="text-lg font-medium text-stone-100 light:text-stone-900 group-hover:text-amber-300 transition-colors">
                     {step.didNotCompleteOption.label}
                   </span>
                 </motion.button>
@@ -175,7 +175,7 @@ export function ReturnConfirmStep({ step, commitment, onComplete }: ReturnConfir
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-stone-600 text-sm"
+                className="text-stone-600 light:text-stone-500 text-sm"
               >
                 There is no wrong answer. Only honest ones.
               </motion.p>

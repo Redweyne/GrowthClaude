@@ -102,37 +102,42 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     const variants = {
       default: `
         bg-gradient-to-b from-stone-900 to-stone-950
-        border border-stone-800/80
+        light:from-stone-100 light:to-stone-50
+        border border-stone-800/80 light:border-stone-300
         shadow-lg shadow-black/40
       `,
       elevated: `
         bg-gradient-to-b from-stone-850 to-stone-900
+        light:from-stone-100 light:to-stone-50
         shadow-xl shadow-black/50
-        border border-stone-800/50
+        border border-stone-800/50 light:border-stone-300
       `,
       bordered: `
-        bg-stone-950/50
-        border-2 border-stone-700/60
+        bg-stone-950 light:bg-stone-50/50
+        border-2 border-stone-700/60 light:border-stone-300
       `,
       glass: `
-        bg-stone-900/30 backdrop-blur-xl
-        border border-white/[0.08]
+        bg-stone-900/30 light:bg-stone-100/80 backdrop-blur-xl
+        border border-white/[0.08] light:border-stone-300
         shadow-xl shadow-black/30
       `,
       warm: `
         bg-gradient-to-br from-stone-900 via-stone-900 to-stone-950
-        border border-amber-500/15
+        light:from-amber-50 light:via-stone-100 light:to-stone-50
+        border border-amber-500/15 light:border-amber-500/30
         shadow-lg shadow-black/40
       `,
       glow: `
         bg-gradient-to-b from-stone-900 to-stone-950
-        border border-amber-500/25
+        light:from-stone-100 light:to-stone-50
+        border border-amber-500/25 light:border-amber-500/35
         shadow-lg shadow-amber-500/10
       `,
       premium: `
         bg-gradient-to-br from-stone-800/50 via-stone-900/60 to-stone-950/70
+        light:from-stone-100/90 light:via-stone-50/90 light:to-amber-50/70
         backdrop-blur-2xl
-        border border-amber-500/20
+        border border-amber-500/20 light:border-stone-300
         shadow-2xl shadow-black/50
       `,
     };

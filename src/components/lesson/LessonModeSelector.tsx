@@ -43,7 +43,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
   }, [selected, playTapConfirm, playSuccess, onSelect]);
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden">
       <AmbientBackground intensity="subtle" particleCount={3} orbCount={1} />
 
       {/* Atmospheric glow */}
@@ -72,7 +72,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
               {lesson.title}
             </motion.p>
             <motion.h1
-              className="text-2xl sm:text-3xl text-stone-100 leading-relaxed"
+              className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -98,7 +98,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                   ? 'bg-amber-500/15 border-amber-500/50 scale-[1.02]'
                   : selected !== null
                   ? 'bg-stone-900/30 border-stone-800/30 opacity-40'
-                  : 'bg-stone-900/60 border-stone-700/40 hover:border-amber-500/30 hover:bg-stone-900/80'
+                  : 'bg-stone-900/60 light:bg-stone-200/60 border-stone-700/40 hover:border-amber-500/30 hover:bg-stone-900/80 light:hover:bg-stone-200/80'
                 }
               `}
               style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -119,14 +119,14 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                 <div className="flex-1 min-w-0">
                   <h3 className={`
                     text-lg font-semibold mb-1 transition-colors
-                    ${selected === 'deep' ? 'text-amber-300' : 'text-stone-100'}
+                    ${selected === 'deep' ? 'text-amber-300' : 'text-stone-100 light:text-stone-900'}
                   `}>
                     Reflect & Write
                   </h3>
-                  <p className="text-sm text-stone-400 leading-relaxed">
+                  <p className="text-sm text-stone-400 light:text-stone-600 leading-relaxed">
                     Go deeper through writing. More personal, more powerful.
                   </p>
-                  <div className="flex items-center gap-3 mt-3 text-xs text-stone-500">
+                  <div className="flex items-center gap-3 mt-3 text-xs text-stone-500 light:text-stone-600">
                     <span>~{lesson.estimatedMinutes || 5} min</span>
                     <span className="w-1 h-1 rounded-full bg-stone-700" />
                     <span>Writing & reflection</span>
@@ -152,7 +152,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                   ? 'bg-purple-500/15 border-purple-500/50 scale-[1.02]'
                   : selected !== null
                   ? 'bg-stone-900/30 border-stone-800/30 opacity-40'
-                  : 'bg-stone-900/60 border-stone-700/40 hover:border-purple-500/30 hover:bg-stone-900/80'
+                  : 'bg-stone-900/60 light:bg-stone-200/60 border-stone-700/40 hover:border-purple-500/30 hover:bg-stone-900/80 light:hover:bg-stone-200/80'
                 }
               `}
               style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -173,14 +173,14 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                 <div className="flex-1 min-w-0">
                   <h3 className={`
                     text-lg font-semibold mb-1 transition-colors
-                    ${selected === 'engagement' ? 'text-purple-300' : 'text-stone-100'}
+                    ${selected === 'engagement' ? 'text-purple-300' : 'text-stone-100 light:text-stone-900'}
                   `}>
                     Feel & Choose
                   </h3>
-                  <p className="text-sm text-stone-400 leading-relaxed">
+                  <p className="text-sm text-stone-400 light:text-stone-600 leading-relaxed">
                     Stay engaged without writing. Interactive, quick, no typing.
                   </p>
-                  <div className="flex items-center gap-3 mt-3 text-xs text-stone-500">
+                  <div className="flex items-center gap-3 mt-3 text-xs text-stone-500 light:text-stone-600">
                     <span>~{Math.max(2, Math.ceil((lesson.estimatedMinutes || 5) * 0.5))} min</span>
                     <span className="w-1 h-1 rounded-full bg-stone-700" />
                     <span>Tap & choose</span>

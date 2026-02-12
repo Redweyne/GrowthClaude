@@ -81,7 +81,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
           initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
+          className={`flex items-center text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
         >
           {isRTL ? (
             <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -145,18 +145,18 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="py-5 px-6 rounded-2xl bg-stone-900/50 border border-stone-800/80"
+                className="py-5 px-6 rounded-2xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/80"
               >
                 <div className={`flex items-center justify-center gap-6 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Zap size={16} className="text-amber-500" />
                     <span className="text-amber-200">{dailyCommitmentMinutes} {t('onboarding.ready.min')}</span>
-                    <span className="text-stone-500">{t('onboarding.ready.daily')}</span>
+                    <span className="text-stone-500 light:text-stone-600">{t('onboarding.ready.daily')}</span>
                   </div>
-                  <div className="w-px h-4 bg-stone-800" />
+                  <div className="w-px h-4 bg-stone-800 light:bg-stone-200" />
                   <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Star size={16} className="text-purple-400" />
-                    <span className="text-stone-400">{t('onboarding.ready.stoicWisdom')}</span>
+                    <span className="text-stone-400 light:text-stone-600">{t('onboarding.ready.stoicWisdom')}</span>
                   </div>
                 </div>
               </motion.div>
@@ -234,7 +234,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 <p className="text-2xl text-amber-100 font-light mb-4">
                   {t('onboarding.ready.wontWalkAlone')}
                 </p>
-                <p className="text-stone-400 leading-relaxed">
+                <p className="text-stone-400 light:text-stone-600 leading-relaxed">
                   {t('onboarding.ready.mentorWillGuide')}
                   <br />
                   {t('onboarding.ready.wisdomTailored')}
@@ -331,7 +331,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 <p className="text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 font-light mb-4">
                   {name}, {t('onboarding.ready.youreReady')}
                 </p>
-                <p className="text-stone-400 text-lg mb-10">
+                <p className="text-stone-400 light:text-stone-600 text-lg mb-10">
                   {t('onboarding.ready.firstLessonAwaits')}
                 </p>
               </motion.div>
@@ -358,7 +358,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.2 }}
-                  className="text-xs text-stone-600 mt-6 italic"
+                  className="text-xs text-stone-600 light:text-stone-500 mt-6 italic"
                 >
                   &ldquo;{t('onboarding.ready.personYouBecome')}&rdquo;
                 </motion.p>

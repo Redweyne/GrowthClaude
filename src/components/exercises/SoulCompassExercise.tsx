@@ -196,7 +196,7 @@ export function SoulCompassExercise({
 
   return (
     <motion.div
-      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
+      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -215,7 +215,7 @@ export function SoulCompassExercise({
         {onBack && phase === 'selecting' && (
           <button
             onClick={onBack}
-            className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
+            className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
             {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             {t('exercises.back')}
@@ -226,8 +226,8 @@ export function SoulCompassExercise({
             <span className="text-xl">🔮</span>
           </div>
           <div className={isRTL ? 'text-right' : ''}>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Soul Compass</p>
-            <h1 className="text-xl font-semibold text-stone-100">{title}</h1>
+            <p className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">Soul Compass</p>
+            <h1 className="text-xl font-semibold text-stone-100 light:text-stone-900">{title}</h1>
           </div>
         </div>
       </div>
@@ -246,10 +246,10 @@ export function SoulCompassExercise({
             >
               {/* Central question */}
               <div className="text-center mb-6">
-                <h2 className="text-xl sm:text-2xl text-stone-100 leading-relaxed">
+                <h2 className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed">
                   {content.centralQuestion}
                 </h2>
-                <p className="text-sm text-stone-500 mt-2">
+                <p className="text-sm text-stone-500 light:text-stone-600 mt-2">
                   {maxSelections > 1
                     ? `Tap all that resonate${minSelections > 1 ? ` (at least ${minSelections})` : ''}`
                     : 'Choose one'}
@@ -277,7 +277,7 @@ export function SoulCompassExercise({
                           border-2 relative overflow-hidden active:scale-[0.98]
                           ${isSelected
                             ? `${config.selectedBg} ${config.border}`
-                            : 'bg-stone-900/50 border-stone-700/40 hover:border-stone-600/60'
+                            : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 hover:border-stone-600/60'
                           }
                         `}
                         style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -318,7 +318,7 @@ export function SoulCompassExercise({
                           {/* Option text */}
                           <span className={`
                             text-base leading-snug transition-colors duration-200
-                            ${isSelected ? 'text-stone-100' : 'text-stone-300'}
+                            ${isSelected ? 'text-stone-100 light:text-stone-900' : 'text-stone-300 light:text-stone-700'}
                           `}>
                             <span className="mr-2">{option.emoji}</span>
                             {option.text}
@@ -363,7 +363,7 @@ export function SoulCompassExercise({
               exit={{ opacity: 0, y: -16 }}
             >
               {/* Question */}
-              <h2 className="text-xl sm:text-2xl text-stone-100 text-center mb-8 leading-relaxed">
+              <h2 className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 text-center mb-8 leading-relaxed">
                 {content.intensityQuestion || 'How strongly does this feel?'}
               </h2>
 
@@ -395,7 +395,7 @@ export function SoulCompassExercise({
                           ? `${config.sliderThumb} text-white shadow-lg scale-110`
                           : intensity > 0 && value <= intensity
                           ? `${config.selectedBg} ${config.accent} border ${config.border}`
-                          : 'bg-stone-800/80 text-stone-400 border border-stone-700/50 hover:border-stone-600'
+                          : 'bg-stone-800/80 text-stone-400 light:text-stone-600 border border-stone-700/50 hover:border-stone-600'
                         }
                       `}
                       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -408,10 +408,10 @@ export function SoulCompassExercise({
 
               {/* Labels */}
               <div className="flex justify-between w-full max-w-sm px-1 mb-8">
-                <span className="text-xs text-stone-500">
+                <span className="text-xs text-stone-500 light:text-stone-600">
                   {content.intensityLabels?.low || 'Barely'}
                 </span>
-                <span className="text-xs text-stone-500">
+                <span className="text-xs text-stone-500 light:text-stone-600">
                   {content.intensityLabels?.high || 'Deeply'}
                 </span>
               </div>
@@ -456,7 +456,7 @@ export function SoulCompassExercise({
             >
               {/* Question */}
               <div className="text-center mb-6">
-                <h2 className="text-xl sm:text-2xl text-stone-100 leading-relaxed">
+                <h2 className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed">
                   {content.followUpQuestion || 'What could this lead to?'}
                 </h2>
               </div>
@@ -481,7 +481,7 @@ export function SoulCompassExercise({
                         border-2 relative overflow-hidden active:scale-[0.98]
                         ${isSelected
                           ? `${config.selectedBg} ${config.border}`
-                          : 'bg-stone-900/50 border-stone-700/40 hover:border-stone-600/60'
+                          : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 hover:border-stone-600/60'
                         }
                       `}
                       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -505,7 +505,7 @@ export function SoulCompassExercise({
                             </motion.div>
                           )}
                         </div>
-                        <span className={`text-base leading-snug ${isSelected ? 'text-stone-100' : 'text-stone-300'}`}>
+                        <span className={`text-base leading-snug ${isSelected ? 'text-stone-100 light:text-stone-900' : 'text-stone-300 light:text-stone-700'}`}>
                           <span className="mr-2">{option.emoji}</span>
                           {option.text}
                         </span>
@@ -586,11 +586,11 @@ export function SoulCompassExercise({
                 🧭
               </motion.div>
 
-              <h2 className="text-2xl font-semibold text-stone-100 mb-4">
+              <h2 className="text-2xl font-semibold text-stone-100 light:text-stone-900 mb-4">
                 Compass Set
               </h2>
 
-              <p className="text-stone-400 mb-8 text-center max-w-sm">
+              <p className="text-stone-400 light:text-stone-600 mb-8 text-center max-w-sm">
                 You&apos;ve mapped your inner terrain. This awareness is the first step to change.
               </p>
 

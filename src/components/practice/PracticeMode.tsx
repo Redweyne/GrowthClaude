@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ChevronRight, X, Sparkles, Zap } from 'lucide-react';
-import { Button, Card, ProgressBar } from '@/components/ui';
+import { Button, Card, ProgressBar, EmptyState } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
@@ -86,13 +86,15 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
   if (scenarios.length === 0) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
-        <Card variant="elevated" padding="lg" className="max-w-md text-center">
-          <Brain size={48} className="mx-auto text-zinc-600 mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">{t('practiceMode.noPracticeAvailable')}</h2>
-          <p className="text-zinc-400 mb-6">
-            {t('practiceMode.completeLessonsFirst')}
-          </p>
-          <Button onClick={onExit}>{t('common.back')}</Button>
+        <Card variant="elevated" padding="lg" className="max-w-md w-full">
+          <EmptyState
+            icon={<Brain size={24} />}
+            title={t('practiceMode.noPracticeAvailable')}
+            description={t('practiceMode.completeLessonsFirst')}
+            ctaLabel={t('common.back')}
+            onCta={onExit}
+            className="py-2"
+          />
         </Card>
       </div>
     );

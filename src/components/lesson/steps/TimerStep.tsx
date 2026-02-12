@@ -220,7 +220,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
               </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl font-light text-stone-100 tabular-nums">
+              <span className="text-4xl font-light text-stone-100 light:text-stone-900 tabular-nums">
                 {formatTime(timeRemaining)}
               </span>
             </div>
@@ -245,7 +245,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
             />
             <div className="absolute inset-8 rounded-full bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-3xl font-light text-stone-300 tabular-nums">
+              <span className="text-3xl font-light text-stone-300 light:text-stone-700 tabular-nums">
                 {formatTime(timeRemaining)}
               </span>
             </div>
@@ -281,7 +281,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
               <motion.h2
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-2xl text-stone-100 font-light"
+                className="text-2xl text-stone-100 light:text-stone-900 font-light"
               >
                 {step.title}
               </motion.h2>
@@ -301,7 +301,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-stone-400 text-lg"
+                className="text-stone-400 light:text-stone-600 text-lg"
               >
                 {step.instruction}
               </motion.p>
@@ -337,7 +337,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
               animate={{ opacity: 1 }}
               className="text-center space-y-8"
             >
-              <h2 className="text-xl text-stone-300 font-light">
+              <h2 className="text-xl text-stone-300 light:text-stone-700 font-light">
                 {step.title}
               </h2>
 
@@ -350,14 +350,14 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="text-stone-400 text-lg italic min-h-[2em]"
+                    className="text-stone-400 light:text-stone-600 text-lg italic min-h-[2em]"
                   >
                     {messages[currentMessageIndex]}
                   </motion.p>
                 )}
               </AnimatePresence>
 
-              <p className="text-stone-500 text-sm">
+              <p className="text-stone-500 light:text-stone-600 text-sm">
                 {step.instruction}
               </p>
             </motion.div>
@@ -383,7 +383,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-xl text-stone-200"
+                className="text-xl text-stone-200 light:text-stone-800"
               >
                 Practice complete
               </motion.p>
@@ -393,7 +393,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="text-stone-400"
+                  className="text-stone-400 light:text-stone-600"
                 >
                   {step.completionQuestion}
                 </motion.p>

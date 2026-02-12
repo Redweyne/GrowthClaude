@@ -72,7 +72,7 @@ export function MuteButton() {
         flex items-center justify-center
         transition-colors shadow-lg
         ${soundEnabled
-          ? 'bg-stone-900/90 border border-stone-700/50 text-stone-400 hover:text-cyan-400 hover:border-cyan-500/30'
+          ? 'bg-stone-900/90 light:bg-stone-100/90 border border-stone-700/50 light:border-stone-300 text-stone-400 light:text-stone-700 hover:text-cyan-400 hover:border-cyan-500/30'
           : 'bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300'
         }
       `}

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Lock, CheckCircle, Star, Flame } from 'lucide-react';
+import { EmptyState } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 
@@ -44,22 +45,22 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-zinc-950 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-zinc-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-zinc-950/95 backdrop-blur border-b border-zinc-800">
+      <div className="sticky top-0 z-20 bg-zinc-950/95 light:bg-stone-50/95 backdrop-blur border-b border-zinc-800 light:border-stone-300">
         <div className="p-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center">
               <Flame size={24} className="text-amber-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">{world.name}</h1>
-              <p className="text-sm text-zinc-500">{world.subtitle}</p>
+              <h1 className="text-xl font-bold text-white light:text-stone-900">{world.name}</h1>
+              <p className="text-sm text-zinc-500 light:text-stone-600">{world.subtitle}</p>
             </div>
           </div>
 
           {/* Progress bar */}
-          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-zinc-800 light:bg-stone-200 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
               initial={{ width: 0 }}
@@ -67,7 +68,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-xs text-zinc-500 mt-2 text-center">
+          <p className="text-xs text-zinc-500 light:text-stone-600 mt-2 text-center">
             {t('world.lessonsProgress')
               .replace('{completed}', completedCount.toString())
               .replace('{total}', allLessons.length.toString())}
@@ -78,8 +79,17 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
       {/* Scrollable lesson list */}
       <div className="pb-24 pt-4">
         <div className="relative max-w-sm mx-auto px-8">
+          {completedCount === allLessons.length && (
+            <EmptyState
+              icon={<Star size={24} />}
+              title={t('world.complete')}
+              description={t('dailyFlow.revisitDeepen')}
+              className="pt-2 pb-6"
+            />
+          )}
+
           {/* Vertical connecting line */}
-          <div className="absolute left-1/2 top-8 bottom-8 w-0.5 bg-zinc-800 -translate-x-1/2" />
+          <div className="absolute left-1/2 top-8 bottom-8 w-0.5 bg-zinc-800 light:bg-stone-300 -translate-x-1/2" />
 
           {/* Completed progress line overlay */}
           <motion.div
@@ -117,8 +127,8 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
                           : isNext
                           ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50'
                           : accessible
-                          ? 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
-                          : 'bg-zinc-900/30 border-zinc-800/50 opacity-50'
+                          ? 'bg-zinc-800/50 light:bg-stone-100/90 border-zinc-700 light:border-stone-300 hover:border-zinc-600 light:hover:border-stone-400'
+                          : 'bg-zinc-900/30 light:bg-stone-100/70 border-zinc-800/50 light:border-stone-300 opacity-50'
                       }`}
                     >
                       <p className={`font-medium text-sm mb-1 ${
@@ -127,13 +137,13 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
                           : isNext
                           ? 'text-amber-300'
                           : accessible
-                          ? 'text-white'
-                          : 'text-zinc-600'
+                          ? 'text-white light:text-stone-900'
+                          : 'text-zinc-600 light:text-stone-500'
                       }`}>
                         {lesson.title}
                       </p>
                       <p className={`text-xs ${
-                        accessible ? 'text-zinc-500' : 'text-zinc-700'
+                        accessible ? 'text-zinc-500 light:text-stone-600' : 'text-zinc-700 light:text-stone-500'
                       }`}>
                         {isCompleted ? `✓ ${t('world.completed')}` : `${lesson.xpReward} ${t('common.xp')}`}
                       </p>
@@ -169,18 +179,18 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
                             : isNext
                             ? 'bg-gradient-to-br from-amber-400 to-orange-500 border-amber-300 shadow-lg shadow-amber-500/40'
                             : accessible
-                            ? 'bg-zinc-800 border-zinc-600 hover:border-zinc-500'
-                            : 'bg-zinc-900 border-zinc-800'
+                            ? 'bg-zinc-800 light:bg-stone-200 border-zinc-600 light:border-stone-400 hover:border-zinc-500 light:hover:border-stone-500'
+                            : 'bg-zinc-900 light:bg-stone-100 border-zinc-800 light:border-stone-300'
                         }`}
                       >
                         {isCompleted ? (
                           <CheckCircle size={24} className="text-white" />
                         ) : !accessible ? (
-                          <Lock size={18} className="text-zinc-600" />
+                          <Lock size={18} className="text-zinc-600 light:text-stone-500" />
                         ) : isNext ? (
                           <Star size={22} className="text-zinc-900" />
                         ) : (
-                          <span className="text-lg font-bold text-zinc-400">{index + 1}</span>
+                          <span className="text-lg font-bold text-zinc-400 light:text-stone-600">{index + 1}</span>
                         )}
                       </div>
                     </button>

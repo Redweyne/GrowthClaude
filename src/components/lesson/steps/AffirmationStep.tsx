@@ -158,7 +158,7 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.4 }}
-                className="text-lg text-stone-400 leading-relaxed"
+                className="text-lg text-stone-400 light:text-stone-600 leading-relaxed"
               >
                 {step.preText}
               </motion.p>
@@ -173,7 +173,7 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
               transition={{ duration: 0.3 }}
               className="py-8"
             >
-              <p className="text-2xl sm:text-3xl md:text-4xl font-medium leading-relaxed text-stone-100">
+              <p className="text-2xl sm:text-3xl md:text-4xl font-medium leading-relaxed text-stone-100 light:text-stone-900">
                 {words.map((word, i) => (
                   <motion.span
                     key={i}

@@ -177,7 +177,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.6 }}
-                className="text-xl text-stone-400 font-light"
+                className="text-xl text-stone-400 light:text-stone-600 font-light"
               >
                 {breathMessages[breathCount] || breathMessages[2]}
               </motion.p>
@@ -296,7 +296,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
               </motion.span>
 
               {/* The wisdom text - word by word reveal (no blur for performance) */}
-              <p className="text-xl sm:text-2xl text-stone-200 leading-relaxed font-light px-4">
+              <p className="text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed font-light px-4">
                 {wisdomWords.map((word, index) => (
                   <motion.span
                     key={index}
@@ -333,7 +333,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                   transition={{ duration: 0.8 }}
                   className="mb-12"
                 >
-                  <p className="text-stone-500 text-lg italic">
+                  <p className="text-stone-500 light:text-stone-600 text-lg italic">
                     — {lesson.wisdomSource}
                   </p>
                 </motion.div>
@@ -368,7 +368,7 @@ export function WisdomStep({ lesson, onComplete, onStartAmbience }: WisdomStepPr
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 2 }}
-                    className="text-stone-600 text-xs"
+                    className="text-stone-600 light:text-stone-500 text-xs"
                   >
                     {t('lessons.wisdom.pressEnter')}
                   </motion.p>

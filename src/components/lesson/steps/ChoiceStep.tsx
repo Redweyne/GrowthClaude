@@ -66,7 +66,7 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
                 {step.instruction}
               </p>
             )}
-            <h2 className="text-2xl sm:text-3xl text-stone-100 leading-relaxed">
+            <h2 className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
               {step.question}
             </h2>
           </div>
@@ -95,7 +95,7 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
                       ? 'bg-amber-500/20 border-amber-500/50 scale-[1.02]'
                       : selectedOption !== null
                       ? 'bg-stone-900/30 border-stone-800/50 opacity-40'
-                      : 'bg-stone-900/50 border-stone-700/50 hover:bg-stone-800/50 hover:border-amber-500/30'
+                      : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50 hover:bg-stone-800/50 hover:border-amber-500/30'
                     }
                   `}
                 >
@@ -114,13 +114,13 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
                       text-xl font-medium block mb-1 transition-colors
                       ${selectedOption === option.id
                         ? 'text-amber-300'
-                        : 'text-stone-100 group-hover:text-amber-200'
+                        : 'text-stone-100 light:text-stone-900 group-hover:text-amber-200'
                       }
                     `}>
                       {option.label}
                     </span>
                     {option.subtext && (
-                      <span className="text-stone-400 text-sm">
+                      <span className="text-stone-400 light:text-stone-600 text-sm">
                         {option.subtext}
                       </span>
                     )}

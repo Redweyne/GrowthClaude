@@ -148,13 +148,13 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-xl text-stone-300 font-light"
+                className="text-xl text-stone-300 light:text-stone-700 font-light"
               >
                 Time to commit...
               </motion.p>
 
               {/* Progress bar */}
-              <motion.div className="w-32 h-1 bg-stone-800 rounded-full mx-auto mt-8 overflow-hidden">
+              <motion.div className="w-32 h-1 bg-stone-800 light:bg-stone-200 rounded-full mx-auto mt-8 overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full"
                   initial={{ width: 0 }}
@@ -183,7 +183,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                 <p className="text-sm font-medium text-emerald-400 mb-4 tracking-[0.2em] uppercase">
                   Your Commitment
                 </p>
-                <p className="text-xl sm:text-2xl text-stone-100 leading-relaxed font-light">
+                <p className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed font-light">
                   {step.prompt}
                 </p>
               </motion.div>
@@ -200,8 +200,8 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     h-full min-h-[140px] relative rounded-2xl transition-all duration-300
                     border-2
                     ${isFocused
-                      ? 'bg-stone-900/80 border-emerald-500/30'
-                      : 'bg-stone-900/50 border-stone-700/50'}
+                      ? 'bg-stone-900/80 light:bg-stone-200/80 border-emerald-500/30'
+                      : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50'}
                   `}
                 >
                   {/* Textarea */}
@@ -215,7 +215,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     data-testid="commitment-input"
                     className="
                       w-full h-full min-h-[140px] p-5 pb-14
-                      bg-transparent text-lg text-stone-200
+                      bg-transparent text-lg text-stone-200 light:text-stone-800
                       placeholder-stone-600 leading-relaxed
                       focus:outline-none resize-none
                       font-light tracking-wide
@@ -226,7 +226,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   {/* Word count */}
                   <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
                     <span className={`text-sm transition-colors ${
-                      isReady ? 'text-emerald-400' : 'text-stone-500'
+                      isReady ? 'text-emerald-400' : 'text-stone-500 light:text-stone-600'
                     }`}>
                       {wordCount} {wordCount === 1
                         ? t('lessons.commitment.word')
@@ -234,7 +234,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                     </span>
 
                     <span className={`text-sm transition-colors ${
-                      isReady ? 'text-emerald-400' : 'text-stone-600'
+                      isReady ? 'text-emerald-400' : 'text-stone-600 light:text-stone-500'
                     }`}>
                       {isReady
                         ? t('lessons.commitment.readyToCommit')
@@ -252,7 +252,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-stone-600 text-sm italic"
+                        className="text-stone-600 light:text-stone-500 text-sm italic"
                       >
                         {hints[currentHintIndex]}
                       </motion.p>
@@ -291,7 +291,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-xs text-stone-600"
+                        className="text-xs text-stone-600 light:text-stone-500"
                       >
                         {t('lessons.commitment.pressToSubmit', { key: '⌘' })}
                       </motion.p>
@@ -323,7 +323,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="text-stone-400"
+                  className="text-stone-400 light:text-stone-600"
                 >
                   Commitment sealed
                 </motion.p>

@@ -246,14 +246,14 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-xl text-stone-300 font-light"
+              className="text-xl text-stone-300 light:text-stone-700 font-light"
             >
               {t('lessons.reflection.nowReflect')}
             </motion.p>
 
             {/* Progress bar */}
             <motion.div
-              className="w-32 h-1 bg-stone-800 rounded-full mx-auto mt-8 overflow-hidden"
+              className="w-32 h-1 bg-stone-800 light:bg-stone-200 rounded-full mx-auto mt-8 overflow-hidden"
             >
               <motion.div
                 className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
@@ -289,7 +289,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               <p className="text-sm font-medium text-cyan-400 mb-4 tracking-[0.2em] uppercase">
                 {t('lessons.reflection.yourReflection')}
               </p>
-              <p className="text-xl sm:text-2xl text-stone-100 leading-relaxed max-w-lg mx-auto font-light">
+              <p className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed max-w-lg mx-auto font-light">
                 {lesson.reflectionPrompt}
               </p>
             </motion.div>
@@ -307,8 +307,8 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   h-full min-h-[180px] relative rounded-2xl transition-all duration-300
                   border-2
                   ${isFocused
-                    ? 'bg-stone-900/80 border-cyan-500/30'
-                    : 'bg-stone-900/50 border-stone-700/50'}
+                    ? 'bg-stone-900/80 light:bg-stone-200/80 border-cyan-500/30'
+                    : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50'}
                 `}
               >
                 {/* Textarea */}
@@ -322,7 +322,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   data-testid="reflection-input"
                   className={`
                     w-full h-full min-h-[180px] p-5
-                    bg-transparent text-lg text-stone-200
+                    bg-transparent text-lg text-stone-200 light:text-stone-800
                     placeholder-stone-600 leading-relaxed
                     focus:outline-none resize-none
                     font-light tracking-wide
@@ -357,7 +357,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                     className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}
                     animate={{ opacity: reflection.length > 0 ? 1 : 0.5 }}
                   >
-                    <span className="text-stone-500 text-sm">
+                    <span className="text-stone-500 light:text-stone-600 text-sm">
                       {wordCount} {wordCount === 1 ? t('lessons.reflection.word') : t('lessons.reflection.words')}
                     </span>
 
@@ -388,7 +388,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                         ? 'text-emerald-400'
                         : isSubstantial
                         ? 'text-amber-400/70'
-                        : 'text-stone-600'
+                        : 'text-stone-600 light:text-stone-500'
                     }`}
                     animate={{
                       opacity: reflection.length > 0 ? 1 : 0,
@@ -434,15 +434,15 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="flex items-center justify-center gap-4 p-3 rounded-xl bg-stone-900/50 border border-stone-800"
+                  className="flex items-center justify-center gap-4 p-3 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-200"
                 >
                   {/* Private option */}
                   <button
                     onClick={() => setIsPublic(false)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
                       !isPublic
-                        ? 'bg-stone-800 text-stone-200 shadow-lg'
-                        : 'text-stone-500 hover:text-stone-400'
+                        ? 'bg-stone-800 light:bg-stone-200 text-stone-200 light:text-stone-800 shadow-lg'
+                        : 'text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700'
                     }`}
                   >
                     <Lock size={16} />
@@ -455,7 +455,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
                       isPublic
                         ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
-                        : 'text-stone-500 hover:text-stone-400'
+                        : 'text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700'
                     }`}
                   >
                     <Globe size={16} />
@@ -466,7 +466,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
 
               {/* Privacy description */}
               <div className="text-center">
-                <p className="text-xs text-stone-600">
+                <p className="text-xs text-stone-600 light:text-stone-500">
                   {isPublic
                     ? t('lessons.reflection.publicDesc')
                     : t('lessons.reflection.privateDesc')}
@@ -505,7 +505,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="text-xs text-stone-600"
+                      className="text-xs text-stone-600 light:text-stone-500"
                     >
                       {t('lessons.reflection.pressToSubmit')}
                     </motion.p>
@@ -557,7 +557,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-stone-400 text-lg"
+                className="text-stone-400 light:text-stone-600 text-lg"
               >
                 {t('lessons.reflection.reflectionComplete')}
               </motion.p>

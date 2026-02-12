@@ -106,7 +106,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = `
       relative inline-flex items-center justify-center font-semibold
       rounded-xl overflow-hidden
-      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 light:focus-visible:ring-offset-stone-50
       disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
       transition-shadow duration-200
     `;
@@ -126,9 +126,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       `,
       secondary: `
         bg-gradient-to-br from-stone-800 to-stone-900
+        light:from-stone-200 light:to-stone-100
         hover:from-stone-750 hover:to-stone-850
-        text-amber-100
-        border border-stone-700/80
+        text-amber-100 light:text-stone-800
+        border border-stone-700/80 light:border-stone-300
         hover:border-amber-500/40
         shadow-md shadow-black/30
         hover:shadow-xl hover:shadow-amber-500/20
@@ -137,16 +138,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       `,
       ghost: `
         bg-transparent
-        text-amber-100
-        hover:bg-stone-800/60
+        text-amber-100 light:text-stone-700
+        hover:bg-stone-800/60 light:hover:bg-stone-200/70
         focus-visible:ring-stone-500
         border border-transparent
-        hover:border-stone-700/50
+        hover:border-stone-700 light:hover:border-stone-400/50
       `,
       outline: `
         bg-transparent
         border-2 border-amber-500/40
-        text-amber-100
+        text-amber-100 light:text-stone-800
         hover:border-amber-400/70 hover:bg-amber-500/5
         hover:shadow-lg hover:shadow-amber-500/10
         focus-visible:ring-amber-500
@@ -163,10 +164,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         transition-all duration-300
       `,
       glass: `
-        bg-stone-900/40 backdrop-blur-xl
-        hover:bg-stone-800/60
-        text-amber-100
-        border border-white/10
+        bg-stone-900/40 light:bg-stone-100/80 backdrop-blur-xl
+        hover:bg-stone-800/60 light:hover:bg-stone-200/90
+        text-amber-100 light:text-stone-800
+        border border-white/10 light:border-stone-300
         hover:border-amber-500/30
         shadow-lg shadow-black/20
         hover:shadow-2xl hover:shadow-amber-500/10

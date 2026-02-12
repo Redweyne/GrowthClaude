@@ -199,7 +199,7 @@ export function TruthMirrorExercise({
 
   return (
     <motion.div
-      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
+      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -225,7 +225,7 @@ export function TruthMirrorExercise({
         {onBack && phase === 'tapping' && (
           <button
             onClick={onBack}
-            className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
+            className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
             {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             {t('exercises.back')}
@@ -236,8 +236,8 @@ export function TruthMirrorExercise({
             <span className="text-xl">💫</span>
           </div>
           <div className={isRTL ? 'text-right' : ''}>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Truth Mirror</p>
-            <h1 className="text-xl font-semibold text-stone-100">{title}</h1>
+            <p className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">Truth Mirror</p>
+            <h1 className="text-xl font-semibold text-stone-100 light:text-stone-900">{title}</h1>
           </div>
         </div>
       </div>
@@ -285,7 +285,7 @@ export function TruthMirrorExercise({
                   key={currentIndex}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xl sm:text-2xl text-stone-200 leading-relaxed px-4"
+                  className="text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed px-4"
                 >
                   {content.statements[currentIndex]}
                 </motion.p>
@@ -326,7 +326,7 @@ export function TruthMirrorExercise({
 
               {/* Instructions */}
               <motion.p
-                className="text-xs text-stone-500 mt-6 tracking-wider"
+                className="text-xs text-stone-500 light:text-stone-600 mt-6 tracking-wider"
                 animate={{ opacity: [0.4, 0.8, 0.4] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               >
@@ -354,7 +354,7 @@ export function TruthMirrorExercise({
               </motion.div>
 
               <motion.p
-                className="text-2xl sm:text-3xl text-stone-100 leading-relaxed mb-6 px-4"
+                className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed mb-6 px-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -399,7 +399,7 @@ export function TruthMirrorExercise({
             >
               {/* Breath counter */}
               <div className="mb-6">
-                <span className="text-stone-500 text-sm">
+                <span className="text-stone-500 light:text-stone-600 text-sm">
                   Breath {Math.min(breathCount + 1, totalBreaths)} of {totalBreaths}
                 </span>
               </div>
@@ -442,7 +442,7 @@ export function TruthMirrorExercise({
 
               {/* Breathing instruction */}
               <motion.p
-                className="text-2xl font-light text-stone-100 mb-4"
+                className="text-2xl font-light text-stone-100 light:text-stone-900 mb-4"
                 key={isInhaling ? 'inhale' : 'exhale'}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -451,7 +451,7 @@ export function TruthMirrorExercise({
               </motion.p>
 
               {/* Selected truth reminder */}
-              <p className="text-stone-500 text-sm px-8 italic">
+              <p className="text-stone-500 light:text-stone-600 text-sm px-8 italic">
                 &ldquo;{selectedTruth}&rdquo;
               </p>
             </motion.div>
@@ -474,17 +474,17 @@ export function TruthMirrorExercise({
                 🌟
               </motion.div>
 
-              <h2 className="text-2xl font-semibold text-stone-100 mb-4">
+              <h2 className="text-2xl font-semibold text-stone-100 light:text-stone-900 mb-4">
                 Your Truth Is Set
               </h2>
 
               <div className={`${config.accentBg} ${config.border} border rounded-2xl p-6 mb-6`}>
-                <p className="text-stone-200 text-lg italic">
+                <p className="text-stone-200 light:text-stone-800 text-lg italic">
                   &ldquo;{selectedTruth}&rdquo;
                 </p>
               </div>
 
-              <p className="text-stone-400 mb-8 text-sm">
+              <p className="text-stone-400 light:text-stone-600 mb-8 text-sm">
                 Carry this with you today. Let it guide your choices.
               </p>
 

@@ -112,7 +112,7 @@ export function MandatoryEchoFlow({
   }, [isSubstantial, handleSend]);
 
   return (
-    <div className="min-h-screen bg-stone-950 flex flex-col relative overflow-hidden" data-testid="mandatory-echo">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden" data-testid="mandatory-echo">
       {/* Ambient background */}
       <AmbientBackground intensity="subtle" particleCount={6} orbCount={2} />
 
@@ -129,7 +129,7 @@ export function MandatoryEchoFlow({
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
+          className="text-xs tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium"
         >
           {t('echoes.mandatory.phaseLabel')}
         </motion.span>
@@ -170,7 +170,7 @@ export function MandatoryEchoFlow({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="text-2xl font-semibold text-stone-100 mb-3"
+                    className="text-2xl font-semibold text-stone-100 light:text-stone-900 mb-3"
                   >
                     {t('echoes.mandatory.connectBeforePractice')}
                   </motion.h2>
@@ -179,7 +179,7 @@ export function MandatoryEchoFlow({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="text-stone-400 mb-6"
+                    className="text-stone-400 light:text-stone-600 mb-6"
                   >
                     {t('echoes.mandatory.encourageTraveler')}
                   </motion.p>
@@ -191,7 +191,7 @@ export function MandatoryEchoFlow({
                       <span className="text-lg">💡</span>
                     </div>
                     <div>
-                      <p className="text-stone-300 text-sm">
+                      <p className="text-stone-300 light:text-stone-700 text-sm">
                         <strong className="text-amber-400">{t('echoes.mandatory.whyMatters')}</strong> {t('echoes.mandatory.whyMattersDesc')}
                       </p>
                     </div>
@@ -244,7 +244,7 @@ export function MandatoryEchoFlow({
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="p-6 sm:p-5 rounded-2xl bg-stone-900/80 border border-stone-800"
+                  className="p-6 sm:p-5 rounded-2xl bg-stone-900/80 light:bg-stone-200/80 border border-stone-800 light:border-stone-200"
                 >
                   <div className="text-5xl text-amber-400/20 font-serif leading-none mb-3">
                     &ldquo;
@@ -267,7 +267,7 @@ export function MandatoryEchoFlow({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-center text-stone-400 text-sm"
+                  className="text-center text-stone-400 light:text-stone-600 text-sm"
                 >
                   {t('echoes.mandatory.absorbWords')}
                 </motion.p>
@@ -307,12 +307,12 @@ export function MandatoryEchoFlow({
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="p-4 rounded-xl bg-stone-900/50 border border-stone-800/50"
+                  className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50"
                 >
-                  <p className="text-stone-500 text-sm mb-2">
+                  <p className="text-stone-500 light:text-stone-600 text-sm mb-2">
                     A fellow {genderLabel} wrote:
                   </p>
-                  <p className="text-stone-400 text-sm leading-relaxed line-clamp-3">
+                  <p className="text-stone-400 light:text-stone-600 text-sm leading-relaxed line-clamp-3">
                     &ldquo;{reflection.content}&rdquo;
                   </p>
                 </motion.div>
@@ -327,7 +327,7 @@ export function MandatoryEchoFlow({
                   <p className="text-amber-400 text-sm mb-2 tracking-wide">
                     {t('echoes.mandatory.yourEchoFor', { pronoun: reflection.authorGender === 'brother' ? t('echoes.pronounHim') : reflection.authorGender === 'sister' ? t('echoes.pronounHer') : t('echoes.pronounThem') })}
                   </p>
-                  <p className="text-stone-300">
+                  <p className="text-stone-300 light:text-stone-700">
                     {t('echoes.mandatory.shareInsight')}
                   </p>
                 </motion.div>
@@ -342,8 +342,8 @@ export function MandatoryEchoFlow({
                     className={`
                       relative rounded-2xl transition-all duration-300 border-2
                       ${isFocused
-                        ? 'bg-stone-900/80 border-amber-500/30'
-                        : 'bg-stone-900/50 border-stone-700/50'}
+                        ? 'bg-stone-900/80 light:bg-stone-200/80 border-amber-500/30'
+                        : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50'}
                     `}
                   >
                     <textarea
@@ -356,7 +356,7 @@ export function MandatoryEchoFlow({
                       data-testid="echo-response-input"
                       className="
                         w-full min-h-[160px] p-5
-                        bg-transparent text-lg text-stone-200
+                        bg-transparent text-lg text-stone-200 light:text-stone-800
                         placeholder-stone-600 leading-relaxed
                         focus:outline-none resize-none
                         font-light tracking-wide
@@ -366,10 +366,10 @@ export function MandatoryEchoFlow({
 
                     {/* Word count */}
                     <div className="absolute bottom-4 left-5 right-5 flex justify-between items-center">
-                      <span className="text-stone-500 text-sm">
+                      <span className="text-stone-500 light:text-stone-600 text-sm">
                         {wordCount} {wordCount === 1 ? t('common.word') : t('common.words')}
                       </span>
-                      <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600'}`}>
+                      <span className={`text-sm ${isSubstantial ? 'text-emerald-400' : 'text-stone-600 light:text-stone-500'}`}>
                         {isSubstantial ? t('echoes.mandatory.readyToSend') : t('echoes.mandatory.moreWords', { count: 10 - wordCount })}
                       </span>
                     </div>
@@ -410,7 +410,7 @@ export function MandatoryEchoFlow({
                           </motion.svg>
                         )}
                       </div>
-                      <span className="text-stone-400 text-sm">
+                      <span className="text-stone-400 light:text-stone-600 text-sm">
                         {t('echoes.mandatory.openToConnect')}
                       </span>
                     </label>
@@ -438,7 +438,7 @@ export function MandatoryEchoFlow({
                   </Button>
 
                   {isSubstantial && (
-                    <p className="text-center text-xs text-stone-600">
+                    <p className="text-center text-xs text-stone-600 light:text-stone-500">
                       {t('echoes.mandatory.cmdEnterToSend')}
                     </p>
                   )}
@@ -467,7 +467,7 @@ export function MandatoryEchoFlow({
                 >
                   <Heart size={28} className="text-amber-400" />
                 </motion.div>
-                <p className="text-stone-400">{t('echoes.mandatory.sendingEcho')}</p>
+                <p className="text-stone-400 light:text-stone-600">{t('echoes.mandatory.sendingEcho')}</p>
               </motion.div>
             )}
 
@@ -508,7 +508,7 @@ export function MandatoryEchoFlow({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="text-xl font-semibold text-stone-200 mb-2"
+                  className="text-xl font-semibold text-stone-200 light:text-stone-800 mb-2"
                 >
                   {t('echoes.mandatory.echoSent')}
                 </motion.h3>
@@ -517,7 +517,7 @@ export function MandatoryEchoFlow({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="text-stone-400 mb-6"
+                  className="text-stone-400 light:text-stone-600 mb-6"
                 >
                   {t('echoes.mandatory.wordsWillBrighten')}
                 </motion.p>

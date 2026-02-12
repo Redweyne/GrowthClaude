@@ -58,8 +58,8 @@ export function ExerciseCard({
         isLocked
           ? 'bg-stone-900/30 border-stone-800/50 opacity-50 cursor-not-allowed'
           : isCompleted
-          ? 'bg-stone-900/50 border-emerald-500/30 cursor-pointer'
-          : 'bg-stone-900/50 border-stone-800 hover:border-amber-500/30 cursor-pointer'
+          ? 'bg-stone-900/50 light:bg-stone-200/50 border-emerald-500/30 cursor-pointer'
+          : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-800 light:border-stone-200 hover:border-amber-500/30 cursor-pointer'
       }`}
       whileHover={!isLocked ? { scale: 1.02, y: -2 } : {}}
       whileTap={!isLocked ? { scale: 0.98 } : {}}
@@ -85,7 +85,7 @@ export function ExerciseCard({
               ✓
             </motion.span>
           ) : isLocked ? (
-            <span className="text-xl text-stone-600">🔒</span>
+            <span className="text-xl text-stone-600 light:text-stone-500">🔒</span>
           ) : (
             <span className="text-xl">{icon}</span>
           )}
@@ -94,7 +94,7 @@ export function ExerciseCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
-            <span className="text-stone-500 text-xs uppercase tracking-wider">
+            <span className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">
               {label}
             </span>
             {isCompleted && (
@@ -103,7 +103,7 @@ export function ExerciseCard({
           </div>
           <h3
             className={`font-medium truncate ${
-              isLocked ? 'text-stone-600' : 'text-stone-100'
+              isLocked ? 'text-stone-600 light:text-stone-500' : 'text-stone-100 light:text-stone-900'
             }`}
           >
             {exercise.title}
@@ -113,7 +113,7 @@ export function ExerciseCard({
         {/* Arrow */}
         {!isLocked && !isCompleted && (
           <motion.div
-            className="text-stone-500"
+            className="text-stone-500 light:text-stone-600"
             animate={{ x: isRTL ? [0, -4, 0] : [0, 4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >

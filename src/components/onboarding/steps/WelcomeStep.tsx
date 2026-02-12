@@ -129,7 +129,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               transition={{ delay: 1.8, duration: 0.8 }}
-              className="text-stone-400 text-xl sm:text-2xl leading-relaxed"
+              className="text-stone-400 light:text-stone-600 text-xl sm:text-2xl leading-relaxed"
             >
               {t('onboarding.welcome.hereForReason')}
             </motion.p>
@@ -154,7 +154,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <p className="text-2xl sm:text-3xl md:text-4xl text-stone-300 font-medium tracking-tight leading-tight">
+              <p className="text-2xl sm:text-3xl md:text-4xl text-stone-300 light:text-stone-700 font-medium tracking-tight leading-tight">
                 {t('onboarding.welcome.notWorking')}
                 <br />
                 <span className="text-amber-200 font-bold">{t('onboarding.welcome.theWayYouWant')}</span>
@@ -179,7 +179,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 }}
               />
 
-              <p className="text-stone-500 text-xl sm:text-2xl italic leading-relaxed">
+              <p className="text-stone-500 light:text-stone-600 text-xl sm:text-2xl italic leading-relaxed">
                 {t('onboarding.welcome.thatsWhy')}
               </p>
             </motion.div>
@@ -231,7 +231,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-stone-400 text-lg sm:text-xl leading-relaxed"
+                className="text-stone-400 light:text-stone-600 text-lg sm:text-xl leading-relaxed"
               >
                 {t('onboarding.welcome.ancientWisdom')}
               </motion.p>
@@ -258,12 +258,12 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                     transition={{ delay: 1 + index * 0.15 }}
                   >
                     <motion.div
-                      className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-stone-900/60 border border-stone-800/80 flex items-center justify-center"
+                      className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-stone-900/60 light:bg-stone-200/60 border border-stone-800/80 flex items-center justify-center"
                       whileHover={{ scale: 1.1, borderColor: 'rgba(251, 191, 36, 0.3)' }}
                     >
                       <item.icon size={28} className={item.color} />
                     </motion.div>
-                    <span className="text-base sm:text-lg text-stone-400 font-semibold tracking-wide">{item.label}</span>
+                    <span className="text-base sm:text-lg text-stone-400 light:text-stone-600 font-semibold tracking-wide">{item.label}</span>
                   </motion.div>
                 ))}
               </div>
@@ -295,7 +295,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 2 }}
-                className="mt-5 text-xs text-stone-600"
+                className="mt-5 text-xs text-stone-600 light:text-stone-500"
               >
                 {t('onboarding.welcome.noAccount')}
               </motion.p>

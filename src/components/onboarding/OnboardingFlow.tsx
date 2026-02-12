@@ -185,7 +185,7 @@ export function OnboardingFlow() {
   };
 
   if (!mounted) {
-    return <div className="min-h-screen bg-stone-950" />;
+    return <div className="min-h-screen bg-stone-950 light:bg-stone-50" />;
   }
 
   return (
@@ -207,7 +207,7 @@ export function OnboardingFlow() {
               key={onboardingStep}
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase text-stone-500 font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-2"
+              className="text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-2"
             >
               {t(`onboarding.steps.${STEP_KEYS[onboardingStep]}`)}
             </motion.span>

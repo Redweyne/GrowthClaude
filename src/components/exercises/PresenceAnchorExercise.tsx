@@ -159,7 +159,7 @@ export function PresenceAnchorExercise({
 
   return (
     <motion.div
-      className={`min-h-screen bg-stone-950 flex flex-col ${isRTL ? 'rtl' : ''}`}
+      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -185,7 +185,7 @@ export function PresenceAnchorExercise({
         {onBack && phase === 'intro' && (
           <button
             onClick={onBack}
-            className={`flex items-center gap-1 text-stone-500 hover:text-stone-300 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
+            className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
             {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             {t('exercises.back')}
@@ -196,8 +196,8 @@ export function PresenceAnchorExercise({
             <span className="text-xl">🌊</span>
           </div>
           <div className={isRTL ? 'text-right' : ''}>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">Presence Anchor</p>
-            <h1 className="text-xl font-semibold text-stone-100">{title}</h1>
+            <p className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">Presence Anchor</p>
+            <h1 className="text-xl font-semibold text-stone-100 light:text-stone-900">{title}</h1>
           </div>
         </div>
       </div>
@@ -222,10 +222,10 @@ export function PresenceAnchorExercise({
                 >
                   {gestureEmoji}
                 </motion.div>
-                <h2 className="text-xl font-semibold text-stone-100 mb-4">
+                <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900 mb-4">
                   Create Your Anchor
                 </h2>
-                <p className="text-stone-300 mb-4 leading-relaxed">
+                <p className="text-stone-300 light:text-stone-700 mb-4 leading-relaxed">
                   {content.gesture}
                 </p>
                 <div className={`${config.accentBg} ${config.border} border rounded-xl p-4`}>
@@ -236,7 +236,7 @@ export function PresenceAnchorExercise({
               </Card>
 
               <div className="text-center mb-6">
-                <p className="text-stone-400 text-sm">
+                <p className="text-stone-400 light:text-stone-600 text-sm">
                   {content.breathCycles} breaths with visualization
                 </p>
               </div>
@@ -258,7 +258,7 @@ export function PresenceAnchorExercise({
             >
               {/* Breath counter */}
               <div className="mb-6">
-                <span className="text-stone-500 text-sm">
+                <span className="text-stone-500 light:text-stone-600 text-sm">
                   Breath {Math.min(breathCount + 1, totalBreaths)} of {totalBreaths}
                 </span>
               </div>
@@ -317,13 +317,13 @@ export function PresenceAnchorExercise({
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4"
               >
-                <p className="text-2xl font-light text-stone-100">
+                <p className="text-2xl font-light text-stone-100 light:text-stone-900">
                   {isInhaling ? 'Breathe In...' : 'Release...'}
                 </p>
               </motion.div>
 
               {/* Gesture reminder */}
-              <p className="text-stone-500 text-sm">
+              <p className="text-stone-500 light:text-stone-600 text-sm">
                 Hold your anchor gesture
               </p>
             </motion.div>
@@ -346,17 +346,17 @@ export function PresenceAnchorExercise({
                 ⚓
               </motion.div>
 
-              <h2 className="text-2xl font-semibold text-stone-100 mb-4">
+              <h2 className="text-2xl font-semibold text-stone-100 light:text-stone-900 mb-4">
                 Anchor Set
               </h2>
 
               <Card variant="glass" padding="lg" className="mb-6">
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <span className="text-4xl">{gestureEmoji}</span>
-                  <span className="text-2xl text-stone-600">=</span>
+                  <span className="text-2xl text-stone-600 light:text-stone-500">=</span>
                   <span className={`text-lg ${config.accent}`}>{content.meaning}</span>
                 </div>
-                <p className="text-stone-400 text-sm">
+                <p className="text-stone-400 light:text-stone-600 text-sm">
                   {content.anchorMessage}
                 </p>
               </Card>

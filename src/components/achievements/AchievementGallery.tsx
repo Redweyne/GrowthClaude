@@ -11,6 +11,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Compass, X } from 'lucide-react';
+import { EmptyState } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { MilestoneBadge } from './AchievementBadge';
 import {
@@ -250,14 +251,11 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
 
         {/* Empty state */}
         {filteredMilestones.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
-            <Compass className="w-12 h-12 mx-auto text-zinc-700 mb-4" />
-            <p className="text-zinc-500">No milestones match this filter</p>
-          </motion.div>
+          <EmptyState
+            icon={<Compass className="w-6 h-6" />}
+            title="No milestones yet"
+            description="No milestones match this filter"
+          />
         )}
 
         {/* Journey reflection */}

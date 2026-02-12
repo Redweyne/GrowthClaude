@@ -16,7 +16,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, Heart, UserPlus, Check, XIcon, ChevronRight, ChevronLeft, Send } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, EmptyState } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useTranslation } from '@/i18n';
@@ -131,16 +131,16 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
   ];
 
   return (
-    <div className={`fixed inset-0 z-50 bg-stone-950 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`fixed inset-0 z-50 bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <AmbientBackground intensity="subtle" particleCount={4} orbCount={1} />
 
       {/* Header */}
-      <div className="relative z-10 border-b border-stone-800">
+      <div className="relative z-10 border-b border-stone-800 light:border-stone-200">
         <div className={`flex items-center justify-between p-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <h1 className="text-xl font-semibold text-stone-100">{t('echoes.title')}</h1>
+          <h1 className="text-xl font-semibold text-stone-100 light:text-stone-900">{t('echoes.title')}</h1>
           <button
             onClick={onClose}
-            className="p-2 text-stone-500 hover:text-stone-300 transition-colors"
+            className="p-2 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors"
           >
             <X size={24} />
           </button>
@@ -160,7 +160,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-amber-500/20 text-amber-300'
-                  : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800/50'
+                  : 'text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 hover:bg-stone-800/50'
               }`}
             >
               {tab.label}
@@ -189,13 +189,12 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               className="p-4 space-y-3"
             >
               {receivedEchos.length === 0 ? (
-                <div className="text-center py-16">
-                  <MessageCircle size={48} className="mx-auto text-stone-700 mb-4" />
-                  <p className="text-stone-500">{t('echoes.noReflectionsYet')}</p>
-                  <p className="text-stone-600 text-sm mt-2">
-                    {t('echoes.whenSomeoneReflects')}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<MessageCircle size={24} />}
+                  title={t('echoes.noReflectionsYet')}
+                  description={t('echoes.whenSomeoneReflects')}
+                  className="py-16"
+                />
               ) : (
                 receivedEchos.map((echo) => {
                   const originalReflection = getOriginalReflection(echo.reflectionId);
@@ -206,22 +205,22 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                       className={`w-full text-left p-4 rounded-xl border transition-all ${
                         !echo.isRead
                           ? 'bg-amber-500/10 border-amber-500/30'
-                          : 'bg-stone-900/50 border-stone-800 hover:border-stone-700'
+                          : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-800 light:border-stone-200 hover:border-stone-700 light:hover:border-stone-400'
                       }`}
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          !echo.isRead ? 'bg-amber-500/20' : 'bg-stone-800'
+                          !echo.isRead ? 'bg-amber-500/20' : 'bg-stone-800 light:bg-stone-200'
                         }`}>
-                          <Heart size={18} className={!echo.isRead ? 'text-amber-400' : 'text-stone-500'} />
+                          <Heart size={18} className={!echo.isRead ? 'text-amber-400' : 'text-stone-500 light:text-stone-600'} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-stone-200 font-medium">
+                          <p className="text-stone-200 light:text-stone-800 font-medium">
                             {t('echoes.fellowReflected', { gender: getGenderLabelLower(echo.responderGender) })}
                           </p>
-                          <p className="text-stone-500 text-sm mt-1 line-clamp-2">
+                          <p className="text-stone-500 light:text-stone-600 text-sm mt-1 line-clamp-2">
                             {echo.content}
                           </p>
                           {echo.isOpenToConnect && (
@@ -230,7 +229,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                             </p>
                           )}
                         </div>
-                        {isRTL ? <ChevronLeft size={18} className="text-stone-600 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />}
+                        {isRTL ? <ChevronLeft size={18} className="text-stone-600 light:text-stone-500 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 light:text-stone-500 flex-shrink-0" />}
                       </div>
                     </motion.button>
                   );
@@ -250,7 +249,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
             >
               <button
                 onClick={() => setSelectedEcho(null)}
-                className="mb-4 text-stone-500 hover:text-stone-300 text-sm flex items-center gap-1"
+                className="mb-4 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 text-sm flex items-center gap-1"
               >
                 ← {t('common.back')}
               </button>
@@ -261,7 +260,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                   <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
                     <Heart size={28} className="text-amber-400" />
                   </div>
-                  <h2 className="text-xl font-semibold text-stone-100">
+                  <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
                     {t('echoes.fellowReflectedOnYourWords', { gender: getGenderLabelLower(selectedEcho.responderGender) })}
                   </h2>
                 </div>
@@ -269,23 +268,23 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 {/* Your original reflection */}
                 {getOriginalReflection(selectedEcho.reflectionId) && (
                   <div className="p-4 rounded-xl bg-stone-800/50 border border-stone-700/50">
-                    <p className="text-stone-500 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
-                    <p className="text-stone-400 text-sm">
+                    <p className="text-stone-500 light:text-stone-600 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
+                    <p className="text-stone-400 light:text-stone-600 text-sm">
                       &ldquo;{getOriginalReflection(selectedEcho.reflectionId)?.content}&rdquo;
                     </p>
                   </div>
                 )}
 
                 {/* Their reflection */}
-                <div className="p-5 rounded-xl bg-stone-900/80 border border-stone-800">
-                  <p className="text-stone-500 text-sm mb-3">
+                <div className="p-5 rounded-xl bg-stone-900/80 light:bg-stone-200/80 border border-stone-800 light:border-stone-200">
+                  <p className="text-stone-500 light:text-stone-600 text-sm mb-3">
                     {t('echoes.theirReflection', {
                       possessive: getPronouns(selectedEcho.responderGender).possessive.charAt(0).toUpperCase() +
                         getPronouns(selectedEcho.responderGender).possessive.slice(1),
                       gender: getGenderLabelLower(selectedEcho.responderGender),
                     })}
                   </p>
-                  <p className="text-stone-200 text-lg leading-relaxed">
+                  <p className="text-stone-200 light:text-stone-800 text-lg leading-relaxed">
                     &ldquo;{selectedEcho.content}&rdquo;
                   </p>
                   {selectedEcho.isOpenToConnect && (
@@ -300,16 +299,16 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                 {/* Invite to connect */}
                 <div className="space-y-4">
-                  <p className="text-stone-400 text-center text-sm">
+                  <p className="text-stone-400 light:text-stone-600 text-center text-sm">
                     {t('echoes.wouldYouLikeToConnect')}
                   </p>
 
-                  <div className="p-4 rounded-xl bg-stone-900/50 border border-stone-800">
+                  <div className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-200">
                     <textarea
                       value={invitationMessage}
                       onChange={(e) => setInvitationMessage(e.target.value)}
                       placeholder={t('echoes.writeInvitationMessage')}
-                      className="w-full min-h-[100px] p-3 bg-transparent text-stone-200 placeholder-stone-600 focus:outline-none resize-none"
+                      className="w-full min-h-[100px] p-3 bg-transparent text-stone-200 light:text-stone-800 placeholder-stone-600 focus:outline-none resize-none"
                     />
                   </div>
 
@@ -326,7 +325,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                   <button
                     onClick={() => setSelectedEcho(null)}
-                    className="w-full py-3 text-stone-500 hover:text-stone-400 text-sm"
+                    className="w-full py-3 text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700 text-sm"
                   >
                     {t('echoes.closeWithoutConnecting')}
                   </button>
@@ -347,13 +346,12 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               className="p-4 space-y-3"
             >
               {receivedInvitations.filter(i => i.status === 'pending').length === 0 ? (
-                <div className="text-center py-16">
-                  <UserPlus size={48} className="mx-auto text-stone-700 mb-4" />
-                  <p className="text-stone-500">{t('echoes.noPendingInvitations')}</p>
-                  <p className="text-stone-600 text-sm mt-2">
-                    {t('echoes.invitationsWillAppear')}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<UserPlus size={24} />}
+                  title={t('echoes.noPendingInvitations')}
+                  description={t('echoes.invitationsWillAppear')}
+                  className="py-16"
+                />
               ) : (
                 receivedInvitations.filter(i => i.status === 'pending').map((invitation) => (
                   <motion.button
@@ -371,11 +369,11 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                         <p className="text-amber-200 font-medium">
                           {t('echoes.wantsToConnect', { gender: getGenderLabelLower(invitation.inviterGender) })}
                         </p>
-                        <p className="text-stone-500 text-sm mt-1 line-clamp-2">
+                        <p className="text-stone-500 light:text-stone-600 text-sm mt-1 line-clamp-2">
                           {invitation.message}
                         </p>
                       </div>
-                      {isRTL ? <ChevronLeft size={18} className="text-stone-600 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />}
+                      {isRTL ? <ChevronLeft size={18} className="text-stone-600 light:text-stone-500 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 light:text-stone-500 flex-shrink-0" />}
                     </div>
                   </motion.button>
                 ))
@@ -394,7 +392,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
             >
               <button
                 onClick={() => setSelectedInvitation(null)}
-                className="mb-4 text-stone-500 hover:text-stone-300 text-sm flex items-center gap-1"
+                className="mb-4 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 text-sm flex items-center gap-1"
               >
                 ← {t('common.back')}
               </button>
@@ -405,10 +403,10 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                   <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
                     <UserPlus size={28} className="text-amber-400" />
                   </div>
-                  <h2 className="text-xl font-semibold text-stone-100">
+                  <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
                     {t('echoes.connectionRequest')}
                   </h2>
-                  <p className="text-stone-500 mt-2">
+                  <p className="text-stone-500 light:text-stone-600 mt-2">
                     {t('echoes.wantsToConnect', { gender: getGenderLabelLower(selectedInvitation.inviterGender) })}
                   </p>
                 </div>
@@ -416,21 +414,21 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 {/* Context */}
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-stone-800/50 border border-stone-700/50">
-                    <p className="text-stone-500 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
-                    <p className="text-stone-400 text-sm">
+                    <p className="text-stone-500 light:text-stone-600 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
+                    <p className="text-stone-400 light:text-stone-600 text-sm">
                       &ldquo;{selectedInvitation.originalReflectionContent}&rdquo;
                     </p>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-stone-900/80 border border-stone-800">
-                    <p className="text-stone-500 text-sm mb-2">
+                  <div className="p-4 rounded-xl bg-stone-900/80 light:bg-stone-200/80 border border-stone-800 light:border-stone-200">
+                    <p className="text-stone-500 light:text-stone-600 text-sm mb-2">
                       {t('echoes.theirReflection', {
                         possessive: getPronouns(selectedInvitation.inviterGender).possessive.charAt(0).toUpperCase() +
                           getPronouns(selectedInvitation.inviterGender).possessive.slice(1),
                         gender: getGenderLabelLower(selectedInvitation.inviterGender),
                       })}
                     </p>
-                    <p className="text-stone-300">
+                    <p className="text-stone-300 light:text-stone-700">
                       &ldquo;{selectedInvitation.echoResponseContent}&rdquo;
                     </p>
                   </div>
@@ -443,7 +441,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                         gender: getGenderLabelLower(selectedInvitation.inviterGender),
                       })}
                     </p>
-                    <p className="text-stone-200">
+                    <p className="text-stone-200 light:text-stone-800">
                       &ldquo;{selectedInvitation.message}&rdquo;
                     </p>
                   </div>
@@ -486,13 +484,12 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               className="p-4 space-y-3"
             >
               {connections.length === 0 ? (
-                <div className="text-center py-16">
-                  <MessageCircle size={48} className="mx-auto text-stone-700 mb-4" />
-                  <p className="text-stone-500">{t('echoes.noConnectionsYet')}</p>
-                  <p className="text-stone-600 text-sm mt-2">
-                    {t('echoes.conversationsWillAppear')}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<MessageCircle size={24} />}
+                  title={t('echoes.noConnectionsYet')}
+                  description={t('echoes.conversationsWillAppear')}
+                  className="py-16"
+                />
               ) : (
                 connections.map((connection) => {
                   const partnerGender = getPartnerGender(connection);
@@ -503,7 +500,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     <motion.button
                       key={connection.id}
                       onClick={() => setSelectedConnection(connection)}
-                      className="w-full text-left p-4 rounded-xl bg-stone-900/50 border border-stone-800 hover:border-stone-700 transition-all"
+                      className="w-full text-left p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-200 hover:border-stone-700 light:hover:border-stone-400 transition-all"
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                     >
@@ -512,16 +509,16 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                           <MessageCircle size={18} className="text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-stone-200 font-medium">
+                          <p className="text-stone-200 light:text-stone-800 font-medium">
                             {t('echoes.fellowLabel', { gender: getGenderLabelLower(partnerGender) })}
                           </p>
-                          <p className="text-stone-500 text-sm mt-1 line-clamp-1">
+                          <p className="text-stone-500 light:text-stone-600 text-sm mt-1 line-clamp-1">
                             {lastMessage
                               ? lastMessage.content
                               : t('echoes.connectedThroughReflection')}
                           </p>
                         </div>
-                        {isRTL ? <ChevronLeft size={18} className="text-stone-600 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 flex-shrink-0" />}
+                        {isRTL ? <ChevronLeft size={18} className="text-stone-600 light:text-stone-500 flex-shrink-0" /> : <ChevronRight size={18} className="text-stone-600 light:text-stone-500 flex-shrink-0" />}
                       </div>
                     </motion.button>
                   );
@@ -540,25 +537,25 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               className="h-full flex flex-col"
             >
               {/* Chat header */}
-              <div className="p-4 border-b border-stone-800">
+              <div className="p-4 border-b border-stone-800 light:border-stone-200">
                 <button
                   onClick={() => setSelectedConnection(null)}
-                  className="mb-2 text-stone-500 hover:text-stone-300 text-sm flex items-center gap-1"
+                  className="mb-2 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 text-sm flex items-center gap-1"
                 >
                   ← {t('common.back')}
                 </button>
-                <p className="text-stone-200 font-medium">
+                <p className="text-stone-200 light:text-stone-800 font-medium">
                   {t('echoes.growthConversation')}
                 </p>
-                <p className="text-stone-500 text-sm">
+                <p className="text-stone-500 light:text-stone-600 text-sm">
                   {t('echoes.withFellow', { gender: getGenderLabelLower(getPartnerGender(selectedConnection)) })}
                 </p>
               </div>
 
               {/* Connection context */}
-              <div className="p-4 border-b border-stone-800 bg-stone-900/50">
-                <p className="text-stone-500 text-xs mb-2">{t('echoes.youConnectedThrough')}</p>
-                <p className="text-stone-400 text-sm line-clamp-2">
+              <div className="p-4 border-b border-stone-800 light:border-stone-200 bg-stone-900/50 light:bg-stone-200/50">
+                <p className="text-stone-500 light:text-stone-600 text-xs mb-2">{t('echoes.youConnectedThrough')}</p>
+                <p className="text-stone-400 light:text-stone-600 text-sm line-clamp-2">
                   &ldquo;{selectedConnection.originReflectionContent.slice(0, 100)}...&rdquo;
                 </p>
               </div>
@@ -573,8 +570,8 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     <div
                       className={`max-w-[80%] p-3 rounded-2xl ${
                         message.senderId === 'current-user'
-                          ? 'bg-amber-500/20 text-stone-200'
-                          : 'bg-stone-800 text-stone-300'
+                          ? 'bg-amber-500/20 text-stone-200 light:text-stone-800'
+                          : 'bg-stone-800 light:bg-stone-200 text-stone-300 light:text-stone-700'
                       }`}
                     >
                       <p>{message.content}</p>
@@ -584,7 +581,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                 {getConnectionMessages(selectedConnection.id).length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-stone-500 text-sm">
+                    <p className="text-stone-500 light:text-stone-600 text-sm">
                       {t('echoes.startConversation')}
                     </p>
                   </div>
@@ -592,7 +589,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               </div>
 
               {/* Message input */}
-              <div className="p-4 border-t border-stone-800">
+              <div className="p-4 border-t border-stone-800 light:border-stone-200">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -600,7 +597,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                     onChange={(e) => setChatMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder={t('echoes.typeMessage')}
-                    className="flex-1 px-4 py-3 rounded-xl bg-stone-800 border border-stone-700 text-stone-200 placeholder-stone-500 focus:outline-none focus:border-stone-600"
+                    className="flex-1 px-4 py-3 rounded-xl bg-stone-800 light:bg-stone-200 border border-stone-700 light:border-stone-300 text-stone-200 light:text-stone-800 placeholder-stone-500 focus:outline-none focus:border-stone-600"
                   />
                   <Button
                     onClick={handleSendMessage}

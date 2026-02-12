@@ -134,12 +134,12 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
             </div>
 
             {step.title && (
-              <h2 className="text-2xl text-stone-100">
+              <h2 className="text-2xl text-stone-100 light:text-stone-900">
                 {step.title}
               </h2>
             )}
 
-            <p className="text-stone-500 text-sm">
+            <p className="text-stone-500 light:text-stone-600 text-sm">
               Read slowly. Let the words paint pictures in your mind.
             </p>
           </div>
@@ -156,7 +156,7 @@ export function VisualizationStep({ step, onComplete }: VisualizationStepProps) 
                     duration: 1.2,
                     ease: [0.25, 0.46, 0.45, 0.94]
                   }}
-                  className="text-lg sm:text-xl text-stone-200 leading-relaxed text-center"
+                  className="text-lg sm:text-xl text-stone-200 light:text-stone-800 leading-relaxed text-center"
                 >
                   {instruction}
                 </motion.p>
