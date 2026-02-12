@@ -245,7 +245,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               <p className="text-amber-400/80 text-sm font-semibold tracking-[0.3em] uppercase mb-3">
                 {t('lessons.reward.youMastered')}
               </p>
-              <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white tracking-tighter leading-none">
+              <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 tracking-tighter leading-none">
                 {concept.title}
               </h2>
             </motion.div>
@@ -320,7 +320,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                     transition={{ ...SPRING_CONFIG, delay: 0.3 }}
                   >
                     <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
-                    <span className="text-6xl sm:text-7xl md:text-8xl font-bold text-white tracking-tighter tabular-nums">
+                    <span className="text-6xl sm:text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 tracking-tighter tabular-nums">
                       +{safeXpEarned}
                     </span>
                     <span className="text-2xl sm:text-3xl text-zinc-400 font-normal">XP</span>

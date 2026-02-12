@@ -36,6 +36,7 @@ import {
 import { AmbientBackground } from '@/components/ambient';
 import { SparkLockedCard } from '@/components/spark/SparkLockedCard';
 import { HelpTooltip } from '@/components/help';
+import { ThemeToggle } from '@/components/ui';
 import { getXpProgress } from '@/types';
 import { useTranslation } from '@/i18n';
 
@@ -441,16 +442,19 @@ export function DashboardNew({
       <AmbientBackground intensity="subtle" particleCount={8} orbCount={2} />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-stone-950/90 backdrop-blur-lg border-b border-stone-800">
+      <div className="sticky top-0 z-20 bg-stone-950/90 dark:bg-stone-950/90 light:bg-stone-50/90 backdrop-blur-lg border-b border-stone-800 dark:border-stone-800 light:border-stone-300">
         <div className="max-w-2xl mx-auto px-6 py-5">
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 tracking-tight">{t('dashboard.yourJourney')}</h1>
-            <button
-              onClick={onOpenSettings}
-              className="p-3 text-stone-500 hover:text-stone-300 transition-colors"
-            >
-              <Settings size={22} />
-            </button>
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 dark:text-stone-100 light:text-stone-900 tracking-tight">{t('dashboard.yourJourney')}</h1>
+            <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <ThemeToggle size="sm" />
+              <button
+                onClick={onOpenSettings}
+                className="p-3 text-stone-500 dark:text-stone-500 light:text-stone-600 hover:text-stone-300 dark:hover:text-stone-300 light:hover:text-stone-900 transition-colors"
+              >
+                <Settings size={22} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -485,7 +489,7 @@ export function DashboardNew({
             {/* XP Progress Ring */}
             <ProgressRing progress={xpProgress.percentage} size={140} strokeWidth={8}>
               <div className="text-center">
-                <p className="text-4xl sm:text-5xl font-bold text-stone-100 tabular-nums tracking-tight">{level.level}</p>
+                <p className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-amber-400 to-orange-500 tabular-nums tracking-tight">{level.level}</p>
                 <p className="text-sm text-stone-500 font-medium mt-1">{level.title}</p>
               </div>
             </ProgressRing>
@@ -495,7 +499,7 @@ export function DashboardNew({
               <div className="w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center">
                 <Sparkles size={28} className="text-purple-400" />
               </div>
-              <p className="text-base text-stone-300 mt-2 font-bold tabular-nums">{totalXp.toLocaleString()}</p>
+              <p className="text-base text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-purple-400 to-pink-500 mt-2 font-bold tabular-nums">{totalXp.toLocaleString()}</p>
               <p className="text-sm text-stone-600 font-medium">{t('common.xp')}</p>
             </div>
           </div>
@@ -758,15 +762,15 @@ export function DashboardNew({
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-8 sm:gap-12 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-bold text-stone-200 tabular-nums tracking-tight">{totalLessons}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-emerald-300 via-emerald-400 to-teal-500 tabular-nums tracking-tight">{totalLessons}</p>
                   <p className="text-sm text-stone-500 mt-1 font-medium">{t('common.lessons')}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-bold text-stone-200 tabular-nums tracking-tight">{longestStreak}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-orange-300 via-orange-400 to-red-500 tabular-nums tracking-tight">{longestStreak}</p>
                   <p className="text-sm text-stone-500 mt-1 font-medium">{t('dashboard.bestStreak')}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-bold text-stone-200 tabular-nums tracking-tight">{daysSinceStart || 1}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500 tabular-nums tracking-tight">{daysSinceStart || 1}</p>
                   <p className="text-sm text-stone-500 mt-1 font-medium">{t('common.days')}</p>
                 </div>
               </div>

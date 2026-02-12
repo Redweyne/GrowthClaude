@@ -42,7 +42,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: '#050403', // Matches --depth-void for seamless feel
-  colorScheme: 'dark',
+  colorScheme: 'dark light',
 };
 
 export default function RootLayout({
@@ -51,7 +51,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className="antialiased selection:bg-amber-500/30 selection:text-amber-50"
         style={fontBody.style}

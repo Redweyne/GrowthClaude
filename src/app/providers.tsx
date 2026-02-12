@@ -5,6 +5,7 @@
 // ============================================================================
 
 import { ReactNode } from 'react';
+import { ThemeProvider } from 'next-themes';
 import { AudioProvider } from '@/providers/AudioProvider';
 import { ActivityLoggerProvider } from '@/providers/ActivityLoggerProvider';
 import { TranslationProvider } from '@/i18n';
@@ -15,13 +16,15 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <TranslationProvider>
-      <ActivityLoggerProvider>
-        <AudioProvider>
-          {children}
-        </AudioProvider>
-      </ActivityLoggerProvider>
-    </TranslationProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+      <TranslationProvider>
+        <ActivityLoggerProvider>
+          <AudioProvider>
+            {children}
+          </AudioProvider>
+        </ActivityLoggerProvider>
+      </TranslationProvider>
+    </ThemeProvider>
   );
 }
 

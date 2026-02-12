@@ -175,6 +175,11 @@
     transparent 50%
   );
 
+  /* Premium Gradient Effects - Phase 2 */
+  --gradient-gold-subtle: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  --gradient-depth: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  --gradient-shine: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+
   /* Legacy aliases */
   --gradient-warm: var(--gradient-gold);
 
@@ -249,6 +254,169 @@
   --border-glow-strong: 1px solid rgba(251, 191, 36, 0.4);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE PALETTE - Premium Light Theme
+   A bright, elevated experience with refined contrast
+   ═══════════════════════════════════════════════════════════════ */
+
+.light {
+  /* ─────────────────────────────────────────────────────────────────
+     BACKGROUND DEPTHS: Elevated Light Surfaces
+     ───────────────────────────────────────────────────────────────── */
+
+  /* Background layers - from bright to subtle */
+  --depth-void: #fafaf9;        /* Lightest background */
+  --depth-abyss: #f5f5f4;       /* Light canvas */
+  --depth-deep: #e7e5e4;        /* Subtle depth */
+  --depth-base: #d6d3d1;        /* Base containers */
+  --depth-raised: #a8a29e;      /* Raised elements */
+  --depth-elevated: #78716c;    /* Elevated surfaces */
+
+  /* ─────────────────────────────────────────────────────────────────
+     TEXT COLORS: Dark Text on Light Background
+     ───────────────────────────────────────────────────────────────── */
+
+  --text-primary: #1c1917;      /* Primary text - dark stone */
+  --text-secondary: #292524;    /* Secondary text */
+  --text-muted: #57534e;        /* Muted text */
+  --text-subtle: #78716c;       /* Subtle text */
+  --text-disabled: #a8a29e;     /* Disabled text */
+
+  /* Legacy aliases */
+  --background: #fafaf9;
+  --background-warm: #f5f5f4;
+  --foreground: #1c1917;
+
+  /* ─────────────────────────────────────────────────────────────────
+     LUMINOUS COLORS: Richer in Light Mode
+     ───────────────────────────────────────────────────────────────── */
+
+  --luminous-gold: #f59e0b;
+  --luminous-amber: #ea580c;
+  --luminous-orange: #dc2626;
+  --luminous-rose: #e11d48;
+  --luminous-purple: #7c3aed;
+  --luminous-indigo: #4f46e5;
+  --luminous-emerald: #059669;
+
+  /* ─────────────────────────────────────────────────────────────────
+     GLOW INTENSITIES: Subtle in Light Mode
+     ───────────────────────────────────────────────────────────────── */
+
+  --glow-gold-subtle: rgba(245, 158, 11, 0.1);
+  --glow-gold-medium: rgba(245, 158, 11, 0.2);
+  --glow-gold-strong: rgba(245, 158, 11, 0.3);
+  --glow-gold-intense: rgba(245, 158, 11, 0.4);
+
+  --glow-amber-subtle: rgba(234, 88, 12, 0.1);
+  --glow-amber-medium: rgba(234, 88, 12, 0.2);
+  --glow-amber-strong: rgba(234, 88, 12, 0.3);
+
+  --glow-rose-subtle: rgba(225, 29, 72, 0.1);
+  --glow-rose-medium: rgba(225, 29, 72, 0.2);
+  --glow-rose-strong: rgba(225, 29, 72, 0.3);
+
+  --glow-purple-subtle: rgba(124, 58, 237, 0.1);
+  --glow-purple-medium: rgba(124, 58, 237, 0.2);
+  --glow-purple-strong: rgba(124, 58, 237, 0.3);
+
+  --glow-emerald-subtle: rgba(5, 150, 105, 0.1);
+  --glow-emerald-medium: rgba(5, 150, 105, 0.2);
+  --glow-emerald-strong: rgba(5, 150, 105, 0.3);
+
+  /* ─────────────────────────────────────────────────────────────────
+     SEMANTIC COLORS: Adjusted for Light Mode
+     ───────────────────────────────────────────────────────────────── */
+
+  --virtue-wisdom: #7c3aed;      /* Purple - deeper in light */
+  --virtue-courage: #dc2626;     /* Red - more visible */
+  --virtue-temperance: #0891b2;  /* Darker cyan */
+  --virtue-justice: #f59e0b;     /* Deeper amber */
+
+  --status-success: #059669;
+  --status-warning: #ea580c;
+  --status-error: #dc2626;
+  --status-info: #2563eb;
+
+  --interactive-default: #f59e0b;
+  --interactive-hover: #ea580c;
+  --interactive-active: #dc2626;
+  --interactive-disabled: #a8a29e;
+
+  /* ─────────────────────────────────────────────────────────────────
+     GRADIENTS: Adapted for Light Mode
+     ───────────────────────────────────────────────────────────────── */
+
+  --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #dc2626 100%);
+  --gradient-sunset: linear-gradient(135deg, #dc2626 0%, #db2777 50%, #7c3aed 100%);
+  --gradient-dawn: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+  --gradient-wisdom: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #7c3aed 100%);
+  --gradient-growth: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
+  --gradient-fire: linear-gradient(135deg, #b91c1c 0%, #dc2626 40%, #ea580c 70%, #f59e0b 100%);
+
+  /* Atmospheric gradients for light mode */
+  --gradient-celestial: linear-gradient(180deg,
+    rgba(245, 158, 11, 0.05) 0%,
+    rgba(124, 58, 237, 0.03) 50%,
+    transparent 100%
+  );
+  --gradient-ethereal: radial-gradient(ellipse at center,
+    rgba(245, 158, 11, 0.08) 0%,
+    transparent 70%
+  );
+
+  /* Surface gradients */
+  --gradient-surface: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(250, 250, 249, 0.6) 100%
+  );
+  --gradient-surface-glow: linear-gradient(180deg,
+    rgba(245, 158, 11, 0.03) 0%,
+    transparent 50%
+  );
+
+  /* Premium gradient effects */
+  --gradient-gold-subtle: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(234, 88, 12, 0.04) 100%);
+  --gradient-depth: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
+  --gradient-shine: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%);
+
+  /* ─────────────────────────────────────────────────────────────────
+     SHADOWS: Softer in Light Mode
+     ───────────────────────────────────────────────────────────────── */
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 32px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(0, 0, 0, 0.12);
+
+  /* Glow shadows - more subtle in light mode */
+  --shadow-glow-gold: 0 0 20px rgba(245, 158, 11, 0.2), 0 0 40px rgba(245, 158, 11, 0.1);
+  --shadow-glow-gold-strong: 0 0 30px rgba(245, 158, 11, 0.3), 0 0 60px rgba(245, 158, 11, 0.2), 0 0 90px rgba(245, 158, 11, 0.1);
+  --shadow-glow-amber: 0 0 20px rgba(234, 88, 12, 0.2), 0 0 40px rgba(234, 88, 12, 0.1);
+  --shadow-glow-rose: 0 0 20px rgba(225, 29, 72, 0.2), 0 0 40px rgba(225, 29, 72, 0.1);
+  --shadow-glow-purple: 0 0 20px rgba(124, 58, 237, 0.2), 0 0 40px rgba(124, 58, 237, 0.1);
+  --shadow-glow-emerald: 0 0 20px rgba(5, 150, 105, 0.2), 0 0 40px rgba(5, 150, 105, 0.1);
+
+  --shadow-inner-subtle: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-inner-deep: inset 0 4px 8px rgba(0, 0, 0, 0.08);
+
+  --shadow-elevated-glow:
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    0 0 30px rgba(245, 158, 11, 0.15);
+
+  /* ─────────────────────────────────────────────────────────────────
+     BORDERS: Darker in Light Mode
+     ───────────────────────────────────────────────────────────────── */
+
+  --border-subtle: 1px solid rgba(0, 0, 0, 0.05);
+  --border-default: 1px solid rgba(0, 0, 0, 0.1);
+  --border-glow: 1px solid rgba(245, 158, 11, 0.3);
+  --border-glow-strong: 1px solid rgba(245, 158, 11, 0.5);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -257,11 +425,15 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: dark light;
   font-size: 16px;
   scroll-behavior: smooth;
   /* Prevent pull-to-refresh on Android Chrome and overscroll bounce */
   overscroll-behavior: none;
+}
+
+html.light {
+  color-scheme: light;
 }
 
 body {
@@ -300,6 +472,20 @@ body {
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for mobile */
   overflow-x: hidden;
+}
+
+/* Light mode body background - bright and elevated */
+.light body {
+  background: var(--depth-void);
+  background-image:
+    /* Warm golden light from above */
+    radial-gradient(ellipse 100% 60% at 50% -30%, rgba(245, 158, 11, 0.06) 0%, transparent 60%),
+    /* Purple accent - bottom right */
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(124, 58, 237, 0.04) 0%, transparent 60%),
+    /* Rose warmth - bottom left */
+    radial-gradient(ellipse 50% 40% at 0% 90%, rgba(225, 29, 72, 0.03) 0%, transparent 50%),
+    /* Center highlight */
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(245, 158, 11, 0.02) 0%, transparent 70%);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
