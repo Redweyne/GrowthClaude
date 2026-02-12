@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════
+   INTER FONT - Premium Sans-Serif Typography
+   ═══════════════════════════════════════════════════════════════ */
+@import url('https://rsms.me/inter/inter.css');
+
 :root {
   /* ═══════════════════════════════════════════════════════════════
      TRANSFORMATION HUB DESIGN SYSTEM
@@ -10,10 +15,10 @@
      TYPOGRAPHY: The Soul of Visual Design
      ───────────────────────────────────────────────────────────────── */
 
-  /* Font Families */
-  --font-display: var(--font-display), ui-serif, Georgia, Cambria, serif;
-  --font-body: var(--font-body), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-accent: var(--font-accent), ui-serif, Georgia, serif;
+  /* Font Families - Premium Inter Font */
+  --font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-accent: 'Inter', ui-serif, Georgia, serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, monospace;
 
   /* Typography Scale - Major Third (1.25) ratio

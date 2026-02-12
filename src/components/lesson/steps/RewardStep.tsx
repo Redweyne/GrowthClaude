@@ -242,10 +242,10 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              <p className="text-amber-400/80 text-xs font-medium tracking-[0.3em] uppercase mb-2">
+              <p className="text-amber-400/80 text-sm font-semibold tracking-[0.3em] uppercase mb-3">
                 {t('lessons.reward.youMastered')}
               </p>
-              <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+              <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white tracking-tighter leading-none">
                 {concept.title}
               </h2>
             </motion.div>
@@ -288,7 +288,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
           >
             {/* Greeting */}
             <motion.p
-              className="text-zinc-400 text-lg mb-6"
+              className="text-zinc-400 text-xl sm:text-2xl font-medium mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -310,33 +310,33 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
 
               {/* Card content */}
-              <div className="relative p-6">
+              <div className="relative p-8">
                 {/* XP Earned - Hero element */}
-                <div className="flex items-center justify-center mb-6">
+                <div className="flex items-center justify-center mb-8">
                   <motion.div
-                    className="flex items-center gap-3"
+                    className="flex items-center gap-4"
                     initial={{ scale: 0.8 }}
                     animate={{ scale: 1 }}
                     transition={{ ...SPRING_CONFIG, delay: 0.3 }}
                   >
-                    <Sparkles className="w-6 h-6 text-amber-400" />
-                    <span className="text-5xl font-bold text-white">
+                    <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
+                    <span className="text-6xl sm:text-7xl md:text-8xl font-bold text-white tracking-tighter tabular-nums">
                       +{safeXpEarned}
                     </span>
-                    <span className="text-xl text-zinc-400 font-light">XP</span>
+                    <span className="text-2xl sm:text-3xl text-zinc-400 font-normal">XP</span>
                   </motion.div>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent mb-5" />
+                <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent mb-6" />
 
                 {/* Streak and Level row */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-6">
                   {/* Streak */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="relative">
                       <Flame
-                        className={`w-5 h-5 ${
+                        className={`w-6 h-6 ${
                           predictedStreak >= 30
                             ? 'text-orange-400 fill-orange-400'
                             : predictedStreak >= 7
@@ -345,17 +345,20 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                         }`}
                       />
                     </div>
-                    <span className="text-white font-semibold">
-                      {predictedStreak} {predictedStreak === 1 ? t('lessons.reward.day') : t('lessons.reward.days')}
+                    <span className="text-white text-xl sm:text-2xl font-bold tabular-nums tracking-tight">
+                      {predictedStreak}
                     </span>
-                    <span className="text-zinc-500 text-sm">
+                    <span className="text-white text-base font-medium">
+                      {predictedStreak === 1 ? t('lessons.reward.day') : t('lessons.reward.days')}
+                    </span>
+                    <span className="text-zinc-500 text-base">
                       {t('lessons.reward.streak')}
                     </span>
                   </div>
 
                   {/* Current Level */}
                   <div className="text-right">
-                    <span className="text-zinc-500 text-sm">
+                    <span className="text-zinc-500 text-base font-medium">
                       {leveledUp ? t('lessons.reward.levelUp') : newLevel.title}
                     </span>
                   </div>
@@ -386,16 +389,16 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                 {/* Level Up Banner - only shown when leveled up */}
                 {leveledUp && (
                   <motion.div
-                    className="bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 rounded-lg p-4 mb-5 border border-amber-500/20"
+                    className="bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 rounded-lg p-6 mb-6 border border-amber-500/20"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 }}
                   >
-                    <p className="text-amber-400 text-xs font-medium tracking-wider uppercase mb-1">
+                    <p className="text-amber-400 text-sm font-semibold tracking-wider uppercase mb-2">
                       {t('lessons.reward.youveGrown')}
                     </p>
-                    <p className="text-white font-bold text-lg">{newLevel.title}</p>
-                    <p className="text-zinc-400 text-sm mt-1">{newLevel.subtitle}</p>
+                    <p className="text-white font-bold text-2xl sm:text-3xl tracking-tight leading-tight">{newLevel.title}</p>
+                    <p className="text-zinc-400 text-base sm:text-lg mt-2 leading-relaxed">{newLevel.subtitle}</p>
                   </motion.div>
                 )}
 
@@ -406,10 +409,10 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <p className="text-zinc-400 text-sm italic leading-relaxed mb-2">
+                  <p className="text-zinc-400 text-base sm:text-lg italic leading-relaxed mb-3">
                     &ldquo;{wisdomQuote.text}&rdquo;
                   </p>
-                  <p className="text-zinc-600 text-xs">
+                  <p className="text-zinc-600 text-sm font-medium">
                     — {wisdomQuote.author}
                   </p>
                 </motion.div>
@@ -418,19 +421,19 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
             {/* CTA Button - in the thumb zone */}
             <motion.div
-              className="w-full mt-8"
+              className="w-full mt-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
             >
               <Button
                 onClick={handleContinue}
-                className="w-full py-4 text-base group"
+                className="w-full py-5 px-8 text-lg font-semibold group"
                 data-testid="reward-continue-btn"
               >
                 {t('lessons.reward.continueToMentor')}
                 <ChevronRight
-                  className={`w-5 h-5 ${
+                  className={`w-6 h-6 ${
                     isRTL
                       ? 'mr-2 group-hover:-translate-x-1'
                       : 'ml-2 group-hover:translate-x-1'

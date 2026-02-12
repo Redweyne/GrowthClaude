@@ -165,11 +165,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       `,
     };
 
-    // Size variants
+    // Size variants - Premium generous padding
     const sizes = {
-      sm: 'px-4 py-2 text-sm gap-2',
-      md: 'px-6 py-3 text-base gap-2.5',
-      lg: 'px-8 py-4 text-lg gap-3',
+      sm: 'px-6 py-3 text-sm gap-2.5 min-h-[44px]',
+      md: 'px-8 py-4 text-base gap-3 min-h-[48px]',
+      lg: 'px-10 py-5 text-lg gap-3.5 min-h-[56px]',
     };
 
     // Glow animation class
