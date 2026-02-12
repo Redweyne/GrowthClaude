@@ -125,7 +125,7 @@ function ProgressRing({ progress, size = 120, strokeWidth = 8, children }: Progr
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-stone-800"
+          className="text-stone-800 light:text-stone-300"
         />
         {/* Progress circle */}
         <motion.circle
@@ -213,7 +213,7 @@ function AnimatedFlame({ streak, size = 'md' }: AnimatedFlameProps) {
           size={iconSizes[size]}
           className={
             streak === 0
-              ? 'text-stone-600'
+              ? 'text-stone-600 light:text-stone-500'
               : isBlazing
               ? 'text-orange-400'
               : isHot
@@ -225,8 +225,8 @@ function AnimatedFlame({ streak, size = 'md' }: AnimatedFlameProps) {
       </motion.div>
 
       {/* Streak number */}
-      <div className="absolute -bottom-1 -right-1 bg-stone-900 border border-stone-700 rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-        <span className={`text-xs font-bold ${streak > 0 ? 'text-amber-400' : 'text-stone-500'}`}>
+      <div className="absolute -bottom-1 -right-1 bg-stone-900 light:bg-stone-100 border border-stone-700 light:border-stone-300 rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+        <span className={`text-xs font-bold ${streak > 0 ? 'text-amber-400' : 'text-stone-500 light:text-stone-600'}`}>
           {streak}
         </span>
       </div>
@@ -254,7 +254,7 @@ function JourneyMapMini({ worldName, currentDay, totalDays, onPress, isRTL = fal
   return (
     <motion.button
       onClick={onPress}
-      className={`w-full p-4 rounded-2xl bg-gradient-to-br from-stone-900/80 to-stone-800/50 border border-stone-700/50 ${isRTL ? 'text-right' : 'text-left'}`}
+      className={`w-full p-4 rounded-2xl bg-gradient-to-br from-stone-900/80 to-stone-800/50 light:from-stone-100 light:to-stone-50 border border-stone-700/50 light:border-stone-300 ${isRTL ? 'text-right' : 'text-left'}`}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
     >
@@ -264,15 +264,15 @@ function JourneyMapMini({ worldName, currentDay, totalDays, onPress, isRTL = fal
             <Target size={16} className="text-amber-400" />
           </div>
           <div>
-            <p className="text-stone-300 font-medium text-sm">{worldName}</p>
-            <p className="text-stone-500 text-xs">{t('world.dayOf').replace('{current}', String(currentDay)).replace('{total}', String(totalDays))}</p>
+            <p className="text-stone-300 light:text-stone-800 font-medium text-sm">{worldName}</p>
+            <p className="text-stone-500 light:text-stone-600 text-xs">{t('world.dayOf').replace('{current}', String(currentDay)).replace('{total}', String(totalDays))}</p>
           </div>
         </div>
-        {isRTL ? <ChevronLeft size={16} className="text-stone-600" /> : <ChevronRight size={16} className="text-stone-600" />}
+        {isRTL ? <ChevronLeft size={16} className="text-stone-600 light:text-stone-500" /> : <ChevronRight size={16} className="text-stone-600 light:text-stone-500" />}
       </div>
 
       {/* Progress track */}
-      <div className="relative h-2 bg-stone-800 rounded-full overflow-hidden">
+      <div className="relative h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
         <motion.div
           className={`absolute inset-y-0 ${isRTL ? 'right-0' : 'left-0'} bg-gradient-to-r from-amber-500 to-orange-500 rounded-full`}
           initial={{ width: 0 }}
@@ -285,7 +285,7 @@ function JourneyMapMini({ worldName, currentDay, totalDays, onPress, isRTL = fal
           <div
             key={milestone}
             className={`absolute top-1/2 -translate-y-1/2 w-1 h-1 rounded-full ${
-              progress >= milestone ? 'bg-stone-900' : 'bg-stone-600'
+              progress >= milestone ? 'bg-stone-900 light:bg-stone-500' : 'bg-stone-600 light:bg-stone-300'
             }`}
             style={{ [isRTL ? 'right' : 'left']: `${milestone}%` }}
           />
@@ -298,7 +298,7 @@ function JourneyMapMini({ worldName, currentDay, totalDays, onPress, isRTL = fal
           <span
             key={label}
             className={`text-[10px] ${
-              progress >= milestones[index] ? 'text-amber-500' : 'text-stone-600'
+              progress >= milestones[index] ? 'text-amber-500' : 'text-stone-600 light:text-stone-500'
             }`}
           >
             {label}
@@ -346,8 +346,8 @@ function NavItem({
         compact ? 'p-3' : 'p-4'
       } ${
         disabled
-          ? 'bg-stone-900/30 border-stone-800/50 opacity-50 cursor-not-allowed'
-          : 'bg-stone-900/50 border-stone-800 hover:border-stone-700 hover:bg-stone-900/70'
+          ? 'bg-stone-900/30 light:bg-stone-100/70 border-stone-800/50 light:border-stone-300 opacity-50 cursor-not-allowed'
+          : 'bg-stone-900/50 light:bg-stone-100/80 border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 hover:bg-stone-900/70 light:hover:bg-stone-100'
       }`}
       whileHover={!disabled ? { scale: 1.01, y: -1 } : {}}
       whileTap={!disabled ? { scale: 0.99 } : {}}
@@ -358,7 +358,7 @@ function NavItem({
         </div>
         <div className="flex-1 min-w-0">
           <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <p className={`text-stone-200 font-medium ${compact ? 'text-sm' : ''}`}>{label}</p>
+            <p className={`text-stone-200 light:text-stone-800 font-medium ${compact ? 'text-sm' : ''}`}>{label}</p>
             {badge && (
               <span className={`px-2 py-0.5 ${badgeColor} text-white text-xs font-medium rounded-full`}>
                 {badge}
@@ -366,10 +366,10 @@ function NavItem({
             )}
           </div>
           {sublabel && (
-            <p className="text-stone-500 text-sm truncate">{sublabel}</p>
+            <p className="text-stone-500 light:text-stone-600 text-sm truncate">{sublabel}</p>
           )}
         </div>
-        {isRTL ? <ChevronLeft size={16} className="text-stone-600" /> : <ChevronRight size={16} className="text-stone-600" />}
+        {isRTL ? <ChevronLeft size={16} className="text-stone-600 light:text-stone-500" /> : <ChevronRight size={16} className="text-stone-600 light:text-stone-500" />}
       </div>
     </motion.button>
   );
@@ -438,7 +438,7 @@ export function DashboardNew({
   }, [transformationGoal, t]);
 
   return (
-    <div className="min-h-screen bg-stone-950 relative">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50 relative">
       <AmbientBackground intensity="subtle" particleCount={8} orbCount={2} />
 
       {/* Header */}
@@ -470,7 +470,7 @@ export function DashboardNew({
         >
           {/* Transformation days counter */}
           <motion.p
-            className="text-stone-500 text-base sm:text-lg font-medium mb-6"
+            className="text-stone-500 light:text-stone-600 text-base sm:text-lg font-medium mb-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -483,14 +483,14 @@ export function DashboardNew({
             {/* Streak */}
             <div className="flex flex-col items-center">
               <AnimatedFlame streak={currentStreak} size="lg" />
-              <p className="text-sm text-stone-500 mt-2 font-medium">{t('common.streak')}</p>
+              <p className="text-sm text-stone-500 light:text-stone-600 mt-2 font-medium">{t('common.streak')}</p>
             </div>
 
             {/* XP Progress Ring */}
             <ProgressRing progress={xpProgress.percentage} size={140} strokeWidth={8}>
               <div className="text-center">
                 <p className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-amber-400 to-orange-500 tabular-nums tracking-tight">{level.level}</p>
-                <p className="text-sm text-stone-500 font-medium mt-1">{level.title}</p>
+                <p className="text-sm text-stone-500 light:text-stone-600 font-medium mt-1">{level.title}</p>
               </div>
             </ProgressRing>
 
@@ -500,7 +500,7 @@ export function DashboardNew({
                 <Sparkles size={28} className="text-purple-400" />
               </div>
               <p className="text-base text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-purple-400 to-pink-500 mt-2 font-bold tabular-nums">{totalXp.toLocaleString()}</p>
-              <p className="text-sm text-stone-600 font-medium">{t('common.xp')}</p>
+              <p className="text-sm text-stone-600 light:text-stone-700 font-medium">{t('common.xp')}</p>
             </div>
           </div>
 
@@ -513,13 +513,13 @@ export function DashboardNew({
           >
             {latestIdentityStatement ? (
               <div className={`p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 to-purple-500/10 border border-amber-500/20 ${isRTL ? 'text-right' : ''}`}>
-                <p className="text-stone-300 text-lg sm:text-xl italic leading-relaxed">
+                <p className="text-stone-300 light:text-stone-800 text-lg sm:text-xl italic leading-relaxed">
                   &ldquo;{latestIdentityStatement}&rdquo;
                 </p>
-                <p className="text-stone-500 text-sm font-medium mt-3">{t('dashboard.latestIdentity')}</p>
+                <p className="text-stone-500 light:text-stone-600 text-sm font-medium mt-3">{t('dashboard.latestIdentity')}</p>
               </div>
             ) : (
-              <p className="text-stone-400 text-lg sm:text-xl leading-relaxed">
+              <p className="text-stone-400 light:text-stone-700 text-lg sm:text-xl leading-relaxed">
                 {t('dashboard.youAreBecoming')}{' '}
                 <span className="text-amber-400 font-semibold">{goalText}</span>.
               </p>
@@ -536,12 +536,12 @@ export function DashboardNew({
           transition={{ delay: 0.15 }}
           className="relative"
         >
-          <div className="p-8 rounded-2xl bg-gradient-to-br from-purple-900/20 via-stone-900/40 to-amber-900/20 border border-purple-500/20 overflow-hidden">
+          <div className="p-8 rounded-2xl bg-gradient-to-br from-purple-900/20 via-stone-900/40 to-amber-900/20 light:from-purple-100/70 light:via-stone-100/90 light:to-amber-100/70 border border-purple-500/20 light:border-purple-300/50 overflow-hidden">
             {/* Decorative quote mark */}
             <div className="absolute top-3 left-6 text-7xl text-purple-500/10 font-serif leading-none select-none">&ldquo;</div>
 
             <div className="relative z-10">
-              <p className={`text-stone-300 text-lg sm:text-xl leading-relaxed italic ${isRTL ? 'text-right' : ''}`}>
+              <p className={`text-stone-300 light:text-stone-800 text-lg sm:text-xl leading-relaxed italic ${isRTL ? 'text-right' : ''}`}>
                 {t(`home.wisdomQuotes.${getDailyQuoteIndex()}.text` as any) || "The obstacle is the way."}
               </p>
               <p className={`text-purple-400/80 text-base sm:text-lg mt-4 font-semibold ${isRTL ? 'text-right' : ''}`}>
@@ -566,7 +566,7 @@ export function DashboardNew({
           transition={{ delay: 0.1 }}
         >
           <div className={`flex items-center justify-between mb-3 px-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('dashboard.sections.today')}</p>
+            <p className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">{t('dashboard.sections.today')}</p>
             <HelpTooltip topic="exercises" size="sm" />
           </div>
 
@@ -576,7 +576,7 @@ export function DashboardNew({
             className={`w-full p-6 sm:p-8 rounded-2xl border transition-all ${isRTL ? 'text-right' : 'text-left'} ${
               todayComplete
                 ? 'bg-emerald-500/10 border-emerald-500/30'
-                : 'bg-stone-900/50 border-stone-800 hover:border-stone-700'
+                : 'bg-stone-900/50 light:bg-stone-100/80 border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400'
             }`}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
@@ -599,7 +599,7 @@ export function DashboardNew({
               </div>
 
               <div className="flex-1">
-                <p className="font-bold text-lg sm:text-xl text-stone-100 mb-2 tracking-tight leading-tight">
+                <p className="font-bold text-lg sm:text-xl text-stone-100 light:text-stone-900 mb-2 tracking-tight leading-tight">
                   {todayComplete ? t('dashboard.todaysPracticeComplete') : todaysLessonTitle || t('dashboard.todaysPractice')}
                 </p>
 
@@ -607,20 +607,20 @@ export function DashboardNew({
                 <div className={`flex items-center gap-5 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-2.5 h-2.5 rounded-full ${todayLessonCompleted ? 'bg-emerald-500' : 'bg-stone-700'}`} />
-                    <span className="text-sm text-stone-500 font-medium">{t('dashboard.lesson')}</span>
+                    <span className="text-sm text-stone-500 light:text-stone-600 font-medium">{t('dashboard.lesson')}</span>
                   </div>
                   <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-2.5 h-2.5 rounded-full ${todayEchoCompleted ? 'bg-emerald-500' : 'bg-stone-700'}`} />
-                    <span className="text-sm text-stone-500 font-medium">{t('dashboard.echo')}</span>
+                    <span className="text-sm text-stone-500 light:text-stone-600 font-medium">{t('dashboard.echo')}</span>
                   </div>
                   <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-2.5 h-2.5 rounded-full ${exercisesCompleted === totalExercises ? 'bg-emerald-500' : 'bg-stone-700'}`} />
-                    <span className="text-sm text-stone-500 font-medium tabular-nums">{exercisesCompleted}/{totalExercises}</span>
+                    <span className="text-sm text-stone-500 light:text-stone-600 font-medium tabular-nums">{exercisesCompleted}/{totalExercises}</span>
                   </div>
                 </div>
               </div>
 
-              {isRTL ? <ChevronLeft size={22} className="text-stone-600" /> : <ChevronRight size={22} className="text-stone-600" />}
+              {isRTL ? <ChevronLeft size={22} className="text-stone-600 light:text-stone-500" /> : <ChevronRight size={22} className="text-stone-600 light:text-stone-500" />}
             </div>
           </motion.button>
 
@@ -650,7 +650,7 @@ export function DashboardNew({
           transition={{ delay: 0.2 }}
         >
           <div className={`flex items-center justify-between mb-3 px-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('dashboard.sections.yourJourney')}</p>
+            <p className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">{t('dashboard.sections.yourJourney')}</p>
             <HelpTooltip topic="worlds" size="sm" />
           </div>
 
@@ -722,7 +722,7 @@ export function DashboardNew({
           transition={{ delay: 0.3 }}
         >
           <div className={`flex items-center justify-between mb-3 px-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <p className="text-stone-500 text-xs uppercase tracking-wider">{t('dashboard.sections.community')}</p>
+            <p className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">{t('dashboard.sections.community')}</p>
             <HelpTooltip topic="echoes" size="sm" />
           </div>
 
@@ -757,24 +757,24 @@ export function DashboardNew({
         >
           <button
             onClick={onOpenStats}
-            className="w-full p-8 rounded-2xl bg-stone-900/30 border border-stone-800/50 hover:border-stone-700 transition-all"
+            className="w-full p-8 rounded-2xl bg-stone-900/30 light:bg-stone-100/80 border border-stone-800/50 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 transition-all"
           >
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-8 sm:gap-12 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
                   <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-emerald-300 via-emerald-400 to-teal-500 tabular-nums tracking-tight">{totalLessons}</p>
-                  <p className="text-sm text-stone-500 mt-1 font-medium">{t('common.lessons')}</p>
+                  <p className="text-sm text-stone-500 light:text-stone-600 mt-1 font-medium">{t('common.lessons')}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-orange-300 via-orange-400 to-red-500 tabular-nums tracking-tight">{longestStreak}</p>
-                  <p className="text-sm text-stone-500 mt-1 font-medium">{t('dashboard.bestStreak')}</p>
+                  <p className="text-sm text-stone-500 light:text-stone-600 mt-1 font-medium">{t('dashboard.bestStreak')}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500 tabular-nums tracking-tight">{daysSinceStart || 1}</p>
-                  <p className="text-sm text-stone-500 mt-1 font-medium">{t('common.days')}</p>
+                  <p className="text-sm text-stone-500 light:text-stone-600 mt-1 font-medium">{t('common.days')}</p>
                 </div>
               </div>
-              <div className={`flex items-center gap-2 text-stone-500 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex items-center gap-2 text-stone-500 light:text-stone-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <span className="text-base font-medium">{t('dashboard.viewAllStats')}</span>
                 {isRTL ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
               </div>

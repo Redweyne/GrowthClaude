@@ -135,12 +135,12 @@ export function DailyFlowHome({
           transition={{ delay: 0.2 }}
         >
           <div className={`flex justify-between items-center mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <span className="text-stone-400 text-sm">
+            <span className="text-stone-400 light:text-stone-700 text-sm">
               {t('dailyFlow.dayOf').replace('{current}', String(dayNumber)).replace('{total}', String(totalDays))}
             </span>
             <span className="text-amber-400 text-sm font-medium">{worldName}</span>
           </div>
-          <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
               initial={{ width: 0 }}
@@ -171,10 +171,10 @@ export function DailyFlowHome({
                 >
                   ✨
                 </motion.div>
-                <h2 className="text-2xl font-bold text-stone-100 mb-2">
+                <h2 className="text-2xl font-bold text-stone-100 light:text-stone-900 mb-2">
                   {t('dailyFlow.todaysPracticeComplete')}
                 </h2>
-                <p className="text-stone-400">
+                <p className="text-stone-400 light:text-stone-600">
                   {t('dailyFlow.doneTheWork')}
                 </p>
               </Card>
@@ -198,13 +198,13 @@ export function DailyFlowHome({
               {/* Tomorrow's glimpse */}
               {tomorrowsLesson && (
                 <Card variant="glass" padding="md" className="mb-6">
-                  <p className={`text-stone-500 text-xs uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : ''}`}>
+                  <p className={`text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : ''}`}>
                     {t('dailyFlow.tomorrowsGlimpse')}
                   </p>
-                  <h3 className={`text-lg font-semibold text-stone-200 mb-1 ${isRTL ? 'text-right' : ''}`}>
+                  <h3 className={`text-lg font-semibold text-stone-200 light:text-stone-800 mb-1 ${isRTL ? 'text-right' : ''}`}>
                     {tomorrowsLesson.title}
                   </h3>
-                  <p className={`text-stone-400 text-sm ${isRTL ? 'text-right' : ''}`}>
+                  <p className={`text-stone-400 light:text-stone-600 text-sm ${isRTL ? 'text-right' : ''}`}>
                     {tomorrowsLesson.teaserText || tomorrowsLesson.subtitle || tomorrowsLesson.description}
                   </p>
                 </Card>
@@ -212,27 +212,27 @@ export function DailyFlowHome({
 
               {/* Want to go deeper? */}
               <div className="mt-auto">
-                <p className={`text-stone-500 text-xs uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : ''}`}>
+                <p className={`text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : ''}`}>
                   {t('dailyFlow.wantToGoDeeper')}
                 </p>
                 <div className="space-y-2">
                   {onBrowseMoreEchoes && (
                     <button
                       onClick={onBrowseMoreEchoes}
-                      className={`w-full p-4 rounded-xl bg-stone-900/50 border border-stone-800 hover:border-stone-700 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
+                      className={`w-full p-4 rounded-xl bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 light:hover:bg-stone-100 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
                     >
                       <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                           <Heart size={18} className="text-amber-400" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-stone-200 font-medium">{t('dailyFlow.browseMoreEchoes')}</p>
-                          <p className="text-stone-500 text-sm">{t('dailyFlow.connectWithTravelers')}</p>
+                          <p className="text-stone-200 light:text-stone-800 font-medium">{t('dailyFlow.browseMoreEchoes')}</p>
+                          <p className="text-stone-500 light:text-stone-600 text-sm">{t('dailyFlow.connectWithTravelers')}</p>
                         </div>
                         {isRTL ? (
-                          <ChevronLeft size={18} className="text-stone-600" />
+                          <ChevronLeft size={18} className="text-stone-600 light:text-stone-500" />
                         ) : (
-                          <ChevronRight size={18} className="text-stone-600" />
+                          <ChevronRight size={18} className="text-stone-600 light:text-stone-500" />
                         )}
                       </div>
                     </button>
@@ -241,20 +241,20 @@ export function DailyFlowHome({
                   {onRedoPastLesson && (
                     <button
                       onClick={onRedoPastLesson}
-                      className={`w-full p-4 rounded-xl bg-stone-900/50 border border-stone-800 hover:border-stone-700 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
+                      className={`w-full p-4 rounded-xl bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 light:hover:bg-stone-100 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
                     >
                       <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                           <BookOpen size={18} className="text-blue-400" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-stone-200 font-medium">{t('dailyFlow.redoPastLesson')}</p>
-                          <p className="text-stone-500 text-sm">{t('dailyFlow.revisitDeepen')}</p>
+                          <p className="text-stone-200 light:text-stone-800 font-medium">{t('dailyFlow.redoPastLesson')}</p>
+                          <p className="text-stone-500 light:text-stone-600 text-sm">{t('dailyFlow.revisitDeepen')}</p>
                         </div>
                         {isRTL ? (
-                          <ChevronLeft size={18} className="text-stone-600" />
+                          <ChevronLeft size={18} className="text-stone-600 light:text-stone-500" />
                         ) : (
-                          <ChevronRight size={18} className="text-stone-600" />
+                          <ChevronRight size={18} className="text-stone-600 light:text-stone-500" />
                         )}
                       </div>
                     </button>
@@ -263,20 +263,20 @@ export function DailyFlowHome({
                   {onOpenDashboard && (
                     <button
                       onClick={onOpenDashboard}
-                      className={`w-full p-4 rounded-xl bg-stone-900/50 border border-stone-800 hover:border-stone-700 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
+                      className={`w-full p-4 rounded-xl bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 light:hover:bg-stone-100 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
                     >
                       <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                           <Settings size={18} className="text-purple-400" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-stone-200 font-medium">{t('dailyFlow.viewDashboard')}</p>
-                          <p className="text-stone-500 text-sm">{t('dailyFlow.progressStats')}</p>
+                          <p className="text-stone-200 light:text-stone-800 font-medium">{t('dailyFlow.viewDashboard')}</p>
+                          <p className="text-stone-500 light:text-stone-600 text-sm">{t('dailyFlow.progressStats')}</p>
                         </div>
                         {isRTL ? (
-                          <ChevronLeft size={18} className="text-stone-600" />
+                          <ChevronLeft size={18} className="text-stone-600 light:text-stone-500" />
                         ) : (
-                          <ChevronRight size={18} className="text-stone-600" />
+                          <ChevronRight size={18} className="text-stone-600 light:text-stone-500" />
                         )}
                       </div>
                     </button>
@@ -379,16 +379,16 @@ export function DailyFlowHome({
         {/* Tomorrow teaser (when not complete) */}
         {!isComplete && tomorrowsLesson && (
           <motion.div
-            className="mt-6 pt-4 border-t border-stone-800/50"
+            className="mt-6 pt-4 border-t border-stone-800/50 light:border-stone-300"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <p className={`text-stone-600 text-xs uppercase tracking-wider mb-1 ${isRTL ? 'text-right' : ''}`}>
+            <p className={`text-stone-600 light:text-stone-500 text-xs uppercase tracking-wider mb-1 ${isRTL ? 'text-right' : ''}`}>
               {t('dailyFlow.tomorrowsGlimpse')}
             </p>
-            <p className={`text-stone-500 text-sm ${isRTL ? 'text-right' : ''}`}>
-              <span className="text-stone-400">{tomorrowsLesson.title}</span>
+            <p className={`text-stone-500 light:text-stone-600 text-sm ${isRTL ? 'text-right' : ''}`}>
+              <span className="text-stone-400 light:text-stone-700">{tomorrowsLesson.title}</span>
               {tomorrowsLesson.teaserText && (
                 <span> — {tomorrowsLesson.teaserText.slice(0, 50)}...</span>
               )}
@@ -447,18 +447,18 @@ function PhaseCard({
   const isPending = status === 'pending';
 
   const borderColor = isLocked
-    ? 'border-stone-800/50'
+    ? 'border-stone-800/50 light:border-stone-300/80'
     : isCompleted
     ? 'border-emerald-500/30'
     : isCurrent || isPending
     ? 'border-amber-500/30'
-    : 'border-stone-800';
+    : 'border-stone-800 light:border-stone-300';
 
   const bgColor = isLocked
-    ? 'bg-stone-900/30'
+    ? 'bg-stone-900/30 light:bg-stone-100/70'
     : isCompleted
-    ? 'bg-stone-900/50'
-    : 'bg-stone-900/70';
+    ? 'bg-stone-900/50 light:bg-stone-100/80'
+    : 'bg-stone-900/70 light:bg-stone-100/90';
 
   return (
     <motion.div
@@ -473,7 +473,7 @@ function PhaseCard({
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                 isLocked
-                  ? 'bg-stone-800/50 text-stone-600'
+                  ? 'bg-stone-800/50 text-stone-600 light:bg-stone-200 light:text-stone-500'
                   : isCompleted
                   ? 'bg-emerald-500/20 text-emerald-400'
                   : 'bg-amber-500/20 text-amber-400'
@@ -491,7 +491,7 @@ function PhaseCard({
             {/* Content */}
             <div className={`flex-1 min-w-0 ${isRTL ? 'text-right' : ''}`}>
               <div className={`flex items-center gap-2 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-stone-500 text-xs uppercase tracking-wider">
+                <span className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">
                   {t('common.phase')} {phase}
                 </span>
                 {isCompleted && (
@@ -499,22 +499,22 @@ function PhaseCard({
                 )}
               </div>
 
-              <h3 className={`font-semibold mb-1 ${isLocked ? 'text-stone-600' : 'text-stone-100'}`}>
+              <h3 className={`font-semibold mb-1 ${isLocked ? 'text-stone-600 light:text-stone-500' : 'text-stone-100 light:text-stone-900'}`}>
                 {title}
               </h3>
 
-              <p className={`text-sm ${isLocked ? 'text-stone-700' : 'text-stone-400'}`}>
+              <p className={`text-sm ${isLocked ? 'text-stone-700 light:text-stone-500' : 'text-stone-400 light:text-stone-600'}`}>
                 {subtitle}
               </p>
 
               {/* Progress bar for exercises */}
               {progress !== undefined && total !== undefined && !isLocked && (
                 <div className="mt-3">
-                  <div className={`flex justify-between text-xs text-stone-500 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex justify-between text-xs text-stone-500 light:text-stone-600 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <span>{t('dailyFlow.phases.practice.completed').replace('{current}', String(progress)).replace('{total}', String(total))}</span>
                     <span>+{xpReward} {t('common.xp')}</span>
                   </div>
-                  <div className="h-1.5 bg-stone-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
                       initial={{ width: 0 }}
@@ -530,7 +530,7 @@ function PhaseCard({
                   <p className="text-amber-400 text-xs uppercase tracking-wider mb-1">
                     {t('dailyFlow.yourCommitment')}
                   </p>
-                  <p className="text-stone-300 text-sm">
+                  <p className="text-stone-300 light:text-stone-800 text-sm">
                     &ldquo;{pendingCommitment.slice(0, 100)}{pendingCommitment.length > 100 ? '...' : ''}&rdquo;
                   </p>
                 </div>
@@ -541,7 +541,7 @@ function PhaseCard({
             {!isLocked && !isCompleted && (
               <div className={isRTL ? 'text-left' : 'text-right'}>
                 {estimatedMinutes && (
-                  <p className="text-stone-500 text-xs">~{estimatedMinutes}min</p>
+                  <p className="text-stone-500 light:text-stone-600 text-xs">~{estimatedMinutes}min</p>
                 )}
                 {xpReward && !progress && (
                   <p className="text-amber-500 text-xs font-medium">+{xpReward} {t('common.xp')}</p>
@@ -578,7 +578,7 @@ function PhaseCard({
           {/* Locked message */}
           {isLocked && (
             <div className="mt-4 text-center">
-              <p className="text-stone-600 text-sm">
+              <p className="text-stone-600 light:text-stone-500 text-sm">
                 {t('dailyFlow.completePrevious')}
               </p>
             </div>
