@@ -500,6 +500,11 @@ const en = {
     language: 'Language',
     selectLanguage: 'Select your language',
 
+    // Appearance
+    appearance: 'Appearance',
+    theme: 'Theme',
+    themeDesc: 'Switch between dark and light mode',
+
     // Audio & Haptics
     audioHaptics: 'Audio & Haptics',
     soundEffects: 'Sound Effects',

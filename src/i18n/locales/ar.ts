@@ -500,6 +500,11 @@ const ar = {
     language: 'اللغة',
     selectLanguage: 'اختر لغتك',
 
+    // Appearance
+    appearance: 'المظهر',
+    theme: 'السمة',
+    themeDesc: 'بدّل بين الوضع الداكن والوضع الفاتح',
+
     // Audio & Haptics
     audioHaptics: 'الصوت والاهتزاز',
     soundEffects: 'المؤثرات الصوتية',

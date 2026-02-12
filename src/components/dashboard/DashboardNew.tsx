@@ -442,15 +442,15 @@ export function DashboardNew({
       <AmbientBackground intensity="subtle" particleCount={8} orbCount={2} />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-stone-950/90 dark:bg-stone-950/90 light:bg-stone-50/90 backdrop-blur-lg border-b border-stone-800 dark:border-stone-800 light:border-stone-300">
+      <div className="sticky top-0 z-20 bg-stone-950/90 light:bg-stone-50/90 backdrop-blur-lg border-b border-stone-800 light:border-stone-300">
         <div className="max-w-2xl mx-auto px-6 py-5">
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 dark:text-stone-100 light:text-stone-900 tracking-tight">{t('dashboard.yourJourney')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 light:text-stone-900 tracking-tight">{t('dashboard.yourJourney')}</h1>
             <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <ThemeToggle size="sm" />
               <button
                 onClick={onOpenSettings}
-                className="p-3 text-stone-500 dark:text-stone-500 light:text-stone-600 hover:text-stone-300 dark:hover:text-stone-300 light:hover:text-stone-900 transition-colors"
+                className="p-3 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors"
               >
                 <Settings size={22} />
               </button>

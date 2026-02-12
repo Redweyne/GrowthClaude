@@ -53,16 +53,12 @@ export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps
           ${sizes[size].button}
           relative rounded-full
           bg-gradient-to-br from-stone-800/90 to-stone-900/90
-          dark:from-stone-800/90 dark:to-stone-900/90
           light:from-stone-200/90 light:to-stone-300/90
           border border-stone-700/50
-          dark:border-stone-700/50
           light:border-stone-400/50
           hover:border-amber-500/40
-          dark:hover:border-amber-500/40
           light:hover:border-amber-600/50
           shadow-lg shadow-black/20
-          dark:shadow-black/20
           light:shadow-black/10
           flex items-center justify-center
           transition-all duration-300
@@ -142,7 +138,7 @@ export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps
 
       {showLabel && (
         <motion.span
-          className="text-sm font-medium text-stone-400 dark:text-stone-400 light:text-stone-600"
+          className="text-sm font-medium text-stone-400 light:text-stone-600"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}

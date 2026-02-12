@@ -41,7 +41,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#050403', // Matches --depth-void for seamless feel
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
+    { media: '(prefers-color-scheme: dark)', color: '#050403' },
+  ],
   colorScheme: 'dark light',
 };
 

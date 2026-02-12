@@ -18,6 +18,7 @@ import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { useAudio } from '@/hooks/useAudio';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useTranslation, languageConfig, type Locale } from '@/i18n';
+import { ThemeToggle } from '@/components/ui';
 
 interface SettingsPanelProps {
   onBack: () => void;
@@ -169,6 +170,26 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
                 </button>
               );
             })}
+          </div>
+        </motion.section>
+
+        {/* Appearance Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.175 }}
+        >
+          <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.appearance') || 'Appearance'}
+          </h2>
+          <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 p-4">
+            <div className={`flex items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={isRTL ? 'text-right' : ''}>
+                <p className="text-white light:text-stone-900 font-medium">{t('settings.theme') || 'Theme'}</p>
+                <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.themeDesc') || 'Switch between dark and light mode'}</p>
+              </div>
+              <ThemeToggle size="sm" showLabel />
+            </div>
           </div>
         </motion.section>
 
