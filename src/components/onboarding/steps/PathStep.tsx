@@ -163,7 +163,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                     className={`relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                       isActive
                         ? `bg-gradient-to-br ${phase.gradient}`
-                        : 'bg-stone-800/50 border border-stone-700/50'
+                        : 'bg-stone-800/50 light:bg-stone-200/50 border border-stone-700/50 light:border-stone-300/50'
                     }`}
                     animate={isHighlighted ? {
                       boxShadow: [

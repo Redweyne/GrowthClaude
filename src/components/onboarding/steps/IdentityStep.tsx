@@ -146,7 +146,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                   selected === option.id
                     ? 'border-amber-500 bg-amber-500'
-                    : 'border-stone-600'
+                    : 'border-stone-600 light:border-stone-400'
                 }`}
               >
                 {selected === option.id && (

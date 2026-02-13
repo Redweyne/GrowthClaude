@@ -277,7 +277,7 @@ export function SoulCompassExercise({
                           border-2 relative overflow-hidden active:scale-[0.98]
                           ${isSelected
                             ? `${config.selectedBg} ${config.border}`
-                            : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 hover:border-stone-600/60'
+                            : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 light:border-stone-300/40 hover:border-stone-600/60 light:hover:border-stone-400/60'
                           }
                         `}
                         style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -301,7 +301,7 @@ export function SoulCompassExercise({
                             flex-shrink-0 transition-all duration-200
                             ${isSelected
                               ? `${config.sliderThumb} border-transparent`
-                              : 'border-stone-600 bg-transparent'
+                              : 'border-stone-600 light:border-stone-400 bg-transparent'
                             }
                           `}>
                             {isSelected && (
@@ -395,7 +395,7 @@ export function SoulCompassExercise({
                           ? `${config.sliderThumb} text-white shadow-lg scale-110`
                           : intensity > 0 && value <= intensity
                           ? `${config.selectedBg} ${config.accent} border ${config.border}`
-                          : 'bg-stone-800/80 text-stone-400 light:text-stone-600 border border-stone-700/50 hover:border-stone-600'
+                          : 'bg-stone-800/80 light:bg-stone-200/80 text-stone-400 light:text-stone-600 border border-stone-700/50 light:border-stone-300/50 hover:border-stone-600 light:hover:border-stone-400'
                         }
                       `}
                       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -481,7 +481,7 @@ export function SoulCompassExercise({
                         border-2 relative overflow-hidden active:scale-[0.98]
                         ${isSelected
                           ? `${config.selectedBg} ${config.border}`
-                          : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 hover:border-stone-600/60'
+                          : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 light:border-stone-300/40 hover:border-stone-600/60 light:hover:border-stone-400/60'
                         }
                       `}
                       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -492,7 +492,7 @@ export function SoulCompassExercise({
                           flex-shrink-0 transition-all duration-200
                           ${isSelected
                             ? `${config.sliderThumb} border-transparent`
-                            : 'border-stone-600 bg-transparent'
+                            : 'border-stone-600 light:border-stone-400 bg-transparent'
                           }
                         `}>
                           {isSelected && (

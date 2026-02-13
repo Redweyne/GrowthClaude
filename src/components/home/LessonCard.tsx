@@ -6,6 +6,7 @@ import { Play, Flame, Zap, Clock, Sparkles, ChevronRight, BookOpen } from 'lucid
 import { Button } from '@/components/ui';
 import type { DisplayLesson, DisplayWorld } from '@/types';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LESSON CARD
@@ -41,6 +42,8 @@ export function LessonCard({
   pendingCommitment,
 }: LessonCardProps) {
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [isHovered, setIsHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -121,7 +124,7 @@ export function LessonCard({
         </motion.h2>
 
         <motion.p
-          className="text-stone-400 mb-8 max-w-sm mx-auto"
+          className="text-stone-400 light:text-stone-600 mb-8 max-w-sm mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -134,7 +137,7 @@ export function LessonCard({
   }
 
   if (!mounted) {
-    return <div className="h-64 rounded-3xl bg-stone-900/50" />;
+    return <div className="h-64 rounded-3xl bg-stone-900/50 light:bg-stone-200/50" />;
   }
 
   const duration = Math.ceil((lesson.actionDurationSeconds || 120) / 60 + 2);
@@ -202,10 +205,9 @@ export function LessonCard({
           <div
             className="relative p-8 rounded-3xl border border-amber-500/30"
             style={{
-              background: `linear-gradient(135deg,
-                rgba(251, 191, 36, 0.08) 0%,
-                rgba(28, 25, 23, 0.95) 30%,
-                rgba(12, 10, 9, 0.98) 100%)`,
+              background: isLight
+                ? `linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(250, 250, 249, 0.95) 30%, rgba(245, 245, 244, 0.98) 100%)`
+                : `linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(28, 25, 23, 0.95) 30%, rgba(12, 10, 9, 0.98) 100%)`,
             }}
           >
             {/* Header */}
@@ -224,10 +226,10 @@ export function LessonCard({
                 <span className="text-2xl">⚡</span>
               </motion.div>
               <div>
-                <h3 className="text-xl font-bold text-amber-100">
+                <h3 className="text-xl font-bold text-amber-100 light:text-amber-900">
                   {t('home.lessonCard.actionAwaits')}
                 </h3>
-                <p className="text-amber-400/70 text-sm">
+                <p className="text-amber-400/70 light:text-amber-600 text-sm">
                   {t('home.lessonCard.completeThenReturn')}
                 </p>
               </div>
@@ -235,18 +237,18 @@ export function LessonCard({
 
             {/* The commitment they made */}
             {pendingCommitment && (
-              <div className="mb-8 p-5 rounded-2xl bg-stone-900/50 border border-stone-800">
-                <p className="text-xs text-stone-500 uppercase tracking-wide mb-2">
+              <div className="mb-8 p-5 rounded-2xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-300">
+                <p className="text-xs text-stone-500 light:text-stone-600 uppercase tracking-wide mb-2">
                   {t('home.lessonCard.youCommittedTo')}
                 </p>
-                <p className="text-lg text-stone-100 leading-relaxed">
+                <p className="text-lg text-stone-100 light:text-stone-900 leading-relaxed">
                   &ldquo;{pendingCommitment}&rdquo;
                 </p>
               </div>
             )}
 
             {/* Message */}
-            <p className="text-stone-400 mb-8 leading-relaxed">
+            <p className="text-stone-400 light:text-stone-600 mb-8 leading-relaxed">
               {t('home.lessonCard.rememberPrefix')}{' '}
               <span className="text-amber-300">{t('home.lessonCard.rememberEmphasis')}</span>
               {' '}{t('home.lessonCard.rememberSuffix')}
@@ -313,10 +315,9 @@ export function LessonCard({
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(135deg,
-                rgba(28, 25, 23, 0.95) 0%,
-                rgba(12, 10, 9, 0.98) 50%,
-                rgba(28, 25, 23, 0.95) 100%)`,
+              background: isLight
+                ? `linear-gradient(135deg, rgba(250, 250, 249, 0.95) 0%, rgba(245, 245, 244, 0.98) 50%, rgba(250, 250, 249, 0.95) 100%)`
+                : `linear-gradient(135deg, rgba(28, 25, 23, 0.95) 0%, rgba(12, 10, 9, 0.98) 50%, rgba(28, 25, 23, 0.95) 100%)`,
             }}
           />
 
@@ -339,7 +340,7 @@ export function LessonCard({
           />
 
           {/* Border */}
-          <div className="absolute inset-0 rounded-3xl border border-stone-800/80" />
+          <div className="absolute inset-0 rounded-3xl border border-stone-800/80 light:border-stone-300/80" />
 
           {/* Hover border glow */}
           <motion.div
@@ -358,7 +359,7 @@ export function LessonCard({
             <div className="flex items-center justify-between mb-6">
               {/* World badge */}
               <motion.div
-                className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-stone-900/60 border border-stone-800/80"
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-stone-900/60 light:bg-stone-200/60 border border-stone-800/80 light:border-stone-300/80"
                 whileHover={{ scale: 1.05, borderColor: `${world.color}40` }}
               >
                 <div
@@ -367,7 +368,7 @@ export function LessonCard({
                 >
                   <Flame size={12} style={{ color: world.color }} />
                 </div>
-                <span className="text-sm text-stone-400 font-medium">{world.name}</span>
+                <span className="text-sm text-stone-400 light:text-stone-600 font-medium">{world.name}</span>
               </motion.div>
 
               {/* XP reward badge */}
@@ -393,7 +394,7 @@ export function LessonCard({
 
             {/* Lesson title */}
             <motion.h2
-              className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-50 to-amber-100 mb-3 leading-tight"
+              className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-50 to-amber-100 light:from-amber-800 light:via-amber-700 light:to-amber-800 mb-3 leading-tight"
               animate={{
                 backgroundPosition: isHovered ? ['0% 50%', '100% 50%', '0% 50%'] : '0% 50%',
               }}
@@ -407,19 +408,19 @@ export function LessonCard({
 
             {/* Lesson wisdom preview */}
             {lesson.wisdomText && (
-              <p className="text-stone-500 text-sm mb-6 line-clamp-2 italic">
+              <p className="text-stone-500 light:text-stone-600 text-sm mb-6 line-clamp-2 italic">
                 &ldquo;{lesson.wisdomText.substring(0, 100)}...&rdquo;
               </p>
             )}
 
             {/* Meta info */}
-            <div className="flex items-center gap-4 mb-8 text-sm text-stone-500">
+            <div className="flex items-center gap-4 mb-8 text-sm text-stone-500 light:text-stone-600">
               <div className="flex items-center gap-1.5">
-                <Clock size={14} className="text-stone-600" />
+                <Clock size={14} className="text-stone-600 light:text-stone-500" />
                 <span>~{duration} min</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <BookOpen size={14} className="text-stone-600" />
+                <BookOpen size={14} className="text-stone-600 light:text-stone-500" />
                 <span>Lesson {completedCount + 1} of {totalCount}</span>
               </div>
             </div>
@@ -480,7 +481,7 @@ export function LessonCard({
           className="absolute inset-0 -z-10 rounded-3xl"
           style={{
             transform: 'translateZ(-30px) translateY(10px)',
-            background: 'rgba(0, 0, 0, 0.4)',
+            background: isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0.4)',
             filter: 'blur(20px)',
           }}
         />
@@ -501,7 +502,7 @@ export function LessonCard({
                 ? 'bg-emerald-500'
                 : i === completedCount
                 ? 'bg-amber-500'
-                : 'bg-stone-800'
+                : 'bg-stone-800 light:bg-stone-300'
             }`}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}

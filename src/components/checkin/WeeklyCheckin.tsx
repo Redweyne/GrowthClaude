@@ -115,18 +115,18 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-zinc-950 flex flex-col ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div className={`p-4 flex items-center justify-between border-b border-zinc-800 ${isRTL ? 'flex-row-reverse' : ''}`}>
+      <div className={`p-4 flex items-center justify-between border-b border-stone-800 light:border-stone-200 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <button
           onClick={onSkip}
-          className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-zinc-700 transition-colors"
+          className="w-10 h-10 rounded-xl bg-stone-900 light:bg-stone-100 border border-stone-800 light:border-stone-200 flex items-center justify-center hover:border-stone-700 light:hover:border-stone-400 transition-colors"
         >
-          <X size={20} className="text-zinc-400" />
+          <X size={20} className="text-stone-400 light:text-stone-600" />
         </button>
         <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <Calendar size={20} className="text-rose-400" />
-          <span className="font-medium text-white">{t('checkin.title')}</span>
+          <span className="font-medium text-white light:text-stone-900">{t('checkin.title')}</span>
         </div>
         <div className="w-10" /> {/* Spacer for alignment */}
       </div>
@@ -135,7 +135,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
       {stage === 'prompt' && (
         <div className="px-4 py-2">
           <ProgressBar progress={progress} size="sm" color="rose" />
-          <p className="text-xs text-zinc-500 mt-1 text-center">
+          <p className="text-xs text-stone-500 light:text-stone-600 mt-1 text-center">
             {currentPromptIndex + 1} of {prompts.length}
           </p>
         </div>
@@ -159,21 +159,21 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 transition={{ type: 'spring', delay: 0.1 }}
                 className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-rose-600 to-pink-600 flex items-center justify-center"
               >
-                <Heart size={40} className="text-white" />
+                <Heart size={40} className="text-white light:text-stone-900" />
               </motion.div>
 
-              <h2 className="text-2xl font-bold text-white mb-4">
+              <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-4">
                 {t('checkin.weekCheckin').replace('{week}', weekNumber.toString())}
               </h2>
 
-              <p className="text-zinc-400 mb-6">
+              <p className="text-stone-400 light:text-stone-600 mb-6">
                 {t('checkin.introMessage')}
               </p>
 
-              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-8">
+              <div className="bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-200 rounded-xl p-4 mb-8">
                 <div className={`flex items-center justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <span className="text-zinc-400">{t('checkin.reflectionsCount').replace('{count}', prompts.length.toString())}</span>
-                  <span className="text-zinc-400">{t('checkin.duration')}</span>
+                  <span className="text-stone-400 light:text-stone-600">{t('checkin.reflectionsCount').replace('{count}', prompts.length.toString())}</span>
+                  <span className="text-stone-400 light:text-stone-600">{t('checkin.duration')}</span>
                   <span className={`flex items-center gap-1 text-amber-400 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <Zap size={14} />
                     {xpReward} XP
@@ -182,7 +182,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
               </div>
 
               {weeklyCheckins.length > 0 && (
-                <p className="text-sm text-zinc-500 mb-6">
+                <p className="text-sm text-stone-500 light:text-stone-600 mb-6">
                   {t('checkin.completedCount').replace('{count}', weeklyCheckins.length.toString())}
                 </p>
               )}
@@ -212,7 +212,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
               {!showFollowUp ? (
                 <>
                   <Card variant="glass" padding="lg" className="mb-6">
-                    <p className="text-lg text-white leading-relaxed text-center">
+                    <p className="text-lg text-white light:text-stone-900 leading-relaxed text-center">
                       {currentPrompt.prompt}
                     </p>
                   </Card>
@@ -221,7 +221,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                     value={mainResponse}
                     onChange={(e) => setMainResponse(e.target.value)}
                     placeholder={t('checkin.takeYourTime')}
-                    className={`w-full h-40 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4 ${isRTL ? 'text-right' : ''}`}
+                    className={`w-full h-40 p-4 bg-stone-900 light:bg-stone-100 border-2 border-stone-800 light:border-stone-200 rounded-xl text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-400 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4 ${isRTL ? 'text-right' : ''}`}
                     autoFocus
                     dir={isRTL ? 'rtl' : 'ltr'}
                   />
@@ -238,13 +238,13 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 </>
               ) : (
                 <>
-                  <div className={`bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 mb-4 ${isRTL ? 'text-right' : ''}`}>
-                    <p className="text-sm text-zinc-400 mb-2">{t('checkin.yourReflection')}:</p>
-                    <p className="text-zinc-300 italic">&ldquo;{mainResponse}&rdquo;</p>
+                  <div className={`bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-200 rounded-xl p-4 mb-4 ${isRTL ? 'text-right' : ''}`}>
+                    <p className="text-sm text-stone-400 light:text-stone-600 mb-2">{t('checkin.yourReflection')}:</p>
+                    <p className="text-stone-300 light:text-stone-700 italic">&ldquo;{mainResponse}&rdquo;</p>
                   </div>
 
                   <Card variant="glass" padding="lg" className="mb-6">
-                    <p className="text-lg text-white leading-relaxed text-center">
+                    <p className="text-lg text-white light:text-stone-900 leading-relaxed text-center">
                       {currentPrompt.followUp}
                     </p>
                   </Card>
@@ -253,7 +253,7 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                     value={followUpResponse}
                     onChange={(e) => setFollowUpResponse(e.target.value)}
                     placeholder={t('checkin.digDeeper')}
-                    className={`w-full h-32 p-4 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4 ${isRTL ? 'text-right' : ''}`}
+                    className={`w-full h-32 p-4 bg-stone-900 light:bg-stone-100 border-2 border-stone-800 light:border-stone-200 rounded-xl text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-400 focus:outline-none focus:border-rose-500 transition-colors resize-none mb-4 ${isRTL ? 'text-right' : ''}`}
                     autoFocus
                     dir={isRTL ? 'rtl' : 'ltr'}
                   />
@@ -285,14 +285,14 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 transition={{ type: 'spring', delay: 0.1 }}
                 className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center"
               >
-                <Sparkles size={48} className="text-white" />
+                <Sparkles size={48} className="text-white light:text-stone-900" />
               </motion.div>
 
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">
                 {t('checkin.checkinComplete')}
               </h2>
 
-              <p className="text-zinc-400 mb-6">
+              <p className="text-stone-400 light:text-stone-600 mb-6">
                 {t('checkin.completeMessage').replace('{week}', weekNumber.toString())}
               </p>
 
@@ -313,10 +313,10 @@ export function WeeklyCheckin({ onComplete, onSkip }: WeeklyCheckinProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className={`bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-8 ${isRTL ? 'text-right' : 'text-left'}`}
+                className={`bg-stone-900 light:bg-stone-100 border border-stone-800 light:border-stone-200 rounded-xl p-4 mb-8 ${isRTL ? 'text-right' : 'text-left'}`}
               >
                 <p className="text-sm text-rose-400 mb-2">{mentor.name}</p>
-                <p className="text-zinc-300 italic">
+                <p className="text-stone-300 light:text-stone-700 italic">
                   &ldquo;{name ? `${name}, ` : ''}{mentorMessage}&rdquo;
                 </p>
               </motion.div>

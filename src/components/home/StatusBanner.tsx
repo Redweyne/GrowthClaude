@@ -147,10 +147,10 @@ export function StatusBanner({ variant, onClick }: StatusBannerProps) {
 
           {/* Text */}
           <div className="text-left">
-            <h3 className="text-base font-semibold text-stone-100">
+            <h3 className="text-base font-semibold text-stone-100 light:text-stone-900">
               {config.title}
             </h3>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-stone-500 light:text-stone-600">
               {config.subtitle}
             </p>
           </div>
@@ -171,7 +171,7 @@ export function StatusBanner({ variant, onClick }: StatusBannerProps) {
 
           {/* Arrow */}
           <motion.div
-            className="w-8 h-8 rounded-full bg-stone-800/50 flex items-center justify-center"
+            className="w-8 h-8 rounded-full bg-stone-800/50 light:bg-stone-200/50 flex items-center justify-center"
             animate={{
               x: [0, 3, 0],
             }}

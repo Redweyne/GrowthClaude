@@ -56,7 +56,7 @@ export function ExerciseCard({
       disabled={isLocked}
       className={`w-full p-4 rounded-xl border transition-all ${isRTL ? 'text-right' : 'text-left'} ${
         isLocked
-          ? 'bg-stone-900/30 border-stone-800/50 opacity-50 cursor-not-allowed'
+          ? 'bg-stone-900/30 light:bg-stone-200/30 border-stone-800/50 light:border-stone-300/50 opacity-50 cursor-not-allowed'
           : isCompleted
           ? 'bg-stone-900/50 light:bg-stone-200/50 border-emerald-500/30 cursor-pointer'
           : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-800 light:border-stone-200 hover:border-amber-500/30 cursor-pointer'
@@ -72,7 +72,7 @@ export function ExerciseCard({
             isCompleted
               ? 'bg-emerald-500/20'
               : isLocked
-              ? 'bg-stone-800/50'
+              ? 'bg-stone-800/50 light:bg-stone-300/50'
               : `bg-gradient-to-br ${colorGradient}`
           }`}
         >

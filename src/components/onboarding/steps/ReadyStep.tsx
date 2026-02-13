@@ -127,12 +127,12 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                       filter: 'blur(20px)',
                     }}
                   />
-                  <div className="relative w-full h-full rounded-3xl bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
+                  <div className="relative w-full h-full rounded-3xl bg-gradient-to-br from-amber-500/20 to-stone-900 light:to-stone-100 border border-amber-500/30 flex items-center justify-center">
                     <span className="text-5xl">{selectedGoal?.icon}</span>
                   </div>
                 </motion.div>
 
-                <p className="text-2xl text-amber-100 font-light mb-2">
+                <p className="text-2xl text-amber-100 light:text-amber-900 font-light mb-2">
                   {name}, {t('onboarding.ready.youveChosen')}
                 </p>
                 <p className="text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
@@ -145,7 +145,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="py-5 px-6 rounded-2xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/80"
+                className="py-5 px-6 rounded-2xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/80 light:border-stone-300/80"
               >
                 <div className={`flex items-center justify-center gap-6 text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -207,7 +207,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 />
 
                 {/* Avatar container */}
-                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-purple-500/30 to-stone-900 border border-purple-500/40 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-purple-500/30 to-stone-900 light:to-stone-100 border border-purple-500/40 flex items-center justify-center overflow-hidden">
                   {/* Subtle shimmer */}
                   <motion.div
                     className="absolute inset-0"
@@ -231,7 +231,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <p className="text-2xl text-amber-100 font-light mb-4">
+                <p className="text-2xl text-amber-100 light:text-amber-900 font-light mb-4">
                   {t('onboarding.ready.wontWalkAlone')}
                 </p>
                 <p className="text-stone-400 light:text-stone-600 leading-relaxed">
@@ -293,7 +293,7 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
                 />
 
                 {/* Main container */}
-                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-amber-500/30 to-stone-900 border-2 border-amber-500/50 flex items-center justify-center">
+                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-amber-500/30 to-stone-900 light:to-stone-100 border-2 border-amber-500/50 flex items-center justify-center">
                   <Sparkles size={48} className="text-amber-400" />
                 </div>
 

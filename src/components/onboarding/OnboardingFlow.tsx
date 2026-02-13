@@ -22,6 +22,7 @@ import { MusicControls } from '@/components/ui/MusicControls';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { NameStep } from './steps/NameStep';
 import { IdentityStep } from './steps/IdentityStep';
@@ -39,6 +40,8 @@ const STEP_KEYS = ['welcome', 'yourName', 'community', 'vision', 'purpose', 'the
 export function OnboardingFlow() {
   const { onboardingStep, setOnboardingStep, completeOnboarding } = useStore();
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [direction, setDirection] = useState(1);
   const [mounted, setMounted] = useState(false);
   
@@ -246,7 +249,7 @@ export function OnboardingFlow() {
                         ? 'bg-amber-500'
                         : onboardingStep === step
                         ? 'bg-amber-400 shadow-lg shadow-amber-500/50'
-                        : 'bg-stone-700'
+                        : 'bg-stone-700 light:bg-stone-300'
                     }`}
                     animate={
                       onboardingStep === step
@@ -317,7 +320,9 @@ export function OnboardingFlow() {
       <div
         className="fixed bottom-0 left-0 right-0 h-32 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, rgba(12, 10, 9, 0.8), transparent)',
+          background: isLight
+            ? 'linear-gradient(to top, rgba(250, 250, 249, 0.8), transparent)'
+            : 'linear-gradient(to top, rgba(12, 10, 9, 0.8), transparent)',
         }}
       />
     </div>

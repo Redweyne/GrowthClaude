@@ -264,7 +264,7 @@ export function TruthMirrorExercise({
                         ? `w-3 ${config.accent.replace('text-', 'bg-')}`
                         : i === currentIndex
                         ? `w-4 ${config.accent.replace('text-', 'bg-')}`
-                        : 'w-1.5 bg-stone-700'
+                        : 'w-1.5 bg-stone-700 light:bg-stone-300'
                     }`}
                   />
                 ))}
@@ -305,7 +305,7 @@ export function TruthMirrorExercise({
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        className="text-stone-800"
+                        className="text-stone-800 light:text-stone-200"
                       />
                       <motion.circle
                         cx="50"

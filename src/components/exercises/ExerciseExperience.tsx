@@ -217,7 +217,7 @@ export function ExerciseExperience({
                   <p className="text-3xl font-bold text-amber-400">+15</p>
                   <p className="text-stone-500 light:text-stone-600 text-sm">XP earned</p>
                 </div>
-                <div className="w-px h-12 bg-stone-700" />
+                <div className="w-px h-12 bg-stone-700 light:bg-stone-300" />
                 <div className="text-center">
                   <p className="text-3xl font-bold text-emerald-400">{totalCount}/{totalCount}</p>
                   <p className="text-stone-500 light:text-stone-600 text-sm">{t('exercises.exercisesCount')}</p>

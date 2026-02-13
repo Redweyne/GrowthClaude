@@ -267,7 +267,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                 {/* Your original reflection */}
                 {getOriginalReflection(selectedEcho.reflectionId) && (
-                  <div className="p-4 rounded-xl bg-stone-800/50 border border-stone-700/50">
+                  <div className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 border border-stone-700/50 light:border-stone-300/50">
                     <p className="text-stone-500 light:text-stone-600 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
                     <p className="text-stone-400 light:text-stone-600 text-sm">
                       &ldquo;{getOriginalReflection(selectedEcho.reflectionId)?.content}&rdquo;
@@ -413,7 +413,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
                 {/* Context */}
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-stone-800/50 border border-stone-700/50">
+                  <div className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 border border-stone-700/50 light:border-stone-300/50">
                     <p className="text-stone-500 light:text-stone-600 text-sm mb-2">{t('echoes.yourReflectionLabel')}</p>
                     <p className="text-stone-400 light:text-stone-600 text-sm">
                       &ldquo;{selectedInvitation.originalReflectionContent}&rdquo;

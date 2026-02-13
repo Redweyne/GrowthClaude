@@ -9,6 +9,7 @@ import { ThemeProvider } from 'next-themes';
 import { AudioProvider } from '@/providers/AudioProvider';
 import { ActivityLoggerProvider } from '@/providers/ActivityLoggerProvider';
 import { TranslationProvider } from '@/i18n';
+import { ThemeColorMeta } from '@/components/ThemeColorMeta';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -17,6 +18,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+      <ThemeColorMeta />
       <TranslationProvider>
         <ActivityLoggerProvider>
           <AudioProvider>

@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // NAVIGATION GRID
@@ -56,9 +57,11 @@ const springs = {
 function NavButton({
   item,
   index,
+  isLight,
 }: {
   item: NavItem;
   index: number;
+  isLight: boolean;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -70,7 +73,7 @@ function NavButton({
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
-      className="relative flex flex-col items-center gap-2 p-4 rounded-2xl bg-stone-900/40 backdrop-blur-sm border border-stone-800/60 transition-colors duration-300 group overflow-hidden"
+      className="relative flex flex-col items-center gap-2 p-4 rounded-2xl bg-stone-900/40 light:bg-stone-200/40 backdrop-blur-sm border border-stone-800/60 light:border-stone-300/60 transition-colors duration-300 group overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 + index * 0.05, ...springs.responsive }}
@@ -103,7 +106,7 @@ function NavButton({
       <motion.div
         className="relative w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
         style={{
-          backgroundColor: isHovered ? `${item.color}20` : 'rgba(41, 37, 36, 0.5)',
+          backgroundColor: isHovered ? `${item.color}20` : isLight ? 'rgba(214, 211, 209, 0.5)' : 'rgba(41, 37, 36, 0.5)',
         }}
         animate={{
           scale: isPressed ? 0.9 : 1,
@@ -115,7 +118,7 @@ function NavButton({
           size={22}
           className="transition-colors duration-300"
           style={{
-            color: isHovered ? item.color : '#a8a29e',
+            color: isHovered ? item.color : isLight ? '#78716c' : '#a8a29e',
           }}
         />
 
@@ -149,7 +152,7 @@ function NavButton({
       <motion.span
         className="text-xs font-medium transition-colors duration-300"
         style={{
-          color: isHovered ? item.color : '#a8a29e',
+          color: isHovered ? item.color : isLight ? '#78716c' : '#a8a29e',
         }}
       >
         {item.label}
@@ -188,6 +191,8 @@ export function NavigationGrid({
   unreadEchoCount = 0,
 }: NavigationGridProps) {
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   // Primary navigation items (always shown)
   const primaryItems: NavItem[] = [
     {
@@ -295,7 +300,7 @@ export function NavigationGrid({
       {secondaryItems.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-3">
           {secondaryItems.map((item, index) => (
-            <NavButton key={item.id} item={item} index={index} />
+            <NavButton key={item.id} item={item} index={index} isLight={isLight} />
           ))}
         </div>
       )}
@@ -303,13 +308,13 @@ export function NavigationGrid({
       {/* Primary row - main navigation */}
       <div className="grid grid-cols-3 gap-3">
         {primaryItems.map((item, index) => (
-          <NavButton key={item.id} item={item} index={index + secondaryItems.length} />
+          <NavButton key={item.id} item={item} index={index + secondaryItems.length} isLight={isLight} />
         ))}
       </div>
 
       {/* Streak motivation text */}
       <motion.p
-        className="text-center text-xs text-stone-600 mt-5"
+        className="text-center text-xs text-stone-600 light:text-stone-500 mt-5"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}

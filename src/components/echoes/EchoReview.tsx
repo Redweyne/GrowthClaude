@@ -221,7 +221,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50"
+                  className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50 light:border-stone-300/50"
                 >
                   <p className={`text-stone-500 light:text-stone-600 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}>
                     {t('echoes.fellowWrote').replace('{gender}', genderLabel)}
@@ -262,7 +262,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                       relative rounded-2xl transition-all duration-300 border-2
                       ${isFocused
                         ? 'bg-stone-900/80 light:bg-stone-200/80 border-amber-500/30'
-                        : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50'}
+                        : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50 light:border-stone-300/50'}
                     `}
                   >
                     <textarea
@@ -310,7 +310,7 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                           w-6 h-6 rounded border-2 flex items-center justify-center transition-all
                           ${isOpenToConnect
                             ? 'bg-amber-500 border-amber-500'
-                            : 'border-stone-600 group-hover:border-stone-500'}
+                            : 'border-stone-600 light:border-stone-400 group-hover:border-stone-500 light:group-hover:border-stone-400'}
                         `}
                         onClick={() => {
                           hapticLight();

@@ -120,7 +120,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="text-4xl sm:text-5xl md:text-6xl text-amber-100/90 font-bold tracking-tight leading-tight"
+              className="text-4xl sm:text-5xl md:text-6xl text-amber-100/90 light:text-amber-900 font-bold tracking-tight leading-tight"
             >
               {t('onboarding.welcome.takeBreath')}
             </motion.p>
@@ -242,7 +242,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
-              className="py-10 border-t border-b border-stone-800/50"
+              className="py-10 border-t border-b border-stone-800/50 light:border-stone-300/50"
             >
               <div className={`flex justify-center gap-12 sm:gap-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 {[
