@@ -7,7 +7,7 @@ import { Button } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp } from '@/types';
 import type { Milestone } from '@/types/achievements';
-import { getRarityColor, getVirtueColor } from '@/types/achievements';
+import { getVirtueColor } from '@/types/achievements';
 import { useTranslation } from '@/i18n';
 
 type CardType = 'streak' | 'achievement' | 'level' | 'journey';
@@ -146,7 +146,7 @@ export function ShareableCard({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 text-zinc-400 light:text-stone-500 hover:text-white light:hover:text-stone-900 transition-colors"
           >
             <X size={24} />
           </button>
@@ -195,9 +195,9 @@ export function ShareableCard({
           </div>
 
           {/* Share message preview */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4">
-            <p className="text-sm text-zinc-400 mb-2">{t('share.messageLabel')}</p>
-            <p className="text-white">{content.message}</p>
+          <div className="bg-zinc-900 light:bg-stone-100 border border-zinc-800 light:border-stone-300 rounded-xl p-4 mb-4">
+            <p className="text-sm text-zinc-400 light:text-stone-600 mb-2">{t('share.messageLabel')}</p>
+            <p className="text-white light:text-stone-900">{content.message}</p>
           </div>
 
           {/* Action buttons */}

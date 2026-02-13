@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Globe, Check, AlertTriangle, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Check, AlertTriangle, Trash2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
@@ -82,23 +82,23 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950">
+    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 light:from-stone-50 light:via-stone-100 light:to-stone-50">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 backdrop-blur-xl bg-stone-950/80 border-b border-stone-800/50"
+        className="sticky top-0 z-50 backdrop-blur-xl bg-stone-950/80 light:bg-stone-50/90 border-b border-stone-800/50 light:border-stone-300"
       >
         <div className={`max-w-lg mx-auto px-4 py-4 flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={onBack}
-            className={`p-2 ${isRTL ? '-mr-2' : '-ml-2'} rounded-xl text-stone-400 hover:text-white hover:bg-stone-800/50 transition-all`}
+            className={`p-2 ${isRTL ? '-mr-2' : '-ml-2'} rounded-xl text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 hover:bg-stone-800/50 light:hover:bg-stone-200/80 transition-all`}
           >
             {isRTL ? <ArrowRight size={24} /> : <ArrowLeft size={24} />}
           </button>
           <div className={isRTL ? 'text-right' : ''}>
-            <h1 className="text-xl font-semibold text-white">{t('settings.title')}</h1>
-            <p className="text-sm text-stone-500">{t('settings.personalize')}</p>
+            <h1 className="text-xl font-semibold text-white light:text-stone-900">{t('settings.title')}</h1>
+            <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.personalize')}</p>
           </div>
         </div>
       </motion.header>
@@ -114,14 +114,14 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
             {t('settings.profile')}
           </h2>
-          <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 p-4">
+          <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 p-4">
             <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
                 <span className="text-2xl">✨</span>
               </div>
               <div className={isRTL ? 'text-right' : ''}>
-                <p className="text-lg text-white font-medium">{name || t('settings.seeker')}</p>
-                <p className="text-sm text-stone-500">{t('settings.onPathOf')}</p>
+                <p className="text-lg text-white light:text-stone-900 font-medium">{name || t('settings.seeker')}</p>
+                <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.onPathOf')}</p>
               </div>
             </div>
           </div>
@@ -136,7 +136,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
             {t('settings.language')}
           </h2>
-          <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 divide-y divide-stone-800/50">
+          <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 divide-y divide-stone-800/50 light:divide-stone-300">
             {(['en', 'fr', 'ar'] as Locale[]).map((lang) => {
               const config = languageConfig[lang];
               const isSelected = locale === lang;
@@ -146,16 +146,16 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
                   key={lang}
                   onClick={() => handleLanguageChange(lang)}
                   className={`w-full p-4 flex items-center justify-between transition-colors ${
-                    isSelected ? 'bg-amber-500/10' : 'hover:bg-stone-800/50'
+                    isSelected ? 'bg-amber-500/10 light:bg-amber-500/15' : 'hover:bg-stone-800/50 light:hover:bg-stone-200/80'
                   } ${isRTL ? 'flex-row-reverse' : ''}`}
                 >
                   <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <span className="text-2xl">{config.flag}</span>
                     <div className={isRTL ? 'text-right' : ''}>
-                      <p className={`font-medium ${isSelected ? 'text-amber-400' : 'text-white'}`}>
+                      <p className={`font-medium ${isSelected ? 'text-amber-400 light:text-amber-600' : 'text-white light:text-stone-900'}`}>
                         {config.nativeName}
                       </p>
-                      <p className="text-sm text-stone-500">{config.name}</p>
+                      <p className="text-sm text-stone-500 light:text-stone-600">{config.name}</p>
                     </div>
                   </div>
                   {isSelected && (
@@ -202,7 +202,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
             {t('settings.audioHaptics')}
           </h2>
-          <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 divide-y divide-stone-800/50">
+          <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 divide-y divide-stone-800/50 light:divide-stone-300">
             {/* Sound Toggle */}
             <div className={`p-4 flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -212,8 +212,8 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
                   <VolumeX className="text-stone-500" size={22} />
                 )}
                 <div className={isRTL ? 'text-right' : ''}>
-                  <p className="text-white font-medium">{t('settings.soundEffects')}</p>
-                  <p className="text-sm text-stone-500">{t('settings.soundDesc')}</p>
+                   <p className="text-white light:text-stone-900 font-medium">{t('settings.soundEffects')}</p>
+                   <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.soundDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch enabled={soundEnabled} onToggle={handleToggleSound} />
@@ -224,8 +224,8 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
               <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <Vibrate className={hapticEnabled ? 'text-amber-400' : 'text-stone-500'} size={22} />
                 <div className={isRTL ? 'text-right' : ''}>
-                  <p className="text-white font-medium">{t('settings.hapticFeedback')}</p>
-                  <p className="text-sm text-stone-500">{t('settings.hapticDesc')}</p>
+                   <p className="text-white light:text-stone-900 font-medium">{t('settings.hapticFeedback')}</p>
+                   <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.hapticDesc')}</p>
                 </div>
               </div>
               <ToggleSwitch enabled={hapticEnabled} onToggle={handleToggleHaptic} />
@@ -243,8 +243,8 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
             <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
               {t('settings.testAudio')}
             </h2>
-            <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 p-4 space-y-3">
-              <p className={`text-sm text-stone-400 mb-4 ${isRTL ? 'text-right' : ''}`}>
+            <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 p-4 space-y-3">
+              <p className={`text-sm text-stone-400 light:text-stone-600 mb-4 ${isRTL ? 'text-right' : ''}`}>
                 {t('settings.previewAudio')}
               </p>
 
@@ -278,14 +278,14 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
             {t('settings.about')}
           </h2>
-          <div className="bg-stone-900/50 rounded-2xl border border-stone-800/50 p-4">
+          <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 p-4">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
                 <span className="text-xl">🌱</span>
               </div>
-              <p className="text-white font-medium">{t('settings.appName')}</p>
-              <p className="text-sm text-stone-500">{t('settings.appDesc')}</p>
-              <p className="text-xs text-stone-600 pt-2">{t('settings.version')} 1.0.0</p>
+              <p className="text-white light:text-stone-900 font-medium">{t('settings.appName')}</p>
+              <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.appDesc')}</p>
+              <p className="text-xs text-stone-600 light:text-stone-500 pt-2">{t('settings.version')} 1.0.0</p>
             </div>
           </div>
         </motion.section>
@@ -299,14 +299,14 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           <h2 className={`text-sm font-medium text-red-500/70 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
             {t('settings.dangerZone') || 'Danger Zone'}
           </h2>
-          <div className="bg-red-950/20 rounded-2xl border border-red-900/30 p-4">
+          <div className="bg-red-950/20 light:bg-red-100/70 rounded-2xl border border-red-900/30 light:border-red-300 p-4">
             <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
                 <Trash2 size={20} className="text-red-400" />
               </div>
               <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
-                <p className="text-white font-medium">{t('settings.resetProgress') || 'Reset All Progress'}</p>
-                <p className="text-sm text-stone-400 mt-1">
+                <p className="text-white light:text-red-900 font-medium">{t('settings.resetProgress') || 'Reset All Progress'}</p>
+                <p className="text-sm text-stone-400 light:text-stone-600 mt-1">
                   {t('settings.resetDesc') || 'Delete all your progress and start fresh. This cannot be undone.'}
                 </p>
                 <button
@@ -338,23 +338,23 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-stone-900 rounded-2xl border border-red-900/50 p-6 max-w-sm w-full"
+              className="bg-stone-900 light:bg-stone-50 rounded-2xl border border-red-900/50 light:border-red-300 p-6 max-w-sm w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
                   <AlertTriangle size={32} className="text-red-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">
+                <h3 className="text-xl font-semibold text-white light:text-stone-900">
                   {t('settings.confirmResetTitle') || 'Reset All Progress?'}
                 </h3>
-                <p className="text-stone-400">
+                <p className="text-stone-400 light:text-stone-600">
                   {t('settings.confirmResetDesc') || 'This will permanently delete all your lessons, reflections, streak, and identity statements. You will start completely fresh.'}
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setShowResetConfirm(false)}
-                    className="flex-1 px-4 py-3 rounded-xl bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors font-medium"
+                    className="flex-1 px-4 py-3 rounded-xl bg-stone-800 light:bg-stone-200 text-stone-300 light:text-stone-700 hover:bg-stone-700 light:hover:bg-stone-300 transition-colors font-medium"
                   >
                     {t('common.cancel') || 'Cancel'}
                   </button>
@@ -389,7 +389,7 @@ function ToggleSwitch({ enabled, onToggle }: ToggleSwitchProps) {
       onClick={onToggle}
       className={`
         relative w-14 h-8 rounded-full transition-colors duration-300
-        ${enabled ? 'bg-amber-500' : 'bg-stone-700'}
+        ${enabled ? 'bg-amber-500' : 'bg-stone-700 light:bg-stone-300'}
       `}
       whileTap={{ scale: 0.95 }}
     >
@@ -417,10 +417,10 @@ function AudioTestButton({ icon, label, onClick }: AudioTestButtonProps) {
     <motion.button
       onClick={onClick}
       whileTap={{ scale: 0.95 }}
-      className="flex flex-col items-center gap-2 p-4 rounded-xl bg-stone-800/50 border border-stone-700/50 hover:border-amber-500/30 hover:bg-stone-800 transition-all"
+      className="flex flex-col items-center gap-2 p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/80 border border-stone-700/50 light:border-stone-300 hover:border-amber-500/30 hover:bg-stone-800 light:hover:bg-stone-200 transition-all"
     >
       <span className="text-amber-400">{icon}</span>
-      <span className="text-xs text-stone-400">{label}</span>
+      <span className="text-xs text-stone-400 light:text-stone-600">{label}</span>
     </motion.button>
   );
 }

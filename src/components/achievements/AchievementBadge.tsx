@@ -10,13 +10,12 @@
 
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
-import type { Milestone, Virtue, MilestoneWeight } from '@/types/achievements';
+import type { Milestone } from '@/types/achievements';
 import {
   getVirtueColor,
   getVirtueGlow,
   getVirtueLabel,
   getVirtueGreek,
-  getWeightLabel,
 } from '@/types/achievements';
 
 interface MilestoneBadgeProps {
@@ -84,7 +83,7 @@ export function MilestoneBadge({
           relative
           ${unlocked
             ? `bg-gradient-to-br ${virtueColor} shadow-lg ${virtueGlow}`
-            : 'bg-zinc-800/50 border-2 border-zinc-700/50'
+            : 'bg-zinc-800/50 light:bg-stone-200/80 border-2 border-zinc-700/50 light:border-stone-300'
           }
         `}
       >
@@ -95,7 +94,7 @@ export function MilestoneBadge({
             <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse" />
           </>
         ) : (
-          <Lock className={`${size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'} text-zinc-600`} />
+          <Lock className={`${size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'} text-zinc-600 light:text-stone-500`} />
         )}
 
         {/* Shine effect for unlocked on hover */}
@@ -127,7 +126,7 @@ export function MilestoneBadge({
           <h4
             className={`
               font-semibold
-              ${unlocked ? 'text-white' : 'text-zinc-500'}
+              ${unlocked ? 'text-white light:text-stone-900' : 'text-zinc-500 light:text-stone-600'}
               ${size === 'sm' ? 'text-xs' : 'text-sm'}
             `}
           >
@@ -135,7 +134,7 @@ export function MilestoneBadge({
           </h4>
           <p
             className={`
-              text-zinc-400
+              text-zinc-400 light:text-stone-600
               ${size === 'sm' ? 'text-[10px]' : 'text-xs'}
               mt-0.5 leading-tight
             `}
@@ -143,7 +142,7 @@ export function MilestoneBadge({
             {unlocked ? milestone.meaning : `Unlock: ${milestone.requirement.value}${getRequirementUnit(milestone.requirement.type)}`}
           </p>
           {unlocked && unlockedAt && (
-            <p className="text-[10px] text-zinc-600 mt-1">
+            <p className="text-[10px] text-zinc-600 light:text-stone-500 mt-1">
               {formatDate(unlockedAt)}
             </p>
           )}
@@ -281,7 +280,7 @@ export function MilestoneUnlockAnimation({
           className="bg-zinc-900/50 rounded-xl p-5 mb-6 border border-zinc-800/50"
         >
           <p className="text-zinc-300 text-sm leading-relaxed italic">
-            "{milestone.message}"
+            &ldquo;{milestone.message}&rdquo;
           </p>
         </motion.div>
 
@@ -293,7 +292,7 @@ export function MilestoneUnlockAnimation({
           className="mb-8"
         >
           <p className="text-zinc-400 text-sm leading-relaxed">
-            "{milestone.wisdom.text}"
+            &ldquo;{milestone.wisdom.text}&rdquo;
           </p>
           <p className="text-zinc-600 text-xs mt-2">
             — {milestone.wisdom.author}
