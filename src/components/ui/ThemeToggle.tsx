@@ -4,7 +4,6 @@
 // THEME TOGGLE - Premium Light/Dark Mode Switcher
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
@@ -15,15 +14,9 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { setTheme, resolvedTheme } = useTheme();
 
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  if (!resolvedTheme) {
     return (
       <div
         className={`

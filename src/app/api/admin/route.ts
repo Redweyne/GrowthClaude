@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { activityDb } from '@/lib/activityDb';
+import { activityDb, isLegacyActivityDbEnabled } from '@/lib/activityDb';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN API - Protected endpoint for the admin dashboard
@@ -32,6 +32,13 @@ function validateAuth(request: NextRequest): { valid: boolean; reason: string } 
 export async function GET(request: NextRequest) {
   const auth = validateAuth(request);
   if (!auth.valid) return unauthorized(auth.reason);
+
+  if (!isLegacyActivityDbEnabled) {
+    return NextResponse.json(
+      { error: 'Legacy activity database is disabled', reason: 'Set ENABLE_LEGACY_ACTIVITY_DB=true to re-enable admin analytics' },
+      { status: 503 }
+    );
+  }
 
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action') || 'overview';

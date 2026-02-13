@@ -8,6 +8,8 @@ import { ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
 import { AudioProvider } from '@/providers/AudioProvider';
 import { ActivityLoggerProvider } from '@/providers/ActivityLoggerProvider';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { SupabaseSyncProvider } from '@/providers/SupabaseSyncProvider';
 import { TranslationProvider } from '@/i18n';
 import { ThemeColorMeta } from '@/components/ThemeColorMeta';
 
@@ -20,11 +22,15 @@ export function Providers({ children }: ProvidersProps) {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
       <ThemeColorMeta />
       <TranslationProvider>
-        <ActivityLoggerProvider>
-          <AudioProvider>
-            {children}
-          </AudioProvider>
-        </ActivityLoggerProvider>
+        <AuthProvider>
+          <SupabaseSyncProvider>
+            <ActivityLoggerProvider>
+              <AudioProvider>
+                {children}
+              </AudioProvider>
+            </ActivityLoggerProvider>
+          </SupabaseSyncProvider>
+        </AuthProvider>
       </TranslationProvider>
     </ThemeProvider>
   );

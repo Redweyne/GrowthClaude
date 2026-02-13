@@ -46,7 +46,7 @@ interface TextProps {
   as?: TextElement;
   children: ReactNode;
   glow?: boolean;
-  gradient?: 'gold' | 'sunset' | 'wisdom' | 'growth';
+  gradient?: 'gold' | 'sunset' | 'wisdom' | 'growth' | 'insight';
   balance?: boolean;
   className?: string;
 }
@@ -108,6 +108,7 @@ const gradientClasses: Record<string, string> = {
   sunset: 'gradient-text-sunset',
   wisdom: 'gradient-text-wisdom',
   growth: 'gradient-text-growth',
+  insight: 'gradient-text-insight',
 };
 
 export const Text = forwardRef<HTMLElement, TextProps>(

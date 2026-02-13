@@ -2,7 +2,8 @@ import path from 'path';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 import { PrismaClient } from '@/generated/prisma/client';
 
-const globalForPrisma = globalThis as unknown as { activityDb: PrismaClient };
+const globalForPrisma = globalThis as unknown as { activityDb?: PrismaClient };
+export const isLegacyActivityDbEnabled = process.env.ENABLE_LEGACY_ACTIVITY_DB === 'true';
 
 function createClient() {
   // prisma.config.ts is at project root, so prisma db push creates dev.db there.

@@ -489,7 +489,7 @@ export function DashboardNew({
             {/* XP Progress Ring */}
             <ProgressRing progress={xpProgress.percentage} size={140} strokeWidth={8}>
               <div className="text-center">
-                <p className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-amber-400 to-orange-500 tabular-nums tracking-tight">{level.level}</p>
+                <p className="text-4xl sm:text-5xl font-bold gradient-text-gold tabular-nums tracking-tight">{level.level}</p>
                 <p className="text-sm text-stone-500 light:text-stone-600 font-medium mt-1">{level.title}</p>
               </div>
             </ProgressRing>
@@ -499,7 +499,7 @@ export function DashboardNew({
               <div className="w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center">
                 <Sparkles size={28} className="text-purple-400" />
               </div>
-              <p className="text-base text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-purple-400 to-pink-500 mt-2 font-bold tabular-nums">{totalXp.toLocaleString()}</p>
+              <p className="text-base gradient-text-wisdom mt-2 font-bold tabular-nums">{totalXp.toLocaleString()}</p>
               <p className="text-sm text-stone-600 light:text-stone-700 font-medium">{t('common.xp')}</p>
             </div>
           </div>
@@ -762,15 +762,15 @@ export function DashboardNew({
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={`flex items-center gap-8 sm:gap-12 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-emerald-300 via-emerald-400 to-teal-500 tabular-nums tracking-tight">{totalLessons}</p>
+                  <p className="text-3xl sm:text-4xl font-bold gradient-text-growth tabular-nums tracking-tight">{totalLessons}</p>
                   <p className="text-sm text-stone-500 light:text-stone-600 mt-1 font-medium">{t('common.lessons')}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-orange-300 via-orange-400 to-red-500 tabular-nums tracking-tight">{longestStreak}</p>
+                  <p className="text-3xl sm:text-4xl font-bold gradient-text-sunset tabular-nums tracking-tight">{longestStreak}</p>
                   <p className="text-sm text-stone-500 light:text-stone-600 mt-1 font-medium">{t('dashboard.bestStreak')}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500 tabular-nums tracking-tight">{daysSinceStart || 1}</p>
+                  <p className="text-3xl sm:text-4xl font-bold gradient-text-insight tabular-nums tracking-tight">{daysSinceStart || 1}</p>
                   <p className="text-sm text-stone-500 light:text-stone-600 mt-1 font-medium">{t('common.days')}</p>
                 </div>
               </div>
