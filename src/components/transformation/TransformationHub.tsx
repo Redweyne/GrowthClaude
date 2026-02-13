@@ -73,14 +73,14 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 pb-20">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50 pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur border-b border-zinc-800">
+      <div className="sticky top-0 z-40 bg-stone-950/95 light:bg-stone-50/95 backdrop-blur border-b border-stone-800 light:border-stone-200">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={onBack}
-              className="flex items-center gap-1 text-zinc-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 transition-colors"
             >
               <ChevronLeft size={20} />
               <span>Back</span>
@@ -92,8 +92,8 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
           </div>
 
           <div className="text-center mb-4">
-            <h1 className="text-2xl font-bold text-white mb-1">Transformation Hub</h1>
-            <p className="text-zinc-500 text-sm">
+            <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-1">Transformation Hub</h1>
+            <p className="text-stone-500 light:text-stone-500 text-sm">
               {name ? `${name}'s` : 'Your'} proof of growth
             </p>
           </div>
@@ -110,7 +110,7 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
-                      : 'bg-zinc-800/50 text-zinc-400 hover:text-white'
+                      : 'bg-stone-800/50 light:bg-stone-200/50 text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900'
                   }`}
                 >
                   <Icon size={16} />
@@ -152,8 +152,8 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                         >
                           <Icon size={20} style={{ color: stat.color }} />
                         </div>
-                        <p className="text-xl font-bold text-white">{stat.value}</p>
-                        <p className="text-xs text-zinc-500">{stat.label}</p>
+                        <p className="text-xl font-bold text-white light:text-stone-900">{stat.value}</p>
+                        <p className="text-xs text-stone-500 light:text-stone-500">{stat.label}</p>
                       </Card>
                     </motion.div>
                   );
@@ -176,8 +176,8 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                         <Calendar size={24} className="text-purple-400" />
                       </div>
                       <div className="text-left">
-                        <p className="text-white font-medium">Monthly Assessment Due</p>
-                        <p className="text-xs text-zinc-400">Measure your transformation</p>
+                        <p className="text-white light:text-stone-900 font-medium">Monthly Assessment Due</p>
+                        <p className="text-xs text-stone-400 light:text-stone-600">Measure your transformation</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-amber-400">
@@ -194,7 +194,7 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <h2 className="text-lg font-medium text-white mb-4">Your Growth Snapshot</h2>
+                <h2 className="text-lg font-medium text-white light:text-stone-900 mb-4">Your Growth Snapshot</h2>
                 <TransformationRadar compact />
               </motion.div>
 
@@ -221,10 +221,10 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 transition={{ delay: 0.8 }}
                 className="text-center pt-4 pb-8"
               >
-                <p className="text-zinc-600 text-sm italic">
+                <p className="text-stone-600 light:text-stone-500 text-sm italic">
                   &quot;The soul becomes dyed with the color of its thoughts.&quot;
                 </p>
-                <p className="text-zinc-700 text-xs mt-1">— Marcus Aurelius</p>
+                <p className="text-stone-700 light:text-stone-500 text-xs mt-1">— Marcus Aurelius</p>
               </motion.div>
             </motion.div>
           )}

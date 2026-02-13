@@ -123,7 +123,7 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
 
         <motion.button
           onClick={onOpenSettings}
-          className="relative w-11 h-11 rounded-2xl bg-stone-900/60 backdrop-blur-sm border border-stone-800/80 flex items-center justify-center hover:border-amber-500/30 transition-all duration-300 group"
+          className="relative w-11 h-11 rounded-2xl bg-stone-900/60 light:bg-stone-200/60 backdrop-blur-sm border border-stone-800/80 light:border-stone-300/80 flex items-center justify-center hover:border-amber-500/30 transition-all duration-300 group"
           initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, ...springs.gentle }}
@@ -132,7 +132,7 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
         >
           <Settings
             size={20}
-            className="text-stone-400 group-hover:text-amber-400 transition-colors duration-300"
+            className="text-stone-400 light:text-stone-600 group-hover:text-amber-400 transition-colors duration-300"
           />
           {/* Hover glow */}
           <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -155,7 +155,7 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
 
       {/* Name with staggered letter animation */}
       <motion.h1
-        className={`text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 tracking-tight mb-4 ${isRTL ? 'text-right' : ''}`}
+        className={`text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 light:from-amber-700 light:via-amber-600 light:to-amber-700 tracking-tight mb-4 ${isRTL ? 'text-right' : ''}`}
         style={{
           perspective: '1000px',
           WebkitTextStroke: '0.5px rgba(251, 191, 36, 0.1)',
@@ -186,10 +186,10 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
         initial="hidden"
         animate="visible"
       >
-        <p className={`text-stone-400 text-sm italic leading-relaxed ${isRTL ? 'text-right' : ''}`}>
+        <p className={`text-stone-400 light:text-stone-600 text-sm italic leading-relaxed ${isRTL ? 'text-right' : ''}`}>
           &ldquo;{quoteText}&rdquo;
         </p>
-        <p className={`text-stone-600 text-xs mt-1 ${isRTL ? 'text-right' : ''}`}>
+        <p className={`text-stone-600 light:text-stone-400 text-xs mt-1 ${isRTL ? 'text-right' : ''}`}>
           — {quoteAuthor}
         </p>
 

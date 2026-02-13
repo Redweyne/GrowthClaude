@@ -307,7 +307,7 @@ export function MandatoryEchoFlow({
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50"
+                  className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50 light:border-stone-300/50"
                 >
                   <p className="text-stone-500 light:text-stone-600 text-sm mb-2">
                     A fellow {genderLabel} wrote:

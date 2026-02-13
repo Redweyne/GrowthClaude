@@ -80,7 +80,7 @@ function ScoreRing({
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
-          className="text-4xl font-bold text-white"
+          className="text-4xl font-bold text-white light:text-stone-900"
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
@@ -88,7 +88,7 @@ function ScoreRing({
           {score}
         </motion.span>
         <motion.span
-          className="text-sm text-zinc-400"
+          className="text-sm text-stone-400 light:text-stone-600"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
@@ -119,13 +119,13 @@ function BreakdownBar({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
-        <span className="flex items-center gap-2 text-zinc-400">
+        <span className="flex items-center gap-2 text-stone-400 light:text-stone-600">
           <span>{icon}</span>
           <span>{label}</span>
         </span>
-        <span className="text-white font-medium">{value}/{maxValue}</span>
+        <span className="text-white light:text-stone-900 font-medium">{value}/{maxValue}</span>
       </div>
-      <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
           initial={{ width: 0 }}
@@ -156,7 +156,7 @@ export function TransformationScore({
     ? 'text-emerald-400'
     : score.trend === 'needs-attention'
     ? 'text-amber-400'
-    : 'text-zinc-500';
+    : 'text-stone-500';
 
   const trendText = score.trend === 'rising'
     ? 'Rising'
@@ -169,7 +169,7 @@ export function TransformationScore({
     return (
       <motion.button
         onClick={onExpand}
-        className="w-full bg-gradient-to-br from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-2xl p-4 text-left hover:border-zinc-700 transition-colors"
+        className="w-full bg-gradient-to-br from-stone-900/80 to-stone-950 light:from-white light:to-stone-50 border border-stone-800 light:border-stone-200 rounded-2xl p-4 text-left hover:border-stone-700 light:hover:border-stone-300 transition-colors"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -200,22 +200,22 @@ export function TransformationScore({
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-lg font-bold text-white">{score.score}</span>
+              <span className="text-lg font-bold text-white light:text-stone-900">{score.score}</span>
             </div>
           </div>
 
           {/* Text content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-white font-semibold truncate">{gradeInfo.title}</h3>
+              <h3 className="text-white light:text-stone-900 font-semibold truncate">{gradeInfo.title}</h3>
               <div className={`flex items-center gap-1 ${trendColor}`}>
                 <TrendIcon size={14} />
               </div>
             </div>
-            <p className="text-sm text-zinc-500 truncate">{gradeInfo.description}</p>
+            <p className="text-sm text-stone-500 light:text-stone-500 truncate">{gradeInfo.description}</p>
           </div>
 
-          <ChevronRight size={20} className="text-zinc-600 flex-shrink-0" />
+          <ChevronRight size={20} className="text-stone-600 light:text-stone-500 flex-shrink-0" />
         </div>
       </motion.button>
     );
@@ -224,14 +224,14 @@ export function TransformationScore({
   // Full view
   return (
     <motion.div
-      className="bg-gradient-to-br from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-2xl p-6"
+      className="bg-gradient-to-br from-stone-900/80 to-stone-950 light:from-white light:to-stone-50 border border-stone-800 light:border-stone-200 rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
       {/* Header */}
       <div className="text-center mb-6">
         <motion.h2
-          className="text-lg font-semibold text-white mb-1"
+          className="text-lg font-semibold text-white light:text-stone-900 mb-1"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -239,7 +239,7 @@ export function TransformationScore({
           Transformation Score
         </motion.h2>
         <motion.p
-          className="text-sm text-zinc-500"
+          className="text-sm text-stone-500 light:text-stone-500"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -267,13 +267,13 @@ export function TransformationScore({
             borderColor: `${gradeInfo.color}40`
           }}
         >
-          <span className="text-white font-semibold">{gradeInfo.title}</span>
+          <span className="text-white light:text-stone-900 font-semibold">{gradeInfo.title}</span>
           <div className={`flex items-center gap-1 text-sm ${trendColor}`}>
             <TrendIcon size={14} />
             <span>{trendText}</span>
           </div>
         </div>
-        <p className="text-sm text-zinc-400 mt-3">{gradeInfo.description}</p>
+        <p className="text-sm text-stone-400 light:text-stone-600 mt-3">{gradeInfo.description}</p>
       </motion.div>
 
       {/* Breakdown */}
@@ -283,7 +283,7 @@ export function TransformationScore({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
       >
-        <h3 className="text-sm font-medium text-zinc-400">Score Breakdown</h3>
+        <h3 className="text-sm font-medium text-stone-400 light:text-stone-600">Score Breakdown</h3>
 
         <BreakdownBar
           label={BREAKDOWN_LABELS.consistency.label}
@@ -320,12 +320,12 @@ export function TransformationScore({
 
       {/* Insight based on lowest score */}
       <motion.div
-        className="mt-6 p-4 bg-zinc-800/30 rounded-xl border border-zinc-700/50"
+        className="mt-6 p-4 bg-stone-800/30 light:bg-stone-200/30 rounded-xl border border-stone-700/50 light:border-stone-300/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.4 }}
       >
-        <p className="text-sm text-zinc-300">
+        <p className="text-sm text-stone-300 light:text-stone-700">
           {(() => {
             const { breakdown } = score;
             const lowest = Object.entries(breakdown).reduce((min, [key, val]) =>

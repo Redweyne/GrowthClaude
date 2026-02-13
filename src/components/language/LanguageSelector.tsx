@@ -59,7 +59,7 @@ export function LanguageSelector() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-stone-950">
+    <div className="min-h-screen relative overflow-hidden bg-stone-950 light:bg-stone-50">
       {/* Ambient background */}
       <AmbientBackground intensity="subtle" particleCount={20} orbCount={4} />
 
@@ -93,7 +93,7 @@ export function LanguageSelector() {
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               />
 
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 light:to-stone-100 border border-amber-500/30 light:border-amber-500/20 flex items-center justify-center">
                 <Globe size={40} className="text-amber-400" />
               </div>
             </motion.div>
@@ -105,7 +105,7 @@ export function LanguageSelector() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="text-center mb-10"
             >
-              <h1 className="text-3xl sm:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 mb-4">
+              <h1 className="text-3xl sm:text-4xl font-light text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 light:from-amber-700 light:via-amber-600 light:to-amber-700 mb-4">
                 {t('languageSelector.title')}
               </h1>
               <p className="text-stone-500">{t('languageSelector.subtitle')}</p>
@@ -136,7 +136,7 @@ export function LanguageSelector() {
                       relative w-full p-5 rounded-2xl border-2 transition-all duration-300
                       ${isSelected
                         ? 'bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10'
-                        : 'bg-stone-900/50 border-stone-800 hover:border-stone-700 hover:bg-stone-900/80'
+                        : 'bg-stone-900/50 light:bg-stone-100/50 border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 hover:bg-stone-900/80 light:hover:bg-stone-200/80'
                       }
                     `}
                     style={{
@@ -155,7 +155,7 @@ export function LanguageSelector() {
 
                       {/* Language names */}
                       <div className={`flex-1 ${config.dir === 'rtl' ? 'text-right' : 'text-left'}`}>
-                        <p className={`text-lg font-semibold ${isSelected ? 'text-amber-200' : 'text-stone-200'}`}>
+                        <p className={`text-lg font-semibold ${isSelected ? 'text-amber-200 light:text-amber-700' : 'text-stone-200 light:text-stone-800'}`}>
                           {config.nativeName}
                         </p>
                         <p className="text-sm text-stone-500">
@@ -239,7 +239,7 @@ export function LanguageSelector() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
-              className="text-center text-xs text-stone-600 mt-8"
+              className="text-center text-xs text-stone-600 light:text-stone-400 mt-8"
             >
               {t('languageSelector.helper')}
             </motion.p>

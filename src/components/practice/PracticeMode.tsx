@@ -85,7 +85,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
 
   if (scenarios.length === 0) {
     return (
-      <div className="min-h-screen bg-zinc-950 light:bg-stone-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex items-center justify-center p-6">
         <Card variant="elevated" padding="lg" className="max-w-md w-full">
           <EmptyState
             icon={<Brain size={24} />}
@@ -101,14 +101,14 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 light:bg-stone-50 flex flex-col">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col">
       {/* Header */}
-      <div className="p-4 flex items-center justify-between border-b border-zinc-800 light:border-stone-300">
+      <div className="p-4 flex items-center justify-between border-b border-stone-800 light:border-stone-300">
         <button
           onClick={onExit}
-          className="w-10 h-10 rounded-xl bg-zinc-900 light:bg-stone-100 border border-zinc-800 light:border-stone-300 flex items-center justify-center hover:border-zinc-700 light:hover:border-stone-400 transition-colors"
+          className="w-10 h-10 rounded-xl bg-stone-900 light:bg-stone-100 border border-stone-800 light:border-stone-300 flex items-center justify-center hover:border-stone-700 light:hover:border-stone-400 transition-colors"
         >
-          <X size={20} className="text-zinc-400 light:text-stone-600" />
+          <X size={20} className="text-stone-400 light:text-stone-600" />
         </button>
         <div className="flex items-center gap-2">
           <Brain size={20} className="text-indigo-400" />
@@ -121,7 +121,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
       {stage !== 'intro' && stage !== 'complete' && (
         <div className="px-4 py-2">
           <ProgressBar progress={progress} size="sm" color="indigo" />
-          <p className="text-xs text-zinc-500 light:text-stone-600 mt-1 text-center">
+          <p className="text-xs text-stone-500 light:text-stone-600 mt-1 text-center">
             {t('practiceMode.progressOf', { current: currentScenarioIndex + 1, total: scenarios.length })}
           </p>
         </div>
@@ -152,14 +152,14 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 {t('practiceMode.practiceSession')}
               </h2>
 
-              <p className="text-zinc-400 light:text-stone-600 mb-6">
+              <p className="text-stone-400 light:text-stone-600 mb-6">
                 {t('practiceMode.applyWhatYouLearned')}
               </p>
 
-              <div className="bg-zinc-900/50 light:bg-stone-100/80 border border-zinc-800 light:border-stone-300 rounded-xl p-4 mb-8">
+              <div className="bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 rounded-xl p-4 mb-8">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-400 light:text-stone-600">{t('practiceMode.scenarioCount', { count: scenarios.length })}</span>
-                  <span className="text-zinc-400 light:text-stone-600">{t('practiceMode.estimatedTime', { minutes: scenarios.length * 2 })}</span>
+                  <span className="text-stone-400 light:text-stone-600">{t('practiceMode.scenarioCount', { count: scenarios.length })}</span>
+                  <span className="text-stone-400 light:text-stone-600">{t('practiceMode.estimatedTime', { minutes: scenarios.length * 2 })}</span>
                   <span className="flex items-center gap-1 text-amber-400">
                     <Zap size={14} />
                     {scenarios.reduce((sum, s) => sum + s.xpReward, 0)} {t('common.xp')}
@@ -200,7 +200,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 value={response}
                 onChange={(e) => setResponse(e.target.value)}
                 placeholder={t('practiceMode.writeResponsePlaceholder')}
-                className="w-full h-32 p-4 bg-zinc-900 light:bg-stone-100 border-2 border-zinc-800 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-zinc-600 light:placeholder-stone-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none mb-4"
+                className="w-full h-32 p-4 bg-stone-900 light:bg-stone-100 border-2 border-stone-800 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-stone-600 light:placeholder-stone-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none mb-4"
               />
 
               <Button
@@ -228,9 +228,9 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 {t('practiceMode.reflectionLabel')}
               </p>
 
-              <div className="bg-zinc-900/50 light:bg-stone-100/80 border border-zinc-800 light:border-stone-300 rounded-xl p-4 mb-6">
-                <p className="text-sm text-zinc-400 light:text-stone-600 mb-2">{t('practiceMode.yourResponseLabel')}</p>
-                <p className="text-zinc-300 light:text-stone-700 italic">&ldquo;{response}&rdquo;</p>
+              <div className="bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 rounded-xl p-4 mb-6">
+                <p className="text-sm text-stone-400 light:text-stone-600 mb-2">{t('practiceMode.yourResponseLabel')}</p>
+                <p className="text-stone-300 light:text-stone-700 italic">&ldquo;{response}&rdquo;</p>
               </div>
 
               <p className="text-lg text-white light:text-stone-900 font-medium mb-4 text-center">
@@ -241,7 +241,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
                 placeholder={t('practiceMode.reflectPlaceholder')}
-                className="w-full h-32 p-4 bg-zinc-900 light:bg-stone-100 border-2 border-zinc-800 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-zinc-600 light:placeholder-stone-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none mb-4"
+                className="w-full h-32 p-4 bg-stone-900 light:bg-stone-100 border-2 border-stone-800 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-stone-600 light:placeholder-stone-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none mb-4"
               />
 
               <Button
@@ -278,7 +278,7 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 {t('practiceMode.practiceComplete')}
               </h2>
 
-              <p className="text-zinc-400 light:text-stone-600 mb-6">
+              <p className="text-stone-400 light:text-stone-600 mb-6">
                 {t('practiceMode.practiceCompleteBody')}
               </p>
 
@@ -299,10 +299,10 @@ export function PracticeMode({ onComplete, onExit }: PracticeModeProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-zinc-900 light:bg-stone-100 border border-zinc-800 light:border-stone-300 rounded-xl p-4 mb-8 text-left"
+                className="bg-stone-900 light:bg-stone-100 border border-stone-800 light:border-stone-300 rounded-xl p-4 mb-8 text-left"
               >
                 <p className="text-sm text-indigo-400 mb-2">{mentor.name}</p>
-                <p className="text-zinc-300 light:text-stone-700 italic">
+                <p className="text-stone-300 light:text-stone-700 italic">
                   &ldquo;{getRandomMentorResponse(mentorResponses.practiceSession)}&rdquo;
                 </p>
               </motion.div>

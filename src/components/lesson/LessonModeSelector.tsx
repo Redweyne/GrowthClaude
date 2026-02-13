@@ -97,7 +97,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                 ${selected === 'deep'
                   ? 'bg-amber-500/15 border-amber-500/50 scale-[1.02]'
                   : selected !== null
-                  ? 'bg-stone-900/30 border-stone-800/30 opacity-40'
+                  ? 'bg-stone-900/30 light:bg-stone-100/30 border-stone-800/30 light:border-stone-300/30 opacity-40'
                   : 'bg-stone-900/60 light:bg-stone-200/60 border-stone-700/40 hover:border-amber-500/30 hover:bg-stone-900/80 light:hover:bg-stone-200/80'
                 }
               `}
@@ -111,7 +111,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
               <div className="relative z-10 flex items-start gap-4">
                 <div className={`
                   w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-                  ${selected === 'deep' ? 'bg-amber-500/20' : 'bg-stone-800/80'}
+                  ${selected === 'deep' ? 'bg-amber-500/20' : 'bg-stone-800/80 light:bg-stone-300/80'}
                   transition-colors duration-300
                 `}>
                   <Pen size={22} className={`${selected === 'deep' ? 'text-amber-400' : 'text-amber-400/70'}`} />
@@ -128,7 +128,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                   </p>
                   <div className="flex items-center gap-3 mt-3 text-xs text-stone-500 light:text-stone-600">
                     <span>~{lesson.estimatedMinutes || 5} min</span>
-                    <span className="w-1 h-1 rounded-full bg-stone-700" />
+                    <span className="w-1 h-1 rounded-full bg-stone-700 light:bg-stone-300" />
                     <span>Writing & reflection</span>
                   </div>
                 </div>
@@ -147,11 +147,11 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                 border-2 transition-all duration-300 relative overflow-hidden
                 active:scale-[0.98]
                 ${!hasEngagementPath
-                  ? 'bg-stone-900/30 border-stone-800/20 opacity-40 cursor-not-allowed'
+                  ? 'bg-stone-900/30 light:bg-stone-100/30 border-stone-800/20 light:border-stone-300/20 opacity-40 cursor-not-allowed'
                   : selected === 'engagement'
                   ? 'bg-purple-500/15 border-purple-500/50 scale-[1.02]'
                   : selected !== null
-                  ? 'bg-stone-900/30 border-stone-800/30 opacity-40'
+                  ? 'bg-stone-900/30 light:bg-stone-100/30 border-stone-800/30 light:border-stone-300/30 opacity-40'
                   : 'bg-stone-900/60 light:bg-stone-200/60 border-stone-700/40 hover:border-purple-500/30 hover:bg-stone-900/80 light:hover:bg-stone-200/80'
                 }
               `}
@@ -165,7 +165,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
               <div className="relative z-10 flex items-start gap-4">
                 <div className={`
                   w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-                  ${selected === 'engagement' ? 'bg-purple-500/20' : 'bg-stone-800/80'}
+                  ${selected === 'engagement' ? 'bg-purple-500/20' : 'bg-stone-800/80 light:bg-stone-300/80'}
                   transition-colors duration-300
                 `}>
                   <Zap size={22} className={`${selected === 'engagement' ? 'text-purple-400' : 'text-purple-400/70'}`} />
@@ -182,7 +182,7 @@ export function LessonModeSelector({ lesson, onSelect }: LessonModeSelectorProps
                   </p>
                   <div className="flex items-center gap-3 mt-3 text-xs text-stone-500 light:text-stone-600">
                     <span>~{Math.max(2, Math.ceil((lesson.estimatedMinutes || 5) * 0.5))} min</span>
-                    <span className="w-1 h-1 rounded-full bg-stone-700" />
+                    <span className="w-1 h-1 rounded-full bg-stone-700 light:bg-stone-300" />
                     <span>Tap & choose</span>
                   </div>
                 </div>

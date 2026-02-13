@@ -34,7 +34,7 @@ export async function listLessonProgress(userId: string): Promise<LessonProgress
 
 export async function upsertLessonProgress(progress: LessonProgressRow): Promise<LessonProgressRow> {
   const client = getRequiredSupabaseClient();
-  const { data, error } = await client.from('lesson_progress').upsert(progress).select('*').single();
+  const { data, error } = await client.from('lesson_progress').upsert(progress, { onConflict: 'user_id,lesson_id' }).select('*').single();
 
   if (error) {
     throw error;

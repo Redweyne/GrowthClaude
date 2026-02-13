@@ -21,10 +21,6 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (!requiresAuth(request.nextUrl.pathname)) {
-    return response;
-  }
-
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
@@ -43,17 +39,25 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) {
+  // For non-protected routes, just return after session refresh
+  if (!requiresAuth(request.nextUrl.pathname)) {
     return response;
   }
 
-  const loginUrl = new URL('/', request.url);
-  loginUrl.searchParams.set('auth', 'required');
-  loginUrl.searchParams.set('next', request.nextUrl.pathname);
-  response = NextResponse.redirect(loginUrl);
+  // For protected routes, redirect unauthenticated users to login
+  if (!user) {
+    const loginUrl = new URL('/', request.url);
+    loginUrl.searchParams.set('auth', 'required');
+    loginUrl.searchParams.set('next', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ['/app/:path*', '/account/:path*'],
+  matcher: [
+    // Match all routes except static assets for session refresh
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg)$).*)',
+  ],
 };

@@ -146,7 +146,7 @@ export function ShareableCard({
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-zinc-400 light:text-stone-500 hover:text-white light:hover:text-stone-900 transition-colors"
+            className="absolute top-4 right-4 p-2 text-stone-400 light:text-stone-500 hover:text-white light:hover:text-stone-900 transition-colors"
           >
             <X size={24} />
           </button>
@@ -195,8 +195,8 @@ export function ShareableCard({
           </div>
 
           {/* Share message preview */}
-          <div className="bg-zinc-900 light:bg-stone-100 border border-zinc-800 light:border-stone-300 rounded-xl p-4 mb-4">
-            <p className="text-sm text-zinc-400 light:text-stone-600 mb-2">{t('share.messageLabel')}</p>
+          <div className="bg-stone-900 light:bg-stone-100 border border-stone-800 light:border-stone-300 rounded-xl p-4 mb-4">
+            <p className="text-sm text-stone-400 light:text-stone-600 mb-2">{t('share.messageLabel')}</p>
             <p className="text-white light:text-stone-900">{content.message}</p>
           </div>
 

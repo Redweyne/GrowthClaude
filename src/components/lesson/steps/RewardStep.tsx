@@ -229,7 +229,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             >
               {/* Glow behind icon */}
               <div className="absolute inset-0 w-24 h-24 rounded-full bg-amber-500/20 blur-2xl" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-zinc-800/90 to-zinc-900/90 border border-amber-500/30 flex items-center justify-center">
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-stone-800/90 to-stone-900/90 border border-amber-500/30 flex items-center justify-center">
                 <span className="text-4xl" role="img" aria-label={concept.title}>
                   {concept.icon}
                 </span>
@@ -260,7 +260,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
-                  className="w-1.5 h-1.5 rounded-full bg-zinc-500"
+                  className="w-1.5 h-1.5 rounded-full bg-stone-500 light:bg-stone-400"
                   animate={{
                     opacity: [0.3, 1, 0.3],
                   }}
@@ -288,7 +288,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
           >
             {/* Greeting */}
             <motion.p
-              className="text-zinc-400 text-xl sm:text-2xl font-medium mb-8"
+              className="text-stone-400 light:text-stone-600 text-xl sm:text-2xl font-medium mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -304,7 +304,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               transition={{ ...SPRING_CONFIG, delay: 0.1 }}
             >
               {/* Card background with subtle gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/90 via-zinc-900/95 to-black/90 backdrop-blur-sm" />
+              <div className="absolute inset-0 bg-gradient-to-br from-stone-800/90 via-stone-900/95 to-black/90 backdrop-blur-sm" />
               
               {/* Gold accent border on top */}
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
@@ -323,12 +323,12 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                     <span className="text-6xl sm:text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 tracking-tighter tabular-nums">
                       +{safeXpEarned}
                     </span>
-                    <span className="text-2xl sm:text-3xl text-zinc-400 font-normal">XP</span>
+                    <span className="text-2xl sm:text-3xl text-stone-400 light:text-stone-600 font-normal">XP</span>
                   </motion.div>
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent mb-6" />
+                <div className="h-px bg-gradient-to-r from-transparent via-stone-700 light:via-stone-300 to-transparent mb-6" />
 
                 {/* Streak and Level row */}
                 <div className="flex items-center justify-between mb-6">
@@ -345,20 +345,20 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                         }`}
                       />
                     </div>
-                    <span className="text-white text-xl sm:text-2xl font-bold tabular-nums tracking-tight">
+                    <span className="text-white light:text-stone-900 text-xl sm:text-2xl font-bold tabular-nums tracking-tight">
                       {predictedStreak}
                     </span>
-                    <span className="text-white text-base font-medium">
+                    <span className="text-white light:text-stone-900 text-base font-medium">
                       {predictedStreak === 1 ? t('lessons.reward.day') : t('lessons.reward.days')}
                     </span>
-                    <span className="text-zinc-500 text-base">
+                    <span className="text-stone-500 light:text-stone-500 text-base">
                       {t('lessons.reward.streak')}
                     </span>
                   </div>
 
                   {/* Current Level */}
                   <div className="text-right">
-                    <span className="text-zinc-500 text-base font-medium">
+                    <span className="text-stone-500 light:text-stone-500 text-base font-medium">
                       {leveledUp ? t('lessons.reward.levelUp') : newLevel.title}
                     </span>
                   </div>
@@ -367,11 +367,11 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                 {/* Level progress bar */}
                 {nextLevel && (
                   <div className="mb-6">
-                    <div className="flex justify-between text-xs text-zinc-600 mb-1.5">
+                    <div className="flex justify-between text-xs text-stone-600 light:text-stone-500 mb-1.5">
                       <span>{newLevel.title}</span>
                       <span>{nextLevel.title}</span>
                     </div>
-                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                       <motion.div
                         className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
                         initial={{ width: 0 }}
@@ -397,8 +397,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                     <p className="text-amber-400 text-sm font-semibold tracking-wider uppercase mb-2">
                       {t('lessons.reward.youveGrown')}
                     </p>
-                    <p className="text-white font-bold text-2xl sm:text-3xl tracking-tight leading-tight">{newLevel.title}</p>
-                    <p className="text-zinc-400 text-base sm:text-lg mt-2 leading-relaxed">{newLevel.subtitle}</p>
+                    <p className="text-white light:text-stone-900 font-bold text-2xl sm:text-3xl tracking-tight leading-tight">{newLevel.title}</p>
+                    <p className="text-stone-400 light:text-stone-600 text-base sm:text-lg mt-2 leading-relaxed">{newLevel.subtitle}</p>
                   </motion.div>
                 )}
 
@@ -409,10 +409,10 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <p className="text-zinc-400 text-base sm:text-lg italic leading-relaxed mb-3">
+                  <p className="text-stone-400 light:text-stone-600 text-base sm:text-lg italic leading-relaxed mb-3">
                     &ldquo;{wisdomQuote.text}&rdquo;
                   </p>
-                  <p className="text-zinc-600 text-sm font-medium">
+                  <p className="text-stone-600 light:text-stone-500 text-sm font-medium">
                     — {wisdomQuote.author}
                   </p>
                 </motion.div>
@@ -444,7 +444,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
 
             {/* Lesson title - very subtle at bottom */}
             <motion.p
-              className="text-zinc-700 text-xs mt-6"
+              className="text-stone-700 light:text-stone-500 text-xs mt-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}

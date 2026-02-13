@@ -51,7 +51,7 @@ export function WorldSwitcher({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/80 light:bg-stone-900/50 backdrop-blur-sm"
             />
 
             {/* Modal */}
@@ -60,21 +60,21 @@ export function WorldSwitcher({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className={`relative w-full max-w-md bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-2xl ${isRTL ? 'rtl' : ''}`}
+                className={`relative w-full max-w-md bg-stone-900 light:bg-stone-100 rounded-3xl border border-stone-800 light:border-stone-200 overflow-hidden shadow-2xl ${isRTL ? 'rtl' : ''}`}
                 dir={isRTL ? 'rtl' : 'ltr'}
             >
                 {/* Header */}
-                <div className="p-6 pb-4 border-b border-zinc-800">
+                <div className="p-6 pb-4 border-b border-stone-800 light:border-stone-200">
                     <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <div className={isRTL ? 'text-right' : ''}>
-                            <h2 className="text-xl font-bold text-white">{t('world.chooseYourPath')}</h2>
-                            <p className="text-sm text-zinc-500 mt-1">{t('world.switchBetweenWorlds')}</p>
+                            <h2 className="text-xl font-bold text-white light:text-stone-900">{t('world.chooseYourPath')}</h2>
+                            <p className="text-sm text-stone-500 light:text-stone-500 mt-1">{t('world.switchBetweenWorlds')}</p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 rounded-full hover:bg-zinc-800 transition-colors"
+                            className="p-2 rounded-full hover:bg-stone-800 light:hover:bg-stone-200 transition-colors"
                         >
-                            <X size={20} className="text-zinc-400" />
+                            <X size={20} className="text-stone-400 light:text-stone-600" />
                         </button>
                     </div>
                 </div>
@@ -97,7 +97,7 @@ export function WorldSwitcher({
                                 whileTap={{ scale: 0.98 }}
                                 className={`w-full p-4 rounded-2xl border transition-all text-left ${isActive
                                         ? 'bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30'
-                                        : 'bg-zinc-800/50 border-zinc-700/50 hover:border-zinc-600'
+                                        : 'bg-stone-800/50 light:bg-stone-200/50 border-stone-700/50 light:border-stone-300/50 hover:border-stone-600 light:hover:border-stone-400'
                                     }`}
                             >
                                 <div className="flex items-start gap-4">
@@ -116,7 +116,7 @@ export function WorldSwitcher({
                                     {/* Content */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-semibold text-white truncate">{world.name}</h3>
+                                            <h3 className="font-semibold text-white light:text-stone-900 truncate">{world.name}</h3>
                                             {isActive && (
                                                 <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-full">
                                                     {t('world.active')}
@@ -126,15 +126,15 @@ export function WorldSwitcher({
                                                 <CheckCircle size={16} className="text-emerald-400 flex-shrink-0" />
                                             )}
                                         </div>
-                                        <p className="text-sm text-zinc-400 mt-0.5">{world.subtitle}</p>
+                                        <p className="text-sm text-stone-400 light:text-stone-600 mt-0.5">{world.subtitle}</p>
 
                                         {/* Progress bar */}
                                         <div className="mt-3">
-                                            <div className={`flex items-center justify-between text-xs text-zinc-500 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                            <div className={`flex items-center justify-between text-xs text-stone-500 light:text-stone-500 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                                                 <span>{t('world.lessonsCount').replace('{completed}', progress.completed.toString()).replace('{total}', progress.total.toString())}</span>
                                                 <span>{progress.percentage}%</span>
                                             </div>
-                                            <div className="h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                                            <div className="h-1.5 bg-stone-700 light:bg-stone-300 rounded-full overflow-hidden">
                                                 <motion.div
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${progress.percentage}%` }}
@@ -151,7 +151,7 @@ export function WorldSwitcher({
                                     {/* Arrow */}
                                     <ChevronRight
                                         size={20}
-                                        className={`flex-shrink-0 mt-3 ${isActive ? 'text-amber-400' : 'text-zinc-600'
+                                        className={`flex-shrink-0 mt-3 ${isActive ? 'text-amber-400' : 'text-stone-600 light:text-stone-500'
                                             }`}
                                     />
                                 </div>
@@ -162,7 +162,7 @@ export function WorldSwitcher({
 
                 {/* Footer hint */}
                 <div className="p-4 pt-2 text-center">
-                    <p className="text-xs text-zinc-600">
+                    <p className="text-xs text-stone-600 light:text-stone-500">
                         {t('world.progressSaved')}
                     </p>
                 </div>

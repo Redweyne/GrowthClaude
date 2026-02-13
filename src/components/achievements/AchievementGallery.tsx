@@ -115,14 +115,14 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
   }, [unlockedIds]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 light:bg-stone-50">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-zinc-950/80 light:bg-stone-50/90 backdrop-blur-lg border-b border-zinc-800 light:border-stone-300">
+      <div className="sticky top-0 z-10 bg-stone-950/80 light:bg-stone-50/90 backdrop-blur-lg border-b border-stone-800 light:border-stone-300">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-2 -ml-2 text-zinc-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 transition-colors"
+              className="p-2 -ml-2 text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 transition-colors"
             >
               <ChevronLeft size={24} />
             </button>
@@ -131,7 +131,7 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
                 <Compass className="w-5 h-5 text-amber-400" />
                 Your Journey
               </h1>
-              <p className="text-sm text-zinc-500 light:text-stone-600">
+              <p className="text-sm text-stone-500 light:text-stone-600">
                 {stats.unlocked} milestones reached
               </p>
             </div>
@@ -156,22 +156,22 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
                   p-4 rounded-xl border transition-all text-left
                   ${filter === virtue
                     ? `bg-gradient-to-br ${getVirtueColor(virtue)} border-transparent`
-                    : 'bg-zinc-900/50 light:bg-stone-100/80 border-zinc-800 light:border-stone-300 hover:border-zinc-700 light:hover:border-stone-400'
+                    : 'bg-stone-900/50 light:bg-stone-100/80 border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400'
                   }
                 `}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-sm font-medium ${filter === virtue ? 'text-white' : 'text-zinc-300 light:text-stone-700'}`}>
+                  <span className={`text-sm font-medium ${filter === virtue ? 'text-white' : 'text-stone-300 light:text-stone-700'}`}>
                     {getVirtueLabel(virtue)}
                   </span>
-                  <span className={`text-xs ${filter === virtue ? 'text-white/70' : 'text-zinc-600 light:text-stone-500'}`}>
+                  <span className={`text-xs ${filter === virtue ? 'text-white/70' : 'text-stone-600 light:text-stone-500'}`}>
                     {getVirtueGreek(virtue)}
                   </span>
                 </div>
-                <div className={`text-xs ${filter === virtue ? 'text-white/70' : 'text-zinc-500 light:text-stone-600'}`}>
+                <div className={`text-xs ${filter === virtue ? 'text-white/70' : 'text-stone-500 light:text-stone-600'}`}>
                   {counts.unlocked} of {counts.total}
                 </div>
-                <div className={`h-1 mt-2 rounded-full ${filter === virtue ? 'bg-white/20' : 'bg-zinc-800 light:bg-stone-300'}`}>
+                <div className={`h-1 mt-2 rounded-full ${filter === virtue ? 'bg-white/20' : 'bg-stone-800 light:bg-stone-300'}`}>
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       filter === virtue ? 'bg-white/60' : `bg-gradient-to-r ${getVirtueColor(virtue)}`
@@ -264,12 +264,12 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-zinc-900/30 light:bg-stone-100/70 border border-zinc-800/50 light:border-stone-300 rounded-xl p-6 text-center"
+            className="bg-stone-900/30 light:bg-stone-100/70 border border-stone-800/50 light:border-stone-300 rounded-xl p-6 text-center"
           >
-            <p className="text-zinc-400 light:text-stone-600 text-sm leading-relaxed">
+            <p className="text-stone-400 light:text-stone-600 text-sm leading-relaxed">
               {name ? `${name}, each` : 'Each'} milestone here represents a moment you chose growth over comfort.
               {stats.unlocked >= 5 && (
-                <span className="text-zinc-500 light:text-stone-500 block mt-2">
+                <span className="text-stone-500 light:text-stone-500 block mt-2">
                   {stats.unlocked} moments of showing up. That is not nothing.
                 </span>
               )}
@@ -293,11 +293,11 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-zinc-900 light:bg-stone-50 border border-zinc-800 light:border-stone-300 rounded-2xl p-6 max-w-sm w-full relative"
+              className="bg-stone-900 light:bg-stone-50 border border-stone-800 light:border-stone-300 rounded-2xl p-6 max-w-sm w-full relative"
             >
               <button
                 onClick={() => setSelectedMilestone(null)}
-                className="absolute top-4 right-4 p-2 text-zinc-500 light:text-stone-500 hover:text-white light:hover:text-stone-900"
+                className="absolute top-4 right-4 p-2 text-stone-500 light:text-stone-500 hover:text-white light:hover:text-stone-900"
               >
                 <X size={20} />
               </button>
@@ -314,12 +314,12 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
                   {selectedMilestone.name}
                 </h3>
 
-                <p className="text-zinc-300 light:text-stone-700 mb-2">
+                <p className="text-stone-300 light:text-stone-700 mb-2">
                   {selectedMilestone.meaning}
                 </p>
 
                 {unlockedIds.has(selectedMilestone.id) && (
-                  <p className="text-zinc-500 light:text-stone-600 text-sm italic mb-4">
+                  <p className="text-stone-500 light:text-stone-600 text-sm italic mb-4">
                     &ldquo;{selectedMilestone.message}&rdquo;
                   </p>
                 )}
@@ -330,32 +330,32 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
                 </div>
 
                 {/* Wisdom quote */}
-                <div className="bg-zinc-800/50 light:bg-stone-100 rounded-xl p-4 mt-4">
-                  <p className="text-zinc-400 light:text-stone-600 text-sm italic">
+                <div className="bg-stone-800/50 light:bg-stone-100 rounded-xl p-4 mt-4">
+                  <p className="text-stone-400 light:text-stone-600 text-sm italic">
                     &ldquo;{selectedMilestone.wisdom.text}&rdquo;
                   </p>
-                  <p className="text-zinc-600 light:text-stone-500 text-xs mt-2">
+                  <p className="text-stone-600 light:text-stone-500 text-xs mt-2">
                     — {selectedMilestone.wisdom.author}
                   </p>
                 </div>
 
                 {/* Details */}
-                <div className="bg-zinc-800/30 light:bg-stone-100/80 rounded-xl p-4 mt-4 space-y-2 text-left">
+                <div className="bg-stone-800/30 light:bg-stone-100/80 rounded-xl p-4 mt-4 space-y-2 text-left">
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500 light:text-stone-500">Category</span>
-                    <span className="text-zinc-300 light:text-stone-700">
+                    <span className="text-stone-500 light:text-stone-500">Category</span>
+                    <span className="text-stone-300 light:text-stone-700">
                       {CATEGORY_INFO[selectedMilestone.category].label}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500 light:text-stone-500">Significance</span>
-                    <span className="text-zinc-300 light:text-stone-700">
+                    <span className="text-stone-500 light:text-stone-500">Significance</span>
+                    <span className="text-stone-300 light:text-stone-700">
                       {getWeightLabel(selectedMilestone.weight)}
                     </span>
                   </div>
                   {unlockedIds.has(selectedMilestone.id) && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 light:text-stone-500">Reached</span>
+                      <span className="text-stone-500 light:text-stone-500">Reached</span>
                       <span className="text-emerald-400">
                         {new Date(getUnlockDate(selectedMilestone.id)!).toLocaleDateString()}
                       </span>
@@ -365,7 +365,7 @@ export function MilestoneGallery({ onBack }: MilestoneGalleryProps) {
 
                 {/* Affirmation for unlocked */}
                 {unlockedIds.has(selectedMilestone.id) && (
-                  <p className="text-zinc-600 light:text-stone-500 text-xs mt-4">
+                  <p className="text-stone-600 light:text-stone-500 text-xs mt-4">
                     {selectedMilestone.affirmation}
                   </p>
                 )}
@@ -399,7 +399,7 @@ function FilterButton({
       className={`px-3 py-1.5 rounded-full text-sm transition-all ${
         active
           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-          : 'bg-zinc-800/50 light:bg-stone-100 text-zinc-400 light:text-stone-600 border border-zinc-700/50 light:border-stone-300 hover:border-zinc-600 light:hover:border-stone-400'
+          : 'bg-stone-800/50 light:bg-stone-100 text-stone-400 light:text-stone-600 border border-stone-700/50 light:border-stone-300 hover:border-stone-600 light:hover:border-stone-400'
       }`}
     >
       {label}

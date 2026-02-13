@@ -76,18 +76,18 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
         />
       );
     }
-    return <Minus size={14} className="text-zinc-500" />;
+    return <Minus size={14} className="text-stone-500" />;
   };
 
   // No data state
   if (currentPatterns.totalReflections === 0) {
     return (
       <Card variant="glass" padding="lg" className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
-          <Sparkles size={28} className="text-zinc-600" />
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-stone-800 light:bg-stone-200 flex items-center justify-center">
+          <Sparkles size={28} className="text-stone-600 light:text-stone-500" />
         </div>
-        <h3 className="text-lg font-medium text-white mb-2">No Patterns Yet</h3>
-        <p className="text-sm text-zinc-500">
+        <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">No Patterns Yet</h3>
+        <p className="text-sm text-stone-500 light:text-stone-500">
           Complete more lessons to see your transformation patterns emerge.
         </p>
       </Card>
@@ -99,8 +99,8 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
     return (
       <Card variant="glass" padding="md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-white">Your Patterns</h3>
-          <span className="text-xs text-zinc-500">
+          <h3 className="text-sm font-medium text-white light:text-stone-900">Your Patterns</h3>
+          <span className="text-xs text-stone-500 light:text-stone-500">
             {currentPatterns.totalReflections} reflections
           </span>
         </div>
@@ -116,13 +116,13 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                 <span className="text-lg">{config.emoji}</span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-zinc-400">{config.label}</span>
+                    <span className="text-xs text-stone-400 light:text-stone-600">{config.label}</span>
                     <div className="flex items-center gap-1">
                       {getTrendIcon(theme)}
-                      <span className="text-xs text-zinc-500">{count}</span>
+                      <span className="text-xs text-stone-500 light:text-stone-500">{count}</span>
                     </div>
                   </div>
-                  <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percentage}%` }}
@@ -145,8 +145,8 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Your Transformation Patterns</h2>
-        <p className="text-zinc-400">
+        <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">Your Transformation Patterns</h2>
+        <p className="text-stone-400 light:text-stone-600">
           Based on {currentPatterns.totalReflections} reflection{currentPatterns.totalReflections !== 1 ? 's' : ''} this month
         </p>
       </div>
@@ -158,7 +158,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
               <TrendingUp size={16} className="text-emerald-400" />
             </div>
-            <h3 className="font-medium text-white">Growth Themes</h3>
+            <h3 className="font-medium text-white light:text-stone-900">Growth Themes</h3>
           </div>
 
           <div className="space-y-4">
@@ -177,14 +177,14 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{config.emoji}</span>
-                      <span className="text-white font-medium">{config.label}</span>
+                      <span className="text-white light:text-stone-900 font-medium">{config.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {getTrendIcon(theme)}
-                      <span className="text-zinc-400">{count} mentions</span>
+                      <span className="text-stone-400 light:text-stone-600">{count} mentions</span>
                     </div>
                   </div>
-                  <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="h-3 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percentage}%` }}
@@ -207,7 +207,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <Sparkles size={16} className="text-amber-400" />
             </div>
-            <h3 className="font-medium text-white">Working Through</h3>
+            <h3 className="font-medium text-white light:text-stone-900">Working Through</h3>
           </div>
 
           <div className="space-y-4">
@@ -226,14 +226,14 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{config.emoji}</span>
-                      <span className="text-white font-medium">{config.label}</span>
+                      <span className="text-white light:text-stone-900 font-medium">{config.label}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {getTrendIcon(theme)}
-                      <span className="text-zinc-400">{count} mentions</span>
+                      <span className="text-stone-400 light:text-stone-600">{count} mentions</span>
                     </div>
                   </div>
-                  <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="h-3 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percentage}%` }}
@@ -247,7 +247,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
             })}
           </div>
 
-          <p className="mt-4 text-sm text-zinc-500 italic">
+          <p className="mt-4 text-sm text-stone-500 light:text-stone-500 italic">
             &quot;The obstacle is the way.&quot; — Marcus Aurelius
           </p>
         </Card>
@@ -255,7 +255,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
 
       {/* All Patterns Grid */}
       <Card variant="glass" padding="lg">
-        <h3 className="font-medium text-white mb-4">All Detected Patterns</h3>
+        <h3 className="font-medium text-white light:text-stone-900 mb-4">All Detected Patterns</h3>
         <div className="grid grid-cols-3 gap-3">
           {(Object.keys(THEME_CONFIG) as PatternTheme[]).map((theme) => {
             const config = THEME_CONFIG[theme];
@@ -269,16 +269,16 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 className={`p-3 rounded-xl border text-center transition-colors ${
                   isActive
-                    ? 'bg-zinc-800/50 border-zinc-700'
-                    : 'bg-zinc-900/30 border-zinc-800/50'
+                    ? 'bg-stone-800/50 light:bg-stone-200/50 border-stone-700 light:border-stone-300'
+                    : 'bg-stone-900/30 light:bg-stone-100/30 border-stone-800/50 light:border-stone-200/50'
                 }`}
               >
                 <span className="text-2xl mb-1 block">{config.emoji}</span>
-                <p className={`text-xs ${isActive ? 'text-white' : 'text-zinc-600'}`}>
+                <p className={`text-xs ${isActive ? 'text-white light:text-stone-900' : 'text-stone-600 light:text-stone-500'}`}>
                   {config.label}
                 </p>
                 {isActive && (
-                  <p className="text-xs text-zinc-500 mt-1">{count}x</p>
+                  <p className="text-xs text-stone-500 light:text-stone-500 mt-1">{count}x</p>
                 )}
               </motion.div>
             );

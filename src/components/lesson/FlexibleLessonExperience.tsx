@@ -25,6 +25,7 @@ import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 
 // Step components
 import { ScenarioStep } from './steps/ScenarioStep';
@@ -107,6 +108,9 @@ export function FlexibleLessonExperience({
   resumeProgress,
   mode = 'deep',
 }: FlexibleLessonExperienceProps) {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
+
   // Select step array based on mode
   const activeSteps = mode === 'engagement' && lesson.engagementSteps && lesson.engagementSteps.length > 0
     ? lesson.engagementSteps
@@ -824,7 +828,9 @@ return (
       <div
         className="fixed bottom-0 left-0 right-0 h-24 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, rgba(12, 10, 9, 0.9), transparent)',
+          background: isLight
+            ? 'linear-gradient(to top, rgba(250, 250, 249, 0.9), transparent)'
+            : 'linear-gradient(to top, rgba(12, 10, 9, 0.9), transparent)',
         }}
       />
     </div>

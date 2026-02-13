@@ -38,11 +38,11 @@ export function IdentityJourney() {
       {/* Header */}
       <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
         <div className={isRTL ? 'text-right' : ''}>
-          <h2 className={`text-xl font-bold text-white flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <h2 className={`text-xl font-bold text-white light:text-stone-900 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <Sparkles className="w-5 h-5 text-amber-400" />
             {t('identity.title')}
           </h2>
-          <p className="text-sm text-zinc-400 mt-1">
+          <p className="text-sm text-stone-400 light:text-stone-600 mt-1">
             {statements.length === 0
               ? t('identity.defineWhoYouAre')
               : t('identity.statementsCount').replace('{count}', statements.length.toString())}
@@ -68,10 +68,10 @@ export function IdentityJourney() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 flex items-center justify-center">
             <Sparkles className="w-8 h-8 text-amber-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">
+          <h3 className="text-lg font-semibold text-white light:text-stone-900 mb-2">
             {t('identity.whoAreYouBecoming')}
           </h3>
-          <p className="text-zinc-400 text-sm mb-6 max-w-xs mx-auto">
+          <p className="text-stone-400 light:text-stone-600 text-sm mb-6 max-w-xs mx-auto">
             {t('identity.emptyStateDescription')}
           </p>
           <Button onClick={() => setIsModalOpen(true)} className={`flex items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -100,22 +100,22 @@ export function IdentityJourney() {
                   className="relative pl-14"
                 >
                   {/* Timeline dot */}
-                  <div className="absolute left-4 top-4 w-4 h-4 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-zinc-900 shadow-lg shadow-amber-500/30" />
+                  <div className="absolute left-4 top-4 w-4 h-4 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-stone-900 light:border-stone-100 shadow-lg shadow-amber-500/30" />
 
                   {/* Card */}
-                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 hover:border-amber-500/30 transition-colors group">
+                  <div className="bg-stone-900/50 light:bg-stone-100/50 border border-stone-800 light:border-stone-200 rounded-xl p-4 hover:border-amber-500/30 transition-colors group">
                     {/* Date and context */}
-                    <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2">
+                    <div className="flex items-center gap-2 text-xs text-stone-500 light:text-stone-500 mb-2">
                       <Calendar size={12} />
                       <span>{formatDate(statement.createdAt)}</span>
-                      <span className="text-zinc-700">|</span>
+                      <span className="text-stone-700 light:text-stone-500">|</span>
                       <span className="text-amber-400/70">
                         {getContextLabel(statement.context)}
                       </span>
                     </div>
 
                     {/* Statement */}
-                    <p className="text-white leading-relaxed">
+                    <p className="text-white light:text-stone-900 leading-relaxed">
                       <span className="text-amber-400 font-medium">{t('identity.iAmSomeoneWho')} </span>
                       {statement.statement.replace(/^I am someone who\s*/i, '')}
                     </p>
@@ -126,7 +126,7 @@ export function IdentityJourney() {
                         {statement.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="px-2 py-0.5 bg-zinc-800 rounded-full text-xs text-zinc-400"
+                            className="px-2 py-0.5 bg-stone-800 light:bg-stone-200 rounded-full text-xs text-stone-400 light:text-stone-600"
                           >
                             {tag}
                           </span>
@@ -151,7 +151,7 @@ export function IdentityJourney() {
                 <ChevronRight className={`w-4 h-4 text-amber-400 ${isRTL ? 'rotate-180' : ''}`} />
                 <span className="text-sm font-medium text-amber-400">{t('identity.yourEvolution')}</span>
               </div>
-              <p className={`text-sm text-zinc-300 ${isRTL ? 'text-right' : ''}`}>
+              <p className={`text-sm text-stone-300 light:text-stone-700 ${isRTL ? 'text-right' : ''}`}>
                 {t('identity.evolutionMessage')
                   .replace('{name}', name || '')
                   .replace('{count}', statements.length.toString())}

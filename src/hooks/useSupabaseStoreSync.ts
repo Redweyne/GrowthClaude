@@ -425,7 +425,7 @@ export function useSupabaseStoreSync() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isConfigured, user]);
+  }, [isAuthenticated, isConfigured, user?.id]);
 
   useEffect(() => {
     if (!isConfigured || !isAuthenticated || !user) {
@@ -555,7 +555,7 @@ export function useSupabaseStoreSync() {
         profileTimerRef.current = null;
       }
     };
-  }, [isAuthenticated, isConfigured, user]);
+  }, [isAuthenticated, isConfigured, user?.id]);
 
   useEffect(() => {
     if (!isConfigured || !isAuthenticated || !user) {
@@ -627,7 +627,7 @@ export function useSupabaseStoreSync() {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, isConfigured, user]);
+  }, [isAuthenticated, isConfigured, user?.id]);
 
   useEffect(() => {
     if (!isConfigured || !isAuthenticated || !user) {
@@ -695,5 +695,5 @@ export function useSupabaseStoreSync() {
     return () => {
       unsubscribe();
     };
-  }, [isAuthenticated, isConfigured, user]);
+  }, [isAuthenticated, isConfigured, user?.id]);
 }

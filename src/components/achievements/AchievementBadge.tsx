@@ -83,7 +83,7 @@ export function MilestoneBadge({
           relative
           ${unlocked
             ? `bg-gradient-to-br ${virtueColor} shadow-lg ${virtueGlow}`
-            : 'bg-zinc-800/50 light:bg-stone-200/80 border-2 border-zinc-700/50 light:border-stone-300'
+            : 'bg-stone-800/50 light:bg-stone-200/80 border-2 border-stone-700/50 light:border-stone-300'
           }
         `}
       >
@@ -94,7 +94,7 @@ export function MilestoneBadge({
             <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse" />
           </>
         ) : (
-          <Lock className={`${size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'} text-zinc-600 light:text-stone-500`} />
+          <Lock className={`${size === 'sm' ? 'w-5 h-5' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'} text-stone-600 light:text-stone-500`} />
         )}
 
         {/* Shine effect for unlocked on hover */}
@@ -126,7 +126,7 @@ export function MilestoneBadge({
           <h4
             className={`
               font-semibold
-              ${unlocked ? 'text-white light:text-stone-900' : 'text-zinc-500 light:text-stone-600'}
+              ${unlocked ? 'text-white light:text-stone-900' : 'text-stone-500 light:text-stone-600'}
               ${size === 'sm' ? 'text-xs' : 'text-sm'}
             `}
           >
@@ -134,7 +134,7 @@ export function MilestoneBadge({
           </h4>
           <p
             className={`
-              text-zinc-400 light:text-stone-600
+              text-stone-400 light:text-stone-600
               ${size === 'sm' ? 'text-[10px]' : 'text-xs'}
               mt-0.5 leading-tight
             `}
@@ -142,7 +142,7 @@ export function MilestoneBadge({
             {unlocked ? milestone.meaning : `Unlock: ${milestone.requirement.value}${getRequirementUnit(milestone.requirement.type)}`}
           </p>
           {unlocked && unlockedAt && (
-            <p className="text-[10px] text-zinc-600 light:text-stone-500 mt-1">
+            <p className="text-[10px] text-stone-600 light:text-stone-500 mt-1">
               {formatDate(unlockedAt)}
             </p>
           )}
@@ -223,7 +223,7 @@ export function MilestoneUnlockAnimation({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-zinc-500 text-sm tracking-wider mb-6"
+          className="text-stone-500 light:text-stone-500 text-sm tracking-wider mb-6"
         >
           A milestone of {getVirtueLabel(milestone.virtue).toLowerCase()}
         </motion.p>
@@ -257,7 +257,7 @@ export function MilestoneUnlockAnimation({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
-          className="text-3xl font-bold text-white mb-2"
+          className="text-3xl font-bold text-white light:text-stone-900 mb-2"
         >
           {milestone.name}
         </motion.h2>
@@ -267,7 +267,7 @@ export function MilestoneUnlockAnimation({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.85 }}
-          className="text-lg text-zinc-300 mb-6"
+          className="text-lg text-stone-300 light:text-stone-700 mb-6"
         >
           {milestone.meaning}
         </motion.p>
@@ -277,9 +277,9 @@ export function MilestoneUnlockAnimation({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
-          className="bg-zinc-900/50 rounded-xl p-5 mb-6 border border-zinc-800/50"
+          className="bg-stone-900/50 light:bg-stone-200/50 rounded-xl p-5 mb-6 border border-stone-800/50 light:border-stone-200/50"
         >
-          <p className="text-zinc-300 text-sm leading-relaxed italic">
+          <p className="text-stone-300 light:text-stone-700 text-sm leading-relaxed italic">
             &ldquo;{milestone.message}&rdquo;
           </p>
         </motion.div>
@@ -291,10 +291,10 @@ export function MilestoneUnlockAnimation({
           transition={{ delay: 1.2 }}
           className="mb-8"
         >
-          <p className="text-zinc-400 text-sm leading-relaxed">
+          <p className="text-stone-400 light:text-stone-600 text-sm leading-relaxed">
             &ldquo;{milestone.wisdom.text}&rdquo;
           </p>
-          <p className="text-zinc-600 text-xs mt-2">
+          <p className="text-stone-600 light:text-stone-500 text-xs mt-2">
             — {milestone.wisdom.author}
           </p>
         </motion.div>
@@ -304,7 +304,7 @@ export function MilestoneUnlockAnimation({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.4 }}
-          className="text-zinc-700 text-xs tracking-widest"
+          className="text-stone-700 light:text-stone-500 text-xs tracking-widest"
         >
           {getVirtueGreek(milestone.virtue)}
         </motion.p>
@@ -314,7 +314,7 @@ export function MilestoneUnlockAnimation({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.8 }}
-          className="text-zinc-600 text-sm mt-8"
+          className="text-stone-600 light:text-stone-500 text-sm mt-8"
         >
           Tap to continue
         </motion.p>

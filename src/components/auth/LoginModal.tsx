@@ -81,35 +81,36 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           </p>
         )}
 
-        <div className="space-y-3 mb-4">
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
-            className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password"
-            className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500"
-          />
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleEmailSignIn(); }}>
+          <div className="space-y-3 mb-4">
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Email"
+              className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Password"
+              className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500"
+            />
+          </div>
 
-        {errorMessage && <p className="text-sm text-red-400 light:text-red-700 mb-4">{errorMessage}</p>}
+          {errorMessage && <p className="text-sm text-red-400 light:text-red-700 mb-4">{errorMessage}</p>}
 
-        <div className="space-y-3">
-          <Button
-            onClick={handleEmailSignIn}
-            isLoading={submitting || isLoading}
-            disabled={!isConfigured || !email || !password}
-            className="w-full"
-          >
-            <LogIn size={16} />
-            Sign in with email
-          </Button>
+          <div className="space-y-3">
+            <Button
+              type="submit"
+              isLoading={submitting || isLoading}
+              disabled={!isConfigured || !email || !password}
+              className="w-full"
+            >
+              <LogIn size={16} />
+              Sign in with email
+            </Button>
           <Button
             onClick={handleGoogleSignIn}
             variant="secondary"
@@ -128,7 +129,8 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           >
             Continue as guest
           </Button>
-        </div>
+          </div>
+        </form>
 
         {onSwitchToSignup && (
           <p className="mt-4 text-sm text-stone-400 light:text-stone-600 text-center">
