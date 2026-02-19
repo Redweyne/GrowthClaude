@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
 import { MusicControls } from '@/components/ui/MusicControls';
 import { backgroundMusic } from '@/lib/backgroundMusic';
+import { getLessonThemeColor } from '@/lib/lessonThemes';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
@@ -191,6 +192,9 @@ export function FlexibleLessonExperience({
   const currentStep = activeSteps.find(s => s.id === currentStepId);
   const currentTheme = currentStep ? STEP_THEMES[currentStep.type] : STEP_THEMES.scenario;
 
+  // Phase 9A: Compute lesson theme color for ambient background tinting
+  const lessonTheme = lesson.themeColor || getLessonThemeColor(lesson.id);
+
 
   // Calculate progress based on step position
   const getProgress = () => {
@@ -308,6 +312,39 @@ export function FlexibleLessonExperience({
       console.warn(`[FlexibleLessonExperience] At last step "${currentStep.id}" with no nextStepId`);
     }
   }, [currentStep, currentStepId, activeSteps, goToStep, onComplete]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Swipe Gesture Support (non-writing steps only)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Writing steps require text input — swiping would conflict with
+  // horizontal text selection gestures, so we disable it for those.
+  const WRITING_STEP_TYPES = useMemo(() => new Set(['commitment', 'reflection']), []);
+
+  const swipeTouchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const handleSwipeTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!currentStep) return;
+    if (WRITING_STEP_TYPES.has(currentStep.type)) return;
+    swipeTouchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, [currentStep, WRITING_STEP_TYPES]);
+
+  const handleSwipeTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!swipeTouchStart.current || !currentStep) return;
+    const dx = e.changedTouches[0].clientX - swipeTouchStart.current.x;
+    const dy = e.changedTouches[0].clientY - swipeTouchStart.current.y;
+    swipeTouchStart.current = null;
+
+    // Only handle if clearly horizontal and above distance threshold
+    if (Math.abs(dx) < Math.abs(dy) || Math.abs(dx) < 60) return;
+
+    // Swipe left = advance to next step
+    if (dx < 0) {
+      goToNextStep();
+    }
+    // Note: we don't support swipe-right (back) in lessons —
+    // users commit to the journey once they start.
+  }, [currentStep, goToNextStep]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Step Completion Handlers
@@ -755,12 +792,18 @@ return (
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div
+      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+      onTouchStart={handleSwipeTouchStart}
+      onTouchEnd={handleSwipeTouchEnd}
+    >
       {/* Ambient background */}
       <AmbientBackground
         intensity="subtle"
         particleCount={currentStep?.type === 'reward' ? 8 : 4}
         orbCount={1}
+        themeOverride={lessonTheme}
       />
 
       {/* Step-specific atmospheric glow */}
@@ -777,11 +820,14 @@ return (
       <div className="fixed top-0 left-0 right-0 z-50">
         <div className="h-1 bg-stone-900/80 light:bg-stone-200/80 backdrop-blur-sm">
           <motion.div
-            className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
+            className="h-full"
             initial={{ width: 0 }}
             animate={{ width: `${getProgress()}%` }}
             transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ boxShadow: `0 0 20px ${currentTheme.glow}` }}
+            style={{
+              background: `linear-gradient(90deg, ${lessonTheme.primary}, ${lessonTheme.primary}dd)`,
+              boxShadow: `0 0 20px ${lessonTheme.glow}`,
+            }}
           />
         </div>
 

@@ -13,7 +13,7 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, Heart, UserPlus, Check, XIcon, ChevronRight, ChevronLeft, Send } from 'lucide-react';
 import { Button, EmptyState } from '@/components/ui';
@@ -27,6 +27,8 @@ interface EchoInboxProps {
 }
 
 type TabType = 'echoes' | 'invitations' | 'connections';
+
+const TAB_ORDER: TabType[] = ['echoes', 'invitations', 'connections'];
 
 export function EchoInbox({ onClose }: EchoInboxProps) {
   const { t, isRTL } = useTranslation();
@@ -124,6 +126,39 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
     return connection.userId1 === 'current-user' ? connection.user2Gender : connection.user1Gender;
   };
 
+  // ─── Swipe between tabs ──────────────────────────────────────────────────
+  const swipeTouchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const handleSwipeTouchStart = useCallback((e: React.TouchEvent) => {
+    // Don't swipe when viewing detail views (they may have their own scroll)
+    if (selectedEcho || selectedInvitation || selectedConnection) return;
+    swipeTouchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, [selectedEcho, selectedInvitation, selectedConnection]);
+
+  const handleSwipeTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!swipeTouchStart.current) return;
+    const dx = e.changedTouches[0].clientX - swipeTouchStart.current.x;
+    const dy = e.changedTouches[0].clientY - swipeTouchStart.current.y;
+    swipeTouchStart.current = null;
+
+    if (Math.abs(dx) < Math.abs(dy) || Math.abs(dx) < 50) return;
+
+    const currentIndex = TAB_ORDER.indexOf(activeTab);
+    if (dx < 0 && currentIndex < TAB_ORDER.length - 1) {
+      // Swipe left → next tab
+      setActiveTab(TAB_ORDER[currentIndex + 1]);
+      setSelectedEcho(null);
+      setSelectedInvitation(null);
+      setSelectedConnection(null);
+    } else if (dx > 0 && currentIndex > 0) {
+      // Swipe right → previous tab
+      setActiveTab(TAB_ORDER[currentIndex - 1]);
+      setSelectedEcho(null);
+      setSelectedInvitation(null);
+      setSelectedConnection(null);
+    }
+  }, [activeTab, selectedEcho, selectedInvitation, selectedConnection]);
+
   const tabs: { id: TabType; label: string; count?: number }[] = [
     { id: 'echoes', label: t('echoes.reflections'), count: unreadEchoCount },
     { id: 'invitations', label: t('echoes.invitations'), count: pendingInvitationCount },
@@ -131,7 +166,12 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
   ];
 
   return (
-    <div className={`fixed inset-0 z-50 bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div
+      className={`fixed inset-0 z-50 bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+      onTouchStart={handleSwipeTouchStart}
+      onTouchEnd={handleSwipeTouchEnd}
+    >
       <AmbientBackground intensity="subtle" particleCount={4} orbCount={1} />
 
       {/* Header */}
@@ -157,7 +197,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
                 setSelectedInvitation(null);
                 setSelectedConnection(null);
               }}
-              className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95 ${
                 activeTab === tab.id
                   ? 'bg-amber-500/20 text-amber-300'
                   : 'text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 hover:bg-stone-800/50'
@@ -175,7 +215,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 h-[calc(100vh-120px)] overflow-y-auto">
+      <div className="relative z-10 h-[calc(100dvh-120px)] overflow-y-auto">
         <AnimatePresence mode="wait">
           {/* ─────────────────────────────────────────────────────────────────
               ECHOES TAB

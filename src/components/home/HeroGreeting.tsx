@@ -1,21 +1,28 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Shield } from 'lucide-react';
 import { StreakBadge } from '@/components/ui';
 import { useTranslation } from '@/i18n';
+import { generateGreeting, GreetingContext } from '@/lib/greetingEngine';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HERO GREETING
 // A dramatic, animated welcome that makes users feel seen and valued
 // Features staggered letter animations, time-aware greetings, and
-// inspirational Stoic wisdom that changes daily
+// contextual streak-aware messages from the greeting engine
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface HeroGreetingProps {
   name: string;
   streak: number;
+  longestStreak: number;
+  totalLessons: number;
+  lastLessonDate: string | null;
+  lastLessonCoreTag?: string;
+  transformationGoal?: string | null;
+  streakShieldCount: number;
   onOpenSettings: () => void;
 }
 
@@ -25,32 +32,39 @@ const springs = {
   responsive: { type: 'spring' as const, stiffness: 300, damping: 20 },
 };
 
-// Get consistent daily quote index
-function getDailyQuoteIndex(): number {
-  const today = new Date();
-  const dayOfYear = Math.floor(
-    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
-  );
-  return dayOfYear % 10; // 10 quotes
-}
-
-export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps) {
+export function HeroGreeting({ name, streak, longestStreak, totalLessons, lastLessonDate, lastLessonCoreTag, transformationGoal, streakShieldCount, onOpenSettings }: HeroGreetingProps) {
   const { t, isRTL } = useTranslation();
   const [mounted, setMounted] = useState(false);
-  const quoteIndex = useMemo(() => getDailyQuoteIndex(), []);
 
-  // Get time-based greeting using translations
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return t('home.greetings.morning');
-    if (hour >= 12 && hour < 17) return t('home.greetings.afternoon');
-    if (hour >= 17 && hour < 21) return t('home.greetings.evening');
-    return t('home.greetings.evening');
-  }, [t]);
+  // Generate contextual greeting
+  const greetingResult = useMemo(() => {
+    const ctx: GreetingContext = {
+      name: name || t('settings.seeker'),
+      streak,
+      longestStreak,
+      totalLessons,
+      lastLessonDate,
+      lastLessonCoreTag,
+      transformationGoal,
+    };
+    return generateGreeting(ctx);
+  }, [name, streak, longestStreak, totalLessons, lastLessonDate, lastLessonCoreTag, transformationGoal, t]);
 
-  // Get wisdom quote from translations
-  const quoteText = t(`home.wisdomQuotes.${quoteIndex}.text`);
-  const quoteAuthor = t(`home.wisdomQuotes.${quoteIndex}.author`);
+  // Mood-based accent colors
+  const moodColors = useMemo(() => {
+    switch (greetingResult.mood) {
+      case 'warm':
+        return { text: 'text-amber-200 light:text-amber-600', glow: 'rgba(251, 191, 36, 0.3)', accent: 'rgba(251, 191, 36, 0.4)' };
+      case 'motivating':
+        return { text: 'text-orange-200 light:text-orange-600', glow: 'rgba(249, 115, 22, 0.3)', accent: 'rgba(249, 115, 22, 0.4)' };
+      case 'celebratory':
+        return { text: 'text-yellow-200 light:text-yellow-600', glow: 'rgba(234, 179, 8, 0.4)', accent: 'rgba(234, 179, 8, 0.5)' };
+      case 'gentle':
+        return { text: 'text-stone-300 light:text-stone-500', glow: 'rgba(168, 162, 158, 0.3)', accent: 'rgba(168, 162, 158, 0.3)' };
+      case 'fierce':
+        return { text: 'text-red-200 light:text-red-600', glow: 'rgba(239, 68, 68, 0.3)', accent: 'rgba(239, 68, 68, 0.4)' };
+    }
+  }, [greetingResult.mood]);
 
   useEffect(() => {
     setMounted(true);
@@ -86,8 +100,8 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
     },
   };
 
-  // Quote variants
-  const quoteVariants = {
+  // Message variants
+  const messageVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
@@ -111,14 +125,27 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Top row - streak and settings */}
+      {/* Top row - streak, shield, and settings */}
       <div className={`flex items-center justify-between mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
         <motion.div
+          className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}
           initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, ...springs.gentle }}
         >
           <StreakBadge streak={streak} />
+          {streakShieldCount > 0 && (
+            <motion.div
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/10 border border-blue-500/20"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, ...springs.gentle }}
+              title={`${streakShieldCount} streak shield(s) available`}
+            >
+              <Shield size={14} className="text-blue-400" />
+              <span className="text-xs text-blue-400 font-medium">{streakShieldCount}</span>
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.button
@@ -150,7 +177,7 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
       >
-        {greeting}
+        {greetingResult.greeting}
       </motion.p>
 
       {/* Name with staggered letter animation */}
@@ -179,26 +206,28 @@ export function HeroGreeting({ name, streak, onOpenSettings }: HeroGreetingProps
         ))}
       </motion.h1>
 
-      {/* Daily wisdom quote */}
+      {/* Contextual streak message */}
       <motion.div
         className={`relative ${isRTL ? 'pr-4 border-r-2' : 'pl-4 border-l-2'} border-amber-500/20`}
-        variants={quoteVariants}
+        variants={messageVariants}
         initial="hidden"
         animate="visible"
       >
-        <p className={`text-stone-400 light:text-stone-600 text-sm italic leading-relaxed ${isRTL ? 'text-right' : ''}`}>
-          &ldquo;{quoteText}&rdquo;
+        <p className={`text-stone-300 light:text-stone-600 text-sm font-medium leading-relaxed ${isRTL ? 'text-right' : ''}`}>
+          {greetingResult.message}
         </p>
-        <p className={`text-stone-600 light:text-stone-400 text-xs mt-1 ${isRTL ? 'text-right' : ''}`}>
-          — {quoteAuthor}
-        </p>
+        {greetingResult.subMessage && (
+          <p className={`text-stone-500 light:text-stone-400 text-xs mt-1.5 italic ${isRTL ? 'text-right' : ''}`}>
+            {greetingResult.subMessage}
+          </p>
+        )}
 
-        {/* Subtle glow on quote */}
+        {/* Mood-colored accent line */}
         <div
           className={`absolute ${isRTL ? '-right-px' : '-left-px'} top-0 bottom-0 w-0.5 rounded-full`}
           style={{
-            background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0.1) 100%)',
-            boxShadow: '0 0 8px rgba(251, 191, 36, 0.3)',
+            background: `linear-gradient(180deg, ${moodColors.accent} 0%, ${moodColors.glow} 100%)`,
+            boxShadow: `0 0 8px ${moodColors.glow}`,
           }}
         />
       </motion.div>

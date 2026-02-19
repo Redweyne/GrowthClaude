@@ -64,7 +64,7 @@ export function TodaysLesson({
   pendingCommitment,
 }: TodaysLessonProps) {
   // Get user state
-  const { name, totalXp, currentStreak, completedLessons } = useStore();
+  const { name, totalXp, currentStreak, longestStreak, completedLessons, lastLessonDate, transformationGoal, streakShieldCount } = useStore();
 
   // Calculate level and progress
   const level = getLevelFromXp(totalXp);
@@ -95,6 +95,11 @@ export function TodaysLesson({
         <HeroGreeting
           name={name || 'Seeker'}
           streak={currentStreak}
+          longestStreak={longestStreak}
+          totalLessons={Object.keys(completedLessons).length}
+          lastLessonDate={lastLessonDate}
+          transformationGoal={transformationGoal}
+          streakShieldCount={streakShieldCount}
           onOpenSettings={onOpenSettings}
         />
 

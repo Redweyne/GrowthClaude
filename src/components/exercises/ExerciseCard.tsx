@@ -10,21 +10,27 @@ import type { DailyExercise, ExerciseType } from '@/types/dailyPractice';
 // ═══════════════════════════════════════════════════════════════════════════
 
 const exerciseIcons: Record<ExerciseType, string> = {
-  'truth-mirror': '💫',
-  'soul-compass': '🔮',
-  'presence-anchor': '🌊',
+  'rapid-verdict': '⚡',
+  'priority-tower': '🏗️',
+  'scenario-snap': '🎬',
+  'heat-check': '🔥',
+  'word-forge': '🔨',
 };
 
 const exerciseColors: Record<ExerciseType, string> = {
-  'truth-mirror': 'from-indigo-500/20 to-purple-500/20',
-  'soul-compass': 'from-amber-500/20 to-orange-500/20',
-  'presence-anchor': 'from-emerald-500/20 to-teal-500/20',
+  'rapid-verdict': 'from-amber-500/20 to-orange-500/20',
+  'priority-tower': 'from-violet-500/20 to-indigo-500/20',
+  'scenario-snap': 'from-rose-500/20 to-pink-500/20',
+  'heat-check': 'from-cyan-500/20 to-blue-500/20',
+  'word-forge': 'from-emerald-500/20 to-teal-500/20',
 };
 
 const exerciseLabels: Record<ExerciseType, string> = {
-  'truth-mirror': 'Truth Mirror',
-  'soul-compass': 'Soul Compass',
-  'presence-anchor': 'Presence Anchor',
+  'rapid-verdict': 'Rapid Verdict',
+  'priority-tower': 'Priority Tower',
+  'scenario-snap': 'Scenario Snap',
+  'heat-check': 'Heat Check',
+  'word-forge': 'Word Forge',
 };
 
 interface ExerciseCardProps {

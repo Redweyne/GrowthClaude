@@ -117,7 +117,7 @@ export function GoDoItStep({ step, commitment, onDismiss }: GoDoItStepProps) {
   }, [phase, step.sageMessage]);
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
       {/* Deep atmospheric glow */}
       <motion.div
         className="fixed inset-0 pointer-events-none"

@@ -390,6 +390,17 @@ export interface FlexibleLesson {
   // Alternative engagement path (no writing, no long waits)
   // Used when user selects "Feel & Choose" mode before a lesson
   engagementSteps?: LessonStep[];
+
+  // Phase 9: Theme color for ambient background tinting and progress bars
+  // Each chapter has a color spectrum:
+  //   Ch1 (Foundations): amber/gold
+  //   Ch2 (Resilience): rose/crimson
+  //   Ch3 (Relationships): violet/indigo
+  themeColor?: {
+    primary: string;    // Main accent (e.g. '#f59e0b')
+    glow: string;       // Glow/shadow color with alpha (e.g. 'rgba(245, 158, 11, 0.3)')
+    gradient: string;   // Background tint (e.g. 'rgba(245, 158, 11, 0.08)')
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

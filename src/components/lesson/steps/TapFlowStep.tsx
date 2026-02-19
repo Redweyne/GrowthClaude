@@ -102,7 +102,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
   const progress = Math.min(currentIndex, step.instructions.length);
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
       {/* Atmospheric glow - shifts subtly with each tap */}
       <motion.div
         className="fixed inset-0 pointer-events-none"

@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Heart, BookOpen, Dumbbell, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/i18n';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 export type CoachingStep =
   | 'beforeFirstLesson'
@@ -67,6 +68,7 @@ const STEP_ICONS: Record<CoachingStep, {
 export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalProps) {
   const [mounted, setMounted] = useState(false);
   const { t, isRTL } = useTranslation();
+  const containerRef = useFocusTrap(mounted, onDismiss);
 
   const iconConfig = STEP_ICONS[step];
   const Icon = iconConfig.icon;
@@ -161,12 +163,18 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
             />
           )}
 
-          <div className="relative bg-stone-900/95 light:bg-white/95 border border-stone-800 light:border-stone-200 rounded-3xl overflow-hidden">
+          <div
+            ref={containerRef}
+            className="relative bg-stone-900/95 light:bg-white/95 border border-stone-800 light:border-stone-200 rounded-3xl overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+          >
             {/* Close button */}
             <button
               onClick={onDismiss}
-              className="absolute top-4 right-4 p-2 text-stone-500 light:text-stone-400 hover:text-stone-300 light:hover:text-stone-900 transition-colors z-10"
+              className="absolute top-4 right-4 p-2 text-stone-500 light:text-stone-400 hover:text-stone-300 light:hover:text-stone-900 transition-colors active:scale-95 z-10"
               data-testid="coach-modal-close-btn"
+              aria-label="Close"
             >
               <X size={20} />
             </button>

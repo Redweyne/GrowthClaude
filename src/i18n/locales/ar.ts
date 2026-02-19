@@ -81,7 +81,30 @@ const ar = {
       purpose: 'الهدف',
       thePath: 'الطريق',
       commitment: 'الالتزام',
+      createOrigin: 'نقطة الأصل',
       begin: 'البداية',
+    },
+
+    // Auth Step — نقطة الأصل
+    auth: {
+      line1: 'لكل تحوّل نقطة أصل.',
+      line2: 'اللحظة الدقيقة التي توقفت فيها عن المشاهدة وبدأت تصبح.',
+      line3: 'هذه لحظتك.',
+      line4: 'اختمها.',
+      formTitle: 'نقطة أصلك',
+      formSubtitle: 'احفظ تحوّلك. لا تفقد تقدمك أبداً.',
+      sealWithGoogle: 'الختم بجوجل',
+      or: 'أو',
+      emailPlaceholder: 'بريدك الإلكتروني',
+      passwordPlaceholder: 'أنشئ كلمة مرور',
+      sealOrigin: 'اختم أصلي',
+      continueAsWanderer: 'المتابعة كمسافر',
+      alreadySealed: 'أصلك مختوم بالفعل.',
+      sealedTitle: 'أصلك مختوم.',
+      sealedSubtitle: 'الرحلة تبدأ الآن.',
+      notConfigured: 'المصادقة غير مُهيأة — يمكنك المتابعة على أي حال.',
+      errorAlreadyExists: 'هذا الطريق مُحدَّد بالفعل — حاول تسجيل الدخول بدلاً من ذلك',
+      errorWeakPassword: 'الختم يحتاج المزيد من القوة — جرب كلمة مرور أطول',
     },
 
     // Welcome Step
@@ -524,6 +547,19 @@ const ar = {
     appName: 'مركز التحول',
     appDesc: 'رحلتك اليومية نحو النمو',
     version: 'الإصدار',
+
+    // Account
+    account: 'الحساب',
+    signedInAs: 'مسجّل الدخول بوصفك',
+    signOut: 'تسجيل الخروج',
+    linkAccount: 'ربط حسابك',
+    linkAccountDesc: 'زامن تقدمك على جميع أجهزتك',
+    signIn: 'تسجيل الدخول',
+    createAccount: 'إنشاء حساب',
+    wanderingMode: 'وضع المسافر',
+    wanderingModeDesc: 'التقدم محفوظ محلياً فقط',
+    accountLinked: 'مرتبط',
+    anonymous: 'مجهول',
 
     // Danger Zone
     dangerZone: 'منطقة الخطر',

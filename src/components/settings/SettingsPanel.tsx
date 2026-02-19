@@ -11,14 +11,17 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Check, AlertTriangle, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Volume2, VolumeX, Vibrate, Music, Bell, Sparkles, Check, AlertTriangle, Trash2, LogIn, UserPlus, LogOut, Link } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { useAudio } from '@/hooks/useAudio';
+import { useAuth } from '@/hooks/useAuth';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useTranslation, languageConfig, type Locale } from '@/i18n';
 import { ThemeToggle } from '@/components/ui';
+import { LoginModal } from '@/components/auth/LoginModal';
+import { SignupModal } from '@/components/auth/SignupModal';
 
 interface SettingsPanelProps {
   onBack: () => void;
@@ -30,7 +33,18 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   const { resetEchoes } = useEchoesStore();
   const { resetDailyPractice } = useDailyPracticeStore();
   const { playTap, playSuccess, playSingingBowl } = useAudio();
+  const { user, isAuthenticated, signOut, isConfigured } = useAuth();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut();
+    setSigningOut(false);
+  };
 
   // Handle complete app reset
   const handleResetAll = () => {
@@ -105,6 +119,111 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
 
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 py-6 space-y-8">
+
+        {/* Account Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+        >
+          <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
+            {t('settings.account' as any)}
+          </h2>
+          <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 overflow-hidden">
+            {isAuthenticated && user ? (
+              user.email ? (
+                /* Real account — show email + sign out */
+                <div className="p-4">
+                  <div className={`flex items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className={`flex items-center gap-3 min-w-0 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg">⚜️</span>
+                      </div>
+                      <div className={`min-w-0 ${isRTL ? 'text-right' : ''}`}>
+                        <p className="text-xs text-stone-500 light:text-stone-600 mb-0.5">{t('settings.signedInAs' as any)}</p>
+                        <p className="text-sm text-white light:text-stone-900 font-medium truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <motion.button
+                      onClick={handleSignOut}
+                      disabled={signingOut}
+                      whileTap={{ scale: 0.96 }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-800/70 light:bg-stone-200 text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 hover:bg-stone-700 light:hover:bg-stone-300 transition-all text-sm font-medium flex-shrink-0 disabled:opacity-50"
+                    >
+                      {signingOut ? (
+                        <motion.div
+                          className="w-4 h-4 rounded-full border-2 border-stone-500/40 border-t-stone-400"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+                        />
+                      ) : (
+                        <LogOut size={14} />
+                      )}
+                      <span>{t('settings.signOut' as any)}</span>
+                    </motion.button>
+                  </div>
+                </div>
+              ) : (
+                /* Anonymous account — prompt to link */
+                <div className="p-4">
+                  <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-stone-700/40 to-stone-900 border border-stone-700/50 flex items-center justify-center flex-shrink-0">
+                      <span className="text-lg">🌿</span>
+                    </div>
+                    <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
+                      <p className="text-sm text-white light:text-stone-900 font-medium mb-0.5">{t('settings.wanderingMode' as any)}</p>
+                      <p className="text-xs text-stone-500 light:text-stone-600 mb-3">{t('settings.wanderingModeDesc' as any)}</p>
+                      {isConfigured && (
+                        <motion.button
+                          onClick={() => setShowSignup(true)}
+                          whileTap={{ scale: 0.97 }}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 light:text-amber-700 hover:bg-amber-500/25 transition-all text-sm font-medium"
+                        >
+                          <Link size={14} />
+                          <span>{t('settings.linkAccount' as any)}</span>
+                        </motion.button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              /* Not authenticated — show sign in / create account */
+              <div className="p-4">
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-stone-700/40 to-stone-900 border border-stone-700/50 flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">🌿</span>
+                  </div>
+                  <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
+                    <p className="text-sm text-white light:text-stone-900 font-medium mb-0.5">{t('settings.wanderingMode' as any)}</p>
+                    <p className="text-xs text-stone-500 light:text-stone-600 mb-3">{t('settings.wanderingModeDesc' as any)}</p>
+                    {isConfigured && (
+                      <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                        <motion.button
+                          onClick={() => setShowLogin(true)}
+                          whileTap={{ scale: 0.97 }}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-800/70 light:bg-stone-200 text-stone-300 light:text-stone-700 hover:text-white light:hover:text-stone-900 hover:bg-stone-700 light:hover:bg-stone-300 transition-all text-sm font-medium"
+                        >
+                          <LogIn size={14} />
+                          <span>{t('settings.signIn' as any)}</span>
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setShowSignup(true)}
+                          whileTap={{ scale: 0.97 }}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 light:text-amber-700 hover:bg-amber-500/25 transition-all text-sm font-medium"
+                        >
+                          <UserPlus size={14} />
+                          <span>{t('settings.createAccount' as any)}</span>
+                        </motion.button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.section>
+
         {/* Profile Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -323,6 +442,18 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
         {/* Bottom spacing */}
         <div className="h-8" />
       </div>
+
+      {/* Auth Modals */}
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSwitchToSignup={() => { setShowLogin(false); setShowSignup(true); }}
+      />
+      <SignupModal
+        isOpen={showSignup}
+        onClose={() => setShowSignup(false)}
+        onSwitchToLogin={() => { setShowSignup(false); setShowLogin(true); }}
+      />
 
       {/* Reset Confirmation Modal */}
       <AnimatePresence>

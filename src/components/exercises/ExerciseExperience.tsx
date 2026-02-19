@@ -1,25 +1,58 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ExerciseCard } from './ExerciseCard';
-import { TruthMirrorExercise } from './TruthMirrorExercise';
-import { SoulCompassExercise } from './SoulCompassExercise';
-import { PresenceAnchorExercise } from './PresenceAnchorExercise';
+
+// ── Dynamic imports ──────────────────────────────────────────────────────────
+// Exercise components are code-split: only the active type is loaded.
+// The loading fallback keeps the full-screen bg consistent.
+const ExerciseLoadingFallback = () => (
+  <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex items-center justify-center">
+    <div className="w-8 h-8 rounded-full border-2 border-amber-500/30 border-t-amber-500 animate-spin" />
+  </div>
+);
+
+const RapidVerdictExercise = dynamic(
+  () => import('./RapidVerdictExercise').then(m => ({ default: m.RapidVerdictExercise })),
+  { loading: ExerciseLoadingFallback, ssr: false }
+);
+const PriorityTowerExercise = dynamic(
+  () => import('./PriorityTowerExercise').then(m => ({ default: m.PriorityTowerExercise })),
+  { loading: ExerciseLoadingFallback, ssr: false }
+);
+const ScenarioSnapExercise = dynamic(
+  () => import('./ScenarioSnapExercise').then(m => ({ default: m.ScenarioSnapExercise })),
+  { loading: ExerciseLoadingFallback, ssr: false }
+);
+const HeatCheckExercise = dynamic(
+  () => import('./HeatCheckExercise').then(m => ({ default: m.HeatCheckExercise })),
+  { loading: ExerciseLoadingFallback, ssr: false }
+);
+const WordForgeExercise = dynamic(
+  () => import('./WordForgeExercise').then(m => ({ default: m.WordForgeExercise })),
+  { loading: ExerciseLoadingFallback, ssr: false }
+);
 import { useTranslation } from '@/i18n';
 import type {
   DailyExercise,
-  TruthMirrorContent,
-  SoulCompassContent,
-  PresenceAnchorContent,
+  RapidVerdictContent,
+  PriorityTowerContent,
+  ScenarioSnapContent,
+  HeatCheckContent,
+  WordForgeContent,
 } from '@/types/dailyPractice';
 import {
-  isTruthMirrorContent,
-  isSoulCompassContent,
-  isPresenceAnchorContent,
+  isRapidVerdictContent,
+  isPriorityTowerContent,
+  isScenarioSnapContent,
+  isHeatCheckContent,
+  isWordForgeContent,
+  DAILY_XP_REWARDS,
 } from '@/types/dailyPractice';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -50,7 +83,7 @@ export function ExerciseExperience({
   // Calculate progress
   const completedCount = completedExercises.length;
   const totalCount = exercises.length;
-  const allComplete = completedCount === totalCount;
+  const allComplete = totalCount > 0 && completedCount === totalCount;
 
   // Estimated time remaining (roughly 1.5 min per exercise now - no writing!)
   const remainingCount = exercises.filter(
@@ -77,41 +110,70 @@ export function ExerciseExperience({
       t,
     };
 
-    // Truth Mirror exercise
-    if (isTruthMirrorContent(selectedExercise.content)) {
+    // Rapid Verdict exercise
+    if (isRapidVerdictContent(selectedExercise.content)) {
       return (
-        <TruthMirrorExercise
+        <RapidVerdictExercise
           {...commonProps}
-          content={selectedExercise.content as TruthMirrorContent}
+          content={selectedExercise.content as RapidVerdictContent}
           onComplete={() => handleExerciseComplete()}
         />
       );
     }
 
-    // Soul Compass exercise
-    if (isSoulCompassContent(selectedExercise.content)) {
+    // Priority Tower exercise
+    if (isPriorityTowerContent(selectedExercise.content)) {
       return (
-        <SoulCompassExercise
+        <PriorityTowerExercise
           {...commonProps}
-          content={selectedExercise.content as SoulCompassContent}
+          content={selectedExercise.content as PriorityTowerContent}
           onComplete={() => handleExerciseComplete()}
         />
       );
     }
 
-    // Presence Anchor exercise
-    if (isPresenceAnchorContent(selectedExercise.content)) {
+    // Scenario Snap exercise
+    if (isScenarioSnapContent(selectedExercise.content)) {
       return (
-        <PresenceAnchorExercise
+        <ScenarioSnapExercise
           {...commonProps}
-          content={selectedExercise.content as PresenceAnchorContent}
+          content={selectedExercise.content as ScenarioSnapContent}
           onComplete={() => handleExerciseComplete()}
         />
       );
     }
 
-    // Fallback - shouldn't happen with new types
-    return null;
+    // Heat Check exercise
+    if (isHeatCheckContent(selectedExercise.content)) {
+      return (
+        <HeatCheckExercise
+          {...commonProps}
+          content={selectedExercise.content as HeatCheckContent}
+          onComplete={() => handleExerciseComplete()}
+        />
+      );
+    }
+
+    // Word Forge exercise
+    if (isWordForgeContent(selectedExercise.content)) {
+      return (
+        <WordForgeExercise
+          {...commonProps}
+          content={selectedExercise.content as WordForgeContent}
+          onComplete={() => handleExerciseComplete()}
+        />
+      );
+    }
+
+    // Fallback — unrecognized exercise type
+    return (
+      <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col items-center justify-center px-6">
+        <p className="text-stone-400 light:text-stone-600 mb-6">{t('exercises.somethingWentWrong')}</p>
+        <Button onClick={() => setSelectedExercise(null)} variant="primary" className="w-full max-w-sm">
+          {t('exercises.back')}
+        </Button>
+      </div>
+    );
   };
 
   // If an exercise is selected, render it fullscreen
@@ -130,6 +192,9 @@ export function ExerciseExperience({
     );
   }
 
+  // XP calculation
+  const totalXp = DAILY_XP_REWARDS.exercise * totalCount;
+
   // Exercise list view
   return (
     <motion.div
@@ -145,6 +210,7 @@ export function ExerciseExperience({
         <button
           onClick={onBack}
           className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
+          aria-label={t('exercises.backToToday')}
         >
           {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           {t('exercises.backToToday')}
@@ -172,7 +238,7 @@ export function ExerciseExperience({
           <motion.div
             className={`h-full bg-gradient-to-r from-amber-500 to-orange-500 ${isRTL ? 'origin-right' : ''}`}
             initial={{ width: 0 }}
-            animate={{ width: `${(completedCount / totalCount) * 100}%` }}
+            animate={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
             style={isRTL ? { marginLeft: 'auto' } : {}}
           />
@@ -214,8 +280,8 @@ export function ExerciseExperience({
             <Card variant="glow" padding="lg" className="w-full max-w-sm mb-6">
               <div className={`flex items-center justify-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-amber-400">+15</p>
-                  <p className="text-stone-500 light:text-stone-600 text-sm">XP earned</p>
+                  <p className="text-3xl font-bold text-amber-400">+{totalXp}</p>
+                  <p className="text-stone-500 light:text-stone-600 text-sm">{t('exercises.xpEarned').replace('{xp}', String(totalXp)).replace(/^\+\{xp\}\s*/, '')}</p>
                 </div>
                 <div className="w-px h-12 bg-stone-700 light:bg-stone-300" />
                 <div className="text-center">

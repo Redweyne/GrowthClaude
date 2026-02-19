@@ -13,6 +13,7 @@ import { getLevelFromXp, getXpProgress } from '@/types';
 import { useTranslation } from '@/i18n';
 import type { FlexibleLesson } from '@/types/lessons';
 import type { DailyFlowState } from '@/types/dailyPractice';
+import { useStore } from '@/store/useStore';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DAILY FLOW HOME
@@ -88,6 +89,7 @@ export function DailyFlowHome({
   isSparkForcedClosed,
 }: DailyFlowHomeProps) {
   const { t, isRTL } = useTranslation();
+  const { longestStreak, lastLessonDate, completedLessons, transformationGoal, streakShieldCount } = useStore();
 
   // Calculate level and progress
   const level = getLevelFromXp(totalXp);
@@ -115,6 +117,11 @@ export function DailyFlowHome({
         <HeroGreeting
           name={name}
           streak={currentStreak}
+          longestStreak={longestStreak}
+          totalLessons={Object.keys(completedLessons).length}
+          lastLessonDate={lastLessonDate}
+          transformationGoal={transformationGoal}
+          streakShieldCount={streakShieldCount}
           onOpenSettings={onOpenSettings}
         />
 

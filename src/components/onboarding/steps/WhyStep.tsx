@@ -56,7 +56,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
   const goalKey = transformationGoal || 'calmer';
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Back button */}
       <button
         onClick={onBack}

@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Transformation Hub',
+    startupImage: [],
   },
   openGraph: {
     title: 'Transformation Hub',
@@ -55,6 +56,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apple touch icon for iOS home screen */}
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
+      </head>
       <body
         className="antialiased selection:bg-amber-500/30 selection:text-amber-50"
         style={fontBody.style}

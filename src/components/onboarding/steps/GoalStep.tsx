@@ -91,11 +91,11 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
   const getGoalTitle = (goalId: TransformationGoal) => t(`onboarding.goal.goals.${goalId}.title` as any);
 
   if (!mounted) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[70dvh]" />;
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Back button */}
       <motion.button
         onClick={onBack}

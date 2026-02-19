@@ -17,6 +17,7 @@ import { useStore } from '@/store/useStore';
 import { PatternAnalysis } from './PatternAnalysis';
 import { TransformationRadar } from './TransformationRadar';
 import { WisdomInActionLog } from './WisdomInActionLog';
+import { StreakCalendar } from './StreakCalendar';
 
 type TabType = 'overview' | 'patterns' | 'growth' | 'wisdom';
 
@@ -34,7 +35,8 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
     allReflections,
     monthlyAssessments,
     wisdomInActionLogs,
-    isAssessmentDue
+    isAssessmentDue,
+    getStreakCalendarData
   } = useStore();
 
   const tabs = [
@@ -159,6 +161,17 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                   );
                 })}
               </div>
+
+              {/* Streak Calendar */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <Card variant="glass" padding="md">
+                  <StreakCalendar />
+                </Card>
+              </motion.div>
 
               {/* Assessment CTA */}
               {isAssessmentDue() && (

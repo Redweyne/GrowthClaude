@@ -135,7 +135,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
   const showButton = phase === 'ready';
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
       {/* Atmospheric glow */}
       <div
         className="fixed inset-0 pointer-events-none"

@@ -109,7 +109,7 @@ export function CommitmentStep({ step, onComplete, onKeystroke }: CommitmentStep
   }, [isReady, handleSubmit]);
 
   return (
-    <div className="min-h-[70vh] flex flex-col px-4 py-8" onKeyDown={handleKeyDown}>
+    <div className="min-h-[70dvh] flex flex-col px-4 py-8" onKeyDown={handleKeyDown}>
       {/* Atmospheric glow */}
       <motion.div
         className="fixed inset-0 pointer-events-none"

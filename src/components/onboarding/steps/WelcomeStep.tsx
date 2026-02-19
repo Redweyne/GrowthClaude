@@ -50,11 +50,11 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
   }, [mounted]);
 
   if (!mounted) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[70dvh]" />;
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center text-center px-6 py-8">
       <AnimatePresence mode="wait">
         {/* ─────────────────────────────────────────────────────────────────
             Phase 1: Opening - Create presence and stillness

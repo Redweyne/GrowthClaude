@@ -61,11 +61,11 @@ export function ReadyStep({ onNext, onBack }: ReadyStepProps) {
   }, [mounted, playCelebrate]);
 
   if (!mounted) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[70dvh]" />;
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Confetti celebration */}
       <Confetti
         active={showConfetti}

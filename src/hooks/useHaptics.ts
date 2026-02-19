@@ -55,6 +55,17 @@ const HAPTIC_PATTERNS = {
 
   // Double tap
   doubleTap: [10, 30, 10],
+
+  // ── Phase 8 named patterns ───────────────────────────────────────────────
+
+  // Completion — double pulse (exercise/lesson complete)
+  completion: [15, 80, 15],
+
+  // Achievement — triple pulse (unlock, achievement earned, streak milestone)
+  achievement: [20, 50, 20, 50, 20],
+
+  // Swipe — single short pulse (navigation swipe confirmation)
+  swipe: [8],
 };
 
 type HapticType = keyof typeof HAPTIC_PATTERNS;
@@ -106,6 +117,11 @@ export function useHaptics() {
   const hapticTap = useCallback(() => haptic('tap'), [haptic]);
   const hapticWarning = useCallback(() => haptic('warning'), [haptic]);
 
+  // Phase 8 named patterns
+  const hapticCompletion = useCallback(() => haptic('completion'), [haptic]);
+  const hapticAchievement = useCallback(() => haptic('achievement'), [haptic]);
+  const hapticSwipe = useCallback(() => haptic('swipe'), [haptic]);
+
   return {
     // General haptic trigger
     haptic,
@@ -121,6 +137,11 @@ export function useHaptics() {
     hapticWisdom,
     hapticTap,
     hapticWarning,
+
+    // Phase 8 named patterns
+    hapticCompletion,
+    hapticAchievement,
+    hapticSwipe,
 
     // Check support
     isSupported: isVibrationSupported(),

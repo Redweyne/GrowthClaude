@@ -255,7 +255,7 @@ export function TimerStep({ step, onComplete }: TimerStepProps) {
   };
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8" data-testid="timer-step">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8" data-testid="timer-step">
       <motion.div
         className="fixed inset-0 pointer-events-none"
         initial={{ opacity: 0 }}

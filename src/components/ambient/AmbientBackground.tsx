@@ -212,16 +212,24 @@ const Particle = memo(function Particle({ color, size, x, y, duration, delay }: 
 // MAIN AMBIENT BACKGROUND
 // ─────────────────────────────────────────────────────────────────────────────
 
+interface ThemeOverride {
+  primary: string;    // Main accent color (e.g. '#f59e0b')
+  glow: string;       // Glow color with alpha
+  gradient: string;   // Background tint color with alpha
+}
+
 interface AmbientBackgroundProps {
   intensity?: 'subtle' | 'normal' | 'vivid';
   particleCount?: number;
   orbCount?: number;
+  themeOverride?: ThemeOverride;
 }
 
 export function AmbientBackground({
   intensity = 'normal',
   particleCount = 20,
   orbCount = 3,
+  themeOverride,
 }: AmbientBackgroundProps) {
   const { resolvedTheme } = useTheme();
   const [theme, setTheme] = useState<TimeTheme>(getTimeTheme);
@@ -252,10 +260,19 @@ export function AmbientBackground({
   const effectiveOrbCount = prefersReducedMotion ? 0 : (isMobileDevice ? Math.min(orbCount, 2) : orbCount);
   const effectiveParticleCount = prefersReducedMotion ? 0 : (isMobileDevice ? Math.min(particleCount, 6) : particleCount);
   const isLightTheme = resolvedTheme === 'light';
-  const activeOrbColors = isLightTheme ? theme.lightOrbColors : theme.orbColors;
-  const activeParticleColor = isLightTheme ? theme.lightParticleColor : theme.particleColor;
+
+  // If a theme override is provided, blend it with the time theme
+  const hasOverride = !!themeOverride;
+  const activeOrbColors = hasOverride
+    ? [themeOverride!.gradient, ...(isLightTheme ? theme.lightOrbColors.slice(1) : theme.orbColors.slice(1))]
+    : (isLightTheme ? theme.lightOrbColors : theme.orbColors);
+  const activeParticleColor = hasOverride
+    ? themeOverride!.glow
+    : (isLightTheme ? theme.lightParticleColor : theme.particleColor);
   const activeGradientStops = isLightTheme ? theme.lightGradientStops : theme.gradientStops;
-  const activePrimary = isLightTheme ? theme.lightPrimary : theme.primary;
+  const activePrimary = hasOverride
+    ? themeOverride!.gradient
+    : (isLightTheme ? theme.lightPrimary : theme.primary);
   const activeSecondary = isLightTheme ? theme.lightSecondary : theme.secondary;
   const activeAccent = isLightTheme ? theme.lightAccent : theme.accent;
 

@@ -127,7 +127,7 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
   }, [phase, playSuccess, playReward, onComplete]);
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
       {/* Atmospheric glow - intensifies when ready */}
       <motion.div
         className="fixed inset-0 pointer-events-none"
