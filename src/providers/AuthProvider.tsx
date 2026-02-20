@@ -127,13 +127,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { error };
         }
 
-        const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/api/auth/callback` : undefined;
-        const { error: signInError } = await client.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo },
-        });
+        try {
+          const redirectTo = (() => {
+            if (typeof window === 'undefined') {
+              return undefined;
+            }
+            const callbackUrl = new URL('/api/auth/callback', window.location.origin);
+            const nextPath = `${window.location.pathname}${window.location.search}` || '/';
+            callbackUrl.searchParams.set('next', nextPath);
+            return callbackUrl.toString();
+          })();
 
-        return { error: signInError?.message ?? null };
+          // Request OAuth URL and perform redirect manually for consistent behavior
+          // on mobile browsers where automatic redirects can be flaky.
+          const { data, error: signInError } = await client.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo,
+              skipBrowserRedirect: true,
+            },
+          });
+
+          if (signInError) {
+            return { error: signInError.message };
+          }
+
+          const oauthUrl = data?.url;
+          if (!oauthUrl) {
+            return { error: 'Google sign-in did not return a redirect URL. Please try again.' };
+          }
+
+          if (typeof window !== 'undefined') {
+            window.location.assign(oauthUrl);
+          }
+
+          return { error: null };
+        } catch (oauthError) {
+          const message = oauthError instanceof Error ? oauthError.message : 'Google sign-in failed to start.';
+          return { error: message };
+        }
       },
       signInAnonymously: async () => {
         const { client, error } = getClientOrError();

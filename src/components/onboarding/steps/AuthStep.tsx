@@ -30,7 +30,7 @@ interface AuthStepProps {
 
 export function AuthStep({ onNext, onBack }: AuthStepProps) {
   const { t, isRTL } = useTranslation();
-  const { signUpWithPassword, signInWithGoogle, isConfigured, isLoading, isAuthenticated } = useAuth();
+  const { signUpWithPassword, signInWithGoogle, isConfigured, isAuthenticated } = useAuth();
 
   const [phase, setPhase] = useState<AuthPhase>('reveal');
   const [email, setEmail] = useState('');
@@ -129,13 +129,17 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
   const handleGoogleSignup = async () => {
     setError(null);
     setGoogleRedirecting(true);
-    const { error: authError } = await signInWithGoogle();
-    // If we reach here without redirect, there was an error
-    setGoogleRedirecting(false);
-    if (authError) {
-      setError(authError);
+    try {
+      const { error: authError } = await signInWithGoogle();
+      if (authError) {
+        setError(mapError(authError));
+      }
+    } catch (googleError) {
+      const rawMessage = googleError instanceof Error ? googleError.message : 'Google sign-in failed to start.';
+      setError(mapError(rawMessage));
+    } finally {
+      setGoogleRedirecting(false);
     }
-    // Success = redirect happened, no further action needed
   };
 
   const handleWanderer = () => {
@@ -326,7 +330,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
             {/* ── Google seal button (prominent) ── */}
             <motion.button
               onClick={handleGoogleSignup}
-              disabled={submitting || isLoading || !isConfigured || googleRedirecting}
+              disabled={submitting || !isConfigured || googleRedirecting}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -466,7 +470,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
             {/* ── Seal button ── */}
             <motion.button
               onClick={handleEmailSignup}
-              disabled={submitting || isLoading || !email.trim() || !password || !isConfigured}
+              disabled={submitting || !email.trim() || !password || !isConfigured}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}

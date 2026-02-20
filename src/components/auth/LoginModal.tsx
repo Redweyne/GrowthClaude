@@ -14,7 +14,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProps) {
-  const { signInWithPassword, signInWithGoogle, signInAnonymously, isConfigured, isLoading } = useAuth();
+  const { signInWithPassword, signInWithGoogle, signInAnonymously, isConfigured } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -45,11 +45,15 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
   async function handleGoogleSignIn() {
     setSubmitting(true);
     setErrorMessage(null);
-    const { error } = await signInWithGoogle();
-    setSubmitting(false);
-
-    if (error) {
-      setErrorMessage(error);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setErrorMessage(error);
+      }
+    } catch (googleError) {
+      setErrorMessage(googleError instanceof Error ? googleError.message : 'Google sign-in failed to start.');
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -122,7 +126,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           <div className="space-y-3">
             <Button
               type="submit"
-              isLoading={submitting || isLoading}
+              isLoading={submitting}
               disabled={!isConfigured || !email || !password}
               className="w-full active:scale-95"
             >
@@ -132,7 +136,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             <Button
               onClick={handleGoogleSignIn}
               variant="secondary"
-              isLoading={submitting || isLoading}
+              isLoading={submitting}
               disabled={!isConfigured}
               className="w-full active:scale-95"
             >
@@ -141,7 +145,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             <Button
               onClick={handleAnonymousSignIn}
               variant="ghost"
-              isLoading={submitting || isLoading}
+              isLoading={submitting}
               disabled={!isConfigured}
               className="w-full active:scale-95"
             >

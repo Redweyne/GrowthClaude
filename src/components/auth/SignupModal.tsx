@@ -14,7 +14,7 @@ interface SignupModalProps {
 }
 
 export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalProps) {
-  const { signUpWithPassword, isConfigured, isLoading } = useAuth();
+  const { signUpWithPassword, isConfigured } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -116,7 +116,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
 
           <Button
             type="submit"
-            isLoading={submitting || isLoading}
+            isLoading={submitting}
             disabled={!isConfigured || !email || !password || !confirmPassword}
             className="w-full active:scale-95"
           >
