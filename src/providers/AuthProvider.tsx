@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-          // IMPORTANT: include the Next.js basePath (/growthmvp in production)
+          // Build the redirect URL including the Next.js basePath (/growthmvp in production)
           // so the callback route resolves correctly after Google redirects back.
           const redirectTo = (() => {
             if (typeof window === 'undefined') {
@@ -141,14 +141,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return callbackUrl.toString();
           })();
 
-          // Request OAuth URL and perform redirect manually.
-          // Using skipBrowserRedirect so we can control the navigation explicitly,
-          // which is more reliable on iOS Safari / PWA standalone mode.
-          const { data, error: signInError } = await client.auth.signInWithOAuth({
+          // Let Supabase handle the redirect natively. This ensures the PKCE
+          // flow state is managed correctly — skipBrowserRedirect + manual
+          // navigation can cause bad_oauth_state errors when the flow state
+          // record in Supabase's database doesn't match.
+          const { error: signInError } = await client.auth.signInWithOAuth({
             provider: 'google',
             options: {
               redirectTo,
-              skipBrowserRedirect: true,
             },
           });
 
@@ -156,20 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return { error: signInError.message };
           }
 
-          const oauthUrl = data?.url;
-          if (!oauthUrl) {
-            return { error: 'Google sign-in did not return a redirect URL. Please try again.' };
-          }
-
-          // Navigate to Google OAuth. On iOS PWA (standalone mode) we use
-          // window.location.href which is respected even inside async handlers.
-          if (typeof window !== 'undefined') {
-            window.location.href = oauthUrl;
-          }
-
-          // Return a never-resolving promise so the caller stays in "loading" state
-          // while the browser navigates away. If navigation fails the 8-second
-          // timeout in the UI layer will reset the button.
+          // Supabase will redirect the browser automatically.
+          // Return a never-resolving promise so the caller stays in "loading"
+          // state while the browser navigates away.
           return new Promise<{ error: null }>(() => {});
         } catch (oauthError) {
           const message = oauthError instanceof Error ? oauthError.message : 'Google sign-in failed to start.';
