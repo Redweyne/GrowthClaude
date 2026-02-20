@@ -128,18 +128,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         try {
+          // IMPORTANT: include the Next.js basePath (/growthmvp in production)
+          // so the callback route resolves correctly after Google redirects back.
           const redirectTo = (() => {
             if (typeof window === 'undefined') {
               return undefined;
             }
-            const callbackUrl = new URL('/api/auth/callback', window.location.origin);
+            const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+            const callbackUrl = new URL(`${basePath}/api/auth/callback`, window.location.origin);
             const nextPath = `${window.location.pathname}${window.location.search}` || '/';
             callbackUrl.searchParams.set('next', nextPath);
             return callbackUrl.toString();
           })();
 
-          // Request OAuth URL and perform redirect manually for consistent behavior
-          // on mobile browsers where automatic redirects can be flaky.
+          // Request OAuth URL and perform redirect manually.
+          // Using skipBrowserRedirect so we can control the navigation explicitly,
+          // which is more reliable on iOS Safari / PWA standalone mode.
           const { data, error: signInError } = await client.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -157,11 +161,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return { error: 'Google sign-in did not return a redirect URL. Please try again.' };
           }
 
+          // Navigate to Google OAuth. On iOS PWA (standalone mode) we use
+          // window.location.href which is respected even inside async handlers.
           if (typeof window !== 'undefined') {
-            window.location.assign(oauthUrl);
+            window.location.href = oauthUrl;
           }
 
-          return { error: null };
+          // Return a never-resolving promise so the caller stays in "loading" state
+          // while the browser navigates away. If navigation fails the 8-second
+          // timeout in the UI layer will reset the button.
+          return new Promise<{ error: null }>(() => {});
         } catch (oauthError) {
           const message = oauthError instanceof Error ? oauthError.message : 'Google sign-in failed to start.';
           return { error: message };

@@ -43,6 +43,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
   const formContainerRef = useRef<HTMLDivElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const googleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Mount ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -69,6 +70,15 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
     const timer = setTimeout(() => onNext(), 2200);
     return () => clearTimeout(timer);
   }, [phase, onNext]);
+
+  // ── Cleanup Google redirect safety timeout on unmount ────────────────────
+  useEffect(() => {
+    return () => {
+      if (googleTimeoutRef.current) {
+        clearTimeout(googleTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // ── Mobile keyboard — scroll active input into view ──────────────────────
   useEffect(() => {
@@ -132,15 +142,33 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
   const handleGoogleSignup = async () => {
     setError(null);
     setGoogleRedirecting(true);
+
+    // Safety fallback: if the browser hasn't navigated away after 10 s,
+    // something went wrong silently (e.g. iOS PWA blocked the redirect).
+    // Reset the button so the user can try again.
+    googleTimeoutRef.current = setTimeout(() => {
+      setGoogleRedirecting(false);
+      setError('Google sign-in could not open. Please try again or use email and password below.');
+    }, 10000);
+
     try {
       const { error: authError } = await signInWithGoogle();
+      // If we reach here the navigation failed (signInWithGoogle returns a
+      // never-resolving promise on successful redirect, so this only fires
+      // on error or if the provider unexpectedly resolved).
+      if (googleTimeoutRef.current) {
+        clearTimeout(googleTimeoutRef.current);
+      }
       if (authError) {
         setError(mapError(authError));
+        setGoogleRedirecting(false);
       }
     } catch (googleError) {
+      if (googleTimeoutRef.current) {
+        clearTimeout(googleTimeoutRef.current);
+      }
       const rawMessage = googleError instanceof Error ? googleError.message : 'Google sign-in failed to start.';
       setError(mapError(rawMessage));
-    } finally {
       setGoogleRedirecting(false);
     }
   };
