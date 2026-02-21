@@ -157,7 +157,7 @@ export const GROWTH_LEVELS: GrowthLevel[] = [
     level: 9,
     title: "The Transcending",
     subtitle: "Beyond the self",
-    description: "Your practice has taken you beyond ordinary concerns. A rare achievement.",
+    description: "Your practice has taken you beyond ordinary concerns. A rare milestone.",
     minXp: 3800,
     maxXp: 5200,
     virtue: 'courage',

@@ -6,22 +6,18 @@ import { Download, Share2, X, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp } from '@/types';
-import type { Milestone } from '@/types/achievements';
-import { getVirtueColor } from '@/types/achievements';
 import { useTranslation } from '@/i18n';
 
-type CardType = 'streak' | 'achievement' | 'level' | 'journey';
+type CardType = 'streak' | 'level' | 'journey';
 
 interface ShareableCardProps {
   type: CardType;
-  achievement?: Milestone;
   customMessage?: string;
   onClose: () => void;
 }
 
 export function ShareableCard({
   type,
-  achievement,
   customMessage,
   onClose,
 }: ShareableCardProps) {
@@ -46,18 +42,6 @@ export function ShareableCard({
             { label: t('share.cards.streak.stats.days'), value: currentStreak },
             { label: t('share.cards.streak.stats.lessons'), value: stats.totalLessons },
             { label: t('share.cards.streak.stats.xp'), value: totalXp },
-          ],
-        };
-      case 'achievement':
-        return {
-          title: achievement?.name || t('share.cards.achievement.titleFallback'),
-          subtitle: achievement?.meaning || '',
-          emoji: achievement?.symbol || '🏆',
-          message: achievement?.affirmation || t('share.cards.achievement.messageFallback'),
-          gradient: achievement ? getVirtueColor(achievement.virtue) : 'from-amber-500 to-orange-600',
-          stats: [
-            { label: t('share.cards.achievement.stats.virtue'), value: achievement?.virtue || t('share.cards.achievement.stats.wisdom') },
-            { label: t('share.cards.achievement.stats.totalXp'), value: totalXp },
           ],
         };
       case 'level':

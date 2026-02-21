@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useState, type ReactNode } from 'react';
 import {
   BarChart3,
-  Trophy,
   Sparkles,
   Brain,
   Map,
@@ -34,7 +33,6 @@ interface NavItem {
 
 interface NavigationGridProps {
   onOpenProgress: () => void;
-  onOpenAchievements: () => void;
   onOpenIdentity: () => void;
   onOpenPractice: () => void;
   onOpenMap: () => void;
@@ -178,7 +176,6 @@ function NavButton({
 
 export function NavigationGrid({
   onOpenProgress,
-  onOpenAchievements,
   onOpenIdentity,
   onOpenPractice,
   onOpenMap,
@@ -202,14 +199,6 @@ export function NavigationGrid({
       color: '#3b82f6',
       glowColor: 'rgba(59, 130, 246, 0.2)',
       onClick: onOpenProgress,
-    },
-    {
-      id: 'achievements',
-      label: t('home.navigation.achievements'),
-      icon: Trophy,
-      color: '#fbbf24',
-      glowColor: 'rgba(251, 191, 36, 0.2)',
-      onClick: onOpenAchievements,
     },
     {
       id: 'identity',
@@ -306,7 +295,7 @@ export function NavigationGrid({
       )}
 
       {/* Primary row - main navigation */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {primaryItems.map((item, index) => (
           <NavButton key={item.id} item={item} index={index + secondaryItems.length} isLight={isLight} />
         ))}

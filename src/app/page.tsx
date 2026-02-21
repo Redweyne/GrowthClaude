@@ -22,7 +22,6 @@ import { WeeklyCheckin } from '@/components/checkin';
 import { MonthlyAssessment } from '@/components/assessment';
 import { TransformationHub } from '@/components/transformation';
 import { ProgressDashboard } from '@/components/progress';
-import { AchievementGallery, AchievementCelebration } from '@/components/achievements';
 import { IdentityScreen } from '@/components/identity';
 import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
@@ -56,7 +55,6 @@ type AppView =
   | 'assessment'
   | 'transformation'
   | 'progress'
-  | 'achievements'
   | 'identity'
   | 'settings'
   | 'worldSwitcher'
@@ -646,7 +644,6 @@ export default function Home() {
   if (currentView === 'lesson-mode-select' && selectedFlexibleLesson) {
     return (
       <>
-        <AchievementCelebration />
         <LessonModeSelector
           lesson={selectedFlexibleLesson}
           onSelect={handleModeSelect}
@@ -659,7 +656,6 @@ export default function Home() {
   if (currentView === 'lesson-preview' && selectedFlexibleLesson) {
     return (
       <>
-        <AchievementCelebration />
         <LessonPreview
           lesson={selectedFlexibleLesson}
           mode={lessonMode}
@@ -674,7 +670,6 @@ export default function Home() {
   if (currentView === 'lesson' && selectedFlexibleLesson) {
     return (
       <>
-        <AchievementCelebration />
         <FlexibleLessonExperience
           lesson={selectedFlexibleLesson}
           onComplete={handleLessonComplete}
@@ -690,7 +685,6 @@ export default function Home() {
   if (currentView === 'practice') {
     return (
       <>
-        <AchievementCelebration />
         <PracticeMode
           onComplete={() => setCurrentView('home')}
           onExit={() => setCurrentView('home')}
@@ -703,7 +697,6 @@ export default function Home() {
   if (currentView === 'checkin') {
     return (
       <>
-        <AchievementCelebration />
         <WeeklyCheckin
           onComplete={() => setCurrentView('home')}
           onSkip={() => setCurrentView('home')}
@@ -716,7 +709,6 @@ export default function Home() {
   if (currentView === 'assessment') {
     return (
       <>
-        <AchievementCelebration />
         <MonthlyAssessment
           onComplete={() => setCurrentView('home')}
           onSkip={() => setCurrentView('home')}
@@ -729,7 +721,6 @@ export default function Home() {
   if (currentView === 'transformation') {
     return (
       <>
-        <AchievementCelebration />
         <TransformationHub
           onBack={() => setCurrentView('home')}
           onOpenAssessment={() => setCurrentView('assessment')}
@@ -742,7 +733,6 @@ export default function Home() {
   if (currentView === 'echo-review' && reflectionForReview) {
     return (
       <>
-        <AchievementCelebration />
         <EchoReview
           reflection={reflectionForReview}
           onComplete={handleEchoReviewComplete}
@@ -756,7 +746,6 @@ export default function Home() {
   if (currentView === 'echoes') {
     return (
       <>
-        <AchievementCelebration />
         <EchoInbox onClose={() => setCurrentView('home')} />
         <BottomNavBar
           activeTab="echoes"
@@ -772,10 +761,8 @@ export default function Home() {
   if (currentView === 'progress') {
     return (
       <>
-        <AchievementCelebration />
         <ProgressDashboard
           onBack={() => setCurrentView('home')}
-          onOpenAchievements={() => setCurrentView('achievements')}
           onOpenIdentity={() => setCurrentView('identity')}
           onOpenStory={handleOpenStory}
           onOpenDemoStory={handleOpenDemoStory}
@@ -801,21 +788,10 @@ export default function Home() {
     );
   }
 
-  // Achievement Gallery (Phase 3)
-  if (currentView === 'achievements') {
-    return (
-      <>
-        <AchievementCelebration />
-        <AchievementGallery onBack={() => setCurrentView('home')} />
-      </>
-    );
-  }
-
   // Identity Journey (Phase 3)
   if (currentView === 'identity') {
     return (
       <>
-        <AchievementCelebration />
         <IdentityScreen onBack={() => setCurrentView('home')} />
       </>
     );
@@ -825,7 +801,6 @@ export default function Home() {
   if (currentView === 'map') {
     return (
       <>
-        <AchievementCelebration />
         <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
         <BottomNavBar
           activeTab="journey"
@@ -858,7 +833,6 @@ export default function Home() {
   if (currentView === 'settings') {
     return (
       <>
-        <AchievementCelebration />
         <SettingsPanel onBack={() => setCurrentView('home')} />
       </>
     );
@@ -873,7 +847,6 @@ export default function Home() {
 
     return (
       <>
-        <AchievementCelebration />
         <DashboardNew
           name={userName || 'Friend'}
           totalXp={totalXp}
@@ -894,7 +867,6 @@ export default function Home() {
           isMonthlyAssessmentDue={isAssessmentDue()}
           unreadEchoCount={totalUnreadCount}
           totalLessons={Object.keys(completedLessons).length}
-          totalMilestones={progressStats.totalAchievements}
           identityStatements={progressStats.totalIdentityStatements}
           daysSinceStart={progressStats.daysSinceStart}
           onClose={() => setCurrentView('home')}
@@ -904,7 +876,6 @@ export default function Home() {
           onOpenBrowseEchoes={() => setCurrentView('echoes')}
           onOpenYourEchoes={() => setCurrentView('echoes')}
           onOpenPastLessons={() => setCurrentView('map')}
-          onOpenMilestones={() => setCurrentView('achievements')}
           onOpenIdentity={() => setCurrentView('identity')}
           onOpenStats={() => setCurrentView('progress')}
           onOpenSettings={() => setCurrentView('settings')}
@@ -926,7 +897,6 @@ export default function Home() {
   if (currentView === 'mandatory-echo' && reflectionForReview) {
     return (
       <>
-        <AchievementCelebration />
         <MandatoryEchoFlow
           reflection={reflectionForReview}
           todaysLessonTitle={completedLessonInfo?.title || todaysLesson?.title || ''}
@@ -956,7 +926,6 @@ export default function Home() {
     if (availableExercises && availableExercises.length > 0) {
       return (
         <>
-          <AchievementCelebration />
           <ExerciseExperience
             exercises={availableExercises}
             lessonTitle={exerciseLessonTitle}
@@ -990,7 +959,6 @@ export default function Home() {
   // Home - Daily Flow Home (new synchronized daily practice)
   return (
     <>
-      <AchievementCelebration />
       <DailyFlowHome
         name={userName || 'Friend'}
         totalXp={totalXp}

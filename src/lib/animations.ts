@@ -85,7 +85,7 @@ export const staggerItemVariants: Variants = {
   },
 };
 
-// Glow pulse for XP/achievements
+// Glow pulse for XP and celebrations
 export const glowVariants: Variants = {
   idle: {
     boxShadow: '0 0 0 rgba(251, 191, 36, 0)',

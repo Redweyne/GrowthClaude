@@ -33,7 +33,6 @@ const SLIDE_TO_PARTICLE_MOOD: Record<string, 'ethereal' | 'celebration' | 'conte
   pattern_shift: 'breakthrough',
   streak_highlight: 'celebration',
   identity_moment: 'contemplative',
-  achievement: 'celebration',
   assessment_growth: 'ascension',
   word_cloud: 'contemplative',
   closing: 'ethereal',
@@ -49,7 +48,6 @@ const SLIDE_TO_AUDIO_MOOD: Record<string, 'opening' | 'journey' | 'contrast' | '
   pattern_shift: 'growth',
   streak_highlight: 'climax',
   identity_moment: 'growth',
-  achievement: 'climax',
   assessment_growth: 'growth',
   word_cloud: 'journey',
   closing: 'closing',
@@ -57,7 +55,7 @@ const SLIDE_TO_AUDIO_MOOD: Record<string, 'opening' | 'journey' | 'contrast' | '
 };
 
 // Slides that deserve an emotional swell
-const SWELL_SLIDES = ['contrast', 'pattern_shift', 'streak_highlight', 'identity_moment', 'achievement', 'closing'];
+const SWELL_SLIDES = ['contrast', 'pattern_shift', 'streak_highlight', 'identity_moment', 'closing'];
 
 export function TransformationStory({
   story,

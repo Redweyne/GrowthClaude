@@ -49,7 +49,7 @@ const en = {
     lessons: 'Lessons',
     exercises: 'Exercises',
     reflections: 'Reflections',
-    achievements: 'Achievements',
+    Milestones: 'Milestones',
     milestones: 'Milestones',
     daily: 'daily',
     weekly: 'Weekly',
@@ -476,7 +476,7 @@ const en = {
     ],
     navigation: {
       progress: 'Progress',
-      achievements: 'Achievements',
+      Milestones: 'Milestones',
       identity: 'Identity',
       practice: 'Practice',
       growth: 'Growth',
@@ -984,18 +984,18 @@ const en = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ACHIEVEMENTS
+  // Milestones
   // ─────────────────────────────────────────────────────────────────────────
-  achievements: {
-    title: 'Achievements',
-    gallery: 'Achievement Gallery',
+  Milestones: {
+    title: 'Milestones',
+    gallery: 'Milestone Gallery',
     unlocked: 'Unlocked',
     locked: 'Locked',
     progress: 'Progress',
     earned: 'Earned',
     unlockedAt: 'Unlocked on {date}',
     keepGoing: 'Keep going to unlock!',
-    celebration: 'Achievement Unlocked!',
+    celebration: 'Milestone Unlocked!',
     newMilestone: 'New Milestone',
     continue: 'Continue',
   },
@@ -1011,7 +1011,7 @@ const en = {
       totalReflections: 'Total Reflections',
       totalWords: 'Words Written',
       identityStatements: 'Identity Statements',
-      achievements: 'Achievements',
+      Milestones: 'Milestones',
       daysSinceStart: 'Days Active',
       avgReflectionLength: 'Avg. Reflection Length',
     },
@@ -1220,7 +1220,7 @@ const en = {
         totalDays: 'Total Days',
         consistency: 'Consistency',
       },
-      achievementUnlockedCount: '{unlocked} of {total} unlocked',
+      MilestoneUnlockedCount: '{unlocked} of {total} unlocked',
     },
   },
 
@@ -1242,7 +1242,7 @@ const en = {
           xp: 'XP',
         },
       },
-      achievement: {
+      Milestone: {
         titleFallback: 'Milestone Reached',
         messageFallback: 'I reached a new milestone on my journey!',
         stats: {
@@ -1311,3 +1311,4 @@ const en = {
 } as const;
 
 export default en;
+

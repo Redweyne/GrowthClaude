@@ -49,7 +49,7 @@ const fr = {
     lessons: 'Leçons',
     exercises: 'Exercices',
     reflections: 'Réflexions',
-    achievements: 'Accomplissements',
+    Milestones: 'Accomplissements',
     milestones: 'Étapes',
     daily: 'quotidien',
     weekly: 'Hebdomadaire',
@@ -476,7 +476,7 @@ const fr = {
     ],
     navigation: {
       progress: 'Progrès',
-      achievements: 'Accomplissements',
+      Milestones: 'Accomplissements',
       identity: 'Identité',
       practice: 'Pratique',
       growth: 'Croissance',
@@ -962,9 +962,9 @@ const fr = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ACHIEVEMENTS
+  // Milestones
   // ─────────────────────────────────────────────────────────────────────────
-  achievements: {
+  Milestones: {
     title: 'Accomplissements',
     gallery: 'Galerie des Accomplissements',
     unlocked: 'Débloqué',
@@ -989,7 +989,7 @@ const fr = {
       totalReflections: 'Réflexions Totales',
       totalWords: 'Mots Écrits',
       identityStatements: 'Déclarations d\'Identité',
-      achievements: 'Accomplissements',
+      Milestones: 'Accomplissements',
       daysSinceStart: 'Jours Actifs',
       avgReflectionLength: 'Longueur Moy. des Réflexions',
     },
@@ -1198,7 +1198,7 @@ const fr = {
         totalDays: 'Total de jours',
         consistency: 'Régularité',
       },
-      achievementUnlockedCount: '{unlocked} sur {total} débloqués',
+      MilestoneUnlockedCount: '{unlocked} sur {total} débloqués',
     },
   },
 
@@ -1220,7 +1220,7 @@ const fr = {
           xp: 'XP',
         },
       },
-      achievement: {
+      Milestone: {
         titleFallback: 'Étape franchie',
         messageFallback: "J'ai atteint une nouvelle étape dans mon parcours !",
         stats: {
@@ -1289,3 +1289,4 @@ const fr = {
 } as const;
 
 export default fr;
+

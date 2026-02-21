@@ -192,7 +192,7 @@ export const colors = {
       base: '#f87171', // Red
       glow: 'rgba(248, 113, 113, 0.5)',
     },
-    // Success - completion, achievement
+    // Success - completion, milestone
     success: {
       base: '#34d399', // Emerald
       glow: 'rgba(52, 211, 153, 0.5)',

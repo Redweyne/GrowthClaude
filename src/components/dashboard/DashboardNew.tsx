@@ -20,7 +20,6 @@ import {
   BookOpen,
   Heart,
   Calendar,
-  Award,
   User,
   BarChart3,
   MessageCircle,
@@ -75,7 +74,6 @@ interface DashboardProps {
 
   // Stats
   totalLessons: number;
-  totalMilestones: number;
   identityStatements: number;
   daysSinceStart: number;
 
@@ -87,7 +85,6 @@ interface DashboardProps {
   onOpenBrowseEchoes: () => void;
   onOpenYourEchoes: () => void;
   onOpenPastLessons: () => void;
-  onOpenMilestones: () => void;
   onOpenIdentity: () => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
@@ -399,7 +396,6 @@ export function DashboardNew({
   isMonthlyAssessmentDue,
   unreadEchoCount,
   totalLessons,
-  totalMilestones,
   identityStatements,
   daysSinceStart,
   onClose,
@@ -409,7 +405,6 @@ export function DashboardNew({
   onOpenBrowseEchoes,
   onOpenYourEchoes,
   onOpenPastLessons,
-  onOpenMilestones,
   onOpenIdentity,
   onOpenStats,
   onOpenSettings,
@@ -689,23 +684,14 @@ export function DashboardNew({
               />
             </div>
 
-            {/* Identity & Milestones */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Identity */}
+            <div className="grid grid-cols-1 gap-3">
               <NavItem
                 icon={<User size={16} className="text-cyan-400" />}
                 iconBg="bg-cyan-500/20"
                 label={t('dashboard.identity')}
                 sublabel={identityStatements > 0 ? t('dashboard.statements').replace('{count}', String(identityStatements)) : t('dashboard.whoYoureBecoming')}
                 onClick={onOpenIdentity}
-                compact
-                isRTL={isRTL}
-              />
-              <NavItem
-                icon={<Award size={16} className="text-yellow-400" />}
-                iconBg="bg-yellow-500/20"
-                label={t('common.milestones')}
-                sublabel={t('dashboard.unlocked').replace('{count}', String(totalMilestones))}
-                onClick={onOpenMilestones}
                 compact
                 isRTL={isRTL}
               />

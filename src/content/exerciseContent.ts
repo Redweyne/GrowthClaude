@@ -972,7 +972,7 @@ export const lesson10Exercises: DailyExercise[] = [
       ],
       outcomes: [
         { traitPattern: 'action-caller>=2', title: 'The Launcher', insight: 'Your future self is built by bold moves, not safe ones. The time to start is now.', wisdomNudge: 'In 5 years you\'ll wish you started today. So start today.', emoji: '🚀' },
-        { traitPattern: 'connector>=2', title: 'The Bridge Builder', insight: 'Your future self values relationships above achievements. Invest in people.', wisdomNudge: 'The quality of your life equals the quality of your relationships.', emoji: '🌉' },
+        { traitPattern: 'connector>=2', title: 'The Bridge Builder', insight: 'Your future self values relationships above Milestones. Invest in people.', wisdomNudge: 'The quality of your life equals the quality of your relationships.', emoji: '🌉' },
         { traitPattern: 'peace-seeker>=2', title: 'The Sage', insight: 'Your future self found peace not by achieving more, but by needing less.', wisdomNudge: 'Peace isn\'t found — it\'s chosen. You can choose it today.', emoji: '🧘' },
       ],
       style: 'empowering' as const,
@@ -1488,3 +1488,4 @@ export const lesson15Exercises: DailyExercise[] = [
     },
   },
 ];
+

@@ -49,7 +49,7 @@ const ar = {
     lessons: 'الدروس',
     exercises: 'التمارين',
     reflections: 'التأملات',
-    achievements: 'الإنجازات',
+    Milestones: 'الإنجازات',
     milestones: 'المراحل',
     daily: 'يومياً',
     weekly: 'أسبوعي',
@@ -476,7 +476,7 @@ const ar = {
     ],
     navigation: {
       progress: 'التقدم',
-      achievements: 'الإنجازات',
+      Milestones: 'الإنجازات',
       identity: 'الهوية',
       practice: 'الممارسة',
       growth: 'النمو',
@@ -962,9 +962,9 @@ const ar = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ACHIEVEMENTS
+  // Milestones
   // ─────────────────────────────────────────────────────────────────────────
-  achievements: {
+  Milestones: {
     title: 'الإنجازات',
     gallery: 'معرض الإنجازات',
     unlocked: 'مفتوح',
@@ -989,7 +989,7 @@ const ar = {
       totalReflections: 'إجمالي التأملات',
       totalWords: 'الكلمات المكتوبة',
       identityStatements: 'بيانات الهوية',
-      achievements: 'الإنجازات',
+      Milestones: 'الإنجازات',
       daysSinceStart: 'الأيام النشطة',
       avgReflectionLength: 'متوسط طول التأمل',
     },
@@ -1198,7 +1198,7 @@ const ar = {
         totalDays: 'إجمالي الأيام',
         consistency: 'الاتساق',
       },
-      achievementUnlockedCount: '{unlocked} من {total} مفتوحة',
+      MilestoneUnlockedCount: '{unlocked} من {total} مفتوحة',
     },
   },
 
@@ -1220,7 +1220,7 @@ const ar = {
           xp: 'XP',
         },
       },
-      achievement: {
+      Milestone: {
         titleFallback: 'تم تحقيق إنجاز',
         messageFallback: 'حققت إنجازا جديدا في رحلتي!',
         stats: {
@@ -1289,3 +1289,4 @@ const ar = {
 } as const;
 
 export default ar;
+

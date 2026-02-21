@@ -38,7 +38,7 @@ const HAPTIC_PATTERNS = {
   // Heavy - for major milestones
   heavy: [40],
 
-  // Celebration - for achievements, level ups
+  // Celebration - for major moments and level ups
   celebration: [20, 30, 20, 30, 40],
 
   // Wisdom reveal - gentle pulsing for insights
@@ -60,9 +60,6 @@ const HAPTIC_PATTERNS = {
 
   // Completion — double pulse (exercise/lesson complete)
   completion: [15, 80, 15],
-
-  // Achievement — triple pulse (unlock, achievement earned, streak milestone)
-  achievement: [20, 50, 20, 50, 20],
 
   // Swipe — single short pulse (navigation swipe confirmation)
   swipe: [8],
@@ -119,7 +116,6 @@ export function useHaptics() {
 
   // Phase 8 named patterns
   const hapticCompletion = useCallback(() => haptic('completion'), [haptic]);
-  const hapticAchievement = useCallback(() => haptic('achievement'), [haptic]);
   const hapticSwipe = useCallback(() => haptic('swipe'), [haptic]);
 
   return {
@@ -140,7 +136,6 @@ export function useHaptics() {
 
     // Phase 8 named patterns
     hapticCompletion,
-    hapticAchievement,
     hapticSwipe,
 
     // Check support

@@ -2,7 +2,7 @@
 
 ## Context
 
-Phases 0-4 are complete. The app has a working lesson system (15 lessons, 3 chapters), Supabase auth (built but never wired up), gamification (XP, streaks, achievements), i18n, and a rich audio/visual engine. However:
+Phases 0-4 are complete. The app has a working lesson system (15 lessons, 3 chapters), Supabase auth (built but never wired up), gamification (XP, streaks), i18n, and a rich audio/visual engine. However:
 
 - **Exercises are stale**: The 3 existing types (TruthMirror, SoulCompass, PresenceAnchor) are repetitive, template-like, and rely on breathing mechanics
 - **10 of 15 lessons have zero exercises** (empty arrays in chapters 2 & 3)
@@ -754,7 +754,7 @@ Implementation: Framer Motion `drag="x"` with velocity threshold on `onDragEnd`
 
 ### 8G. Touch Polish
 - `active:scale-95` on all interactive cards/buttons
-- Haptic patterns: completion (double-pulse), achievement (triple-pulse), swipe (single)
+- Haptic patterns: completion (double-pulse), milestone (triple-pulse), swipe (single)
 - Verify all touch targets ≥ 44px
 
 ### Verification

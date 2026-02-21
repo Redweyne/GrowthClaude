@@ -25,7 +25,7 @@ export interface TransformationScore {
 
 export interface JourneyMilestone {
   date: string;
-  type: 'first-lesson' | 'streak-milestone' | 'reflection-depth' | 'identity-shift' | 'achievement' | 'breakthrough';
+  type: 'first-lesson' | 'streak-milestone' | 'reflection-depth' | 'identity-shift' | 'breakthrough';
   title: string;
   description: string;
   icon: string;
@@ -50,7 +50,6 @@ export interface ProgressContext {
   totalLessons: number;
   totalReflections: number;
   totalWords: number;
-  totalAchievements: number;
   totalIdentityStatements: number;
   averageReflectionLength: number;
 
@@ -140,9 +139,6 @@ export function calculateTransformationScore(ctx: ProgressContext): Transformati
     else if (ctx.totalReflections >= 5) growth = 7;
   }
 
-  // Add achievement bonus
-  if (ctx.totalAchievements >= 10) growth += 5;
-  else if (ctx.totalAchievements >= 5) growth += 3;
   growth = Math.min(25, growth);
 
   const score = Math.round(consistency + depth + commitment + growth);

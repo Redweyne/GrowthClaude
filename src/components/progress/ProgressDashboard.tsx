@@ -12,7 +12,6 @@ import {
   ChevronLeft,
   BookOpen,
   PenTool,
-  Award,
   Sparkles,
   Zap,
   ChevronRight,
@@ -35,7 +34,6 @@ import {
 
 interface ProgressDashboardProps {
   onBack: () => void;
-  onOpenAchievements: () => void;
   onOpenIdentity: () => void;
   onOpenStory: () => void;
   onOpenDemoStory?: () => void;
@@ -118,7 +116,6 @@ function StatCard({
 
 export function ProgressDashboard({
   onBack,
-  onOpenAchievements,
   onOpenIdentity,
   onOpenStory,
   onOpenDemoStory,
@@ -152,7 +149,6 @@ export function ProgressDashboard({
     totalLessons: stats.totalLessons,
     totalReflections: stats.totalReflections,
     totalWords: stats.totalWords,
-    totalAchievements: stats.totalAchievements,
     totalIdentityStatements: stats.totalIdentityStatements,
     averageReflectionLength: stats.averageReflectionLength,
     currentStreak,
@@ -325,15 +321,6 @@ export function ProgressDashboard({
             onClick={onOpenIdentity}
             delay={0.45}
           />
-          <StatCard
-            icon={Award}
-            label="Achievements"
-            value={stats.totalAchievements}
-            color="text-emerald-400"
-            bgColor="from-emerald-500/10 to-emerald-600/5"
-            onClick={onOpenAchievements}
-            delay={0.5}
-          />
         </motion.div>
 
         {/* Personal Insights Section */}
@@ -440,7 +427,7 @@ export function ProgressDashboard({
               {stats.totalIdentityStatements > 0 && (
                 <> declared <span className="text-amber-400 font-semibold">{stats.totalIdentityStatements} identity statement{stats.totalIdentityStatements !== 1 ? 's' : ''}</span>,</>
               )}
-              {' '}and earned <span className="text-emerald-400 font-semibold">{stats.totalAchievements} achievement{stats.totalAchievements !== 1 ? 's' : ''}</span>.
+              {' '}and kept showing up with intention.
             </p>
             <p className="text-sm text-stone-500 light:text-stone-600 mt-4 italic">
               This is not just data. This is proof of who you are becoming.

@@ -31,7 +31,6 @@ interface TodaysLessonProps {
   onOpenAssessment: () => void;
   onOpenTransformation: () => void;
   onOpenProgress: () => void;
-  onOpenAchievements: () => void;
   onOpenIdentity: () => void;
   onOpenWorlds: () => void;
   onOpenEchoes?: () => void;
@@ -53,7 +52,6 @@ export function TodaysLesson({
   onOpenAssessment,
   onOpenTransformation,
   onOpenProgress,
-  onOpenAchievements,
   onOpenIdentity,
   onOpenWorlds,
   onOpenEchoes,
@@ -148,7 +146,6 @@ export function TodaysLesson({
         {/* Bottom navigation grid */}
         <NavigationGrid
           onOpenProgress={onOpenProgress}
-          onOpenAchievements={onOpenAchievements}
           onOpenIdentity={onOpenIdentity}
           onOpenPractice={onOpenPractice}
           onOpenMap={onOpenMap}

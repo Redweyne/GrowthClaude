@@ -11,7 +11,7 @@
 export type StoryType = 'weekly' | 'monthly' | 'milestone' | 'on_demand';
 
 export type StoryMood =
-  | 'triumphant'      // Major achievements, breakthroughs
+  | 'triumphant'      // Major breakthroughs
   | 'reflective'      // Quiet growth, inner change
   | 'resilient'       // Overcoming struggles, bouncing back
   | 'awakening'       // First realizations, early journey
@@ -43,8 +43,7 @@ export type SlideType =
   | 'contrast'          // Side-by-side comparison
   | 'pattern_shift'     // How their patterns evolved
   | 'identity_moment'   // Identity statement highlight
-  | 'streak_highlight'  // Streak achievement
-  | 'achievement'       // Achievement unlock
+  | 'streak_highlight'  // Streak highlight
   | 'stat_reveal'       // Impressive statistic
   | 'assessment_growth' // Assessment dimension improvement
   | 'word_cloud'        // Their most meaningful words
@@ -160,20 +159,6 @@ export interface StreakHighlightSlide extends BaseSlide {
   streakEmoji: string;
 }
 
-export interface AchievementSlide extends BaseSlide {
-  type: 'achievement';
-  achievements: {
-    id: string;
-    name: string;
-    icon: string;
-    rarity: string;
-    unlockedAt: string;
-  }[];
-  totalUnlocked: number;
-  totalAvailable: number;
-  message: string;
-}
-
 export interface StatRevealSlide extends BaseSlide {
   type: 'stat_reveal';
   stats: StoryStatistic[];
@@ -276,7 +261,6 @@ export type StorySlide =
   | PatternShiftSlide
   | IdentityMomentSlide
   | StreakHighlightSlide
-  | AchievementSlide
   | StatRevealSlide
   | AssessmentGrowthSlide
   | WordCloudSlide
@@ -340,8 +324,6 @@ export interface StoryMetrics {
   identityStatementsCreated: number;
   wisdomApplications: number;
 
-  // Achievements
-  achievementsUnlocked: number;
   totalXpEarned: number;
   currentLevel: number;
 
@@ -380,7 +362,6 @@ export interface StoryGenerationContext {
   identityStatements: IdentityForStory[];
   assessments: AssessmentForStory[];
   wisdomLogs: WisdomLogForStory[];
-  achievements: AchievementForStory[];
 
   // Patterns
   patternHistory: MonthlyPatternForStory[];
@@ -417,14 +398,6 @@ export interface WisdomLogForStory {
   date: string;
 }
 
-export interface AchievementForStory {
-  id: string;
-  name: string;
-  icon: string;
-  rarity: string;
-  unlockedAt: string;
-}
-
 export interface MonthlyPatternForStory {
   month: string;
   themes: Record<string, number>;
@@ -452,7 +425,7 @@ export type InsightType =
   | 'growth_dimension'     // Assessment improvement
   | 'wisdom_in_action'     // Real-world application
   | 'vocabulary_shift'     // Change in language used
-  | 'milestone_reached'    // Quantitative achievement
+  | 'milestone_reached'    // Quantitative milestone
   | 'resilience_shown';    // Bouncing back after setback
 
 // ----------------------------------------------------------------------------

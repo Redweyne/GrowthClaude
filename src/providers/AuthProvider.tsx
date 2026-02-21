@@ -128,23 +128,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-          // Build the redirect URL including the Next.js basePath (/growthmvp in production)
-          // so the callback route resolves correctly after Google redirects back.
-          const redirectTo = (() => {
-            if (typeof window === 'undefined') {
-              return undefined;
-            }
-            const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-            const callbackUrl = new URL(`${basePath}/api/auth/callback`, window.location.origin);
-            const nextPath = `${window.location.pathname}${window.location.search}` || '/';
-            callbackUrl.searchParams.set('next', nextPath);
-            return callbackUrl.toString();
-          })();
+          // With implicit flow, Supabase returns tokens directly in the URL
+          // hash. Redirect back to the app root — the Supabase client will
+          // detect the session from the hash and onAuthStateChange will fire.
+          const redirectTo = typeof window !== 'undefined'
+            ? `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ''}/`
+            : undefined;
 
-          // Let Supabase handle the redirect natively. This ensures the PKCE
-          // flow state is managed correctly — skipBrowserRedirect + manual
-          // navigation can cause bad_oauth_state errors when the flow state
-          // record in Supabase's database doesn't match.
           const { error: signInError } = await client.auth.signInWithOAuth({
             provider: 'google',
             options: {

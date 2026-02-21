@@ -21,7 +21,7 @@ export interface MentorResponses {
   returnAfterMiss: string[];
   streakBroken: string[];
   levelUp: string[];
-  achievementUnlocked: string[];
+  MilestoneUnlocked: string[];
   morningGreeting: string[];
   chapterComplete: string[];
   worldComplete: string[];
@@ -133,10 +133,10 @@ const MENTOR_RESPONSES_BY_LOCALE: Record<Locale, MentorResponses> = {
       'Each level represents commitment made visible. Wear it as proof of who you are becoming.',
       'Levels are milestones, not destinations. The journey continues.',
     ],
-    achievementUnlocked: [
+    MilestoneUnlocked: [
       'You have unlocked something that marks your path. Let it remind you of what you are capable of.',
-      'Achievements are not trophies. They are witnesses to your journey.',
-      'This achievement was always waiting for you. You finally arrived.',
+      'Milestones are not trophies. They are witnesses to your journey.',
+      'This Milestone was always waiting for you. You finally arrived.',
     ],
     morningGreeting: [
       'A new day. A new opportunity to become who you are meant to be. Are you ready?',
@@ -211,7 +211,7 @@ const MENTOR_RESPONSES_BY_LOCALE: Record<Locale, MentorResponses> = {
       'Chaque niveau rend visible votre engagement. Portez-le comme la preuve de qui vous devenez.',
       'Les niveaux sont des étapes, pas des destinations. Le chemin continue.',
     ],
-    achievementUnlocked: [
+    MilestoneUnlocked: [
       'Vous avez débloqué quelque chose qui marque votre chemin. Que cela vous rappelle ce dont vous êtes capable.',
       'Les succès ne sont pas des trophées. Ce sont des témoins de votre parcours.',
       'Cette réussite vous attendait. Vous êtes enfin arrivé.',
@@ -289,7 +289,7 @@ const MENTOR_RESPONSES_BY_LOCALE: Record<Locale, MentorResponses> = {
       'كل مستوى يُظهر التزامك. احمله دليلاً على من تصبح.',
       'المستويات محطات، وليست نهايات. الرحلة مستمرة.',
     ],
-    achievementUnlocked: [
+    MilestoneUnlocked: [
       'لقد فتحت إنجازاً يعلّم طريقك. ليذكّرك بما أنت قادر عليه.',
       'الإنجازات ليست كؤوساً. إنها شهود على رحلتك.',
       'هذا الإنجاز كان ينتظرك. لقد وصلت أخيراً.',
@@ -449,3 +449,4 @@ export function getLowEffortWisdom(locale: Locale): string[] {
 }
 
 export default MENTOR;
+
