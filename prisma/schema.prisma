@@ -51,7 +51,6 @@ model User {
   // Relations
   lessonProgress   LessonProgress[]
   reflections      Reflection[]
-  achievements     UserAchievement[]
   streakHistory    StreakRecord[]
   practiceHistory  PracticeSession[]
   identityStatements IdentityStatement[]
@@ -215,24 +214,6 @@ model StreakRecord {
 
   @@unique([userId, date])
   @@map("streak_records")
-}
-
-model UserAchievement {
-  id         String   @id @default(cuid())
-  userId     String
-  achievementId String
-  unlockedAt DateTime @default(now())
-
-  // Achievement metadata stored here for flexibility
-  achievementName String
-  achievementDescription String
-  achievementIcon String
-  xpBonus Int @default(0)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, achievementId])
-  @@map("user_achievements")
 }
 
 // ============================================

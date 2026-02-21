@@ -115,19 +115,6 @@ CREATE TABLE "streak_records" (
 );
 
 -- CreateTable
-CREATE TABLE "user_achievements" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
-    "achievementId" TEXT NOT NULL,
-    "unlockedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "achievementName" TEXT NOT NULL,
-    "achievementDescription" TEXT NOT NULL,
-    "achievementIcon" TEXT NOT NULL,
-    "xpBonus" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "user_achievements_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
 CREATE TABLE "practice_sessions" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
@@ -182,9 +169,6 @@ CREATE UNIQUE INDEX "lesson_progress_userId_lessonId_key" ON "lesson_progress"("
 
 -- CreateIndex
 CREATE UNIQUE INDEX "streak_records_userId_date_key" ON "streak_records"("userId", "date");
-
--- CreateIndex
-CREATE UNIQUE INDEX "user_achievements_userId_achievementId_key" ON "user_achievements"("userId", "achievementId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "weekly_check_ins_userId_weekOf_key" ON "weekly_check_ins"("userId", "weekOf");
