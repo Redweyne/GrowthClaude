@@ -30,8 +30,7 @@ import { getLevelFromXp } from '@/types';
 import type { PublicReflection } from '@/types/echoes';
 import { getModernWisdomWorld } from '@/content/modernWisdom';
 import { useTranslation } from '@/i18n';
-import type { FlexibleLesson, LessonProgress, LessonMode, FlexibleWorld } from '@/types/lessons';
-import { LessonModeSelector } from '@/components/lesson/LessonModeSelector';
+import type { FlexibleLesson, LessonProgress, FlexibleWorld } from '@/types/lessons';
 import { SparkFeed, SparkUnlockScreen } from '@/components/spark';
 import { useSparkStore } from '@/store/useSparkStore';
 import { BottomNavBar, type NavTab } from '@/components/navigation/BottomNavBar';
@@ -43,7 +42,6 @@ type AppView =
   | 'dashboard'
   | 'map'
   | 'lesson'
-  | 'lesson-mode-select'
   | 'mandatory-echo'
   | 'exercises'
   | 'practice'
@@ -79,7 +77,6 @@ export default function Home() {
     completedLessons,
     isCheckinDue,
     isAssessmentDue,
-    getPendingLessonAction,
     getInProgressLesson,
     clearInProgressLesson,
     currentWorldSlug: storedWorldSlug,
@@ -133,7 +130,6 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
   const [flexibleLessonProgress, setFlexibleLessonProgress] = useState<LessonProgress | null>(null);
-  const [lessonMode, setLessonMode] = useState<LessonMode>('deep');
 
   // Echoes state
   const [showEchoPrompt, setShowEchoPrompt] = useState(false);
@@ -228,14 +224,11 @@ export default function Home() {
 
         if (hoursSinceUpdate < 4) {
           setSelectedFlexibleLesson(lesson);
-          setLessonMode(inProgress.mode || 'deep');
           setFlexibleLessonProgress({
             lessonId: inProgress.lessonId,
             currentStepId: inProgress.currentStepId,
             choices: inProgress.choices,
             writings: inProgress.writings,
-            hasReturned: false,
-            mode: inProgress.mode,
           });
           setCurrentView('lesson');
         } else {
@@ -278,12 +271,11 @@ export default function Home() {
     trackView(logicalView);
   }, [currentView, languageSelected, onboardingComplete, trackView]);
 
-  // ─── Activity Logging: log lesson mode selection ──────────────────────
+  // ─── Activity Logging: log lesson start ──────────────────────
   useEffect(() => {
     if (currentView === 'lesson' && selectedFlexibleLesson) {
-      logEvent('lesson_mode_selected', {
+      logEvent('lesson_started', {
         lessonId: selectedFlexibleLesson.id,
-        mode: lessonMode,
       });
     }
   // Only fire when entering lesson view, not on every re-render
@@ -352,14 +344,7 @@ export default function Home() {
     return null;
   };
 
-  // Check for pending GoDoIt action on mount
-  const pendingAction = getPendingLessonAction();
-
   const nextFlexibleLesson = getNextFlexibleLesson();
-
-  // Helper: check if a lesson has an engagement path available
-  const hasEngagementPath = (lesson: FlexibleLesson) =>
-    !!(lesson.engagementSteps && lesson.engagementSteps.length > 0);
 
   // Dismiss coaching modal and navigate appropriately
   const dismissCoaching = useCallback(() => {
@@ -368,31 +353,21 @@ export default function Home() {
       markCoachingStepSeen(currentStep);
       setCoachingModal(null);
 
-      // Navigate based on which coaching step was dismissed
       switch (currentStep) {
         case 'beforeFirstLesson':
-          // Now actually start the lesson — route through mode selection if applicable
           if (nextFlexibleLesson) {
             setSelectedFlexibleLesson(nextFlexibleLesson);
             setFlexibleLessonProgress(null);
-            if (hasEngagementPath(nextFlexibleLesson)) {
-              setCurrentView('lesson-mode-select');
-            } else {
-              setLessonMode('deep');
-              setCurrentView('lesson');
-            }
+            setCurrentView('lesson');
           }
           break;
         case 'afterLessonBeforeEcho':
-          // Continue to mandatory echo
           setCurrentView('mandatory-echo');
           break;
         case 'afterEchoBeforeExercises':
-          // Continue to exercises
           setCurrentView('exercises');
           break;
         case 'afterFirstDayComplete':
-          // Celebration done, mark first session complete and go home
           completeFirstSession();
           setCurrentView('home');
           break;
@@ -402,48 +377,18 @@ export default function Home() {
 
   // Handle lesson start from home
   const handleStartLesson = () => {
-    // Show first-lesson coaching if this is their first session
     const lessonCount = Object.keys(completedLessons).length;
     if (lessonCount === 0 && isFirstSession() && !isCoachingStepSeen('beforeFirstLesson')) {
       showCoaching('beforeFirstLesson');
       return;
     }
 
-    // Check for pending action first (user returning from GoDoIt)
-    // GoDoIt only exists in deep mode, so skip mode selection
-    if (pendingAction) {
-      const lesson = getFlexibleLessonById(pendingAction.lessonId);
-      if (lesson) {
-        setSelectedFlexibleLesson(lesson);
-        setLessonMode('deep');
-        setFlexibleLessonProgress({
-          lessonId: pendingAction.lessonId,
-          currentStepId: pendingAction.currentStepId,
-          choices: pendingAction.choices,
-          writings: pendingAction.writings,
-          dismissedAt: pendingAction.dismissedAt,
-          hasReturned: true,
-        });
-        setCurrentView('lesson');
-        return;
-      }
-    }
-
-    // Start next lesson from active world
     if (nextFlexibleLesson) {
       setSelectedFlexibleLesson(nextFlexibleLesson);
       setFlexibleLessonProgress(null);
-
-      // If the lesson has an engagement path, show mode selector first
-      if (hasEngagementPath(nextFlexibleLesson)) {
-        setCurrentView('lesson-mode-select');
-      } else {
-        setLessonMode('deep');
-        setCurrentView('lesson');
-      }
+      setCurrentView('lesson');
     }
   };
-
 
   // Handle lesson select from map (including redo)
   const handleSelectLesson = (lessonId: string) => {
@@ -451,21 +396,8 @@ export default function Home() {
     if (lesson) {
       setSelectedFlexibleLesson(lesson);
       setFlexibleLessonProgress(null);
-
-      // If the lesson has an engagement path, show mode selector first
-      if (hasEngagementPath(lesson)) {
-        setCurrentView('lesson-mode-select');
-      } else {
-        setLessonMode('deep');
-        setCurrentView('lesson');
-      }
+      setCurrentView('lesson');
     }
-  };
-
-  // Handle mode selection from LessonModeSelector
-  const handleModeSelect = (mode: LessonMode) => {
-    setLessonMode(mode);
-    setCurrentView('lesson');
   };
 
   // Handle lesson completion - now goes to mandatory echo
@@ -627,25 +559,6 @@ export default function Home() {
     return <OnboardingFlow />;
   }
 
-  // Handle lesson dismiss (GoDoIt - user leaves to take action, no Echo prompt)
-  const handleLessonDismiss = () => {
-    setSelectedFlexibleLesson(null);
-    setFlexibleLessonProgress(null);
-    setCurrentView('home');
-  };
-
-  // Lesson mode selector - shown before lessons that have engagement paths
-  if (currentView === 'lesson-mode-select' && selectedFlexibleLesson) {
-    return (
-      <>
-        <LessonModeSelector
-          lesson={selectedFlexibleLesson}
-          onSelect={handleModeSelect}
-        />
-      </>
-    );
-  }
-
   // Lesson experience
   if (currentView === 'lesson' && selectedFlexibleLesson) {
     return (
@@ -653,9 +566,7 @@ export default function Home() {
         <FlexibleLessonExperience
           lesson={selectedFlexibleLesson}
           onComplete={handleLessonComplete}
-          onDismiss={handleLessonDismiss}
           resumeProgress={flexibleLessonProgress || undefined}
-          mode={lessonMode}
         />
       </>
     );
@@ -933,8 +844,7 @@ export default function Home() {
     }
   }
 
-  // Check for pending action to show "Continue" message
-  const hasPendingAction = !!pendingAction;
+  const hasPendingAction = false;
 
   // Home - Daily Flow Home (new synchronized daily practice)
   return (
@@ -952,7 +862,7 @@ export default function Home() {
         exercisesCompleted={exercisesCompletedToday.length}
         totalExercises={todaysLesson?.exercises?.length || 5}
         hasPendingAction={hasPendingAction}
-        pendingCommitment={pendingAction?.writings?.commitment}
+        pendingCommitment={undefined}
         onStartLesson={handleStartLesson}
         onContinueLesson={handleStartLesson}
         onStartEcho={() => setCurrentView('mandatory-echo')}

@@ -16,16 +16,10 @@
 export type LessonStepType =
   | 'scenario'       // Present a relatable situation/pain point
   | 'choice'         // Binary or multiple choice with branching
-  | 'commitment'     // Write a specific commitment/action
-  | 'goDoIt'         // Dismiss user to take real action
-  | 'returnConfirm'  // Welcome back screen after action
   | 'reflection'     // Open-ended writing reflection
-  | 'visualization'  // Guided imagination exercise
-  | 'timer'          // Timed practice (breathing, focus, etc.)
   | 'insight'        // Reveal wisdom/principle (can appear anywhere)
   | 'mentor'         // Sage feedback
   | 'reward'         // Celebration
-  // Engagement path step types (no writing, no long waits)
   | 'resonanceCheck' // Multi-select from emotionally resonant options
   | 'scaleRating'    // Visual scale rating (quick personal input)
   | 'affirmation'    // Dramatic statement confirmation (tap to commit)
@@ -85,64 +79,6 @@ export interface ChoiceStep extends BaseLessonStep {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// COMMITMENT STEP - Crystallize intention into words
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface CommitmentStep extends BaseLessonStep {
-  type: 'commitment';
-  // The prompt
-  prompt: string;
-  // Placeholder text
-  placeholder?: string;
-  // Minimum words required
-  minimumWords?: number;
-  // Encourage specificity
-  guidanceHints?: string[];
-  // Button text
-  continueLabel?: string;
-  // Store for later reference
-  storeAs?: string;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GO DO IT STEP - The sacred dismissal
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface GoDoItStep extends BaseLessonStep {
-  type: 'goDoIt';
-  // Sage's dismissal message - unique to each lesson
-  sageMessage: string;
-  // Additional context
-  sageSubtext?: string;
-  // Button text
-  dismissLabel: string;
-  // What to show when they return
-  returnStepId: string;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RETURN CONFIRM STEP - Welcome back, truth check
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface ReturnConfirmStep extends BaseLessonStep {
-  type: 'returnConfirm';
-  // Welcome back message
-  welcomeMessage: string;
-  // The question
-  confirmationQuestion: string;
-  // Options
-  completedOption: {
-    label: string;
-    nextStepId: string;
-  };
-  didNotCompleteOption: {
-    label: string;
-    message: string;  // Sage's response to honesty
-    nextStepId: string;
-  };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // REFLECTION STEP - The sanctuary of writing
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -158,46 +94,6 @@ export interface ReflectionStep extends BaseLessonStep {
   depthPrompts?: string[];
   // Placeholder
   placeholder?: string;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// VISUALIZATION STEP - Guided imagination
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface VisualizationStep extends BaseLessonStep {
-  type: 'visualization';
-  // Title
-  title?: string;
-  // Instructions that appear sequentially
-  instructions: string[];
-  // Seconds between instructions
-  paceSeconds: number;
-  // Optional prompt to write after
-  followUpPrompt?: string;
-  // Visual style
-  style?: 'cosmic' | 'grounding' | 'fearless' | 'grateful';
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TIMER STEP - Timed practice
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface TimerStep extends BaseLessonStep {
-  type: 'timer';
-  // Title
-  title: string;
-  // Main instruction
-  instruction: string;
-  // Duration in seconds
-  durationSeconds: number;
-  // Timer visualization style
-  timerStyle: 'breathing' | 'focus' | 'presence' | 'countdown';
-  // Messages that rotate during practice
-  guidanceMessages?: string[];
-  // What to ask after completion
-  completionQuestion?: string;
-  // Allow "I struggled" option
-  allowStruggle?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -229,15 +125,6 @@ export interface MentorResponseSet {
   lowEffort?: string;
   // Responses based on which branch they took
   byChoice?: Record<string, string[]>;
-  // Responses based on whether they completed the action
-  byCompletion?: {
-    completed: string[];
-    notCompleted: string[];
-  };
-  // Responses for engagement mode (no writing path)
-  byMode?: {
-    engagement: string[];
-  };
 }
 
 export interface MentorStep extends BaseLessonStep {
@@ -326,12 +213,7 @@ export interface TapFlowStep extends BaseLessonStep {
 export type LessonStep =
   | ScenarioStep
   | ChoiceStep
-  | CommitmentStep
-  | GoDoItStep
-  | ReturnConfirmStep
   | ReflectionStep
-  | VisualizationStep
-  | TimerStep
   | InsightStep
   | MentorStep
   | RewardStep
@@ -386,10 +268,6 @@ export interface FlexibleLesson {
 
   // Teaser text for "tomorrow's glimpse" preview
   teaserText?: string;
-
-  // Alternative engagement path (no writing, no long waits)
-  // Used when user selects "Feel & Choose" mode before a lesson
-  engagementSteps?: LessonStep[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -426,23 +304,13 @@ export interface FlexibleWorld {
 // LESSON STATE - For tracking progress within a lesson
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type LessonMode = 'deep' | 'engagement';
-
 export interface LessonProgress {
   lessonId: string;
   currentStepId: string;
   // Choices made during the lesson
   choices: Record<string, string>;
-  // Written content (commitments, reflections)
+  // Written content (reflections)
   writings: Record<string, string>;
-  // Whether action was completed (for goDoIt lessons)
-  actionCompleted?: boolean;
-  // Timestamp when dismissed for action
-  dismissedAt?: string;
-  // Has returned from action
-  hasReturned?: boolean;
-  // Which mode the lesson is running in
-  mode?: LessonMode;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -457,28 +325,8 @@ export function isChoiceStep(step: LessonStep): step is ChoiceStep {
   return step.type === 'choice';
 }
 
-export function isCommitmentStep(step: LessonStep): step is CommitmentStep {
-  return step.type === 'commitment';
-}
-
-export function isGoDoItStep(step: LessonStep): step is GoDoItStep {
-  return step.type === 'goDoIt';
-}
-
-export function isReturnConfirmStep(step: LessonStep): step is ReturnConfirmStep {
-  return step.type === 'returnConfirm';
-}
-
 export function isReflectionStep(step: LessonStep): step is ReflectionStep {
   return step.type === 'reflection';
-}
-
-export function isVisualizationStep(step: LessonStep): step is VisualizationStep {
-  return step.type === 'visualization';
-}
-
-export function isTimerStep(step: LessonStep): step is TimerStep {
-  return step.type === 'timer';
 }
 
 export function isInsightStep(step: LessonStep): step is InsightStep {

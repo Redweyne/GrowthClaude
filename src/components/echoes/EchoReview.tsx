@@ -15,7 +15,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, SkipForward, Feather, Heart } from 'lucide-react';
-import { Button, WisdomText } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useHaptics } from '@/hooks/useHaptics';
@@ -163,14 +163,9 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                   <div className={`text-5xl text-amber-400/20 font-serif leading-none mb-3 ${isRTL ? 'text-right' : ''}`}>
                     &ldquo;
                   </div>
-                  <WisdomText
-                    variant="insight"
-                    animate={true}
-                    speed="normal"
-                    className={isRTL ? 'text-right' : ''}
-                  >
+                  <p className={`text-lg text-stone-100 leading-relaxed font-light ${isRTL ? 'text-right' : ''}`}>
                     {reflection.content}
-                  </WisdomText>
+                  </p>
                   <div className={`text-5xl text-amber-400/20 font-serif leading-none mt-3 ${isRTL ? 'text-left' : 'text-right'}`}>
                     &rdquo;
                   </div>

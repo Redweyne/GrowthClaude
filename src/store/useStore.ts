@@ -92,15 +92,6 @@ export interface ActivityDay {
   reflectionsWritten: number;
 }
 
-// Pending action for GoDoIt lessons
-export interface PendingLessonAction {
-  lessonId: string;
-  currentStepId: string;
-  choices: Record<string, string>;
-  writings: Record<string, string>;
-  dismissedAt: string;
-}
-
 // In-progress lesson state (for persisting across page refresh)
 export interface InProgressLesson {
   lessonId: string;
@@ -108,7 +99,6 @@ export interface InProgressLesson {
   choices: Record<string, string>;
   writings: Record<string, string>;
   lastUpdated: string;
-  mode?: 'deep' | 'engagement';
 }
 
 interface UserState {
@@ -172,8 +162,6 @@ interface UserState {
   activityLog: ActivityDay[];
 
   // Pending lesson action (for GoDoIt lessons)
-  pendingLessonAction: PendingLessonAction | null;
-
   // In-progress lesson (for persisting across page refresh)
   inProgressLesson: InProgressLesson | null;
 
@@ -258,12 +246,6 @@ interface UserActions {
     averageReflectionLength: number;
   };
 
-  // Pending Lesson Actions (for GoDoIt lessons)
-  savePendingLessonAction: (action: PendingLessonAction) => void;
-  getPendingLessonAction: () => PendingLessonAction | null;
-  clearPendingLessonAction: () => void;
-  hasPendingLessonAction: (lessonId: string) => boolean;
-
   // In-Progress Lesson (persisted across page refresh)
   saveInProgressLesson: (lesson: InProgressLesson) => void;
   getInProgressLesson: () => InProgressLesson | null;
@@ -322,8 +304,6 @@ const initialState: UserState = {
   // Phase 3
   identityStatements: [],
   activityLog: [],
-  // Pending lesson action
-  pendingLessonAction: null,
   // In-progress lesson (for page refresh persistence)
   inProgressLesson: null,
   // Settings
@@ -813,26 +793,6 @@ export const useStore = create<UserState & UserActions>()(
           daysSinceStart,
           averageReflectionLength,
         };
-      },
-
-      // ============================================
-      // PENDING LESSON ACTIONS (GoDoIt)
-      // ============================================
-      savePendingLessonAction: (action) => {
-        set({ pendingLessonAction: action });
-      },
-
-      getPendingLessonAction: () => {
-        return get().pendingLessonAction;
-      },
-
-      clearPendingLessonAction: () => {
-        set({ pendingLessonAction: null });
-      },
-
-      hasPendingLessonAction: (lessonId) => {
-        const pending = get().pendingLessonAction;
-        return pending !== null && pending.lessonId === lessonId;
       },
 
       // ============================================

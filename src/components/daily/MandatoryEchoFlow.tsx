@@ -17,7 +17,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Feather, Heart, Users } from 'lucide-react';
-import { Button, WisdomText } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { Card } from '@/components/ui/Card';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
@@ -249,14 +249,9 @@ export function MandatoryEchoFlow({
                   <div className="text-5xl text-amber-400/20 font-serif leading-none mb-3">
                     &ldquo;
                   </div>
-                  <WisdomText
-                    variant="insight"
-                    animate={true}
-                    speed="slow"
-                    data-testid="echo-reflection-text"
-                  >
+                  <p className="text-lg text-stone-100 leading-relaxed font-light" data-testid="echo-reflection-text">
                     {reflection.content}
-                  </WisdomText>
+                  </p>
                   <div className="text-5xl text-amber-400/20 font-serif leading-none text-right mt-3">
                     &rdquo;
                   </div>
