@@ -168,6 +168,10 @@ interface UserState {
   // Settings
   soundEnabled: boolean;
   hapticEnabled: boolean;
+
+  // Streak Shield
+  streakShieldCount: number;
+  streakShieldUsedToday: boolean;
 }
 
 interface UserActions {
@@ -204,6 +208,11 @@ interface UserActions {
   updateStreak: () => void;
   useGraceDay: () => boolean;
   earnGraceDay: () => void;
+
+  // Streak Shield
+  getStreakShieldCount: () => number;
+  useStreakShield: () => boolean;
+  earnStreakShield: () => void;
 
   // Weekly check-ins
   completeWeeklyCheckin: (responses: CheckinResponseData[]) => void;
@@ -309,6 +318,10 @@ const initialState: UserState = {
   // Settings
   soundEnabled: true,
   hapticEnabled: true,
+
+  // Streak Shield
+  streakShieldCount: 0,
+  streakShieldUsedToday: false,
 };
 
 // Pattern keywords to detect in reflections
@@ -427,11 +440,40 @@ export const useStore = create<UserState & UserActions>()(
             newStreak = state.currentStreak + 1;
             newLongestStreak = Math.max(newStreak, state.longestStreak);
           } else if (diffDays > 1) {
-            newStreak = 1;
+            // Try streak shield before resetting
+            if (state.streakShieldCount > 0 && diffDays <= 3) {
+              // Shield protects: keep streak and add today
+              newStreak = state.currentStreak + 1;
+              newLongestStreak = Math.max(newStreak, state.longestStreak);
+              // Consume a shield (will be set below)
+            } else {
+              newStreak = 1;
+            }
           }
         }
 
         if (newStreak < 1) newStreak = 1;
+
+        // Determine if a shield was consumed
+        let shieldConsumed = false;
+        if (previousLastLessonDate && previousLastLessonDate !== today) {
+          const lastDate = new Date(previousLastLessonDate);
+          const todayDate = new Date(today);
+          const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays > 1 && state.streakShieldCount > 0 && diffDays <= 3 && newStreak > 1) {
+            shieldConsumed = true;
+          }
+        }
+
+        // Earn a shield every 7-day streak milestone
+        let shieldEarned = false;
+        if (newStreak > 0 && newStreak % 7 === 0 && newStreak !== state.currentStreak) {
+          shieldEarned = true;
+        }
+
+        const newShieldCount = state.streakShieldCount
+          - (shieldConsumed ? 1 : 0)
+          + (shieldEarned ? 1 : 0);
 
         // Update activity log
         const existingActivity = state.activityLog.find(a => a.date === today);
@@ -459,6 +501,8 @@ export const useStore = create<UserState & UserActions>()(
           currentStreak: newStreak,
           longestStreak: newLongestStreak,
           activityLog: newActivityLog,
+          streakShieldCount: Math.min(Math.max(newShieldCount, 0), 3),
+          streakShieldUsedToday: shieldConsumed,
         });
 
       },
@@ -488,6 +532,30 @@ export const useStore = create<UserState & UserActions>()(
       earnGraceDay: () => {
         const state = get();
         set({ graceDays: Math.min(state.graceDays + 1, 5) });
+      },
+
+      // ============================================
+      // STREAK SHIELD
+      // ============================================
+      getStreakShieldCount: () => {
+        return get().streakShieldCount;
+      },
+
+      useStreakShield: () => {
+        const state = get();
+        if (state.streakShieldCount > 0) {
+          set({
+            streakShieldCount: state.streakShieldCount - 1,
+            streakShieldUsedToday: true,
+          });
+          return true;
+        }
+        return false;
+      },
+
+      earnStreakShield: () => {
+        const state = get();
+        set({ streakShieldCount: Math.min(state.streakShieldCount + 1, 3) }); // Max 3 shields
       },
 
       // ============================================

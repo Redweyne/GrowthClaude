@@ -312,7 +312,7 @@ export function StreakBadge({
 
       {/* Label */}
       {showLabel && (
-        <span className={`text-stone-400 font-normal ${sizeConfig.text}`}>
+        <span className={`text-stone-400 light:text-stone-600 font-normal ${sizeConfig.text}`}>
           {streak === 1 ? 'day' : 'days'}
         </span>
       )}

@@ -268,6 +268,13 @@ export interface FlexibleLesson {
 
   // Teaser text for "tomorrow's glimpse" preview
   teaserText?: string;
+
+  // Phase 9: Theme color for ambient background tinting and progress bars
+  themeColor?: {
+    primary: string;
+    glow: string;
+    gradient: string;
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

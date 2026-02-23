@@ -72,7 +72,7 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 light:bg-stone-900/50 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -207,7 +207,7 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
           </button>
         </div>
 
-        <p className="text-white/40 text-sm text-center">
+        <p className="text-white/40 light:text-stone-500 text-sm text-center">
           Copy to clipboard or share directly to social media
         </p>
       </div>

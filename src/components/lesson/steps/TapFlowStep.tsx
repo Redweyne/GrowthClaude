@@ -102,7 +102,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
   const progress = Math.min(currentIndex, step.instructions.length);
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
       {/* Atmospheric glow - shifts subtly with each tap */}
       <motion.div
         className="fixed inset-0 pointer-events-none"
@@ -139,7 +139,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
             </div>
 
             {step.title && (
-              <h2 className="text-2xl text-stone-100">
+              <h2 className="text-2xl text-stone-100 light:text-stone-900">
                 {step.title}
               </h2>
             )}
@@ -183,7 +183,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="text-xl sm:text-2xl text-stone-200 leading-relaxed text-center px-2"
+                  className="text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed text-center px-2"
                 >
                   {step.instructions[currentIndex]}
                 </motion.p>

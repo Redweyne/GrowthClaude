@@ -116,15 +116,15 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
   }, [getStreakCalendarData, months, today]);
 
   const getLevelColor = (level: number, isToday: boolean) => {
-    if (level === -1) return 'bg-zinc-900/30';
-    if (isToday && level === 0) return 'bg-zinc-800 ring-2 ring-amber-500/50';
+    if (level === -1) return 'bg-stone-900/30 light:bg-stone-200/30';
+    if (isToday && level === 0) return 'bg-stone-800 light:bg-stone-200 ring-2 ring-amber-500/50';
     switch (level) {
-      case 0: return 'bg-zinc-800/50';
-      case 1: return 'bg-emerald-900/60';
-      case 2: return 'bg-emerald-700/70';
-      case 3: return 'bg-emerald-500/80';
-      case 4: return 'bg-emerald-400 shadow-lg shadow-emerald-500/20';
-      default: return 'bg-zinc-800/50';
+      case 0: return 'bg-stone-800/50 light:bg-stone-200/50';
+      case 1: return 'bg-emerald-900/60 light:bg-emerald-200/60';
+      case 2: return 'bg-emerald-700/70 light:bg-emerald-400/70';
+      case 3: return 'bg-emerald-500/80 light:bg-emerald-500/80';
+      case 4: return 'bg-emerald-400 shadow-lg shadow-emerald-500/20 light:bg-emerald-500 light:shadow-emerald-500/30';
+      default: return 'bg-stone-800/50 light:bg-stone-200/50';
     }
   };
 
@@ -154,15 +154,15 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
   const consistencyPercent = totalDays > 0 ? Math.round((stats.activeDays / totalDays) * 100) : 0;
 
   return (
-    <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-950 border border-zinc-800 rounded-2xl p-6">
+    <div className="bg-gradient-to-br from-stone-900/80 to-stone-950 light:from-white light:to-stone-50 border border-stone-800 light:border-stone-200 rounded-2xl p-6">
       {/* Header with meaning */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Calendar size={20} className="text-zinc-500" />
+          <h3 className="text-lg font-semibold text-white light:text-stone-900 flex items-center gap-2">
+            <Calendar size={20} className="text-stone-500 light:text-stone-500" />
             Your Commitment
           </h3>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-sm text-stone-500 light:text-stone-500 mt-1">
             {stats.activeDays} days of practice in {months} months
           </p>
         </div>
@@ -174,14 +174,14 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
               <Flame size={18} />
               <span className="text-xl font-bold">{currentStreak}</span>
             </div>
-            <div className="text-xs text-zinc-500">Current</div>
+            <div className="text-xs text-stone-500 light:text-stone-500">Current</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-amber-400">
               <Trophy size={18} />
               <span className="text-xl font-bold">{longestStreak}</span>
             </div>
-            <div className="text-xs text-zinc-500">Best</div>
+            <div className="text-xs text-stone-500 light:text-stone-500">Best</div>
           </div>
         </div>
       </div>
@@ -189,10 +189,10 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       {/* Consistency bar */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-zinc-400">Consistency</span>
-          <span className="text-white font-medium">{consistencyPercent}%</span>
+          <span className="text-stone-400 light:text-stone-600">Consistency</span>
+          <span className="text-white light:text-stone-900 font-medium">{consistencyPercent}%</span>
         </div>
-        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
             initial={{ width: 0 }}
@@ -200,7 +200,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
             transition={{ duration: 1, ease: 'easeOut' }}
           />
         </div>
-        <p className="text-xs text-zinc-600 mt-2">
+        <p className="text-xs text-stone-600 light:text-stone-500 mt-2">
           {consistencyPercent >= 80
             ? "Exceptional consistency. You're building something lasting."
             : consistencyPercent >= 50
@@ -212,7 +212,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       </div>
 
       {/* Month labels */}
-      <div className="flex mb-2 text-xs text-zinc-500">
+      <div className="flex mb-2 text-xs text-stone-500 light:text-stone-500">
         <div className="w-6" />
         <div className="flex-1 flex">
           {monthLabels.map(({ month, index }, i) => (
@@ -232,7 +232,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       {/* Calendar grid */}
       <div className="flex gap-[3px]">
         {/* Day labels */}
-        <div className="flex flex-col gap-[3px] text-[10px] text-zinc-600 pr-1">
+        <div className="flex flex-col gap-[3px] text-[10px] text-stone-600 light:text-stone-500 pr-1">
           <div className="h-[14px]" />
           <div className="h-[14px] flex items-center">M</div>
           <div className="h-[14px]" />
@@ -267,12 +267,12 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
 
       {/* Legend */}
       <div className="flex items-center justify-between mt-4">
-        <div className="text-xs text-zinc-600">
+        <div className="text-xs text-stone-600 light:text-stone-500">
           {currentStreak > 0
             ? `${currentStreak === 1 ? "1 day" : `${currentStreak} days`} and counting...`
             : "Start your streak today"}
         </div>
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
+        <div className="flex items-center gap-2 text-xs text-stone-500 light:text-stone-500">
           <span>Less</span>
           {[0, 1, 2, 3, 4].map((level) => (
             <div
@@ -291,18 +291,18 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 light:bg-stone-900/50"
             onClick={() => setSelectedDay(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full"
+              className="bg-stone-900 light:bg-stone-100 border border-stone-700 light:border-stone-300 rounded-2xl p-6 max-w-sm w-full"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-white">
+                <h4 className="text-lg font-semibold text-white light:text-stone-900">
                   {new Date(selectedDay.date).toLocaleDateString('en-US', {
                     weekday: 'long',
                     month: 'long',
@@ -311,7 +311,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
                 </h4>
                 <button
                   onClick={() => setSelectedDay(null)}
-                  className="p-1 text-zinc-500 hover:text-white transition-colors"
+                  className="p-1 text-stone-500 hover:text-white light:hover:text-stone-900 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -320,19 +320,19 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
               {selectedDay.lessonsCompleted > 0 ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                    <div className="bg-stone-800/50 light:bg-stone-200/50 rounded-xl p-3 text-center">
                       <div className="text-2xl font-bold text-emerald-400">
                         {selectedDay.lessonsCompleted}
                       </div>
-                      <div className="text-xs text-zinc-500">
+                      <div className="text-xs text-stone-500 light:text-stone-500">
                         {selectedDay.lessonsCompleted === 1 ? 'Lesson' : 'Lessons'}
                       </div>
                     </div>
-                    <div className="bg-zinc-800/50 rounded-xl p-3 text-center">
+                    <div className="bg-stone-800/50 light:bg-stone-200/50 rounded-xl p-3 text-center">
                       <div className="text-2xl font-bold text-amber-400">
                         +{selectedDay.xpEarned}
                       </div>
-                      <div className="text-xs text-zinc-500">XP Earned</div>
+                      <div className="text-xs text-stone-500 light:text-stone-500">XP Earned</div>
                     </div>
                   </div>
 
@@ -344,7 +344,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
                     </div>
                   )}
 
-                  <p className="text-sm text-zinc-400 text-center">
+                  <p className="text-sm text-stone-400 light:text-stone-600 text-center">
                     {selectedDay.isToday
                       ? "Great work today! Keep the momentum going."
                       : "You showed up. That's what matters."}
@@ -352,16 +352,16 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800/50 flex items-center justify-center">
-                    <Calendar size={24} className="text-zinc-600" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-stone-800/50 light:bg-stone-200/50 flex items-center justify-center">
+                    <Calendar size={24} className="text-stone-600 light:text-stone-500" />
                   </div>
-                  <p className="text-zinc-400">
+                  <p className="text-stone-400 light:text-stone-600">
                     {selectedDay.isToday
                       ? "No lessons yet today. Time to change that?"
                       : "No practice this day."}
                   </p>
                   {!selectedDay.isToday && (
-                    <p className="text-xs text-zinc-600 mt-2">
+                    <p className="text-xs text-stone-600 light:text-stone-500 mt-2">
                       Every day is a new opportunity.
                     </p>
                   )}

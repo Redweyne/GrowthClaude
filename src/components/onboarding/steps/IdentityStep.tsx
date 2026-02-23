@@ -105,7 +105,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
 
       {/* Subtitle */}
       <motion.p
-        className="text-stone-400 mb-8 leading-relaxed"
+        className="text-stone-400 light:text-stone-600 mb-8 leading-relaxed"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
@@ -132,7 +132,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
             } ${
               selected === option.id
                 ? 'bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10'
-                : 'bg-stone-900/50 border-stone-800 hover:border-stone-700 hover:bg-stone-900/80'
+                : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-800 light:border-stone-200 hover:border-stone-700 light:hover:border-stone-400 hover:bg-stone-900/80 light:hover:bg-stone-200/80'
             }`}
             initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -146,14 +146,14 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                   selected === option.id
                     ? 'border-amber-500 bg-amber-500'
-                    : 'border-stone-600'
+                    : 'border-stone-600 light:border-stone-400'
                 }`}
               >
                 {selected === option.id && (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="w-2 h-2 rounded-full bg-stone-950"
+                    className="w-2 h-2 rounded-full bg-stone-950 light:bg-stone-50"
                   />
                 )}
               </div>
@@ -163,14 +163,14 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
                 <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                   <span
                     className={`font-semibold ${
-                      selected === option.id ? 'text-amber-200' : 'text-stone-200'
+                      selected === option.id ? 'text-amber-200' : 'text-stone-200 light:text-stone-800'
                     }`}
                   >
                     {option.label}
                   </span>
-                  <span className="text-stone-500 text-sm">({option.description})</span>
+                  <span className="text-stone-500 light:text-stone-600 text-sm">({option.description})</span>
                 </div>
-                <p className="text-stone-500 text-sm mt-1">
+                <p className="text-stone-500 light:text-stone-600 text-sm mt-1">
                   {t('onboarding.identity.othersWillSee')} &quot;{option.pronoun} {t('onboarding.identity.reflected')}&quot;
                 </p>
               </div>
@@ -181,7 +181,7 @@ export function IdentityStep({ onNext, onBack }: IdentityStepProps) {
 
       {/* Privacy note */}
       <motion.p
-        className="text-stone-600 text-xs mb-8 italic"
+        className="text-stone-600 light:text-stone-500 text-xs mb-8 italic"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}

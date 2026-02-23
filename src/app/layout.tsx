@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Transformation Hub',
+    startupImage: [],
   },
   openGraph: {
     title: 'Transformation Hub',
@@ -41,8 +42,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#050403', // Matches --depth-void for seamless feel
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
+    { media: '(prefers-color-scheme: dark)', color: '#050403' },
+  ],
+  colorScheme: 'dark light',
 };
 
 export default function RootLayout({
@@ -51,14 +55,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Apple touch icon for iOS home screen */}
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png" />
+      </head>
       <body
         className="antialiased selection:bg-amber-500/30 selection:text-amber-50"
         style={fontBody.style}
       >
         {/* Subtle noise texture overlay for depth */}
         <div
-          className="fixed inset-0 pointer-events-none z-50 opacity-[0.015]"
+          className="fixed inset-0 pointer-events-none z-50 opacity-[0.015] light:opacity-[0.008]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           }}

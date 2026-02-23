@@ -15,108 +15,148 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NEW EXERCISE TYPES - Engaging, emotional, no writing required
+// EXERCISE TYPES - 5 game-like interactions, no writing, no breathing
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ExerciseType =
-  | 'truth-mirror'     // Tap through truths, hold when one resonates deeply
-  | 'soul-compass'     // Multi-select what resonates + intensity
-  | 'presence-anchor'; // Enhanced breathwork with visualization prompts
+  | 'rapid-verdict'    // Tinder-style swipe cards with timer
+  | 'priority-tower'   // Drag-and-drop value ranking
+  | 'scenario-snap'    // Interactive branching story
+  | 'heat-check'       // 2D emotional spectrum plotting
+  | 'word-forge';      // Tap words to forge a personal mantra
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TRUTH MIRROR - Tap through revelations until one stops you
+// RAPID VERDICT - Swipe agree/disagree on statements with a timer
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface TruthMirrorContent {
-  /** Statements to tap through - user holds when one resonates */
-  statements: string[];
-  /** Message shown when user holds on their truth */
-  holdReveal: string;
-  /** Breath prompts after selection (shown during exhales) */
-  breathPrompts: string[];
-  /** Style affects colors and atmosphere */
-  style: 'release' | 'strength' | 'gratitude' | 'clarity';
+export interface RapidVerdictContent {
+  statements: Array<{
+    text: string;
+    agreeTag: string;
+    disagreeTag: string;
+  }>;
+  timePerCard: number;
+  resultProfiles: Array<{
+    tagPattern: string;
+    title: string;
+    description: string;
+    emoji: string;
+  }>;
+  style: 'bold' | 'introspective' | 'playful';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SOUL COMPASS - Multi-select resonance + intensity
+// PRIORITY TOWER - Drag items to rank what matters most
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface SoulCompassOption {
-  id: string;
-  emoji: string;
-  text: string;
+export interface PriorityTowerContent {
+  prompt: string;
+  items: Array<{ id: string; emoji: string; label: string }>;
+  insightsByTopChoice: Record<string, string>;
+  completionMessage: string;
+  style: 'warm' | 'stark' | 'cosmic';
 }
 
-export interface SoulCompassContent {
-  /** Central question or prompt */
-  centralQuestion: string;
-  /** Options arranged around the compass */
-  options: SoulCompassOption[];
-  /** Minimum selections required (default 1) */
-  minSelections?: number;
-  /** Maximum selections allowed (default all) */
-  maxSelections?: number;
-  /** Whether to show intensity slider after selection */
-  showIntensity: boolean;
-  /** Intensity question (if showIntensity is true) */
-  intensityQuestion?: string;
-  /** Labels for intensity scale */
-  intensityLabels?: { low: string; high: string };
-  /** Contextual responses based on intensity (low/mid/high) */
-  intensityResponses?: {
-    low: string;
-    mid: string;
-    high: string;
+// ─────────────────────────────────────────────────────────────────────────────
+// SCENARIO SNAP - Interactive branching story with trait tracking
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ScenarioSnapContent {
+  title: string;
+  frames: Array<{
+    id: string;
+    narrative: string;
+    emoji: string;
+    choices: Array<{
+      id: string;
+      text: string;
+      trait: string;
+      nextFrameId?: string;
+    }>;
+  }>;
+  outcomes: Array<{
+    traitPattern: string;
+    title: string;
+    insight: string;
+    wisdomNudge: string;
+    emoji: string;
+  }>;
+  style: 'tense' | 'awkward' | 'empowering' | 'vulnerable';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEAT CHECK - Plot items on a 2D emotional spectrum
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface HeatCheckContent {
+  prompt: string;
+  xAxis: { low: string; high: string };
+  yAxis: { low: string; high: string };
+  items: Array<{ id: string; label: string; emoji: string }>;
+  quadrantInsights: {
+    topLeft: string;
+    topRight: string;
+    bottomLeft: string;
+    bottomRight: string;
   };
-  /** Optional follow-up options after first selection */
-  followUpQuestion?: string;
-  followUpOptions?: SoulCompassOption[];
-  /** Style affects colors */
-  style: 'introspective' | 'energizing' | 'grounding' | 'awakening';
+  completionMessage: string;
+  style: 'analytical' | 'emotional' | 'raw';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRESENCE ANCHOR - Breathwork with visualization prompts
+// WORD FORGE - Tap words to compose a personal mantra
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface PresenceAnchorContent {
-  /** Physical gesture description */
-  gesture: string;
-  /** What the gesture represents */
-  meaning: string;
-  /** Number of breath cycles */
-  breathCycles: number;
-  /** Visualization prompts shown during each exhale */
-  exhalePrompts: string[];
-  /** Final anchoring message */
-  anchorMessage: string;
-  /** Style affects colors and atmosphere */
-  style: 'release' | 'strength' | 'gratitude' | 'grounding';
+export interface WordForgeContent {
+  prompt: string;
+  words: Array<{
+    id: string;
+    text: string;
+    category: 'action' | 'identity' | 'emotion' | 'value';
+  }>;
+  minSelections: number;
+  maxSelections: number;
+  forgeMessage: string;
+  style: 'fiery' | 'serene' | 'electric';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DAILY EXERCISE - A single practice item
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type ExerciseContent =
+  | RapidVerdictContent
+  | PriorityTowerContent
+  | ScenarioSnapContent
+  | HeatCheckContent
+  | WordForgeContent;
+
 export interface DailyExercise {
   id: string;
   type: ExerciseType;
   title: string;
-  content: TruthMirrorContent | SoulCompassContent | PresenceAnchorContent;
+  content: ExerciseContent;
 }
 
 // Type guards for exercise content
-export function isTruthMirrorContent(content: DailyExercise['content']): content is TruthMirrorContent {
-  return 'statements' in content && 'holdReveal' in content;
+export function isRapidVerdictContent(content: ExerciseContent): content is RapidVerdictContent {
+  return 'statements' in content && 'timePerCard' in content;
 }
 
-export function isSoulCompassContent(content: DailyExercise['content']): content is SoulCompassContent {
-  return 'centralQuestion' in content && 'options' in content;
+export function isPriorityTowerContent(content: ExerciseContent): content is PriorityTowerContent {
+  return 'prompt' in content && 'insightsByTopChoice' in content;
 }
 
-export function isPresenceAnchorContent(content: DailyExercise['content']): content is PresenceAnchorContent {
-  return 'gesture' in content && 'exhalePrompts' in content;
+export function isScenarioSnapContent(content: ExerciseContent): content is ScenarioSnapContent {
+  return 'frames' in content && 'outcomes' in content;
+}
+
+export function isHeatCheckContent(content: ExerciseContent): content is HeatCheckContent {
+  return 'xAxis' in content && 'yAxis' in content;
+}
+
+export function isWordForgeContent(content: ExerciseContent): content is WordForgeContent {
+  return 'words' in content && 'forgeMessage' in content;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

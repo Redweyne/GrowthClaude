@@ -240,8 +240,8 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <h3 className="text-lg font-medium text-stone-100">{mentor.name}</h3>
-          <p className="text-sm text-stone-600">{mentor.title}</p>
+          <h3 className="text-lg font-medium text-stone-100 light:text-stone-900">{mentor.name}</h3>
+          <p className="text-sm text-stone-600 light:text-stone-500">{mentor.title}</p>
         </motion.div>
 
         {/* ─────────────────────────────────────────────────────────────────
@@ -274,12 +274,12 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
             className={`absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 ${
               isLowEffort
                 ? 'bg-red-950/30 border-l border-t border-red-900/30'
-                : 'bg-stone-900/80 border-l border-t border-stone-800/50'
+                : 'bg-stone-900/80 light:bg-stone-200/80 border-l border-t border-stone-800/50'
             }`}
           />
 
           {/* Message text */}
-          <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-stone-200'}`} data-testid="mentor-response">
+          <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-stone-200 light:text-stone-800'}`} data-testid="mentor-response">
             {displayedText}
             {isTyping && (
               <motion.span
@@ -337,7 +337,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
                   </span>
                   <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
                 </motion.div>
-                <p className="text-stone-400 text-sm text-center">
+                <p className="text-stone-400 light:text-stone-600 text-sm text-center">
                   {streakMilestone}
                 </p>
               </div>

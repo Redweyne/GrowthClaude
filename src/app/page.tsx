@@ -11,9 +11,12 @@ import { DailyFlowHome } from '@/components/daily/DailyFlowHome';
 import { MandatoryEchoFlow } from '@/components/daily/MandatoryEchoFlow';
 import { DashboardNew } from '@/components/dashboard/DashboardNew';
 import { CoachModal, CoachingStep } from '@/components/coaching';
+import { LoginModal } from '@/components/auth/LoginModal';
+import { SignupModal } from '@/components/auth/SignupModal';
 import { ExerciseExperience } from '@/components/exercises/ExerciseExperience';
 import { WorldMap, WorldSwitcher } from '@/components/world';
 import { FlexibleLessonExperience } from '@/components/lesson/FlexibleLessonExperience';
+import { LessonPreview } from '@/components/lesson/LessonPreview';
 import { PracticeMode } from '@/components/practice';
 import { WeeklyCheckin } from '@/components/checkin';
 import { MonthlyAssessment } from '@/components/assessment';
@@ -42,6 +45,7 @@ type AppView =
   | 'dashboard'
   | 'map'
   | 'lesson'
+  | 'lesson-preview'
   | 'mandatory-echo'
   | 'exercises'
   | 'practice'
@@ -128,6 +132,8 @@ export default function Home() {
   const { logEvent, trackView } = useActivityLog();
 
   const [currentView, setCurrentView] = useState<AppView>('home');
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
   const [flexibleLessonProgress, setFlexibleLessonProgress] = useState<LessonProgress | null>(null);
 
@@ -400,6 +406,7 @@ export default function Home() {
     }
   };
 
+
   // Handle lesson completion - now goes to mandatory echo
   const handleLessonComplete = () => {
     // CRITICAL: Stop all audio when leaving the lesson
@@ -558,6 +565,20 @@ export default function Home() {
   if (!onboardingComplete) {
     return <OnboardingFlow />;
   }
+
+  // Lesson preview - cinematic intro before lesson starts
+  if (currentView === 'lesson-preview' && selectedFlexibleLesson) {
+    return (
+      <>
+        <LessonPreview
+          lesson={selectedFlexibleLesson}
+          onStart={() => setCurrentView('lesson')}
+          onBack={() => setCurrentView('home')}
+        />
+      </>
+    );
+  }
+
 
   // Lesson experience
   if (currentView === 'lesson' && selectedFlexibleLesson) {
@@ -817,7 +838,7 @@ export default function Home() {
     if (availableExercises && availableExercises.length > 0) {
       return (
         <>
-            <ExerciseExperience
+          <ExerciseExperience
             exercises={availableExercises}
             lessonTitle={exerciseLessonTitle}
             completedExercises={exercisesCompletedToday}
@@ -890,6 +911,18 @@ export default function Home() {
           userName={userName || 'Friend'}
         />
       )}
+
+      {/* Global Auth Modals — accessible from any home-level component */}
+      <LoginModal
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+        onSwitchToSignup={() => { setShowLogin(false); setShowSignup(true); }}
+      />
+      <SignupModal
+        isOpen={showSignup}
+        onClose={() => setShowSignup(false)}
+        onSwitchToLogin={() => { setShowSignup(false); setShowLogin(true); }}
+      />
     </>
   );
 }

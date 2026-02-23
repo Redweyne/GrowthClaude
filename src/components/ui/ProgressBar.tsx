@@ -154,11 +154,11 @@ export function ProgressBar({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <span className={`${sizeConfig.label} font-medium text-stone-400`}>
+          <span className={`${sizeConfig.label} font-medium text-stone-400 light:text-stone-600`}>
             Progress
           </span>
           <motion.span
-            className={`${sizeConfig.label} font-bold text-stone-200`}
+            className={`${sizeConfig.label} font-bold text-stone-200 light:text-stone-800`}
             key={clampedProgress}
             initial={animated ? { scale: 1.2, color: config.glow.replace('VAR', '1') } : false}
             animate={{ scale: 1, color: 'rgb(231, 229, 228)' }}

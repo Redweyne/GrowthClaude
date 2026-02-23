@@ -16,14 +16,16 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AmbientBackground } from '@/components/ambient';
 import { MusicControls } from '@/components/ui/MusicControls';
 import { backgroundMusic } from '@/lib/backgroundMusic';
+import { getLessonThemeColor } from '@/lib/lessonThemes';
 import { useStore } from '@/store/useStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 
 // Step components
 import { ScenarioStep } from './steps/ScenarioStep';
@@ -82,6 +84,9 @@ export function FlexibleLessonExperience({
   onComplete,
   resumeProgress,
 }: FlexibleLessonExperienceProps) {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
+
   const activeSteps = lesson.steps;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -146,6 +151,10 @@ export function FlexibleLessonExperience({
 
   const currentStep = activeSteps.find(s => s.id === currentStepId);
   const currentTheme = currentStep ? STEP_THEMES[currentStep.type] : STEP_THEMES.scenario;
+
+  // Phase 9A: Compute lesson theme color for ambient background tinting
+  const lessonTheme = lesson.themeColor || getLessonThemeColor(lesson.id);
+
 
   // Calculate progress based on step position
   const getProgress = () => {
@@ -268,6 +277,33 @@ export function FlexibleLessonExperience({
     }
     return xp;
   }, [lesson.xpReward, currentStreak]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Swipe Gesture Support (non-writing steps only)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const WRITING_STEP_TYPES = useMemo(() => new Set(['reflection']), []);
+
+  const swipeTouchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const handleSwipeTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!currentStep) return;
+    if (WRITING_STEP_TYPES.has(currentStep.type)) return;
+    swipeTouchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, [currentStep, WRITING_STEP_TYPES]);
+
+  const handleSwipeTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!swipeTouchStart.current || !currentStep) return;
+    const dx = e.changedTouches[0].clientX - swipeTouchStart.current.x;
+    const dy = e.changedTouches[0].clientY - swipeTouchStart.current.y;
+    swipeTouchStart.current = null;
+
+    if (Math.abs(dx) < Math.abs(dy) || Math.abs(dx) < 60) return;
+
+    if (dx < 0) {
+      goToNextStep();
+    }
+  }, [currentStep, goToNextStep]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Step Completion Handlers
@@ -518,12 +554,18 @@ export function FlexibleLessonExperience({
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`min-h-screen bg-stone-950 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div
+      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+      onTouchStart={handleSwipeTouchStart}
+      onTouchEnd={handleSwipeTouchEnd}
+    >
       {/* Ambient background */}
       <AmbientBackground
         intensity="subtle"
         particleCount={currentStep?.type === 'reward' ? 8 : 4}
         orbCount={1}
+        themeOverride={lessonTheme}
       />
 
       {/* Step-specific atmospheric glow */}
@@ -538,13 +580,16 @@ export function FlexibleLessonExperience({
 
       {/* Progress indicator */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="h-1 bg-stone-900/80 backdrop-blur-sm">
+        <div className="h-1 bg-stone-900/80 light:bg-stone-200/80 backdrop-blur-sm">
           <motion.div
-            className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
+            className="h-full"
             initial={{ width: 0 }}
             animate={{ width: `${getProgress()}%` }}
             transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ boxShadow: `0 0 20px ${currentTheme.glow}` }}
+            style={{
+              background: `linear-gradient(90deg, ${lessonTheme.primary}, ${lessonTheme.primary}dd)`,
+              boxShadow: `0 0 20px ${lessonTheme.glow}`,
+            }}
           />
         </div>
 
@@ -559,7 +604,7 @@ export function FlexibleLessonExperience({
             key={currentStep?.type}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-xs tracking-[0.2em] uppercase text-stone-500 font-medium"
+            className="text-xs tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium"
           >
             {currentStep ? getStepLabel(currentStep.type) : getStepLabel('scenario')}
           </motion.span>
@@ -591,7 +636,9 @@ export function FlexibleLessonExperience({
       <div
         className="fixed bottom-0 left-0 right-0 h-24 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, rgba(12, 10, 9, 0.9), transparent)',
+          background: isLight
+            ? 'linear-gradient(to top, rgba(250, 250, 249, 0.9), transparent)'
+            : 'linear-gradient(to top, rgba(12, 10, 9, 0.9), transparent)',
         }}
       />
     </div>

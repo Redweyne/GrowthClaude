@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { useTheme } from 'next-themes';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AMBIENT BACKGROUND
@@ -18,6 +19,12 @@ interface TimeTheme {
   particleColor: string;
   orbColors: string[];
   gradientStops: string[];
+  lightPrimary: string;
+  lightSecondary: string;
+  lightAccent: string;
+  lightParticleColor: string;
+  lightOrbColors: string[];
+  lightGradientStops: string[];
 }
 
 // Time-based themes for atmospheric shifts
@@ -31,6 +38,12 @@ const timeThemes: Record<string, TimeTheme> = {
     particleColor: 'rgba(251, 191, 36, 0.6)',
     orbColors: ['rgba(251, 191, 36, 0.2)', 'rgba(251, 113, 133, 0.15)', 'rgba(167, 139, 250, 0.1)'],
     gradientStops: ['#0c0a09', '#1a1412', '#0c0a09'],
+    lightPrimary: 'rgba(245, 158, 11, 0.14)',
+    lightSecondary: 'rgba(244, 114, 182, 0.1)',
+    lightAccent: 'rgba(99, 102, 241, 0.08)',
+    lightParticleColor: 'rgba(245, 158, 11, 0.3)',
+    lightOrbColors: ['rgba(245, 158, 11, 0.14)', 'rgba(244, 114, 182, 0.1)', 'rgba(99, 102, 241, 0.08)'],
+    lightGradientStops: ['#fafaf9', '#fef3c7', '#fafaf9'],
   },
   morning: {
     name: 'Morning',
@@ -41,6 +54,12 @@ const timeThemes: Record<string, TimeTheme> = {
     particleColor: 'rgba(251, 191, 36, 0.5)',
     orbColors: ['rgba(251, 191, 36, 0.15)', 'rgba(52, 211, 153, 0.1)', 'rgba(34, 211, 238, 0.08)'],
     gradientStops: ['#0c0a09', '#0f0d0c', '#0c0a09'],
+    lightPrimary: 'rgba(245, 158, 11, 0.12)',
+    lightSecondary: 'rgba(16, 185, 129, 0.08)',
+    lightAccent: 'rgba(14, 165, 233, 0.07)',
+    lightParticleColor: 'rgba(245, 158, 11, 0.25)',
+    lightOrbColors: ['rgba(245, 158, 11, 0.12)', 'rgba(16, 185, 129, 0.08)', 'rgba(14, 165, 233, 0.07)'],
+    lightGradientStops: ['#fafaf9', '#fefce8', '#f5f5f4'],
   },
   afternoon: {
     name: 'Afternoon',
@@ -51,6 +70,12 @@ const timeThemes: Record<string, TimeTheme> = {
     particleColor: 'rgba(249, 115, 22, 0.5)',
     orbColors: ['rgba(249, 115, 22, 0.15)', 'rgba(251, 191, 36, 0.12)', 'rgba(52, 211, 153, 0.08)'],
     gradientStops: ['#0c0a09', '#0d0b0a', '#0c0a09'],
+    lightPrimary: 'rgba(234, 88, 12, 0.11)',
+    lightSecondary: 'rgba(245, 158, 11, 0.09)',
+    lightAccent: 'rgba(5, 150, 105, 0.07)',
+    lightParticleColor: 'rgba(234, 88, 12, 0.24)',
+    lightOrbColors: ['rgba(234, 88, 12, 0.11)', 'rgba(245, 158, 11, 0.09)', 'rgba(5, 150, 105, 0.07)'],
+    lightGradientStops: ['#fafaf9', '#ffedd5', '#fafaf9'],
   },
   evening: {
     name: 'Evening',
@@ -61,6 +86,12 @@ const timeThemes: Record<string, TimeTheme> = {
     particleColor: 'rgba(167, 139, 250, 0.5)',
     orbColors: ['rgba(167, 139, 250, 0.15)', 'rgba(251, 113, 133, 0.12)', 'rgba(251, 191, 36, 0.08)'],
     gradientStops: ['#0c0a09', '#0e0a0f', '#0c0a09'],
+    lightPrimary: 'rgba(124, 58, 237, 0.11)',
+    lightSecondary: 'rgba(244, 63, 94, 0.09)',
+    lightAccent: 'rgba(245, 158, 11, 0.08)',
+    lightParticleColor: 'rgba(124, 58, 237, 0.24)',
+    lightOrbColors: ['rgba(124, 58, 237, 0.11)', 'rgba(244, 63, 94, 0.09)', 'rgba(245, 158, 11, 0.08)'],
+    lightGradientStops: ['#fafaf9', '#f5f3ff', '#fafaf9'],
   },
   night: {
     name: 'Night',
@@ -71,6 +102,12 @@ const timeThemes: Record<string, TimeTheme> = {
     particleColor: 'rgba(34, 211, 238, 0.4)',
     orbColors: ['rgba(34, 211, 238, 0.1)', 'rgba(167, 139, 250, 0.08)', 'rgba(251, 191, 36, 0.05)'],
     gradientStops: ['#050403', '#080608', '#050403'],
+    lightPrimary: 'rgba(14, 165, 233, 0.09)',
+    lightSecondary: 'rgba(99, 102, 241, 0.08)',
+    lightAccent: 'rgba(245, 158, 11, 0.06)',
+    lightParticleColor: 'rgba(14, 165, 233, 0.2)',
+    lightOrbColors: ['rgba(14, 165, 233, 0.09)', 'rgba(99, 102, 241, 0.08)', 'rgba(245, 158, 11, 0.06)'],
+    lightGradientStops: ['#f8fafc', '#eef2ff', '#f8fafc'],
   },
 };
 
@@ -175,17 +212,26 @@ const Particle = memo(function Particle({ color, size, x, y, duration, delay }: 
 // MAIN AMBIENT BACKGROUND
 // ─────────────────────────────────────────────────────────────────────────────
 
+interface ThemeOverride {
+  primary: string;    // Main accent color (e.g. '#f59e0b')
+  glow: string;       // Glow color with alpha
+  gradient: string;   // Background tint color with alpha
+}
+
 interface AmbientBackgroundProps {
   intensity?: 'subtle' | 'normal' | 'vivid';
   particleCount?: number;
   orbCount?: number;
+  themeOverride?: ThemeOverride;
 }
 
 export function AmbientBackground({
   intensity = 'normal',
   particleCount = 20,
   orbCount = 3,
+  themeOverride,
 }: AmbientBackgroundProps) {
+  const { resolvedTheme } = useTheme();
   const [theme, setTheme] = useState<TimeTheme>(getTimeTheme);
   const [mounted, setMounted] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
@@ -213,32 +259,48 @@ export function AmbientBackground({
   // Reduce counts on mobile to prevent GPU overload (especially Android)
   const effectiveOrbCount = prefersReducedMotion ? 0 : (isMobileDevice ? Math.min(orbCount, 2) : orbCount);
   const effectiveParticleCount = prefersReducedMotion ? 0 : (isMobileDevice ? Math.min(particleCount, 6) : particleCount);
+  const isLightTheme = resolvedTheme === 'light';
+
+  // If a theme override is provided, blend it with the time theme
+  const hasOverride = !!themeOverride;
+  const activeOrbColors = hasOverride
+    ? [themeOverride!.gradient, ...(isLightTheme ? theme.lightOrbColors.slice(1) : theme.orbColors.slice(1))]
+    : (isLightTheme ? theme.lightOrbColors : theme.orbColors);
+  const activeParticleColor = hasOverride
+    ? themeOverride!.glow
+    : (isLightTheme ? theme.lightParticleColor : theme.particleColor);
+  const activeGradientStops = isLightTheme ? theme.lightGradientStops : theme.gradientStops;
+  const activePrimary = hasOverride
+    ? themeOverride!.gradient
+    : (isLightTheme ? theme.lightPrimary : theme.primary);
+  const activeSecondary = isLightTheme ? theme.lightSecondary : theme.secondary;
+  const activeAccent = isLightTheme ? theme.lightAccent : theme.accent;
 
   // Generate stable orbs
   const orbs = useMemo(() => {
     return Array.from({ length: effectiveOrbCount }, (_, i) => ({
       id: i,
-      color: theme.orbColors[i % theme.orbColors.length],
+      color: activeOrbColors[i % activeOrbColors.length],
       size: isMobileDevice ? (150 + Math.random() * 150) : (200 + Math.random() * 300),
       initialX: 10 + (i * 30) + Math.random() * 20,
       initialY: 20 + Math.random() * 60,
       duration: 20 + Math.random() * 15,
       delay: i * 2,
     }));
-  }, [effectiveOrbCount, theme.orbColors, isMobileDevice]);
+  }, [activeOrbColors, effectiveOrbCount, isMobileDevice]);
 
   // Generate stable particles
   const particles = useMemo(() => {
     return Array.from({ length: effectiveParticleCount }, (_, i) => ({
       id: i,
-      color: theme.particleColor,
+      color: activeParticleColor,
       size: 2 + Math.random() * 3,
       x: Math.random() * 100,
       y: 100 + Math.random() * 20,
       duration: 8 + Math.random() * 8,
       delay: Math.random() * 10,
     }));
-  }, [effectiveParticleCount, theme.particleColor]);
+  }, [activeParticleColor, effectiveParticleCount]);
 
   // Intensity multipliers
   const intensityMap = {
@@ -260,7 +322,7 @@ export function AmbientBackground({
       <div
         className="absolute inset-0 transition-colors duration-[3000ms]"
         style={{
-          background: `linear-gradient(180deg, ${theme.gradientStops[0]} 0%, ${theme.gradientStops[1]} 50%, ${theme.gradientStops[2]} 100%)`,
+          background: `linear-gradient(180deg, ${activeGradientStops[0]} 0%, ${activeGradientStops[1]} 50%, ${activeGradientStops[2]} 100%)`,
         }}
       />
 
@@ -275,7 +337,7 @@ export function AmbientBackground({
         <div
           className="absolute -top-1/4 -left-1/4 w-[80%] h-[80%] rounded-full transition-colors duration-[3000ms]"
           style={{
-            background: `radial-gradient(ellipse at center, ${theme.primary} 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse at center, ${activePrimary} 0%, transparent 70%)`,
             filter: `blur(${atmosphereBlur}px)`,
           }}
         />
@@ -284,7 +346,7 @@ export function AmbientBackground({
         <div
           className="absolute -bottom-1/4 -right-1/4 w-[70%] h-[70%] rounded-full transition-colors duration-[3000ms]"
           style={{
-            background: `radial-gradient(ellipse at center, ${theme.secondary} 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse at center, ${activeSecondary} 0%, transparent 70%)`,
             filter: `blur(${atmosphereBlur}px)`,
           }}
         />
@@ -293,7 +355,7 @@ export function AmbientBackground({
         <div
           className="absolute top-1/3 left-1/3 w-[50%] h-[50%] rounded-full transition-colors duration-[3000ms]"
           style={{
-            background: `radial-gradient(ellipse at center, ${theme.accent} 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse at center, ${activeAccent} 0%, transparent 70%)`,
             filter: `blur(${accentBlur}px)`,
           }}
         />
@@ -327,7 +389,7 @@ export function AmbientBackground({
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%)',
+          background: `radial-gradient(ellipse at center, transparent 0%, transparent 50%, ${isLightTheme ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.4)'} 100%)`,
         }}
       />
 

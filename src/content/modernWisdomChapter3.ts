@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import type { FlexibleLesson, FlexibleChapter, LessonStep } from '@/types/lessons';
+import { lesson11Exercises, lesson12Exercises, lesson13Exercises, lesson14Exercises, lesson15Exercises } from './exerciseContent';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LESSON 11: THE MIRROR EFFECT
@@ -20,7 +21,7 @@ const lesson11_MirrorEffect: FlexibleLesson = {
   estimatedMinutes: 5,
   thumbnail: { icon: '🪞', color: '#a855f7' },
   teaserText: "Tomorrow you'll discover why the people who frustrate you most might be your greatest teachers.",
-  exercises: [],
+  exercises: lesson11Exercises,
   steps: [
     {
       id: 'opening',
@@ -198,7 +199,7 @@ const lesson12_RadicalHonesty: FlexibleLesson = {
   estimatedMinutes: 6,
   thumbnail: { icon: '🔓', color: '#06b6d4' },
   teaserText: "Tomorrow you'll understand why small lies build prisons and radical honesty sets you free.",
-  exercises: [],
+  exercises: lesson12Exercises,
   steps: [
     {
       id: 'opening',
@@ -378,7 +379,7 @@ const lesson13_BoundariesGrace: FlexibleLesson = {
   estimatedMinutes: 5,
   thumbnail: { icon: '🛡️', color: '#f59e0b' },
   teaserText: "Tomorrow you'll learn how to say 'no' without guilt - the skill that protects everything you care about.",
-  exercises: [],
+  exercises: lesson13Exercises,
   steps: [
     {
       id: 'opening',
@@ -548,7 +549,7 @@ const lesson14_EmpathyShift: FlexibleLesson = {
   estimatedMinutes: 6,
   thumbnail: { icon: '💗', color: '#ec4899' },
   teaserText: "Tomorrow you'll learn the single shift that transforms conflict into connection.",
-  exercises: [],
+  exercises: lesson14Exercises,
   steps: [
     {
       id: 'opening',
@@ -719,7 +720,7 @@ const lesson15_ForgivenessFreedm: FlexibleLesson = {
   estimatedMinutes: 7,
   thumbnail: { icon: '🕊️', color: '#22c55e' },
   teaserText: "Tomorrow you'll explore the hardest practice of all - and understand why forgiveness is freedom for YOU, not absolution for them.",
-  exercises: [],
+  exercises: lesson15Exercises,
   steps: [
     {
       id: 'opening',

@@ -60,11 +60,11 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
   };
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Back button */}
       <button
         onClick={onBack}
-        className={`flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-6 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
+        className={`flex items-center text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors mb-6 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
         {isRTL ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         <span className="text-sm">{t('common.back')}</span>
@@ -77,8 +77,8 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         className={`flex items-center gap-2 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
       >
         <span className="text-2xl">{selectedGoal?.icon}</span>
-        <span className="text-zinc-500 text-sm">
-          {t('onboarding.why.yourPath')} <span className="text-zinc-300">{goalTitle || selectedGoal?.title}</span>
+        <span className="text-stone-500 light:text-stone-600 text-sm">
+          {t('onboarding.why.yourPath')} <span className="text-stone-300 light:text-stone-700">{goalTitle || selectedGoal?.title}</span>
         </span>
       </motion.div>
 
@@ -89,10 +89,10 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         transition={{ duration: 0.6 }}
         className="mb-8"
       >
-        <p className="text-xl sm:text-2xl text-white font-light mb-2">
+        <p className="text-xl sm:text-2xl text-white light:text-stone-900 font-light mb-2">
           {name ? `${name}, ` : ''}{t('onboarding.commitment.howMuchTime')}
         </p>
-        <p className="text-zinc-500 text-sm">
+        <p className="text-stone-500 light:text-stone-600 text-sm">
           {t('onboarding.commitment.smallConsistent')}
         </p>
       </motion.div>
@@ -111,16 +111,16 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
               relative p-4 rounded-xl border-2 transition-all duration-300 text-center
               ${dailyCommitmentMinutes === commitment.minutes
                 ? 'border-indigo-500 bg-indigo-500/10 scale-[1.02]'
-                : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900'
+                : 'border-stone-800 light:border-stone-200 bg-stone-900/50 light:bg-stone-200/50 hover:border-stone-700 light:hover:border-stone-400 hover:bg-stone-900 light:hover:bg-stone-200'
               }
             `}
           >
             <p className={`text-2xl font-bold mb-1 transition-colors ${
-              dailyCommitmentMinutes === commitment.minutes ? 'text-white' : 'text-zinc-300'
+              dailyCommitmentMinutes === commitment.minutes ? 'text-white light:text-stone-900' : 'text-stone-300 light:text-stone-700'
             }`}>
               {getCommitmentLabel(commitment.minutes)}
             </p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-stone-500 light:text-stone-600">
               {getCommitmentDesc(commitment.minutes)}
             </p>
 
@@ -149,7 +149,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
             exit={{ opacity: 0 }}
             className="py-6 px-5 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-6"
           >
-            <p className={`text-center text-white leading-relaxed ${isRTL ? 'text-right' : ''}`}>
+            <p className={`text-center text-white light:text-stone-900 leading-relaxed ${isRTL ? 'text-right' : ''}`}>
               "{t('onboarding.commitment.iCommit')} <span className="text-indigo-400">{name || t('onboarding.commitment.iCommit')}</span>, {t('onboarding.commitment.commitTo')}{' '}
               <span className="text-indigo-400">{dailyCommitmentMinutes} {t('onboarding.commitment.minutesDaily')}</span>{' '}
               {t('onboarding.commitment.toBecome')}{' '}
@@ -167,7 +167,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="text-center text-xs text-zinc-600 mb-4"
+        className="text-center text-xs text-stone-600 light:text-stone-500 mb-4"
       >
         {t('onboarding.commitment.canChangeAnytime')}
       </motion.p>
@@ -186,7 +186,7 @@ export function CommitmentStep({ onNext, onBack }: CommitmentStepProps) {
             w-full py-4 rounded-xl font-medium text-lg transition-all duration-300
             ${dailyCommitmentMinutes
               ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90'
-              : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}
+              : 'bg-stone-800 light:bg-stone-200 text-stone-500 light:text-stone-400 cursor-not-allowed'}
           `}
           whileHover={dailyCommitmentMinutes ? { scale: 1.02 } : {}}
           whileTap={dailyCommitmentMinutes ? { scale: 0.98 } : {}}

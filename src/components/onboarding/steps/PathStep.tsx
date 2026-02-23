@@ -84,15 +84,15 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
   }, []);
 
   if (!mounted) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[70dvh]" />;
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Back button */}
       <button
         onClick={onBack}
-        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
+        className={`flex items-center text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors mb-6 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
         {isRTL ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         <span className="text-sm">{t('common.back')}</span>
@@ -106,7 +106,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
         className="text-center mb-8"
       >
         <motion.p
-          className="text-stone-500 text-sm uppercase tracking-[0.2em] mb-3"
+          className="text-stone-500 light:text-stone-600 text-sm uppercase tracking-[0.2em] mb-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -163,7 +163,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                     className={`relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                       isActive
                         ? `bg-gradient-to-br ${phase.gradient}`
-                        : 'bg-stone-800/50 border border-stone-700/50'
+                        : 'bg-stone-800/50 light:bg-stone-200/50 border border-stone-700/50 light:border-stone-300/50'
                     }`}
                     animate={isHighlighted ? {
                       boxShadow: [
@@ -176,15 +176,15 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                   >
                     <Icon
                       size={24}
-                      className={isActive ? 'text-white' : 'text-stone-600'}
+                      className={isActive ? 'text-white' : 'text-stone-600 light:text-stone-500'}
                     />
 
                     {/* Phase number badge */}
                     <motion.div
                       className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
                         isActive
-                          ? 'bg-stone-950 text-white border-2 border-stone-800'
-                          : 'bg-stone-800 text-stone-600'
+                          ? 'bg-stone-950 light:bg-stone-50 text-white border-2 border-stone-800 light:border-stone-200'
+                          : 'bg-stone-800 light:bg-stone-200 text-stone-600 light:text-stone-500'
                       }`}
                       initial={{ scale: 0 }}
                       animate={{ scale: isActive ? 1 : 0.8 }}
@@ -198,20 +198,20 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                   <div className={`flex-1 pt-1 ${isRTL ? 'text-right' : ''}`}>
                     <div className={`flex items-center gap-2 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <h3 className={`font-semibold transition-colors duration-500 ${
-                        isActive ? 'text-stone-100' : 'text-stone-600'
+                        isActive ? 'text-stone-100 light:text-stone-900' : 'text-stone-600 light:text-stone-500'
                       }`}>
                         {phase.title}
                       </h3>
                       <span className={`text-xs px-2 py-0.5 rounded-full transition-all duration-500 ${
                         isActive
-                          ? 'bg-stone-800 text-stone-400'
-                          : 'bg-stone-900 text-stone-700'
+                          ? 'bg-stone-800 light:bg-stone-200 text-stone-400 light:text-stone-600'
+                          : 'bg-stone-900 light:bg-stone-100 text-stone-700'
                       }`}>
                         {phase.duration}
                       </span>
                     </div>
                     <p className={`text-sm transition-colors duration-500 ${
-                      isActive ? 'text-stone-400' : 'text-stone-700'
+                      isActive ? 'text-stone-400 light:text-stone-600' : 'text-stone-700'
                     }`}>
                       {phase.subtitle}
                     </p>
@@ -224,7 +224,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.3 }}
-                          className="text-xs text-stone-500 mt-2 leading-relaxed"
+                          className="text-xs text-stone-500 light:text-stone-600 mt-2 leading-relaxed"
                         >
                           {phase.description}
                         </motion.p>
@@ -250,9 +250,9 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
                 <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
                   <Users size={16} className="text-amber-400" />
                 </div>
-                <p className="text-stone-300 font-medium">{t('onboarding.path.sameLesson')}</p>
+                <p className="text-stone-300 light:text-stone-700 font-medium">{t('onboarding.path.sameLesson')}</p>
               </div>
-              <p className={`text-stone-500 text-sm ${isRTL ? 'pr-11 text-right' : 'pl-11'}`}>
+              <p className={`text-stone-500 light:text-stone-600 text-sm ${isRTL ? 'pr-11 text-right' : 'pl-11'}`}>
                 {t('onboarding.path.neverAlone')}
               </p>
             </motion.div>
@@ -267,7 +267,7 @@ export function PathStep({ onNext, onBack }: PathStepProps) {
         transition={{ delay: 3.5 }}
         className="text-center my-6"
       >
-        <p className="text-stone-500 text-sm">
+        <p className="text-stone-500 light:text-stone-600 text-sm">
           {t('onboarding.path.totalTime')}
         </p>
       </motion.div>

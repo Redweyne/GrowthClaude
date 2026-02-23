@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(del \"c:\\\\Users\\\\aposl\\\\OneDrive\\\\Desktop\\\\GrowthClaude\\\\GrowthClaude\\\\src\\\\middleware.ts\")",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell.exe -NoProfile:*)",
+      "Bash(\"/c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/verify_vh.ps1\":*)",
+      "Bash(Write-Host \"done\")",
+      "Bash(node_modules/.bin/tsc:*)",
+      "Bash(echo:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(npm audit:*)",
+      "Bash(python3:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git rm:*)",
+      "Bash(node -e:*)"
+    ]
+  }
+}

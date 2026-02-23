@@ -22,7 +22,7 @@ const PARTICLES = [
 
 export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenProps) {
   return (
-    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 bg-black light:bg-stone-50 flex flex-col items-center justify-center overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -33,7 +33,7 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
       {PARTICLES.map((particle, index) => (
         <motion.div
           key={index}
-          className="absolute w-0.5 h-0.5 rounded-full bg-amber-400/60"
+          className="absolute w-0.5 h-0.5 rounded-full bg-amber-400/60 light:bg-amber-500/40"
           style={{
             left: particle.left,
             top: particle.top,
@@ -74,10 +74,10 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <p className="text-amber-400/60 text-xs font-medium tracking-[0.2em] uppercase mb-3">
+          <p className="text-amber-400/60 light:text-amber-600/60 text-xs font-medium tracking-[0.2em] uppercase mb-3">
             You&apos;ve Unlocked
           </p>
-          <h1 className="text-6xl font-black text-white mb-5 tracking-tight">
+          <h1 className="text-6xl font-black text-white light:text-stone-900 mb-5 tracking-tight">
             SPARK
           </h1>
         </motion.div>
@@ -87,10 +87,10 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          <p className="text-white/60 text-base leading-relaxed mb-2">
+          <p className="text-white/60 light:text-stone-700 text-base leading-relaxed mb-2">
             Your daily feed of short, high-energy wisdom.
           </p>
-          <p className="text-white/30 text-sm leading-relaxed mb-10">
+          <p className="text-white/30 light:text-stone-500 text-sm leading-relaxed mb-10">
             Swipe vertically, stay focused, and act on what resonates.
           </p>
         </motion.div>
@@ -116,7 +116,7 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           <button
             type="button"
             onClick={onSkip}
-            className="text-white/20 text-sm hover:text-white/40 transition-colors"
+            className="text-white/20 light:text-stone-400 text-sm hover:text-white/40 light:hover:text-stone-600 transition-colors"
           >
             Maybe later
           </button>

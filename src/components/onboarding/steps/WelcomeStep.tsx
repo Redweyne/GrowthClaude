@@ -50,11 +50,11 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
   }, [mounted]);
 
   if (!mounted) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[70dvh]" />;
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center text-center px-6 py-8">
       <AnimatePresence mode="wait">
         {/* ─────────────────────────────────────────────────────────────────
             Phase 1: Opening - Create presence and stillness
@@ -66,7 +66,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 1 }}
-            className="space-y-8"
+            className="space-y-10"
           >
             {/* Breathing circle - represents the present moment */}
             <motion.div
@@ -120,7 +120,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="text-2xl sm:text-3xl text-amber-100/90 font-light tracking-wide"
+              className="text-4xl sm:text-5xl md:text-6xl text-amber-100/90 light:text-amber-900 font-bold tracking-tight leading-tight"
             >
               {t('onboarding.welcome.takeBreath')}
             </motion.p>
@@ -129,7 +129,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.6 }}
               transition={{ delay: 1.8, duration: 0.8 }}
-              className="text-stone-400 text-lg"
+              className="text-stone-400 light:text-stone-600 text-xl sm:text-2xl leading-relaxed"
             >
               {t('onboarding.welcome.hereForReason')}
             </motion.p>
@@ -146,7 +146,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.8 }}
-            className="space-y-10 max-w-lg"
+            className="space-y-12 max-w-2xl"
           >
             {/* The acknowledgment */}
             <motion.div
@@ -154,10 +154,10 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <p className="text-xl sm:text-2xl text-stone-300 font-light leading-relaxed">
+              <p className="text-2xl sm:text-3xl md:text-4xl text-stone-300 light:text-stone-700 font-medium tracking-tight leading-tight">
                 {t('onboarding.welcome.notWorking')}
                 <br />
-                <span className="text-amber-200/80">{t('onboarding.welcome.theWayYouWant')}</span>
+                <span className="text-amber-200 font-bold">{t('onboarding.welcome.theWayYouWant')}</span>
               </p>
             </motion.div>
 
@@ -170,7 +170,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             >
               {/* Decorative line */}
               <motion.div
-                className="absolute left-1/2 -translate-x-1/2 -top-5 w-16 h-px"
+                className="absolute left-1/2 -translate-x-1/2 -top-6 w-20 h-px"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 1.3, duration: 0.6 }}
@@ -179,7 +179,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 }}
               />
 
-              <p className="text-stone-500 text-lg italic">
+              <p className="text-stone-500 light:text-stone-600 text-xl sm:text-2xl italic leading-relaxed">
                 {t('onboarding.welcome.thatsWhy')}
               </p>
             </motion.div>
@@ -209,7 +209,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="space-y-10 max-w-lg"
+            className="space-y-12 max-w-4xl"
           >
             {/* The promise */}
             <motion.div
@@ -218,7 +218,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               transition={{ delay: 0.2, duration: 0.6 }}
             >
               <motion.p
-                className="text-2xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 font-light leading-relaxed mb-4"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 font-bold tracking-tighter leading-tight mb-6"
                 style={{
                   textShadow: '0 0 40px rgba(251, 191, 36, 0.2)',
                 }}
@@ -231,7 +231,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-stone-400"
+                className="text-stone-400 light:text-stone-600 text-lg sm:text-xl leading-relaxed"
               >
                 {t('onboarding.welcome.ancientWisdom')}
               </motion.p>
@@ -242,9 +242,9 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
-              className="py-8 border-t border-b border-stone-800/50"
+              className="py-10 border-t border-b border-stone-800/50 light:border-stone-300/50"
             >
-              <div className={`flex justify-center gap-10 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className={`flex justify-center gap-12 sm:gap-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 {[
                   { icon: BookOpen, label: t('onboarding.welcome.learn'), color: 'text-purple-400' },
                   { icon: Target, label: t('onboarding.welcome.practice'), color: 'text-amber-400' },
@@ -252,18 +252,18 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 ].map((item, index) => (
                   <motion.div
                     key={index}
-                    className="flex flex-col items-center gap-3"
+                    className="flex flex-col items-center gap-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1 + index * 0.15 }}
                   >
                     <motion.div
-                      className="w-14 h-14 rounded-2xl bg-stone-900/60 border border-stone-800/80 flex items-center justify-center"
+                      className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-stone-900/60 light:bg-stone-200/60 border border-stone-800/80 flex items-center justify-center"
                       whileHover={{ scale: 1.1, borderColor: 'rgba(251, 191, 36, 0.3)' }}
                     >
-                      <item.icon size={24} className={item.color} />
+                      <item.icon size={28} className={item.color} />
                     </motion.div>
-                    <span className="text-sm text-stone-500 font-medium">{item.label}</span>
+                    <span className="text-base sm:text-lg text-stone-400 light:text-stone-600 font-semibold tracking-wide">{item.label}</span>
                   </motion.div>
                 ))}
               </div>
@@ -295,7 +295,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 2 }}
-                className="mt-5 text-xs text-stone-600"
+                className="mt-5 text-xs text-stone-600 light:text-stone-500"
               >
                 {t('onboarding.welcome.noAccount')}
               </motion.p>

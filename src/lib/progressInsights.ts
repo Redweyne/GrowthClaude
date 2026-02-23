@@ -23,6 +23,15 @@ export interface TransformationScore {
   };
 }
 
+export interface JourneyMilestone {
+  date: string;
+  type: 'first-lesson' | 'streak-milestone' | 'reflection-depth' | 'identity-shift' | 'breakthrough';
+  title: string;
+  description: string;
+  icon: string;
+  significance: 'minor' | 'notable' | 'major' | 'transformative';
+}
+
 export interface PersonalInsight {
   type: 'observation' | 'encouragement' | 'challenge' | 'celebration' | 'reflection';
   message: string;
@@ -167,6 +176,90 @@ export function calculateTransformationScore(ctx: ProgressContext): Transformati
 // JOURNEY MILESTONES GENERATOR
 // The significant moments that tell their story
 // ============================================================================
+
+export function generateJourneyMilestones(ctx: ProgressContext): JourneyMilestone[] {
+  const milestones: JourneyMilestone[] = [];
+
+  // First lesson milestone
+  if (ctx.activityLog.length > 0) {
+    const firstDay = ctx.activityLog[0];
+    milestones.push({
+      date: firstDay.date,
+      type: 'first-lesson',
+      title: 'The Beginning',
+      description: 'You took your first step on this path',
+      icon: '🌱',
+      significance: 'transformative'
+    });
+  }
+
+  // Streak milestones
+  const streakMilestones = [
+    { streak: 7, title: 'First Week', desc: 'One week of showing up', icon: '🔥', sig: 'notable' as const },
+    { streak: 14, title: 'Two Weeks Strong', desc: 'The habit is forming', icon: '⚡', sig: 'notable' as const },
+    { streak: 21, title: 'Habit Forged', desc: '21 days of transformation', icon: '🔨', sig: 'major' as const },
+    { streak: 30, title: 'Month of Growth', desc: 'A full month of dedication', icon: '🌙', sig: 'major' as const },
+    { streak: 60, title: 'Discipline Embodied', desc: 'Two months of unwavering practice', icon: '💎', sig: 'transformative' as const },
+    { streak: 90, title: 'Quarter Champion', desc: 'Three months of transformation', icon: '👑', sig: 'transformative' as const },
+  ];
+
+  for (const sm of streakMilestones) {
+    if (ctx.longestStreak >= sm.streak) {
+      milestones.push({
+        date: '', // We don't have exact date
+        type: 'streak-milestone',
+        title: sm.title,
+        description: sm.desc,
+        icon: sm.icon,
+        significance: sm.sig
+      });
+    }
+  }
+
+  // Word milestones
+  const wordMilestones = [
+    { words: 1000, title: '1,000 Words', desc: 'A thousand words of reflection', icon: '✍️', sig: 'notable' as const },
+    { words: 5000, title: '5,000 Words', desc: 'Five thousand words of self-discovery', icon: '📚', sig: 'major' as const },
+    { words: 10000, title: '10,000 Words', desc: 'Ten thousand words of transformation', icon: '📖', sig: 'transformative' as const },
+  ];
+
+  for (const wm of wordMilestones) {
+    if (ctx.totalWords >= wm.words) {
+      milestones.push({
+        date: '',
+        type: 'reflection-depth',
+        title: wm.title,
+        description: wm.desc,
+        icon: wm.icon,
+        significance: wm.sig
+      });
+    }
+  }
+
+  // Identity milestones
+  if (ctx.totalIdentityStatements >= 1) {
+    milestones.push({
+      date: '',
+      type: 'identity-shift',
+      title: 'First Declaration',
+      description: 'You declared who you are becoming',
+      icon: '🪞',
+      significance: 'major'
+    });
+  }
+  if (ctx.totalIdentityStatements >= 5) {
+    milestones.push({
+      date: '',
+      type: 'identity-shift',
+      title: 'Identity Architect',
+      description: 'Five declarations of your new self',
+      icon: '🦋',
+      significance: 'transformative'
+    });
+  }
+
+  return milestones;
+}
 
 // ============================================================================
 // PERSONAL INSIGHTS GENERATOR

@@ -147,7 +147,7 @@ function RadarChart({
           y={y}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-[10px] fill-zinc-400 font-medium"
+          className="text-[10px] fill-stone-400 light:fill-stone-600 font-medium"
         >
           {dim.shortLabel}
         </text>
@@ -160,7 +160,7 @@ function RadarChart({
           y={center}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-2xl font-bold fill-white"
+          className="text-2xl font-bold fill-white light:fill-stone-900"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
@@ -201,13 +201,13 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
     return (
       <Card variant="glass" padding="lg" className="text-center">
         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center">
-          <TrendingUp size={32} className="text-zinc-600" />
+          <TrendingUp size={32} className="text-stone-600 light:text-stone-500" />
         </div>
-        <h3 className="text-lg font-medium text-white mb-2">No Assessments Yet</h3>
-        <p className="text-sm text-zinc-500 mb-4">
+        <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">No Assessments Yet</h3>
+        <p className="text-sm text-stone-500 light:text-stone-500 mb-4">
           Complete your first monthly assessment to see your transformation visualized.
         </p>
-        <p className="text-xs text-zinc-600 italic">
+        <p className="text-xs text-stone-600 light:text-stone-500 italic">
           &quot;No man is free who is not master of himself.&quot; — Epictetus
         </p>
       </Card>
@@ -224,8 +224,8 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
     return (
       <Card variant="glass" padding="md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-white">Your Growth</h3>
-          <span className="text-xs text-zinc-500">
+          <h3 className="text-sm font-medium text-white light:text-stone-900">Your Growth</h3>
+          <span className="text-xs text-stone-500 light:text-stone-500">
             {new Date(current.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
           </span>
         </div>
@@ -233,7 +233,7 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
         <div className="flex items-center justify-center mb-4">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500/20 to-purple-500/20 flex items-center justify-center">
             <div className="text-center">
-              <span className="text-2xl font-bold text-white">{averageScore.toFixed(1)}</span>
+              <span className="text-2xl font-bold text-white light:text-stone-900">{averageScore.toFixed(1)}</span>
               {averageChange !== 0 && (
                 <div className={`flex items-center justify-center text-xs ${
                   averageChange > 0 ? 'text-emerald-400' : 'text-red-400'
@@ -258,7 +258,7 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
                 >
                   <Icon size={14} style={{ color: dim.color }} />
                 </div>
-                <span className="text-xs font-medium text-white">{score}</span>
+                <span className="text-xs font-medium text-white light:text-stone-900">{score}</span>
               </div>
             );
           })}
@@ -272,8 +272,8 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Your Transformation</h2>
-        <p className="text-zinc-400">
+        <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">Your Transformation</h2>
+        <p className="text-stone-400 light:text-stone-600">
           Visual proof of your growth journey
         </p>
       </div>
@@ -289,12 +289,12 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
         <div className="flex items-center justify-center gap-6 mt-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span className="text-xs text-zinc-400">Current Month</span>
+            <span className="text-xs text-stone-400 light:text-stone-600">Current Month</span>
           </div>
           {previous && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-purple-500 opacity-50" />
-              <span className="text-xs text-zinc-400">Last Month</span>
+              <span className="text-xs text-stone-400 light:text-stone-600">Last Month</span>
             </div>
           )}
         </div>
@@ -302,7 +302,7 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
 
       {/* Dimension Breakdown */}
       <Card variant="glass" padding="lg">
-        <h3 className="font-medium text-white mb-4">Dimension Breakdown</h3>
+        <h3 className="font-medium text-white light:text-stone-900 mb-4">Dimension Breakdown</h3>
         <div className="space-y-4">
           {DIMENSIONS.map((dim, index) => {
             const Icon = dim.icon;
@@ -327,9 +327,9 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
 
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-white font-medium">{dim.label}</span>
+                    <span className="text-white light:text-stone-900 font-medium">{dim.label}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-white font-bold">{score}</span>
+                      <span className="text-white light:text-stone-900 font-bold">{score}</span>
                       {change !== null && change !== 0 && (
                         <span className={`flex items-center text-xs ${
                           change > 0 ? 'text-emerald-400' : 'text-red-400'
@@ -339,13 +339,13 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
                         </span>
                       )}
                       {change === 0 && (
-                        <span className="flex items-center text-xs text-zinc-500">
+                        <span className="flex items-center text-xs text-stone-500 light:text-stone-500">
                           <Minus size={12} />
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${score * 10}%` }}
@@ -364,18 +364,18 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
       {/* Month Comparison */}
       {previous && (
         <Card variant="glass" padding="lg">
-          <h3 className="font-medium text-white mb-4">Month Over Month</h3>
+          <h3 className="font-medium text-white light:text-stone-900 mb-4">Month Over Month</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-zinc-800/50 text-center">
-              <p className="text-xs text-zinc-500 mb-1">
+            <div className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 text-center">
+              <p className="text-xs text-stone-500 light:text-stone-500 mb-1">
                 {new Date(previous.date).toLocaleDateString('en-US', { month: 'long' })}
               </p>
               <p className="text-2xl font-bold text-purple-400">
                 {(Object.values(previous.scores).reduce((a, b) => a + b, 0) / 5).toFixed(1)}
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-800/50 text-center">
-              <p className="text-xs text-zinc-500 mb-1">
+            <div className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 text-center">
+              <p className="text-xs text-stone-500 light:text-stone-500 mb-1">
                 {new Date(current.date).toLocaleDateString('en-US', { month: 'long' })}
               </p>
               <p className="text-2xl font-bold text-emerald-400">
@@ -409,9 +409,9 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
       {/* Reflection */}
       {current.reflection && (
         <Card variant="glass" padding="lg">
-          <h3 className="font-medium text-white mb-3">Your Reflection</h3>
-          <p className="text-zinc-300 italic">&quot;{current.reflection}&quot;</p>
-          <p className="text-xs text-zinc-500 mt-2">
+          <h3 className="font-medium text-white light:text-stone-900 mb-3">Your Reflection</h3>
+          <p className="text-stone-300 light:text-stone-700 italic">&quot;{current.reflection}&quot;</p>
+          <p className="text-xs text-stone-500 light:text-stone-500 mt-2">
             — {new Date(current.date).toLocaleDateString('en-US', {
               month: 'long',
               day: 'numeric',

@@ -169,7 +169,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center justify-center rounded-full text-stone-500 hover:text-stone-400 hover:bg-stone-800/50 transition-all ${
+        className={`inline-flex items-center justify-center rounded-full text-stone-500 light:text-stone-400 hover:text-stone-400 light:hover:text-stone-700 hover:bg-stone-800/50 light:hover:bg-stone-200/50 transition-all ${
           size === 'sm' ? 'w-5 h-5' : 'w-6 h-6'
         } ${className}`}
         aria-label={`Help: ${content.title}`}
@@ -186,7 +186,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm z-[100]"
+              className="fixed inset-0 bg-stone-950/80 light:bg-stone-200/80 backdrop-blur-sm z-[100]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -198,16 +198,16 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-[101] max-h-[80vh] overflow-y-auto"
             >
-              <div className="bg-stone-900 border-t border-stone-800 rounded-t-3xl">
+              <div className="bg-stone-900 light:bg-white border-t border-stone-800 light:border-stone-200 rounded-t-3xl">
                 {/* Handle */}
                 <div className="flex justify-center pt-3 pb-2">
-                  <div className="w-10 h-1 rounded-full bg-stone-700" />
+                  <div className="w-10 h-1 rounded-full bg-stone-700 light:bg-stone-300" />
                 </div>
 
                 {/* Close button */}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-300 transition-colors"
+                  className="absolute top-4 right-4 p-2 text-stone-500 light:text-stone-400 hover:text-stone-300 light:hover:text-stone-900 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -229,7 +229,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.15 }}
-                    className="text-xl font-bold text-stone-100 text-center mb-3"
+                    className="text-xl font-bold text-stone-100 light:text-stone-900 text-center mb-3"
                   >
                     {content.title}
                   </motion.h3>
@@ -239,7 +239,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="text-stone-400 text-center mb-6 leading-relaxed"
+                    className="text-stone-400 light:text-stone-600 text-center mb-6 leading-relaxed"
                   >
                     {content.description}
                   </motion.p>
@@ -255,10 +255,10 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                       {content.details.map((detail, index) => (
                         <div
                           key={index}
-                          className="flex items-start gap-3 p-3 rounded-xl bg-stone-800/50"
+                          className="flex items-start gap-3 p-3 rounded-xl bg-stone-800/50 light:bg-stone-100/50"
                         >
                           <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                          <p className="text-stone-300 text-sm">{detail}</p>
+                          <p className="text-stone-300 light:text-stone-700 text-sm">{detail}</p>
                         </div>
                       ))}
                     </motion.div>
@@ -273,7 +273,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                   >
                     <button
                       onClick={() => setIsOpen(false)}
-                      className="flex-1 py-3 px-4 rounded-xl bg-amber-500 text-stone-900 font-medium hover:bg-amber-400 transition-colors"
+                      className="flex-1 py-3 px-4 rounded-xl bg-amber-500 text-stone-900 font-medium hover:bg-amber-400 light:hover:bg-amber-500 transition-colors"
                     >
                       Got it
                     </button>
@@ -282,7 +282,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                         dismissHelp(topic);
                         setIsOpen(false);
                       }}
-                      className="py-3 px-4 rounded-xl bg-stone-800 text-stone-400 hover:text-stone-300 transition-colors text-sm"
+                      className="py-3 px-4 rounded-xl bg-stone-800 light:bg-stone-100 text-stone-400 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm"
                     >
                       Don&apos;t show again
                     </button>

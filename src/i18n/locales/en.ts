@@ -49,6 +49,7 @@ const en = {
     lessons: 'Lessons',
     exercises: 'Exercises',
     reflections: 'Reflections',
+    Milestones: 'Milestones',
     milestones: 'Milestones',
     daily: 'daily',
     weekly: 'Weekly',
@@ -80,7 +81,30 @@ const en = {
       purpose: 'Purpose',
       thePath: 'The Path',
       commitment: 'Commitment',
+      createOrigin: 'Origin Point',
       begin: 'Begin',
+    },
+
+    // Auth Step — The Origin Point
+    auth: {
+      line1: 'Every transformation has an origin point.',
+      line2: 'The exact moment you stopped watching and started becoming.',
+      line3: 'This is yours.',
+      line4: 'Seal it.',
+      formTitle: 'Your Origin Point',
+      formSubtitle: 'Save your transformation. Never lose your progress.',
+      sealWithGoogle: 'Seal with Google',
+      or: 'or',
+      emailPlaceholder: 'Your email',
+      passwordPlaceholder: 'Create a password',
+      sealOrigin: 'Seal My Origin',
+      continueAsWanderer: 'Continue as a wanderer',
+      alreadySealed: 'Your origin is already sealed.',
+      sealedTitle: 'Your origin is sealed.',
+      sealedSubtitle: 'The journey begins now.',
+      notConfigured: 'Authentication not configured — you can still continue.',
+      errorAlreadyExists: 'That path is already marked — try signing in instead',
+      errorWeakPassword: 'Seal needs more strength — try a longer password',
     },
 
     // Welcome Step
@@ -452,6 +476,7 @@ const en = {
     ],
     navigation: {
       progress: 'Progress',
+      Milestones: 'Milestones',
       identity: 'Identity',
       practice: 'Practice',
       growth: 'Growth',
@@ -498,6 +523,11 @@ const en = {
     language: 'Language',
     selectLanguage: 'Select your language',
 
+    // Appearance
+    appearance: 'Appearance',
+    theme: 'Theme',
+    themeDesc: 'Switch between dark and light mode',
+
     // Audio & Haptics
     audioHaptics: 'Audio & Haptics',
     soundEffects: 'Sound Effects',
@@ -517,6 +547,19 @@ const en = {
     appName: 'Transformation Hub',
     appDesc: 'Your daily journey to growth',
     version: 'Version',
+
+    // Account
+    account: 'Account',
+    signedInAs: 'Signed in as',
+    signOut: 'Sign Out',
+    linkAccount: 'Link Your Account',
+    linkAccountDesc: 'Sync your progress across all devices',
+    signIn: 'Sign In',
+    createAccount: 'Create Account',
+    wanderingMode: 'Wandering mode',
+    wanderingModeDesc: 'Progress saved locally only',
+    accountLinked: 'Linked',
+    anonymous: 'Anonymous',
 
     // Danger Zone
     dangerZone: 'Danger Zone',
@@ -695,6 +738,28 @@ const en = {
     wellDone: 'Well done!',
     back: 'Back',
     continueText: 'Continue',
+    continue: 'Continue',
+    agree: 'YES',
+    disagree: 'NO',
+    swipeHint: 'Swipe right to agree, left to disagree',
+    seeResults: 'See what this reveals',
+    dragToReorder: 'Drag to reorder. Your #1 goes to the top.',
+    lockInRanking: 'Lock in my ranking',
+    yourTopChoice: 'Your #1:',
+    forging: 'Forging...',
+    yourMantra: 'Your mantra',
+    forgeMantra: 'Forge my mantra',
+    selectMore: 'Select {count} more',
+    dragToPlace: 'Tap or drag to position, then place',
+    placeHere: 'Place here',
+    somethingWentWrong: 'Something went wrong',
+    selected: 'selected',
+    minRequired: 'min {min}',
+    rapidVerdictLabel: 'Rapid Verdict',
+    priorityTowerLabel: 'Priority Tower',
+    scenarioSnapLabel: 'Scenario Snap',
+    heatCheckLabel: 'Heat Check',
+    wordForgeLabel: 'Word Forge',
     // Application Exercise
     tomorrowOpportunity: "Tomorrow is a new opportunity to practice what you've learned today.",
     tomorrowIWill: 'Tomorrow, I will...',
@@ -919,8 +984,22 @@ const en = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ACHIEVEMENTS
+  // Milestones
   // ─────────────────────────────────────────────────────────────────────────
+  Milestones: {
+    title: 'Milestones',
+    gallery: 'Milestone Gallery',
+    unlocked: 'Unlocked',
+    locked: 'Locked',
+    progress: 'Progress',
+    earned: 'Earned',
+    unlockedAt: 'Unlocked on {date}',
+    keepGoing: 'Keep going to unlock!',
+    celebration: 'Milestone Unlocked!',
+    newMilestone: 'New Milestone',
+    continue: 'Continue',
+  },
+
   // ─────────────────────────────────────────────────────────────────────────
   // PROGRESS
   // ─────────────────────────────────────────────────────────────────────────
@@ -932,6 +1011,7 @@ const en = {
       totalReflections: 'Total Reflections',
       totalWords: 'Words Written',
       identityStatements: 'Identity Statements',
+      Milestones: 'Milestones',
       daysSinceStart: 'Days Active',
       avgReflectionLength: 'Avg. Reflection Length',
     },
@@ -1140,6 +1220,7 @@ const en = {
         totalDays: 'Total Days',
         consistency: 'Consistency',
       },
+      MilestoneUnlockedCount: '{unlocked} of {total} unlocked',
     },
   },
 
@@ -1159,6 +1240,15 @@ const en = {
           days: 'Days',
           lessons: 'Lessons',
           xp: 'XP',
+        },
+      },
+      Milestone: {
+        titleFallback: 'Milestone Reached',
+        messageFallback: 'I reached a new milestone on my journey!',
+        stats: {
+          virtue: 'Virtue',
+          wisdom: 'wisdom',
+          totalXp: 'Total XP',
         },
       },
       level: {
@@ -1221,3 +1311,4 @@ const en = {
 } as const;
 
 export default en;
+

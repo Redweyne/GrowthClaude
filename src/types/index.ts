@@ -149,6 +149,7 @@ export interface MentorMessage {
   type: 'encouragement' | 'wisdom' | 'challenge' | 'celebration';
 }
 
+
 // Level System
 export interface Level {
   level: number;
@@ -181,3 +182,4 @@ export function getXpProgress(xp: number): { current: number; needed: number; pe
   const percentage = Math.min((current / needed) * 100, 100);
   return { current, needed, percentage };
 }
+

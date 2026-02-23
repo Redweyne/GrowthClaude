@@ -19,6 +19,7 @@ import { useStore } from '@/store/useStore';
 import { TRANSFORMATION_GOALS, type TransformationGoal } from '@/types';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 
 interface GoalStepProps {
   onNext: () => void;
@@ -63,6 +64,8 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
   const { name, transformationGoal, setTransformationGoal } = useStore();
   const [mounted, setMounted] = useState(false);
   const { t, isRTL } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
 
   // Get translated description for a goal
   const getGoalDescription = (goalId: string): string => {
@@ -88,18 +91,18 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
   const getGoalTitle = (goalId: TransformationGoal) => t(`onboarding.goal.goals.${goalId}.title` as any);
 
   if (!mounted) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[70dvh]" />;
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Back button */}
       <motion.button
         onClick={onBack}
         initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
+        className={`flex items-center text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors mb-6 group ${isRTL ? 'self-end flex-row-reverse' : 'self-start'}`}
       >
         <ChevronLeft size={20} className={`transition-transform ${isRTL ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
         <span className="text-sm">{t('common.back')}</span>
@@ -116,15 +119,15 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, ...springs.gentle }}
-          className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-stone-900 border border-purple-500/20 flex items-center justify-center"
+          className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-stone-900 light:to-stone-100 border border-purple-500/20 flex items-center justify-center"
         >
           <Compass size={26} className="text-purple-400" />
         </motion.div>
 
-        <p className="text-2xl sm:text-3xl text-amber-100 font-light mb-2">
+        <p className="text-2xl sm:text-3xl text-amber-100 light:text-amber-900 font-light mb-2">
           {name ? `${name}, ` : ''}{t('onboarding.goal.whoDoYouWant')}
         </p>
-        <p className="text-stone-500">{t('onboarding.goal.chooseTransformation')}</p>
+        <p className="text-stone-500 light:text-stone-600">{t('onboarding.goal.chooseTransformation')}</p>
       </motion.div>
 
       {/* Goal options - beautiful cards with depth */}
@@ -144,11 +147,11 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
               className="relative p-4 rounded-2xl text-left transition-all duration-300 overflow-hidden group"
               style={{
                 background: isSelected
-                  ? `linear-gradient(135deg, ${depth.color}15 0%, rgba(12, 10, 9, 0.9) 100%)`
-                  : 'rgba(28, 25, 23, 0.6)',
+                  ? `linear-gradient(135deg, ${depth.color}15 0%, ${isLight ? 'rgba(245, 245, 244, 0.9)' : 'rgba(12, 10, 9, 0.9)'} 100%)`
+                  : isLight ? 'rgba(245, 245, 244, 0.6)' : 'rgba(28, 25, 23, 0.6)',
                 border: isSelected
                   ? `2px solid ${depth.color}50`
-                  : '2px solid rgba(68, 64, 60, 0.5)',
+                  : isLight ? '2px solid rgba(214, 211, 209, 0.5)' : '2px solid rgba(68, 64, 60, 0.5)',
                 boxShadow: isSelected ? `0 0 30px ${depth.glow}` : 'none',
               }}
               whileHover={{
@@ -178,7 +181,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
               <h3
                 className="font-medium text-sm relative z-10 transition-colors"
                 style={{
-                  color: isSelected ? depth.color : '#d6d3d1',
+                  color: isSelected ? depth.color : isLight ? '#44403c' : '#d6d3d1',
                 }}
               >
                 {getGoalTitle(goal.id)}
@@ -238,7 +241,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
             <div
               className="text-center py-6 px-5 rounded-2xl border"
               style={{
-                background: `linear-gradient(135deg, ${selectedDepth.color}08 0%, rgba(12, 10, 9, 0.8) 100%)`,
+                background: `linear-gradient(135deg, ${selectedDepth.color}08 0%, ${isLight ? 'rgba(245, 245, 244, 0.8)' : 'rgba(12, 10, 9, 0.8)'} 100%)`,
                 borderColor: `${selectedDepth.color}20`,
               }}
             >
@@ -255,7 +258,7 @@ export function GoalStep({ onNext, onBack }: GoalStepProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-stone-400 text-sm leading-relaxed italic"
+                className="text-stone-400 light:text-stone-600 text-sm leading-relaxed italic"
               >
                 &ldquo;{getGoalDescription(transformationGoal)}&rdquo;
               </motion.p>

@@ -52,7 +52,11 @@ export type UISound =
   | 'tap' | 'tapConfirm' | 'success' | 'successBig' | 'complete'
   | 'levelUp' | 'streak' | 'bell' | 'chime' | 'whoosh' | 'whooshOut'
   | 'pop' | 'celebrate' | 'unlock' | 'notification' | 'reveal'
-  | 'keystroke' | 'error' | 'gong' | 'singingBowl';
+  | 'keystroke' | 'error' | 'gong' | 'singingBowl'
+  // Exercise-specific sounds (aliased to existing sounds)
+  | 'swipeRight' | 'swipeLeft' | 'placeItem' | 'reorderItem'
+  | 'frameAdvance' | 'choiceSelect' | 'markerPlace'
+  | 'wordSelect' | 'forgeComplete' | 'resultReveal';
 
 export type AmbientSound =
   | 'onboarding' | 'lessonCalm' | 'lessonDeep' | 'reflection'
@@ -167,6 +171,17 @@ const UI_SOUNDS: Record<string, string> = {
   error: `${BASE_PATH}/audio/ui/pop.mp3`,
   gong: `${BASE_PATH}/audio/ui/bell.mp3`,
   singingBowl: `${BASE_PATH}/audio/ui/bell.mp3`,
+  // Exercise-specific sounds (aliased to existing files)
+  swipeRight: `${BASE_PATH}/audio/ui/success.mp3`,
+  swipeLeft: `${BASE_PATH}/audio/ui/pop.mp3`,
+  placeItem: `${BASE_PATH}/audio/ui/tap.mp3`,
+  reorderItem: `${BASE_PATH}/audio/ui/whoosh.mp3`,
+  frameAdvance: `${BASE_PATH}/audio/ui/whoosh.mp3`,
+  choiceSelect: `${BASE_PATH}/audio/ui/tap.mp3`,
+  markerPlace: `${BASE_PATH}/audio/ui/chime.mp3`,
+  wordSelect: `${BASE_PATH}/audio/ui/tap.mp3`,
+  forgeComplete: `${BASE_PATH}/audio/ui/celebrate.mp3`,
+  resultReveal: `${BASE_PATH}/audio/ui/chime.mp3`,
 };
 
 const SCENE_MUSIC: Record<string, { path: string; randomStart: boolean; duration?: number }> = {
@@ -577,6 +592,18 @@ export const playCelebration = (volume?: number) => {
     playUI('celebrate');
   }
 };
+
+// Exercise-specific convenience exports
+export const playSwipeRight = () => playUI('swipeRight');
+export const playSwipeLeft = () => playUI('swipeLeft');
+export const playPlaceItem = () => playUI('placeItem');
+export const playReorderItem = () => playUI('reorderItem');
+export const playFrameAdvance = () => playUI('frameAdvance');
+export const playChoiceSelect = () => playUI('choiceSelect');
+export const playMarkerPlace = () => playUI('markerPlace');
+export const playWordSelect = () => playUI('wordSelect');
+export const playForgeComplete = () => playUI('forgeComplete');
+export const playResultReveal = () => playUI('resultReveal');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCENE MUSIC - Looping background with crossfade

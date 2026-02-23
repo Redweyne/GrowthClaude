@@ -94,7 +94,7 @@ export function BottomNavBar({
         paddingBottom: 'max(env(safe-area-inset-bottom), 6px)',
       }}
     >
-      <div className="absolute inset-0 bg-stone-950/90 backdrop-blur-xl border-t border-stone-800/60" />
+      <div className="absolute inset-0 bg-stone-950/90 light:bg-stone-50/90 backdrop-blur-xl border-t border-stone-800/60 light:border-stone-300/80" />
 
       <div className="relative max-w-lg mx-auto flex items-end justify-around px-2 pt-1 pb-2">
         {TABS.map((tab) => {
@@ -119,7 +119,7 @@ export function BottomNavBar({
                     isActive
                       ? 'bg-gradient-to-br from-amber-400 to-orange-500'
                       : isLocked || isDone
-                        ? 'bg-stone-800 border border-stone-700'
+                        ? 'bg-stone-800 border border-stone-700 light:bg-stone-200 light:border-stone-300'
                         : 'bg-gradient-to-br from-amber-500/80 to-orange-500/80'
                   }`}
                   whileTap={{ scale: 0.9 }}
@@ -146,7 +146,7 @@ export function BottomNavBar({
                       isActive
                         ? 'text-stone-950'
                         : isLocked || isDone
-                          ? 'text-stone-600'
+                          ? 'text-stone-600 light:text-stone-500'
                           : 'text-stone-950'
                     }
                     fill={isActive || (!isLocked && !isDone) ? 'currentColor' : 'none'}
@@ -158,8 +158,8 @@ export function BottomNavBar({
                     isActive
                       ? 'text-amber-400'
                       : isLocked || isDone
-                        ? 'text-stone-700'
-                        : 'text-stone-400'
+                        ? 'text-stone-700 light:text-stone-500'
+                        : 'text-stone-400 light:text-stone-600'
                   }`}
                 >
                   Spark
@@ -184,7 +184,7 @@ export function BottomNavBar({
                 <Icon
                   size={22}
                   className={`transition-colors duration-200 ${
-                    isActive ? 'text-white' : 'text-stone-500'
+                    isActive ? 'text-white light:text-stone-900' : 'text-stone-500 light:text-stone-700'
                   }`}
                   fill={isActive ? 'currentColor' : 'none'}
                   strokeWidth={isActive ? 2.5 : 2}
@@ -206,7 +206,7 @@ export function BottomNavBar({
 
               <span
                 className={`text-[10px] mt-1 font-medium transition-colors duration-200 ${
-                  isActive ? 'text-white' : 'text-stone-600'
+                  isActive ? 'text-white light:text-stone-900' : 'text-stone-600 light:text-stone-700'
                 }`}
               >
                 {tab.label}
@@ -214,7 +214,7 @@ export function BottomNavBar({
 
               {isActive && (
                 <motion.div
-                  className="absolute -bottom-0 w-1 h-1 rounded-full bg-white"
+                  className="absolute -bottom-0 w-1 h-1 rounded-full bg-white light:bg-stone-900"
                   layoutId="activeTabDot"
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 />

@@ -49,6 +49,7 @@ const ar = {
     lessons: 'الدروس',
     exercises: 'التمارين',
     reflections: 'التأملات',
+    Milestones: 'الإنجازات',
     milestones: 'المراحل',
     daily: 'يومياً',
     weekly: 'أسبوعي',
@@ -80,7 +81,30 @@ const ar = {
       purpose: 'الهدف',
       thePath: 'الطريق',
       commitment: 'الالتزام',
+      createOrigin: 'نقطة الأصل',
       begin: 'البداية',
+    },
+
+    // Auth Step — نقطة الأصل
+    auth: {
+      line1: 'لكل تحوّل نقطة أصل.',
+      line2: 'اللحظة الدقيقة التي توقفت فيها عن المشاهدة وبدأت تصبح.',
+      line3: 'هذه لحظتك.',
+      line4: 'اختمها.',
+      formTitle: 'نقطة أصلك',
+      formSubtitle: 'احفظ تحوّلك. لا تفقد تقدمك أبداً.',
+      sealWithGoogle: 'الختم بجوجل',
+      or: 'أو',
+      emailPlaceholder: 'بريدك الإلكتروني',
+      passwordPlaceholder: 'أنشئ كلمة مرور',
+      sealOrigin: 'اختم أصلي',
+      continueAsWanderer: 'المتابعة كمسافر',
+      alreadySealed: 'أصلك مختوم بالفعل.',
+      sealedTitle: 'أصلك مختوم.',
+      sealedSubtitle: 'الرحلة تبدأ الآن.',
+      notConfigured: 'المصادقة غير مُهيأة — يمكنك المتابعة على أي حال.',
+      errorAlreadyExists: 'هذا الطريق مُحدَّد بالفعل — حاول تسجيل الدخول بدلاً من ذلك',
+      errorWeakPassword: 'الختم يحتاج المزيد من القوة — جرب كلمة مرور أطول',
     },
 
     // Welcome Step
@@ -452,6 +476,7 @@ const ar = {
     ],
     navigation: {
       progress: 'التقدم',
+      Milestones: 'الإنجازات',
       identity: 'الهوية',
       practice: 'الممارسة',
       growth: 'النمو',
@@ -498,6 +523,11 @@ const ar = {
     language: 'اللغة',
     selectLanguage: 'اختر لغتك',
 
+    // Appearance
+    appearance: 'المظهر',
+    theme: 'السمة',
+    themeDesc: 'بدّل بين الوضع الداكن والوضع الفاتح',
+
     // Audio & Haptics
     audioHaptics: 'الصوت والاهتزاز',
     soundEffects: 'المؤثرات الصوتية',
@@ -517,6 +547,19 @@ const ar = {
     appName: 'مركز التحول',
     appDesc: 'رحلتك اليومية نحو النمو',
     version: 'الإصدار',
+
+    // Account
+    account: 'الحساب',
+    signedInAs: 'مسجّل الدخول بوصفك',
+    signOut: 'تسجيل الخروج',
+    linkAccount: 'ربط حسابك',
+    linkAccountDesc: 'زامن تقدمك على جميع أجهزتك',
+    signIn: 'تسجيل الدخول',
+    createAccount: 'إنشاء حساب',
+    wanderingMode: 'وضع المسافر',
+    wanderingModeDesc: 'التقدم محفوظ محلياً فقط',
+    accountLinked: 'مرتبط',
+    anonymous: 'مجهول',
 
     // Danger Zone
     dangerZone: 'منطقة الخطر',
@@ -919,8 +962,21 @@ const ar = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ACHIEVEMENTS
+  // Milestones
   // ─────────────────────────────────────────────────────────────────────────
+  Milestones: {
+    title: 'الإنجازات',
+    gallery: 'معرض الإنجازات',
+    unlocked: 'مفتوح',
+    locked: 'مقفل',
+    progress: 'التقدم',
+    earned: 'مكتسب',
+    unlockedAt: 'فُتح في {date}',
+    keepGoing: 'استمر للفتح!',
+    celebration: 'تم فتح إنجاز!',
+    newMilestone: 'مرحلة جديدة',
+    continue: 'متابعة',
+  },
 
   // ─────────────────────────────────────────────────────────────────────────
   // PROGRESS
@@ -933,6 +989,7 @@ const ar = {
       totalReflections: 'إجمالي التأملات',
       totalWords: 'الكلمات المكتوبة',
       identityStatements: 'بيانات الهوية',
+      Milestones: 'الإنجازات',
       daysSinceStart: 'الأيام النشطة',
       avgReflectionLength: 'متوسط طول التأمل',
     },
@@ -1141,6 +1198,7 @@ const ar = {
         totalDays: 'إجمالي الأيام',
         consistency: 'الاتساق',
       },
+      MilestoneUnlockedCount: '{unlocked} من {total} مفتوحة',
     },
   },
 
@@ -1160,6 +1218,15 @@ const ar = {
           days: 'أيام',
           lessons: 'دروس',
           xp: 'XP',
+        },
+      },
+      Milestone: {
+        titleFallback: 'تم تحقيق إنجاز',
+        messageFallback: 'حققت إنجازا جديدا في رحلتي!',
+        stats: {
+          virtue: 'فضيلة',
+          wisdom: 'الحكمة',
+          totalXp: 'إجمالي XP',
         },
       },
       level: {
@@ -1222,3 +1289,4 @@ const ar = {
 } as const;
 
 export default ar;
+

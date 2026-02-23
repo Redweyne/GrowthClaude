@@ -121,7 +121,7 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
     return (
       <Card variant="glass" padding="md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-white">Wisdom in Action</h3>
+          <h3 className="text-sm font-medium text-white light:text-stone-900">Wisdom in Action</h3>
           <button
             onClick={() => setIsAdding(true)}
             className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center hover:bg-emerald-500/30 transition-colors"
@@ -131,7 +131,7 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
         </div>
 
         {logs.length === 0 ? (
-          <p className="text-xs text-zinc-500 text-center py-4">
+          <p className="text-xs text-stone-500 light:text-stone-500 text-center py-4">
             Record moments when you applied Stoic wisdom
           </p>
         ) : (
@@ -143,7 +143,7 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
               return (
                 <div
                   key={log.id}
-                  className="p-2 rounded-lg bg-zinc-800/50 flex items-center gap-2"
+                  className="p-2 rounded-lg bg-stone-800/50 light:bg-stone-200/50 flex items-center gap-2"
                 >
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -152,8 +152,8 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
                     <Icon size={14} style={{ color: principle?.color || '#6366f1' }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white truncate">{log.situation}</p>
-                    <p className="text-[10px] text-zinc-500">{principle?.name}</p>
+                    <p className="text-xs text-white light:text-stone-900 truncate">{log.situation}</p>
+                    <p className="text-[10px] text-stone-500 light:text-stone-500">{principle?.name}</p>
                   </div>
                 </div>
               );
@@ -168,7 +168,7 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-black/80 light:bg-stone-900/50 flex items-center justify-center p-4"
               onClick={(e) => e.target === e.currentTarget && resetForm()}
             >
               <AddWisdomModal
@@ -198,8 +198,8 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Wisdom in Action</h2>
-          <p className="text-zinc-400">Record when you apply Stoic principles in real life</p>
+          <h2 className="text-2xl font-bold text-white light:text-stone-900">Wisdom in Action</h2>
+          <p className="text-stone-400 light:text-stone-600">Record when you apply Stoic principles in real life</p>
         </div>
         <Button onClick={() => setIsAdding(true)} size="sm">
           <Plus size={16} className="mr-1" />
@@ -213,8 +213,8 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
           <Zap size={18} className="text-amber-400" />
         </div>
         <div>
-          <p className="text-sm text-white font-medium">+15 XP per entry</p>
-          <p className="text-xs text-zinc-500">
+          <p className="text-sm text-white light:text-stone-900 font-medium">+15 XP per entry</p>
+          <p className="text-xs text-stone-500 light:text-stone-500">
             Earn XP for applying wisdom in your daily life
           </p>
         </div>
@@ -224,10 +224,10 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
       {logs.length === 0 ? (
         <Card variant="glass" padding="lg" className="text-center">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500/20 to-purple-500/20 flex items-center justify-center">
-            <BookOpen size={32} className="text-zinc-600" />
+            <BookOpen size={32} className="text-stone-600 light:text-stone-500" />
           </div>
-          <h3 className="text-lg font-medium text-white mb-2">No Entries Yet</h3>
-          <p className="text-sm text-zinc-500 mb-4">
+          <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">No Entries Yet</h3>
+          <p className="text-sm text-stone-500 light:text-stone-500 mb-4">
             Start documenting moments when Stoic wisdom guided your actions.
           </p>
           <Button onClick={() => setIsAdding(true)}>
@@ -258,8 +258,8 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
                       <Icon size={24} style={{ color: principle?.color || '#6366f1' }} />
                     </div>
                     <div>
-                      <p className="text-white font-medium">{principle?.name}</p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-white light:text-stone-900 font-medium">{principle?.name}</p>
+                      <p className="text-xs text-stone-500 light:text-stone-500">
                         {new Date(log.date).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -272,17 +272,17 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
                   {/* Content */}
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Situation</p>
-                      <p className="text-zinc-300">{log.situation}</p>
+                      <p className="text-xs text-stone-500 light:text-stone-500 uppercase tracking-wide mb-1">Situation</p>
+                      <p className="text-stone-300 light:text-stone-700">{log.situation}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">How I Applied It</p>
-                      <p className="text-zinc-300">{log.application}</p>
+                      <p className="text-xs text-stone-500 light:text-stone-500 uppercase tracking-wide mb-1">How I Applied It</p>
+                      <p className="text-stone-300 light:text-stone-700">{log.application}</p>
                     </div>
                     {log.outcome && (
                       <div>
-                        <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Outcome</p>
-                        <p className="text-zinc-300">{log.outcome}</p>
+                        <p className="text-xs text-stone-500 light:text-stone-500 uppercase tracking-wide mb-1">Outcome</p>
+                        <p className="text-stone-300 light:text-stone-700">{log.outcome}</p>
                       </div>
                     )}
                   </div>
@@ -300,7 +300,7 @@ export function WisdomInActionLog({ compact = false }: WisdomInActionLogProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/80 light:bg-stone-900/50 flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && resetForm()}
           >
             <AddWisdomModal
@@ -360,16 +360,16 @@ function AddWisdomModal({
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className="w-full max-w-lg bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden"
+      className="w-full max-w-lg bg-stone-900 light:bg-stone-100 rounded-2xl border border-stone-800 light:border-stone-200 overflow-hidden"
     >
       {/* Header */}
-      <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-        <h3 className="text-lg font-medium text-white">Log Wisdom in Action</h3>
+      <div className="p-4 border-b border-stone-800 light:border-stone-200 flex items-center justify-between">
+        <h3 className="text-lg font-medium text-white light:text-stone-900">Log Wisdom in Action</h3>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors"
+          className="w-8 h-8 rounded-lg bg-stone-800 light:bg-stone-200 flex items-center justify-center hover:bg-stone-700 light:hover:bg-stone-300 transition-colors"
         >
-          <X size={18} className="text-zinc-400" />
+          <X size={18} className="text-stone-400 light:text-stone-600" />
         </button>
       </div>
 
@@ -384,7 +384,7 @@ function AddWisdomModal({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <p className="text-zinc-400 mb-4">Which Stoic principle did you apply?</p>
+              <p className="text-stone-400 light:text-stone-600 mb-4">Which Stoic principle did you apply?</p>
               <div className="grid grid-cols-2 gap-3">
                 {STOIC_PRINCIPLES.map((p) => {
                   const PIcon = p.icon;
@@ -392,7 +392,7 @@ function AddWisdomModal({
                     <button
                       key={p.id}
                       onClick={() => onSelectPrinciple(p.id)}
-                      className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 hover:border-zinc-600 transition-colors text-left"
+                      className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 border border-stone-700 light:border-stone-300 hover:border-stone-600 light:hover:border-stone-400 transition-colors text-left"
                     >
                       <div
                         className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
@@ -400,8 +400,8 @@ function AddWisdomModal({
                       >
                         <PIcon size={20} style={{ color: p.color }} />
                       </div>
-                      <p className="text-white font-medium text-sm mb-1">{p.name}</p>
-                      <p className="text-xs text-zinc-500 line-clamp-2">{p.description}</p>
+                      <p className="text-white light:text-stone-900 font-medium text-sm mb-1">{p.name}</p>
+                      <p className="text-xs text-stone-500 light:text-stone-500 line-clamp-2">{p.description}</p>
                     </button>
                   );
                 })}
@@ -425,19 +425,19 @@ function AddWisdomModal({
                   <Icon size={20} style={{ color: principle?.color || '#6366f1' }} />
                 </div>
                 <div>
-                  <p className="text-white font-medium">{principle?.name}</p>
-                  <p className="text-xs text-zinc-500">{principle?.description}</p>
+                  <p className="text-white light:text-stone-900 font-medium">{principle?.name}</p>
+                  <p className="text-xs text-stone-500 light:text-stone-500">{principle?.description}</p>
                 </div>
               </div>
 
-              <label className="block text-sm text-zinc-400 mb-2">
+              <label className="block text-sm text-stone-400 light:text-stone-600 mb-2">
                 What was the situation?
               </label>
               <textarea
                 value={situation}
                 onChange={(e) => setSituation(e.target.value)}
                 placeholder="Describe what happened..."
-                className="w-full h-32 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 resize-none"
+                className="w-full h-32 px-4 py-3 bg-stone-800 light:bg-stone-200 border border-stone-700 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-400 focus:outline-none focus:border-purple-500 resize-none"
               />
 
               <div className="flex gap-3 mt-4">
@@ -468,14 +468,14 @@ function AddWisdomModal({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <label className="block text-sm text-zinc-400 mb-2">
+              <label className="block text-sm text-stone-400 light:text-stone-600 mb-2">
                 How did you apply {principle?.name}?
               </label>
               <textarea
                 value={application}
                 onChange={(e) => setApplication(e.target.value)}
                 placeholder="Describe how you used this principle..."
-                className="w-full h-32 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 resize-none"
+                className="w-full h-32 px-4 py-3 bg-stone-800 light:bg-stone-200 border border-stone-700 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-400 focus:outline-none focus:border-purple-500 resize-none"
               />
 
               <div className="flex gap-3 mt-4">
@@ -506,14 +506,14 @@ function AddWisdomModal({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <label className="block text-sm text-zinc-400 mb-2">
-                What was the outcome? <span className="text-zinc-600">(optional)</span>
+              <label className="block text-sm text-stone-400 light:text-stone-600 mb-2">
+                What was the outcome? <span className="text-stone-600 light:text-stone-500">(optional)</span>
               </label>
               <textarea
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value)}
                 placeholder="How did it turn out..."
-                className="w-full h-32 px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 resize-none"
+                className="w-full h-32 px-4 py-3 bg-stone-800 light:bg-stone-200 border border-stone-700 light:border-stone-300 rounded-xl text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-400 focus:outline-none focus:border-purple-500 resize-none"
               />
 
               <div className="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">

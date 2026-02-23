@@ -11,10 +11,10 @@
 // Audio: Mystical ambient music plays from the start, with chimes between
 // steps and a triumphant celebration at completion.
 //
-// Order: Welcome → Name → Anonymous Identity → Goal → Why → Commitment → Ready
+// Order: Welcome → Name → Anonymous Identity → Goal → Why → Path → Commitment → Origin Point → Ready
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { AmbientBackground } from '@/components/ambient';
@@ -22,6 +22,7 @@ import { MusicControls } from '@/components/ui/MusicControls';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useAudio } from '@/hooks/useAudio';
 import { useTranslation } from '@/i18n';
+import { useTheme } from 'next-themes';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { NameStep } from './steps/NameStep';
 import { IdentityStep } from './steps/IdentityStep';
@@ -29,16 +30,19 @@ import { GoalStep } from './steps/GoalStep';
 import { WhyStep } from './steps/WhyStep';
 import { PathStep } from './steps/PathStep';
 import { CommitmentStep } from './steps/CommitmentStep';
+import { AuthStep } from './steps/AuthStep';
 import { ReadyStep } from './steps/ReadyStep';
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
-// Step translation keys (order: Welcome → Name → Identity → Goal → Why → Path → Commitment → Ready)
-const STEP_KEYS = ['welcome', 'yourName', 'community', 'vision', 'purpose', 'thePath', 'commitment', 'begin'];
+// Step translation keys (order: Welcome → Name → Identity → Goal → Why → Path → Commitment → OriginPoint → Ready)
+const STEP_KEYS = ['welcome', 'yourName', 'community', 'vision', 'purpose', 'thePath', 'commitment', 'createOrigin', 'begin'];
 
 export function OnboardingFlow() {
   const { onboardingStep, setOnboardingStep, completeOnboarding } = useStore();
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const [direction, setDirection] = useState(1);
   const [mounted, setMounted] = useState(false);
   
@@ -140,6 +144,34 @@ export function OnboardingFlow() {
     }
   }, [onboardingStep, setOnboardingStep]);
 
+  // ─── Swipe gesture support ───────────────────────────────────────────────
+  // Steps that have text inputs — swipe is disabled on these to avoid
+  // conflicting with horizontal text selection gestures.
+  const SWIPE_DISABLED_STEPS = useMemo(() => new Set([6, 7]), []); // CommitmentStep (6) and AuthStep (7)
+
+  const swipeTouchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const handleSwipeTouchStart = useCallback((e: React.TouchEvent) => {
+    if (SWIPE_DISABLED_STEPS.has(onboardingStep)) return;
+    swipeTouchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, [onboardingStep, SWIPE_DISABLED_STEPS]);
+
+  const handleSwipeTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!swipeTouchStart.current) return;
+    const dx = e.changedTouches[0].clientX - swipeTouchStart.current.x;
+    const dy = e.changedTouches[0].clientY - swipeTouchStart.current.y;
+    swipeTouchStart.current = null;
+
+    // Only register as horizontal swipe if dx dominates and exceeds threshold
+    if (Math.abs(dx) < Math.abs(dy) || Math.abs(dx) < 50) return;
+
+    if (dx < 0) {
+      nextStep();
+    } else {
+      prevStep();
+    }
+  }, [nextStep, prevStep]);
+
   const variants = {
     enter: (dir: number) => ({
       x: dir > 0 ? 100 : -100,
@@ -178,6 +210,8 @@ export function OnboardingFlow() {
       case 6:
         return <CommitmentStep onNext={nextStep} onBack={prevStep} />;
       case 7:
+        return <AuthStep onNext={nextStep} onBack={prevStep} />;
+      case 8:
         return <ReadyStep onNext={nextStep} onBack={prevStep} />;
       default:
         return null;
@@ -185,11 +219,15 @@ export function OnboardingFlow() {
   };
 
   if (!mounted) {
-    return <div className="min-h-screen bg-stone-950" />;
+    return <div className="min-h-screen bg-stone-950 light:bg-stone-50" />;
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
+    <div
+      className="relative min-h-screen flex flex-col overflow-hidden"
+      onTouchStart={handleSwipeTouchStart}
+      onTouchEnd={handleSwipeTouchEnd}
+    >
       {/* Atmospheric background - deeper for onboarding */}
       <AmbientBackground intensity="vivid" particleCount={20} orbCount={4} />
 
@@ -207,14 +245,14 @@ export function OnboardingFlow() {
               key={onboardingStep}
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase text-stone-500 font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-2"
+              className="text-[10px] sm:text-xs tracking-[0.1em] sm:tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-2"
             >
               {t(`onboarding.steps.${STEP_KEYS[onboardingStep]}`)}
             </motion.span>
 
             {/* Dots - smaller gap and size on mobile */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
+              {[1, 2, 3, 4, 5, 6, 7].map((step) => (
                 <motion.div
                   key={step}
                   className="relative"
@@ -246,7 +284,7 @@ export function OnboardingFlow() {
                         ? 'bg-amber-500'
                         : onboardingStep === step
                         ? 'bg-amber-400 shadow-lg shadow-amber-500/50'
-                        : 'bg-stone-700'
+                        : 'bg-stone-700 light:bg-stone-300'
                     }`}
                     animate={
                       onboardingStep === step
@@ -317,7 +355,9 @@ export function OnboardingFlow() {
       <div
         className="fixed bottom-0 left-0 right-0 h-32 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, rgba(12, 10, 9, 0.8), transparent)',
+          background: isLight
+            ? 'linear-gradient(to top, rgba(250, 250, 249, 0.8), transparent)'
+            : 'linear-gradient(to top, rgba(12, 10, 9, 0.8), transparent)',
         }}
       />
     </div>

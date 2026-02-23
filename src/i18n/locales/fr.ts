@@ -49,6 +49,7 @@ const fr = {
     lessons: 'Leçons',
     exercises: 'Exercices',
     reflections: 'Réflexions',
+    Milestones: 'Accomplissements',
     milestones: 'Étapes',
     daily: 'quotidien',
     weekly: 'Hebdomadaire',
@@ -80,7 +81,30 @@ const fr = {
       purpose: 'Objectif',
       thePath: 'Le Chemin',
       commitment: 'Engagement',
+      createOrigin: 'Point d\'Origine',
       begin: 'Commencer',
+    },
+
+    // Auth Step — Le Point d'Origine
+    auth: {
+      line1: 'Chaque transformation a un point d\'origine.',
+      line2: 'Le moment exact où vous avez arrêté d\'observer et commencé à devenir.',
+      line3: 'C\'est le vôtre.',
+      line4: 'Scellez-le.',
+      formTitle: 'Votre Point d\'Origine',
+      formSubtitle: 'Sauvegardez votre transformation. Ne perdez jamais votre progression.',
+      sealWithGoogle: 'Sceller avec Google',
+      or: 'ou',
+      emailPlaceholder: 'Votre e-mail',
+      passwordPlaceholder: 'Créer un mot de passe',
+      sealOrigin: 'Sceller Mon Origine',
+      continueAsWanderer: 'Continuer en tant que voyageur',
+      alreadySealed: 'Votre origine est déjà scellée.',
+      sealedTitle: 'Votre origine est scellée.',
+      sealedSubtitle: 'Le voyage commence maintenant.',
+      notConfigured: 'Authentification non configurée — vous pouvez quand même continuer.',
+      errorAlreadyExists: 'Ce chemin est déjà marqué — essayez de vous connecter',
+      errorWeakPassword: 'Le sceau a besoin de plus de force — essayez un mot de passe plus long',
     },
 
     // Welcome Step
@@ -452,6 +476,7 @@ const fr = {
     ],
     navigation: {
       progress: 'Progrès',
+      Milestones: 'Accomplissements',
       identity: 'Identité',
       practice: 'Pratique',
       growth: 'Croissance',
@@ -498,6 +523,11 @@ const fr = {
     language: 'Langue',
     selectLanguage: 'Sélectionnez votre langue',
 
+    // Appearance
+    appearance: 'Apparence',
+    theme: 'Thème',
+    themeDesc: 'Basculez entre les modes sombre et clair',
+
     // Audio & Haptics
     audioHaptics: 'Audio et Haptique',
     soundEffects: 'Effets Sonores',
@@ -517,6 +547,19 @@ const fr = {
     appName: 'Transformation Hub',
     appDesc: 'Votre voyage quotidien vers la croissance',
     version: 'Version',
+
+    // Account
+    account: 'Compte',
+    signedInAs: 'Connecté en tant que',
+    signOut: 'Se Déconnecter',
+    linkAccount: 'Associer Votre Compte',
+    linkAccountDesc: 'Synchronisez votre progression sur tous vos appareils',
+    signIn: 'Se Connecter',
+    createAccount: 'Créer un Compte',
+    wanderingMode: 'Mode voyageur',
+    wanderingModeDesc: 'Progression sauvegardée localement uniquement',
+    accountLinked: 'Associé',
+    anonymous: 'Anonyme',
 
     // Danger Zone
     dangerZone: 'Zone Dangereuse',
@@ -919,8 +962,21 @@ const fr = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // ACHIEVEMENTS
+  // Milestones
   // ─────────────────────────────────────────────────────────────────────────
+  Milestones: {
+    title: 'Accomplissements',
+    gallery: 'Galerie des Accomplissements',
+    unlocked: 'Débloqué',
+    locked: 'Verrouillé',
+    progress: 'Progrès',
+    earned: 'Gagné',
+    unlockedAt: 'Débloqué le {date}',
+    keepGoing: 'Continuez pour débloquer !',
+    celebration: 'Accomplissement Débloqué !',
+    newMilestone: 'Nouvelle Étape',
+    continue: 'Continuer',
+  },
 
   // ─────────────────────────────────────────────────────────────────────────
   // PROGRESS
@@ -933,6 +989,7 @@ const fr = {
       totalReflections: 'Réflexions Totales',
       totalWords: 'Mots Écrits',
       identityStatements: 'Déclarations d\'Identité',
+      Milestones: 'Accomplissements',
       daysSinceStart: 'Jours Actifs',
       avgReflectionLength: 'Longueur Moy. des Réflexions',
     },
@@ -1141,6 +1198,7 @@ const fr = {
         totalDays: 'Total de jours',
         consistency: 'Régularité',
       },
+      MilestoneUnlockedCount: '{unlocked} sur {total} débloqués',
     },
   },
 
@@ -1160,6 +1218,15 @@ const fr = {
           days: 'Jours',
           lessons: 'Leçons',
           xp: 'XP',
+        },
+      },
+      Milestone: {
+        titleFallback: 'Étape franchie',
+        messageFallback: "J'ai atteint une nouvelle étape dans mon parcours !",
+        stats: {
+          virtue: 'Vertu',
+          wisdom: 'sagesse',
+          totalXp: 'XP total',
         },
       },
       level: {
@@ -1222,3 +1289,4 @@ const fr = {
 } as const;
 
 export default fr;
+

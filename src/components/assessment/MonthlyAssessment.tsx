@@ -116,10 +116,10 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col">
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="h-1 bg-zinc-800">
+        <div className="h-1 bg-stone-800 light:bg-stone-200">
           <motion.div
             className="h-full bg-gradient-to-r from-purple-600 to-pink-600"
             initial={{ width: 0 }}
@@ -134,12 +134,12 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
         <div className="flex items-center justify-between mb-2">
           <button
             onClick={currentStep === 0 ? onSkip : handleBack}
-            className="text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
+            className="text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 transition-colors flex items-center gap-1"
           >
             <ChevronLeft size={20} />
             {currentStep === 0 ? t('checkin.monthly.skip') : t('common.back')}
           </button>
-          <span className="text-zinc-500 text-sm">
+          <span className="text-stone-500 light:text-stone-600 text-sm">
             {t('checkin.monthly.progress', { current: currentStep + 1, total: totalSteps })}
           </span>
         </div>
@@ -172,17 +172,17 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
               </motion.div>
 
               {/* Title */}
-              <h2 className="text-2xl font-bold text-white text-center mb-2">
+              <h2 className="text-2xl font-bold text-white light:text-stone-900 text-center mb-2">
                 {currentQuestion.title}
               </h2>
 
               {/* Question */}
-              <p className="text-lg text-zinc-300 text-center mb-4">
+              <p className="text-lg text-stone-300 light:text-stone-700 text-center mb-4">
                 {currentQuestion.question}
               </p>
 
               {/* Description */}
-              <p className="text-sm text-zinc-500 text-center mb-8">
+              <p className="text-sm text-stone-500 light:text-stone-600 text-center mb-8">
                 {currentQuestion.description}
               </p>
 
@@ -198,7 +198,7 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                   >
                     {scores[currentQuestion.dimension]}
                   </motion.span>
-                  <p className="text-zinc-500 mt-1">
+                  <p className="text-stone-500 light:text-stone-600 mt-1">
                     {getScoreLabel(scores[currentQuestion.dimension])}
                   </p>
                 </div>
@@ -212,8 +212,8 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                       className={`
                         h-12 rounded-lg font-medium transition-all duration-200
                         ${scores[currentQuestion.dimension] === value
-                          ? 'text-white scale-110 shadow-lg'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                          ? 'text-white light:text-stone-900 scale-110 shadow-lg'
+                          : 'bg-stone-800 light:bg-stone-200 text-stone-400 light:text-stone-600 hover:bg-stone-700 light:hover:bg-stone-300'
                         }
                       `}
                       style={{
@@ -228,14 +228,14 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                 </div>
 
                 {/* Labels */}
-                <div className="flex justify-between text-xs text-zinc-500">
+                <div className="flex justify-between text-xs text-stone-500 light:text-stone-600">
                   <span>{currentQuestion.lowLabel}</span>
                   <span>{currentQuestion.highLabel}</span>
                 </div>
               </Card>
 
               {/* Stoic Quote */}
-              <p className="text-sm text-zinc-600 text-center italic mb-8">
+              <p className="text-sm text-stone-600 light:text-stone-500 text-center italic mb-8">
                 {currentQuestion.stoicContext}
               </p>
 
@@ -266,11 +266,11 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                 <Sparkles size={40} className="text-purple-400" />
               </motion.div>
 
-              <h2 className="text-2xl font-bold text-white text-center mb-2">
+              <h2 className="text-2xl font-bold text-white light:text-stone-900 text-center mb-2">
                 {reflectionPrompt.title}
               </h2>
 
-              <p className="text-lg text-zinc-300 text-center mb-8">
+              <p className="text-lg text-stone-300 light:text-stone-700 text-center mb-8">
                 {reflectionPrompt.prompt}
               </p>
 
@@ -278,7 +278,7 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
                 placeholder={reflectionPrompt.placeholder}
-                className="w-full h-40 px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none mb-6"
+                className="w-full h-40 px-4 py-3 bg-stone-900 light:bg-stone-100 border border-stone-800 light:border-stone-200 rounded-xl text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 resize-none mb-6"
               />
 
               <Button
@@ -292,7 +292,7 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
               </Button>
 
               {reflection.trim().length < 20 && (
-                <p className="text-xs text-zinc-600 text-center mt-2">
+                <p className="text-xs text-stone-600 light:text-stone-500 text-center mt-2">
                   {t('checkin.monthly.minReflectionChars', { count: 20 })}
                 </p>
               )}
@@ -320,10 +320,10 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                     {getAverageScore()}
                   </span>
                 </motion.div>
-                <h2 className="text-2xl font-bold text-white mb-1">
+                <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-1">
                   {t('checkin.monthly.scoreTitle')}
                 </h2>
-                <p className="text-zinc-400">
+                <p className="text-stone-400 light:text-stone-600">
                   {name
                     ? t('checkin.monthly.snapshotWithName', { name })
                     : t('checkin.monthly.snapshot')}
@@ -350,10 +350,10 @@ export function MonthlyAssessment({ onComplete, onSkip }: MonthlyAssessmentProps
                             <DimensionIcon dimension={q.dimension} size={20} />
                           </div>
                         </div>
-                        <span className="text-white">{q.title}</span>
+                        <span className="text-white light:text-stone-900">{q.title}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="w-24 h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${scores[q.dimension] * 10}%` }}

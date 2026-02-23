@@ -17,6 +17,7 @@ import type { FlexibleWorld, FlexibleLesson, FlexibleChapter, LessonStep } from 
 import { type Locale } from '@/i18n';
 import { chapter2_Resilience } from './modernWisdomChapter2';
 import { chapter3_Relationships } from './modernWisdomChapter3';
+import { lesson1Exercises, lesson2Exercises, lesson3Exercises, lesson4Exercises, lesson5Exercises } from './exerciseContent';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LESSON 1: THE WEIGHT YOU CARRY (Dichotomy of Control)
@@ -34,76 +35,7 @@ const lesson1_InstantReframe: FlexibleLesson = {
   estimatedMinutes: 7,
   thumbnail: { icon: '⚖️', color: '#f59e0b' },
   teaserText: "Tomorrow you'll discover the one question that has freed emperors and prisoners alike for 2000 years.",
-  exercises: [
-    {
-      id: 'ex-1-truth-mirror',
-      type: 'truth-mirror',
-      title: 'The Letting Go Sequence',
-      content: {
-        statements: [
-          "I'm still thinking about something I said.",
-          "I'm worried about something I can't change.",
-          "I keep replaying a conversation in my head.",
-          "I'm trying to control someone else's opinion of me.",
-          "I'm anxious about a future I can't predict.",
-          "I'm holding onto anger at something that's over.",
-          "I'm waiting for someone to change who won't.",
-          "I'm fighting a reality I need to accept."
-        ],
-        holdReveal: "This is the weight. Breathe it out.",
-        breathPrompts: [
-          "Let go...",
-          "Release...",
-          "Accept..."
-        ],
-        style: 'release'
-      }
-    },
-    {
-      id: 'ex-1-soul-compass',
-      type: 'soul-compass',
-      title: 'Control or Release?',
-      content: {
-        centralQuestion: "Think of what's weighing on you right now. What does it feel like?",
-        options: [
-          { id: 'action', emoji: '🎯', text: 'I can take action on this' },
-          { id: 'accept', emoji: '🌊', text: 'I need to accept this' },
-          { id: 'unsure', emoji: '⚡', text: "I'm not sure yet" },
-          { id: 'circles', emoji: '💭', text: 'I keep going in circles' },
-          { id: 'angry', emoji: '🔥', text: 'This makes me angry' },
-          { id: 'sad', emoji: '🌑', text: 'This makes me sad' }
-        ],
-        showIntensity: true,
-        intensityQuestion: "How heavy does this feel?",
-        intensityLabels: { low: 'Light', high: 'Crushing' },
-        intensityResponses: {
-          low: "Light burdens become lighter when named.",
-          mid: "You're in the middle. That takes courage to admit.",
-          high: "Heavy weights need heavy tools. You're here. That's step one."
-        },
-        style: 'introspective'
-      }
-    },
-    {
-      id: 'ex-1-presence-anchor',
-      type: 'presence-anchor',
-      title: 'The Open Palms',
-      content: {
-        gesture: "Open your hands, palms up, fingers relaxed. Feel the air on your palms.",
-        meaning: "Release what you cannot control",
-        breathCycles: 5,
-        exhalePrompts: [
-          "What you cannot control...",
-          "Let it rest in open palms...",
-          "You are not your worry...",
-          "This moment is enough...",
-          "Freedom is letting go..."
-        ],
-        anchorMessage: "Whenever you feel the urge to control, open your palms. Your body will remember.",
-        style: 'release'
-      }
-    }
-  ],
+  exercises: lesson1Exercises,
   steps: [
     {
       id: 'opening',
@@ -309,75 +241,7 @@ const lesson2_PowerOfTiny: FlexibleLesson = {
   estimatedMinutes: 4,
   thumbnail: { icon: '🌱', color: '#10b981' },
   teaserText: "Tomorrow you'll learn the 2-minute rule that makes habits impossible to fail.",
-  exercises: [
-    {
-      id: 'ex-2-truth-mirror',
-      type: 'truth-mirror',
-      title: 'The Identity Votes',
-      content: {
-        statements: [
-          "I start things but rarely finish them.",
-          "I wait until I'm motivated to begin.",
-          "I think I need to make big changes.",
-          "I've tried this before and failed.",
-          "I don't believe small actions matter.",
-          "I'm harder on myself than anyone else.",
-          "I compare my start to someone else's finish.",
-          "I forget that showing up IS the win."
-        ],
-        holdReveal: "This pattern can change. One tiny vote at a time.",
-        breathPrompts: [
-          "One percent...",
-          "One vote...",
-          "One day..."
-        ],
-        style: 'strength'
-      }
-    },
-    {
-      id: 'ex-2-soul-compass',
-      type: 'soul-compass',
-      title: "What's Your 2-Minute Truth?",
-      content: {
-        centralQuestion: "Why haven't your past attempts stuck?",
-        options: [
-          { id: 'big', emoji: '🎯', text: 'I made it too big' },
-          { id: 'motivation', emoji: '🌀', text: 'I lost motivation' },
-          { id: 'life', emoji: '📅', text: 'Life got in the way' },
-          { id: 'hard', emoji: '😤', text: 'I was too hard on myself' },
-          { id: 'wrong', emoji: '🎭', text: 'I was doing it for the wrong reasons' },
-          { id: 'unknown', emoji: '❓', text: "I don't know why" }
-        ],
-        showIntensity: true,
-        intensityQuestion: "How much do you want this to change?",
-        intensityLabels: { low: 'A little', high: 'Desperately' },
-        intensityResponses: {
-          low: "Maybe you're content. That's okay too.",
-          mid: "The spark is there. Let's fan it gently.",
-          high: "That fire is real. Now shrink the action, not the desire."
-        },
-        style: 'energizing'
-      }
-    },
-    {
-      id: 'ex-2-presence-anchor',
-      type: 'presence-anchor',
-      title: 'The Seed Gesture',
-      content: {
-        gesture: "Touch your thumb to your index finger, forming a tiny circle - like holding a seed.",
-        meaning: "Tiny is powerful",
-        breathCycles: 4,
-        exhalePrompts: [
-          "Small doesn't mean weak...",
-          "Consistent beats intense...",
-          "You are what you repeat...",
-          "The seed becomes the oak..."
-        ],
-        anchorMessage: "Touch these fingers anytime you feel overwhelmed. Remember: tiny is powerful.",
-        style: 'grounding'
-      }
-    }
-  ],
+  exercises: lesson2Exercises,
   steps: [
     {
       id: 'opening',
@@ -577,76 +441,7 @@ const lesson3_ObstacleOpportunity: FlexibleLesson = {
   estimatedMinutes: 5,
   thumbnail: { icon: '🔥', color: '#ef4444' },
   teaserText: "Tomorrow you'll learn the ancient secret that turns every obstacle into your greatest advantage.",
-  exercises: [
-    {
-      id: 'ex-3-truth-mirror',
-      type: 'truth-mirror',
-      title: 'The Hidden Gifts',
-      content: {
-        statements: [
-          "This setback might be redirecting me somewhere better.",
-          "This difficulty is building strength I'll need later.",
-          "What feels like rejection might be protection.",
-          "The door that closed wasn't my door.",
-          "This struggle is teaching me something important.",
-          "My biggest growth has come from my hardest times.",
-          "The obstacle contains exactly what I need.",
-          "I can use this, even if I didn't choose it."
-        ],
-        holdReveal: "The obstacle is the way. This is your way.",
-        breathPrompts: [
-          "Through...",
-          "Not around...",
-          "Forward..."
-        ],
-        style: 'strength'
-      }
-    },
-    {
-      id: 'ex-3-soul-compass',
-      type: 'soul-compass',
-      title: 'Obstacle Inventory',
-      content: {
-        centralQuestion: "What is blocking your path right now?",
-        options: [
-          { id: 'door', emoji: '🚪', text: "A door that won't open" },
-          { id: 'person', emoji: '👤', text: "A person who won't change" },
-          { id: 'time', emoji: '⏰', text: "Time I don't have" },
-          { id: 'loss', emoji: '💔', text: "A loss I can't undo" },
-          { id: 'fear', emoji: '😰', text: "Fear I can't shake" },
-          { id: 'unknown', emoji: '🤷', text: "I don't know what's blocking me" }
-        ],
-        showIntensity: false,
-        followUpQuestion: "What could this obstacle be creating?",
-        followUpOptions: [
-          { id: 'strength', emoji: '💪', text: 'Strength' },
-          { id: 'wisdom', emoji: '🧠', text: 'Wisdom' },
-          { id: 'redirect', emoji: '🔄', text: 'Redirection' },
-          { id: 'growth', emoji: '🌱', text: 'Growth' },
-          { id: 'unseen', emoji: '❓', text: "I can't see it yet" }
-        ],
-        style: 'awakening'
-      }
-    },
-    {
-      id: 'ex-3-presence-anchor',
-      type: 'presence-anchor',
-      title: 'The Phoenix Rising',
-      content: {
-        gesture: "Press your palms together at your chest. As you breathe out, raise them overhead while spreading your fingers wide - like flames rising.",
-        meaning: "Rise from what tried to burn you",
-        breathCycles: 4,
-        exhalePrompts: [
-          "From the fire...",
-          "Comes the fuel...",
-          "The obstacle becomes...",
-          "The way forward..."
-        ],
-        anchorMessage: "Whenever you feel blocked, do this gesture. Rise like the phoenix.",
-        style: 'strength'
-      }
-    }
-  ],
+  exercises: lesson3Exercises,
   steps: [
     {
       id: 'opening',
@@ -857,76 +652,7 @@ const lesson4_MorningMindset: FlexibleLesson = {
   estimatedMinutes: 4,
   thumbnail: { icon: '🌅', color: '#f97316' },
   teaserText: "Tomorrow you'll learn the 2-minute morning practice used by Roman emperors and modern CEOs alike.",
-  exercises: [
-    {
-      id: 'ex-4-truth-mirror',
-      type: 'truth-mirror',
-      title: 'The Ambush Awareness',
-      content: {
-        statements: [
-          "My mornings are usually hijacked by my phone.",
-          "I wake up already stressed about the day.",
-          "I let other people set my emotional tone.",
-          "I'm surprised when things go wrong.",
-          "I react instead of respond.",
-          "I forget that I have a choice in how I feel.",
-          "I start the day on defense, not offense.",
-          "I could anticipate, but I usually don't."
-        ],
-        holdReveal: "The warrior expects the ambush. Now you're ready.",
-        breathPrompts: [
-          "I anticipated...",
-          "I chose...",
-          "I'm ready..."
-        ],
-        style: 'clarity'
-      }
-    },
-    {
-      id: 'ex-4-soul-compass',
-      type: 'soul-compass',
-      title: 'What Ambushes You?',
-      content: {
-        centralQuestion: "What typically derails your day?",
-        options: [
-          { id: 'phone', emoji: '📱', text: 'My phone/social media' },
-          { id: 'people', emoji: '👥', text: 'Difficult people' },
-          { id: 'email', emoji: '📧', text: 'Emails/messages' },
-          { id: 'commute', emoji: '🚗', text: 'Commute/traffic' },
-          { id: 'anxiety', emoji: '😰', text: 'My own anxiety' },
-          { id: 'random', emoji: '🎲', text: 'Random surprises' }
-        ],
-        showIntensity: false,
-        followUpQuestion: "If this happened tomorrow, how would you CHOOSE to respond?",
-        followUpOptions: [
-          { id: 'calm', emoji: '🧘', text: 'With calm acceptance' },
-          { id: 'focus', emoji: '🔥', text: 'With fierce focus' },
-          { id: 'step-back', emoji: '💭', text: 'By stepping back first' },
-          { id: 'unsure', emoji: '🤷', text: "I'm not sure yet" }
-        ],
-        style: 'grounding'
-      }
-    },
-    {
-      id: 'ex-4-presence-anchor',
-      type: 'presence-anchor',
-      title: "The Warrior's Breath",
-      content: {
-        gesture: "Place your right hand over your heart, left hand on your belly. Feel both rise and fall.",
-        meaning: "Prepared and present",
-        breathCycles: 5,
-        exhalePrompts: [
-          "I expect difficulty...",
-          "I choose my response...",
-          "I am not surprised...",
-          "I am not overwhelmed...",
-          "I am prepared..."
-        ],
-        anchorMessage: "Tomorrow morning, before you touch your phone, touch your heart. Remember this feeling.",
-        style: 'grounding'
-      }
-    }
-  ],
+  exercises: lesson4Exercises,
   steps: [
     {
       id: 'opening',
@@ -1120,75 +846,7 @@ const lesson5_GratitudeShift: FlexibleLesson = {
   estimatedMinutes: 5,
   thumbnail: { icon: '✨', color: '#8b5cf6' },
   teaserText: "Tomorrow you'll discover the counterintuitive technique that makes gratitude feel real instead of forced.",
-  exercises: [
-    {
-      id: 'ex-5-truth-mirror',
-      type: 'truth-mirror',
-      title: 'The Invisible Gifts',
-      content: {
-        statements: [
-          "I've stopped noticing what I have.",
-          "I'm chasing what I don't have.",
-          "Someone I love could be gone tomorrow.",
-          "My body works miracles I ignore.",
-          "I have comforts my ancestors dreamed of.",
-          "I take people for granted who take nothing from me.",
-          "Everything I have is borrowed.",
-          "This ordinary moment is actually extraordinary."
-        ],
-        holdReveal: "What you have is not permanent. See it before it's gone.",
-        breathPrompts: [
-          "I see it...",
-          "I feel it...",
-          "I'm grateful..."
-        ],
-        style: 'gratitude'
-      }
-    },
-    {
-      id: 'ex-5-soul-compass',
-      type: 'soul-compass',
-      title: 'What Have You Stopped Seeing?',
-      content: {
-        centralQuestion: "What gift in your life has become invisible?",
-        options: [
-          { id: 'person', emoji: '👤', text: 'Someone who loves me' },
-          { id: 'home', emoji: '🏠', text: 'A safe place to live' },
-          { id: 'body', emoji: '💪', text: 'A body that works' },
-          { id: 'mind', emoji: '🧠', text: 'A mind that thinks' },
-          { id: 'time', emoji: '🌅', text: 'Time I still have' },
-          { id: 'food', emoji: '🍽️', text: 'Food I take for granted' }
-        ],
-        showIntensity: true,
-        intensityQuestion: "How invisible has this become?",
-        intensityLabels: { low: 'I notice it sometimes', high: 'Completely invisible' },
-        intensityResponses: {
-          low: "Good - you still see it. Don't let it fade further.",
-          mid: "It's fading. Today, you brought it back into focus.",
-          high: "It vanished from view. Now imagine it gone forever. Feel that? That's gratitude."
-        },
-        style: 'awakening'
-      }
-    },
-    {
-      id: 'ex-5-presence-anchor',
-      type: 'presence-anchor',
-      title: 'The Heart Hold',
-      content: {
-        gesture: "Place both hands over your heart, one on top of the other. Press gently. Feel your heartbeat.",
-        meaning: "This gift I didn't earn",
-        breathCycles: 4,
-        exhalePrompts: [
-          "For this heartbeat I didn't earn...",
-          "For this breath I didn't request...",
-          "For this moment I can't keep...",
-          "For this life I didn't deserve..."
-        ],
-        anchorMessage: "Your heart beats without asking. That alone is miracle enough.",
-        style: 'gratitude'
-      }
-    }
-  ],
+  exercises: lesson5Exercises,
   steps: [
     {
       id: 'opening',

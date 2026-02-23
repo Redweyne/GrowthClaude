@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { activityDb } from '@/lib/activityDb';
+import { activityDb, isLegacyActivityDbEnabled } from '@/lib/activityDb';
 
 interface IncomingEvent {
   eventType: string;
@@ -16,6 +16,10 @@ interface IncomingPageView {
 
 export async function POST(request: Request) {
   try {
+    if (!isLegacyActivityDbEnabled) {
+      return NextResponse.json({ ok: true }, { status: 200 });
+    }
+
     const body = await request.json();
     const { sessionId, userId, events, pageViews } = body as {
       sessionId: string;

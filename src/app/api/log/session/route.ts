@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
-import { activityDb } from '@/lib/activityDb';
+import { activityDb, isLegacyActivityDbEnabled } from '@/lib/activityDb';
 import { parseUserAgent, resolveGeo, getClientIp } from '@/lib/activityLogger.server';
 
 export async function POST(request: Request) {
   try {
+    if (!isLegacyActivityDbEnabled) {
+      return NextResponse.json({ sessionId: null }, { status: 200 });
+    }
+
     const body = await request.json();
     const {
       userId,

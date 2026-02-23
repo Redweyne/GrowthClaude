@@ -56,11 +56,11 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
   const goalKey = transformationGoal || 'calmer';
 
   return (
-    <div className="min-h-[70vh] flex flex-col">
+    <div className="min-h-[70dvh] flex flex-col">
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center text-zinc-500 hover:text-zinc-300 transition-colors mb-6 self-start"
+        className="flex items-center text-stone-500 light:text-stone-500 hover:text-stone-300 light:hover:text-stone-700 transition-colors mb-6 self-start"
       >
         <ChevronLeft size={20} />
         <span className="text-sm">{t('common.back')}</span>
@@ -73,8 +73,8 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
         className="flex items-center gap-2 mb-6"
       >
         <span className="text-2xl">{selectedGoal?.icon}</span>
-        <span className="text-zinc-500 text-sm">
-          {t('onboarding.why.yourPath')}: <span className="text-zinc-300">{goalTitle || selectedGoal?.title}</span>
+        <span className="text-stone-500 light:text-stone-500 text-sm">
+          {t('onboarding.why.yourPath')}: <span className="text-stone-300 light:text-stone-700">{goalTitle || selectedGoal?.title}</span>
         </span>
       </motion.div>
 
@@ -85,10 +85,10 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
         transition={{ duration: 0.6 }}
         className="mb-6"
       >
-        <p className="text-xl sm:text-2xl text-white font-light mb-2">
+        <p className="text-xl sm:text-2xl text-white light:text-stone-900 font-light mb-2">
           {name ? `${name}, ` : ''}{t(`onboarding.why.whatsTheCost.${goalKey}`)}
         </p>
-        <p className="text-zinc-500 text-sm">
+        <p className="text-stone-500 light:text-stone-500 text-sm">
           {t(`onboarding.why.subtext.${goalKey}`)}
         </p>
       </motion.div>
@@ -116,9 +116,9 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
             dir={isRTL ? 'rtl' : 'ltr'}
             className="
               w-full min-h-[140px] p-4 rounded-xl
-              bg-zinc-900/50 border-2 border-zinc-800
-              text-white placeholder-zinc-600
-              focus:outline-none focus:border-indigo-500/50 focus:bg-zinc-900
+              bg-stone-900/50 light:bg-stone-100/50 border-2 border-stone-800 light:border-stone-200
+              text-white light:text-stone-900 placeholder-stone-600 light:placeholder-stone-400
+              focus:outline-none focus:border-indigo-500/50 focus:bg-stone-900 light:focus:bg-stone-100
               transition-all duration-300 resize-none
               leading-relaxed
             "
@@ -128,12 +128,12 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
           {/* Word count indicator */}
           <div className="absolute bottom-3 right-3 flex items-center gap-2">
             <span className={`text-xs transition-colors ${
-              isValid ? 'text-emerald-400' : 'text-zinc-600'
+              isValid ? 'text-emerald-400' : 'text-stone-600 light:text-stone-500'
             }`}>
               {t('onboarding.why.wordCount', { count: wordCount })}
             </span>
             {wordCount > 0 && wordCount < 10 && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-stone-500 light:text-stone-500">
                 {t('onboarding.why.moreNeeded', { count: 10 - wordCount })}
               </span>
             )}
@@ -146,7 +146,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: isValid ? 1 : 0.5 }}
         transition={{ duration: 0.3 }}
-        className="text-center text-sm text-zinc-500 mb-6"
+        className="text-center text-sm text-stone-500 light:text-stone-500 mb-6"
       >
         {isValid
           ? t('onboarding.why.anchorText')
@@ -168,7 +168,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
             w-full py-4 rounded-xl font-medium text-lg transition-all duration-300
             ${isValid
               ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90'
-              : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}
+              : 'bg-stone-800 light:bg-stone-200 text-stone-500 light:text-stone-500 cursor-not-allowed'}
           `}
           whileHover={isValid ? { scale: 1.02 } : {}}
           whileTap={isValid ? { scale: 0.98 } : {}}
@@ -180,7 +180,7 @@ export function WhyStep({ onNext, onBack }: WhyStepProps) {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-xs text-zinc-600 mt-3"
+            className="text-center text-xs text-stone-600 light:text-stone-500 mt-3"
           >
             {t('onboarding.why.pressToSubmit', { key: '⌘' })}
           </motion.p>

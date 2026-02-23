@@ -152,7 +152,7 @@ export function SlideRenderer({ slide, isActive, onAction }: SlideRendererProps)
     case 'call_to_action':
       return <CallToActionSlideContent slide={slide as CallToActionSlide} onAction={onAction} />;
     default:
-      return <div className="text-white">{t('story.slides.unknownType')}</div>;
+      return <div className="text-white light:text-stone-900">{t('story.slides.unknownType')}</div>;
   }
 }
 
@@ -193,7 +193,7 @@ function OpeningSlideContent({ slide }: { slide: OpeningSlide }) {
         className="overflow-hidden"
       >
         <motion.h1
-          className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight tracking-tight"
+          className="text-4xl sm:text-5xl font-bold text-white light:text-stone-900 mb-6 leading-tight tracking-tight"
           variants={revealVariants}
         >
           {slide.headline}
@@ -203,7 +203,7 @@ function OpeningSlideContent({ slide }: { slide: OpeningSlide }) {
       {/* Subheadline */}
       <motion.p
         variants={fadeUpVariants}
-        className="text-xl text-white/60 mb-10 font-light"
+        className="text-xl text-white/60 light:text-stone-600 mb-10 font-light"
       >
         {slide.subheadline}
       </motion.p>
@@ -214,7 +214,7 @@ function OpeningSlideContent({ slide }: { slide: OpeningSlide }) {
         className="relative"
       >
         <div className="absolute inset-0 bg-white/10 rounded-full blur-xl" />
-        <div className="relative px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-medium tracking-wide">
+        <div className="relative px-6 py-3 rounded-full bg-white/5 light:bg-stone-200/80 border border-white/10 light:border-stone-300 text-white/70 light:text-stone-700 text-sm font-medium tracking-wide">
           {slide.periodLabel}
         </div>
       </motion.div>
@@ -249,7 +249,7 @@ function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
       {/* Opening message - the emotional hook */}
       <motion.h2
         variants={revealVariants}
-        className="text-3xl sm:text-4xl font-bold text-white mb-8 leading-relaxed"
+        className="text-3xl sm:text-4xl font-bold text-white light:text-stone-900 mb-8 leading-relaxed"
       >
         {slide.openingMessage}
       </motion.h2>
@@ -259,8 +259,8 @@ function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
         variants={fadeUpVariants}
         className="mb-10"
       >
-        <p className="text-white/50 text-sm mb-2">{t('story.slides.firstLessonWas')}</p>
-        <p className="text-white text-lg font-medium px-4 py-2 rounded-lg bg-white/5 border border-white/10">
+        <p className="text-white/50 light:text-stone-600 text-sm mb-2">{t('story.slides.firstLessonWas')}</p>
+        <p className="text-white light:text-stone-900 text-lg font-medium px-4 py-2 rounded-lg bg-white/5 light:bg-stone-100/80 border border-white/10 light:border-stone-300">
           {slide.firstLessonTitle}
         </p>
       </motion.div>
@@ -271,7 +271,7 @@ function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
         className="flex flex-col items-center"
       >
         <motion.span
-          className="text-7xl font-bold text-white"
+          className="text-7xl font-bold text-white light:text-stone-900"
           animate={{
             scale: [1, 1.05, 1],
           }}
@@ -283,7 +283,7 @@ function JourneyStartSlideContent({ slide }: { slide: JourneyStartSlide }) {
         >
           {slide.daysSinceStart}
         </motion.span>
-        <span className="text-white/40 text-lg mt-2">{t('story.slides.daysSinceMoment')}</span>
+        <span className="text-white/40 light:text-stone-500 text-lg mt-2">{t('story.slides.daysSinceMoment')}</span>
       </motion.div>
     </motion.div>
   );
@@ -303,7 +303,7 @@ function StatRevealSlideContent({ slide }: { slide: StatRevealSlide }) {
     >
       <motion.h2
         variants={fadeUpVariants}
-        className="text-2xl font-bold text-white mb-10 text-center"
+        className="text-2xl font-bold text-white light:text-stone-900 mb-10 text-center"
       >
         {slide.headline}
       </motion.h2>
@@ -313,7 +313,7 @@ function StatRevealSlideContent({ slide }: { slide: StatRevealSlide }) {
           <motion.div
             key={index}
             variants={scaleInVariants}
-            className="relative flex flex-col items-center p-5 rounded-2xl bg-white/5 border border-white/10 overflow-hidden group"
+            className="relative flex flex-col items-center p-5 rounded-2xl bg-white/5 light:bg-stone-100/80 border border-white/10 light:border-stone-300 overflow-hidden group"
             custom={index}
           >
             {/* Subtle glow */}
@@ -340,12 +340,12 @@ function StatRevealSlideContent({ slide }: { slide: StatRevealSlide }) {
               {stat.value}
             </motion.span>
 
-            <span className="text-sm text-white/60 text-center mt-2 relative z-10">
+            <span className="text-sm text-white/60 light:text-stone-600 text-center mt-2 relative z-10">
               {stat.label}
             </span>
 
             {stat.subtext && (
-              <span className="text-xs text-white/40 text-center mt-1 relative z-10">
+              <span className="text-xs text-white/40 light:text-stone-500 text-center mt-1 relative z-10">
                 {stat.subtext}
               </span>
             )}
@@ -374,19 +374,19 @@ function ContrastSlideContent({ slide }: { slide: ContrastSlide }) {
         className="flex-1 flex flex-col justify-center"
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10">
-            <Moon className="w-3 h-3 text-white/50" />
-            <span className="text-white/50 text-sm font-medium">{slide.before.label}</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 light:bg-stone-200/80 border border-white/10 light:border-stone-300">
+            <Moon className="w-3 h-3 text-white/50 light:text-stone-600" />
+            <span className="text-white/50 light:text-stone-600 text-sm font-medium">{slide.before.label}</span>
           </div>
-          <span className="text-white/30 text-xs">{slide.before.date}</span>
+          <span className="text-white/30 light:text-stone-500 text-xs">{slide.before.date}</span>
         </div>
         <motion.p
-          className="text-lg text-white/60 italic leading-relaxed pl-4 border-l-2 border-white/20"
+          className="text-lg text-white/60 light:text-stone-700 italic leading-relaxed pl-4 border-l-2 border-white/20 light:border-stone-300"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
         >
-          "{slide.before.text}"
+          &ldquo;{slide.before.text}&rdquo;
         </motion.p>
       </motion.div>
 
@@ -418,15 +418,15 @@ function ContrastSlideContent({ slide }: { slide: ContrastSlide }) {
             <Sun className="w-3 h-3 text-emerald-400" />
             <span className="text-emerald-400 text-sm font-medium">{slide.after.label}</span>
           </div>
-          <span className="text-white/30 text-xs">{slide.after.date}</span>
+          <span className="text-white/30 light:text-stone-500 text-xs">{slide.after.date}</span>
         </div>
         <motion.p
-          className="text-lg text-white leading-relaxed pl-4 border-l-2 border-emerald-500/50"
+          className="text-lg text-white light:text-stone-900 leading-relaxed pl-4 border-l-2 border-emerald-500/50"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
         >
-          "{slide.after.text}"
+          &ldquo;{slide.after.text}&rdquo;
         </motion.p>
       </motion.div>
 
@@ -435,7 +435,7 @@ function ContrastSlideContent({ slide }: { slide: ContrastSlide }) {
         variants={fadeInVariants}
         className="mt-4 pt-4 text-center"
       >
-        <p className="text-white/40 text-sm italic">
+        <p className="text-white/40 light:text-stone-500 text-sm italic">
           {slide.growthIndicator}
         </p>
       </motion.div>
@@ -458,7 +458,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
     >
       <motion.h2
         variants={fadeUpVariants}
-        className="text-2xl font-bold text-white mb-10 text-center"
+        className="text-2xl font-bold text-white light:text-stone-900 mb-10 text-center"
       >
         {t('story.slides.patternShift.title')}
       </motion.h2>
@@ -469,7 +469,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
           variants={fadeUpVariants}
           className="flex flex-col items-center gap-3"
         >
-          <span className="text-white/30 text-xs uppercase tracking-widest mb-2">{t('story.slides.before')}</span>
+          <span className="text-white/30 light:text-stone-500 text-xs uppercase tracking-widest mb-2">{t('story.slides.before')}</span>
           {slide.fromPatterns.slice(0, 3).map((pattern, i) => (
             <motion.div
               key={i}
@@ -496,7 +496,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
           }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <ArrowRight className="w-8 h-8 text-white/20" />
+          <ArrowRight className="w-8 h-8 text-white/20 light:text-stone-400" />
         </motion.div>
 
         {/* To patterns */}
@@ -504,7 +504,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
           variants={fadeUpVariants}
           className="flex flex-col items-center gap-3"
         >
-          <span className="text-white/30 text-xs uppercase tracking-widest mb-2">{t('story.slides.after')}</span>
+          <span className="text-white/30 light:text-stone-500 text-xs uppercase tracking-widest mb-2">{t('story.slides.after')}</span>
           {slide.toPatterns.slice(0, 3).map((pattern, i) => (
             <motion.div
               key={i}
@@ -526,7 +526,7 @@ function PatternShiftSlideContent({ slide }: { slide: PatternShiftSlide }) {
 
       <motion.p
         variants={fadeInVariants}
-        className="text-center text-white/60 max-w-xs leading-relaxed"
+        className="text-center text-white/60 light:text-stone-700 max-w-xs leading-relaxed"
       >
         {slide.shiftMessage}
       </motion.p>
@@ -570,7 +570,7 @@ function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide })
         className="flex items-baseline gap-2 mb-6"
       >
         <motion.span
-          className="text-8xl font-bold text-white"
+          className="text-8xl font-bold text-white light:text-stone-900"
           animate={{
             textShadow: [
               '0 0 20px rgba(255,255,255,0.3)',
@@ -582,13 +582,13 @@ function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide })
         >
           {slide.currentStreak}
         </motion.span>
-        <span className="text-2xl text-white/50 font-light">{t('common.days')}</span>
+        <span className="text-2xl text-white/50 light:text-stone-600 font-light">{t('common.days')}</span>
       </motion.div>
 
       {/* Message */}
       <motion.p
         variants={fadeUpVariants}
-        className="text-lg text-white/70 mb-10 max-w-xs leading-relaxed"
+        className="text-lg text-white/70 light:text-stone-700 mb-10 max-w-xs leading-relaxed"
       >
         {slide.message}
       </motion.p>
@@ -609,8 +609,8 @@ function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide })
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 + i * 0.1 }}
           >
-            <p className="text-2xl font-bold text-white">{stat.value}</p>
-            <p className="text-xs text-white/40 uppercase tracking-wider">{stat.label}</p>
+            <p className="text-2xl font-bold text-white light:text-stone-900">{stat.value}</p>
+            <p className="text-xs text-white/40 light:text-stone-500 uppercase tracking-wider">{stat.label}</p>
           </motion.div>
         ))}
       </motion.div>
@@ -635,13 +635,13 @@ function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
         variants={fadeInVariants}
         className="mb-8"
       >
-        <span className="text-6xl text-purple-400/30 font-serif">"</span>
+        <span className="text-6xl text-purple-400/30 font-serif">&ldquo;</span>
       </motion.div>
 
       {/* Identity statement */}
       <motion.p
         variants={revealVariants}
-        className="text-2xl sm:text-3xl font-medium text-white mb-8 leading-relaxed max-w-sm"
+        className="text-2xl sm:text-3xl font-medium text-white light:text-stone-900 mb-8 leading-relaxed max-w-sm"
       >
         {slide.statement.text}
       </motion.p>
@@ -649,7 +649,7 @@ function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
       {/* Context */}
       <motion.div
         variants={fadeUpVariants}
-        className="flex items-center gap-2 text-white/40 text-sm mb-8"
+        className="flex items-center gap-2 text-white/40 light:text-stone-500 text-sm mb-8"
       >
         <span>{slide.statement.date}</span>
         <span>•</span>
@@ -668,17 +668,13 @@ function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
       {/* Message */}
       <motion.p
         variants={fadeInVariants}
-        className="text-white/50 mt-8 max-w-xs"
+        className="text-white/50 light:text-stone-600 mt-8 max-w-xs"
       >
         {slide.message}
       </motion.p>
     </motion.div>
   );
 }
-
-// ============================================================================
-// ACHIEVEMENT SLIDE - Victories earned
-// ============================================================================
 
 // ============================================================================
 // ASSESSMENT GROWTH - Measurable progress
@@ -701,7 +697,7 @@ function AssessmentGrowthSlideContent({ slide }: { slide: AssessmentGrowthSlide 
 
       <motion.h2
         variants={fadeUpVariants}
-        className="text-2xl font-bold text-white mb-8"
+        className="text-2xl font-bold text-white light:text-stone-900 mb-8"
       >
         {slide.dimension}
       </motion.h2>
@@ -714,14 +710,14 @@ function AssessmentGrowthSlideContent({ slide }: { slide: AssessmentGrowthSlide 
         {/* Before */}
         <div className="flex flex-col items-center">
           <motion.span
-            className="text-4xl font-bold text-white/40"
+            className="text-4xl font-bold text-white/40 light:text-stone-500"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
             {slide.before.score}
           </motion.span>
-          <span className="text-xs text-white/30 mt-1">{slide.before.date}</span>
+          <span className="text-xs text-white/30 light:text-stone-500 mt-1">{slide.before.date}</span>
         </div>
 
         {/* Arrow and growth */}
@@ -753,7 +749,7 @@ function AssessmentGrowthSlideContent({ slide }: { slide: AssessmentGrowthSlide 
           >
             {slide.after.score}
           </motion.span>
-          <span className="text-xs text-white/50 mt-1">{slide.after.date}</span>
+          <span className="text-xs text-white/50 light:text-stone-600 mt-1">{slide.after.date}</span>
         </div>
       </motion.div>
 
@@ -762,7 +758,7 @@ function AssessmentGrowthSlideContent({ slide }: { slide: AssessmentGrowthSlide 
         variants={fadeUpVariants}
         className="w-full max-w-xs mb-6"
       >
-        <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+        <div className="h-3 bg-white/10 light:bg-stone-300 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"
             initial={{ width: `${slide.before.score * 10}%` }}
@@ -774,7 +770,7 @@ function AssessmentGrowthSlideContent({ slide }: { slide: AssessmentGrowthSlide 
 
       <motion.p
         variants={fadeInVariants}
-        className="text-white/60"
+        className="text-white/60 light:text-stone-700"
       >
         {slide.message}
       </motion.p>
@@ -796,7 +792,7 @@ function WordCloudSlideContent({ slide }: { slide: WordCloudSlide }) {
     >
       <motion.h2
         variants={fadeUpVariants}
-        className="text-xl font-bold text-white mb-8 text-center"
+        className="text-xl font-bold text-white light:text-stone-900 mb-8 text-center"
       >
         {slide.message}
       </motion.h2>
@@ -815,7 +811,7 @@ function WordCloudSlideContent({ slide }: { slide: WordCloudSlide }) {
           return (
             <motion.span
               key={word.word}
-              initial={{ opacity: 0, scale: 0, rotate: Math.random() * 20 - 10 }}
+              initial={{ opacity: 0, scale: 0, rotate: (index % 2 === 0 ? -8 : 8) }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{
                 delay: 0.3 + index * 0.05,
@@ -838,7 +834,7 @@ function WordCloudSlideContent({ slide }: { slide: WordCloudSlide }) {
 
       <motion.p
         variants={fadeInVariants}
-        className="text-white/40 text-sm"
+        className="text-white/40 light:text-stone-500 text-sm"
       >
         {slide.totalWordsWritten.toLocaleString()} words written in reflection
       </motion.p>
@@ -861,7 +857,7 @@ function ClosingSlideContent({ slide }: { slide: ClosingSlide }) {
       {/* Headline - personal address */}
       <motion.h2
         variants={fadeInVariants}
-        className="text-2xl font-light text-white/60 mb-6"
+        className="text-2xl font-light text-white/60 light:text-stone-600 mb-6"
       >
         {slide.headline}
       </motion.h2>
@@ -869,7 +865,7 @@ function ClosingSlideContent({ slide }: { slide: ClosingSlide }) {
       {/* Main message - the emotional punch */}
       <motion.p
         variants={revealVariants}
-        className="text-3xl sm:text-4xl font-bold text-white mb-10 leading-relaxed max-w-sm"
+        className="text-3xl sm:text-4xl font-bold text-white light:text-stone-900 mb-10 leading-relaxed max-w-sm"
       >
         {slide.message}
       </motion.p>
@@ -877,7 +873,7 @@ function ClosingSlideContent({ slide }: { slide: ClosingSlide }) {
       {/* Personal note */}
       <motion.p
         variants={fadeUpVariants}
-        className="text-white/50 max-w-sm mb-10 leading-relaxed text-sm"
+        className="text-white/50 light:text-stone-600 max-w-sm mb-10 leading-relaxed text-sm"
       >
         {slide.personalNote}
       </motion.p>
@@ -899,7 +895,7 @@ function ClosingSlideContent({ slide }: { slide: ClosingSlide }) {
         >
           <Heart className="w-4 h-4 text-rose-400" fill="currentColor" />
         </motion.div>
-        <p className="text-white/70 italic">{slide.signOff}</p>
+        <p className="text-white/70 light:text-stone-700 italic">{slide.signOff}</p>
       </motion.div>
     </motion.div>
   );
@@ -926,7 +922,7 @@ function CallToActionSlideContent({
       {/* Encouragement */}
       <motion.p
         variants={fadeUpVariants}
-        className="text-xl text-white/70 mb-12 max-w-sm leading-relaxed"
+        className="text-xl text-white/70 light:text-stone-700 mb-12 max-w-sm leading-relaxed"
       >
         {slide.encouragement}
       </motion.p>
@@ -952,7 +948,7 @@ function CallToActionSlideContent({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => onAction?.(slide.secondaryAction!.action)}
-          className="px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white transition-all"
+          className="px-6 py-3 rounded-full bg-white/5 light:bg-stone-200/80 border border-white/10 light:border-stone-300 text-white/70 light:text-stone-700 hover:bg-white/10 light:hover:bg-stone-200 hover:text-white light:hover:text-stone-900 transition-all"
         >
           {slide.secondaryAction.label}
         </motion.button>

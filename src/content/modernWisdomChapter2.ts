@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import type { FlexibleLesson, FlexibleChapter, LessonStep } from '@/types/lessons';
+import { lesson6Exercises, lesson7Exercises, lesson8Exercises, lesson9Exercises, lesson10Exercises } from './exerciseContent';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LESSON 6: THE COMEBACK FORMULA
@@ -20,7 +21,7 @@ const lesson6_ComebackFormula: FlexibleLesson = {
   estimatedMinutes: 6,
   thumbnail: { icon: '🔄', color: '#ec4899' },
   teaserText: "Tomorrow you'll learn the 3-step formula that turned Michael Jordan's greatest failure into his greatest strength.",
-  exercises: [],
+  exercises: lesson6Exercises,
   steps: [
     {
       id: 'opening',
@@ -230,7 +231,7 @@ const lesson7_EmbraceStruggle: FlexibleLesson = {
   estimatedMinutes: 5,
   thumbnail: { icon: '💪', color: '#8b5cf6' },
   teaserText: "Tomorrow you'll learn why the Navy SEALs, Spartans, and Stoics all embraced voluntary discomfort - and why you should too.",
-  exercises: [],
+  exercises: lesson7Exercises,
   steps: [
     {
       id: 'opening',
@@ -411,7 +412,7 @@ const lesson8_FearSetting: FlexibleLesson = {
   estimatedMinutes: 7,
   thumbnail: { icon: '🎯', color: '#ef4444' },
   teaserText: "Tomorrow you'll learn the fear-dissolving technique that Tim Ferriss credits with saving his life.",
-  exercises: [],
+  exercises: lesson8Exercises,
   steps: [
     {
       id: 'opening',
@@ -596,7 +597,7 @@ const lesson9_AntifragileMind: FlexibleLesson = {
   estimatedMinutes: 5,
   thumbnail: { icon: '⚡', color: '#3b82f6' },
   teaserText: "Tomorrow you'll discover why some people get STRONGER from chaos while others break - and how to become the former.",
-  exercises: [],
+  exercises: lesson9Exercises,
   steps: [
     {
       id: 'opening',
@@ -783,7 +784,7 @@ const lesson10_FutureSelf: FlexibleLesson = {
   estimatedMinutes: 7,
   thumbnail: { icon: '✉️', color: '#14b8a6' },
   teaserText: "Tomorrow you'll write a letter to yourself one year from now - a powerful practice that bridges present and future.",
-  exercises: [],
+  exercises: lesson10Exercises,
   steps: [
     {
       id: 'opening',

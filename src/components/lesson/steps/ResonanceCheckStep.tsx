@@ -74,7 +74,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
   }, [canContinue, isSubmitting, selected, playSuccess, onComplete]);
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
       {/* Atmospheric glow */}
       <div
         className="fixed inset-0 pointer-events-none"
@@ -92,7 +92,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
         <div className="space-y-6">
           {/* Prompt */}
           <div className="text-center space-y-3">
-            <h2 className="text-2xl sm:text-3xl text-stone-100 leading-relaxed">
+            <h2 className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
               {step.prompt}
             </h2>
             {step.instruction && (
@@ -101,7 +101,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
               </p>
             )}
             {!step.instruction && (
-              <p className="text-sm text-stone-500">
+              <p className="text-sm text-stone-500 light:text-stone-600">
                 {maxSelections > 1
                   ? `Tap all that resonate${minSelections > 1 ? ` (at least ${minSelections})` : ''}`
                   : 'Choose one'}
@@ -133,7 +133,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
                       active:scale-[0.98]
                       ${isSelected
                         ? 'bg-indigo-500/15 border-indigo-500/50'
-                        : 'bg-stone-900/50 border-stone-700/40 hover:border-stone-600/60'
+                        : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 hover:border-stone-600/60'
                       }
                     `}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -174,7 +174,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
                       {/* Option text */}
                       <span className={`
                         text-base leading-snug transition-colors duration-200
-                        ${isSelected ? 'text-stone-100' : 'text-stone-300'}
+                        ${isSelected ? 'text-stone-100 light:text-stone-900' : 'text-stone-300 light:text-stone-700'}
                       `}>
                         {option.emoji && <span className="mr-2">{option.emoji}</span>}
                         {option.text}

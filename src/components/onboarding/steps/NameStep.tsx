@@ -77,7 +77,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
         initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
-        className={`flex items-center text-stone-500 hover:text-stone-300 transition-colors mb-8 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'} group`}
+        className={`flex items-center text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors mb-8 ${isRTL ? 'self-end flex-row-reverse' : 'self-start'} group`}
       >
         <ChevronLeft size={20} className={`${isRTL ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'} transition-transform`} />
         <span className="text-sm">{t('common.back')}</span>
@@ -95,15 +95,15 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3, ...springs.gentle }}
-            className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/20 flex items-center justify-center"
+            className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-stone-900 light:to-stone-100 border border-amber-500/20 flex items-center justify-center"
           >
             <User size={28} className="text-amber-400" />
           </motion.div>
 
-          <p className="text-2xl sm:text-3xl text-amber-100 font-light mb-3">
+          <p className="text-2xl sm:text-3xl text-amber-100 light:text-amber-900 font-light mb-3">
             {t('onboarding.name.beforeWeBegin')}
           </p>
-          <p className="text-xl text-stone-400">
+          <p className="text-xl text-stone-400 light:text-stone-600">
             {t('onboarding.name.whatShallICall')}
           </p>
         </motion.div>
@@ -141,13 +141,13 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
             dir={isRTL ? 'rtl' : 'ltr'}
             className={`
               relative w-full p-5 rounded-2xl
-              bg-stone-900/60 backdrop-blur-sm
-              text-amber-100 text-center text-xl font-light placeholder-stone-600
+              bg-stone-900/60 light:bg-stone-200/60 backdrop-blur-sm
+              text-amber-100 light:text-stone-900 text-center text-xl font-light placeholder-stone-600 light:placeholder-stone-400
               focus:outline-none transition-all duration-300
               border-2
               ${isFocused
-                ? 'border-amber-500/50 bg-stone-900/80'
-                : 'border-stone-800 hover:border-stone-700'
+                ? 'border-amber-500/50 bg-stone-900/80 light:bg-stone-200/80'
+                : 'border-stone-800 light:border-stone-200 hover:border-stone-700 light:hover:border-stone-400'
               }
             `}
             maxLength={30}
@@ -180,7 +180,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
               transition={{ duration: 0.4 }}
               className="text-center mb-10"
             >
-              <p className="text-stone-400 text-lg">
+              <p className="text-stone-400 light:text-stone-600 text-lg">
                 {t('onboarding.name.honorToMeet')}{' '}
                 <motion.span
                   key={localName}
@@ -232,7 +232,7 @@ export function NameStep({ onNext, onBack }: NameStepProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="text-center text-xs text-stone-600 mt-6"
+        className="text-center text-xs text-stone-600 light:text-stone-500 mt-6"
       >
         {t('onboarding.name.staysPrivate')}
       </motion.p>

@@ -71,7 +71,7 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
   const highlightY = useTransform(mouseY, [0, 1], [0, 100]);
 
   if (!mounted) {
-    return <div className="h-40 rounded-2xl bg-stone-900/50" />;
+    return <div className="h-40 rounded-2xl bg-stone-900/50 light:bg-stone-200/50" />;
   }
 
   return (
@@ -163,7 +163,7 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
               {/* Title and subtitle */}
               <div>
                 <motion.h2
-                  className="text-xl font-bold text-amber-100"
+                  className="text-xl font-bold text-amber-100 light:text-amber-700"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
@@ -219,8 +219,8 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
             >
               <div className="flex items-center gap-2 text-sm">
                 <Zap size={14} className="text-amber-500" />
-                <span className="text-stone-400">
-                  <span className="text-amber-200 font-semibold tabular-nums">
+                <span className="text-stone-400 light:text-stone-600">
+                  <span className="text-amber-200 light:text-amber-600 font-semibold tabular-nums">
                     <AnimatedCounter value={xpProgress.current} />
                   </span>
                   {' / '}
@@ -245,7 +245,7 @@ export function LevelDisplay({ level, totalXp, xpProgress }: LevelDisplayProps) 
 
           {/* Motivational message based on progress */}
           <motion.div
-            className="mt-4 pt-4 border-t border-stone-800/50"
+            className="mt-4 pt-4 border-t border-stone-800/50 light:border-stone-300/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
