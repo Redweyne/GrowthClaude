@@ -42,7 +42,6 @@ import { TapFlowStep } from './steps/TapFlowStep';
 // Types
 import type {
   FlexibleLesson,
-  LessonStep,
   LessonProgress,
   ChoiceOption,
   ScenarioStep as ScenarioStepType,
@@ -63,21 +62,88 @@ interface FlexibleLessonExperienceProps {
   resumeProgress?: LessonProgress;
 }
 
-// Step type to theme mapping (glow only, labels are translated)
+// Step type to theme mapping — bold, visible atmospheres per step type
 const STEP_THEMES: Record<string, {
   glow: string;
 }> = {
-  scenario: { glow: 'rgba(244, 63, 94, 0.12)' },
-  choice: { glow: 'rgba(251, 191, 36, 0.12)' },
-  insight: { glow: 'rgba(167, 139, 250, 0.12)' },
-  reflection: { glow: 'rgba(34, 211, 238, 0.10)' },
-  mentor: { glow: 'rgba(168, 85, 247, 0.12)' },
-  reward: { glow: 'rgba(251, 191, 36, 0.20)' },
-  resonanceCheck: { glow: 'rgba(99, 102, 241, 0.12)' },
-  scaleRating: { glow: 'rgba(251, 191, 36, 0.10)' },
-  affirmation: { glow: 'rgba(16, 185, 129, 0.15)' },
-  tapFlow: { glow: 'rgba(99, 102, 241, 0.12)' },
+  scenario: { glow: 'rgba(244, 63, 94, 0.30)' },
+  choice: { glow: 'rgba(251, 191, 36, 0.28)' },
+  insight: { glow: 'rgba(167, 139, 250, 0.35)' },
+  reflection: { glow: 'rgba(34, 211, 238, 0.22)' },
+  mentor: { glow: 'rgba(168, 85, 247, 0.25)' },
+  reward: { glow: 'rgba(251, 191, 36, 0.45)' },
+  resonanceCheck: { glow: 'rgba(99, 102, 241, 0.25)' },
+  scaleRating: { glow: 'rgba(251, 191, 36, 0.22)' },
+  affirmation: { glow: 'rgba(16, 185, 129, 0.30)' },
+  tapFlow: { glow: 'rgba(99, 102, 241, 0.28)' },
 };
+
+// Step-aware transition system — each step type enters/exits differently
+const STEP_TRANSITIONS: Record<string, {
+  initial: Record<string, number | string>;
+  exit: Record<string, number | string>;
+  duration: number;
+}> = {
+  scenario: {
+    initial: { opacity: 0, x: 60 },
+    exit: { opacity: 0, x: -40 },
+    duration: 0.5,
+  },
+  choice: {
+    initial: { opacity: 0, scale: 0.92 },
+    exit: { opacity: 0, scale: 1.05 },
+    duration: 0.5,
+  },
+  insight: {
+    initial: { opacity: 0, scale: 0.95, filter: 'blur(8px)' },
+    exit: { opacity: 0, filter: 'blur(4px)' },
+    duration: 0.6,
+  },
+  reflection: {
+    initial: { opacity: 0, y: 50 },
+    exit: { opacity: 0, y: -30 },
+    duration: 0.7,
+  },
+  reward: {
+    initial: { opacity: 0, scale: 0.8 },
+    exit: { opacity: 0, scale: 1.1 },
+    duration: 0.6,
+  },
+  mentor: {
+    initial: { opacity: 0 },
+    exit: { opacity: 0 },
+    duration: 0.8,
+  },
+  affirmation: {
+    initial: { opacity: 0, y: 40, scale: 0.96 },
+    exit: { opacity: 0, y: -20 },
+    duration: 0.55,
+  },
+  tapFlow: {
+    initial: { opacity: 0, x: 40 },
+    exit: { opacity: 0, x: -30 },
+    duration: 0.5,
+  },
+  resonanceCheck: {
+    initial: { opacity: 0, y: 25, scale: 0.96 },
+    exit: { opacity: 0, y: -15 },
+    duration: 0.5,
+  },
+  scaleRating: {
+    initial: { opacity: 0, y: 25 },
+    exit: { opacity: 0, y: -20 },
+    duration: 0.5,
+  },
+};
+
+const DEFAULT_TRANSITION = {
+  initial: { opacity: 0, y: 30 },
+  exit: { opacity: 0, y: -20 },
+  duration: 0.5,
+};
+
+// Cinematic easing — fast out, smooth landing
+const EASE_OUT_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export function FlexibleLessonExperience({
   lesson,
@@ -126,24 +192,7 @@ export function FlexibleLessonExperience({
     // Intentionally silent
   }, []);
 
-  const { t, isRTL } = useTranslation();
-
-  // Get translated step labels
-  const getStepLabel = (stepType: string): string => {
-    switch (stepType) {
-      case 'scenario': return t('lessons.steps.theSituation');
-      case 'choice': return t('lessons.steps.yourChoice');
-      case 'insight': return t('lessons.steps.insight');
-      case 'reflection': return t('lessons.steps.reflection');
-      case 'mentor': return t('lessons.steps.sageWisdom');
-      case 'reward': return t('lessons.steps.celebration');
-      case 'resonanceCheck': return t('lessons.steps.yourChoice');
-      case 'scaleRating': return t('lessons.steps.yourChoice');
-      case 'affirmation': return t('lessons.steps.yourCommitment');
-      case 'tapFlow': return t('lessons.steps.innerVision');
-      default: return '';
-    }
-  };
+  const { isRTL } = useTranslation();
 
   // ─────────────────────────────────────────────────────────────────────────
   // Derived State
@@ -152,16 +201,8 @@ export function FlexibleLessonExperience({
   const currentStep = activeSteps.find(s => s.id === currentStepId);
   const currentTheme = currentStep ? STEP_THEMES[currentStep.type] : STEP_THEMES.scenario;
 
-  // Phase 9A: Compute lesson theme color for ambient background tinting
+  // Compute lesson theme color for ambient background tinting
   const lessonTheme = lesson.themeColor || getLessonThemeColor(lesson.id);
-
-
-  // Calculate progress based on step position
-  const getProgress = () => {
-    const stepIndex = activeSteps.findIndex(s => s.id === currentStepId);
-    if (stepIndex === -1) return 0;
-    return Math.round(((stepIndex + 1) / activeSteps.length) * 100);
-  };
 
   // ─────────────────────────────────────────────────────────────────────────
   // Audio Initialization - Start lesson music on mount
@@ -560,67 +601,90 @@ export function FlexibleLessonExperience({
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
     >
-      {/* Ambient background */}
+      {/* Ambient background — vivid for reward, normal everywhere else */}
       <AmbientBackground
-        intensity="subtle"
-        particleCount={currentStep?.type === 'reward' ? 8 : 4}
-        orbCount={1}
+        intensity={currentStep?.type === 'reward' ? 'vivid' : 'normal'}
+        particleCount={currentStep?.type === 'reward' ? 12 : 8}
+        orbCount={currentStep?.type === 'reward' ? 2 : 1}
         themeOverride={lessonTheme}
       />
 
-      {/* Step-specific atmospheric glow */}
+      {/* Step-specific atmospheric glow — bold, viewport-filling */}
       <motion.div
+        key={`glow-${currentStep?.type}`}
         className="fixed inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.8, ease: EASE_OUT_EXPO }}
         style={{
-          background: `radial-gradient(ellipse 80% 60% at 50% 30%, ${currentTheme.glow} 0%, transparent 60%)`,
+          background: `radial-gradient(ellipse 100% 80% at 50% 30%, ${currentTheme.glow} 0%, transparent 55%)`,
         }}
       />
 
-      {/* Progress indicator */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <div className="h-1 bg-stone-900/80 light:bg-stone-200/80 backdrop-blur-sm">
-          <motion.div
-            className="h-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${getProgress()}%` }}
-            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{
-              background: `linear-gradient(90deg, ${lessonTheme.primary}, ${lessonTheme.primary}dd)`,
-              boxShadow: `0 0 20px ${lessonTheme.glow}`,
-            }}
-          />
-        </div>
+      {/* Segmented progress bar — each step is a segment */}
+      <div className="fixed top-0 left-0 right-0 z-50 px-3 pt-[max(env(safe-area-inset-top),8px)]">
+        <div className="flex gap-[3px]">
+          {activeSteps.map((step, index) => {
+            const currentIndex = activeSteps.findIndex(s => s.id === currentStepId);
+            const isCompleted = index < currentIndex;
+            const isCurrent = index === currentIndex;
 
-        {/* Step label */}
-        <motion.div
-          className="absolute top-4 left-1/2 transform -translate-x-1/2"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <motion.span
-            key={currentStep?.type}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-xs tracking-[0.2em] uppercase text-stone-500 light:text-stone-600 font-medium"
-          >
-            {currentStep ? getStepLabel(currentStep.type) : getStepLabel('scenario')}
-          </motion.span>
-        </motion.div>
+            return (
+              <motion.div
+                key={step.id}
+                className="h-[3px] flex-1 rounded-full overflow-hidden"
+                style={{
+                  backgroundColor: isLight ? 'rgba(214, 211, 209, 0.4)' : 'rgba(41, 37, 36, 0.6)',
+                }}
+              >
+                {(isCompleted || isCurrent) && (
+                  <motion.div
+                    className="h-full rounded-full"
+                    initial={{ width: isCurrent ? '0%' : '100%' }}
+                    animate={{ width: '100%' }}
+                    transition={isCurrent ? {
+                      duration: 0.8,
+                      ease: EASE_OUT_EXPO,
+                    } : { duration: 0 }}
+                    style={{
+                      background: isCompleted
+                        ? `${lessonTheme.primary}66`
+                        : `linear-gradient(90deg, ${lessonTheme.primary}, ${lessonTheme.primary}dd)`,
+                      boxShadow: isCurrent ? `0 0 12px ${lessonTheme.glow}` : 'none',
+                    }}
+                  />
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 flex items-center justify-center px-4 pt-20 pb-12">
+      {/* Main content area — step-aware transitions */}
+      <div className="flex-1 flex items-center justify-center px-4 pt-8 pb-8">
         <AnimatePresence mode="wait">
           {!isTransitioning && currentStep && (
             <motion.div
               key={currentStepId}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -15, scale: 0.98 }}
-              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              initial={{
+                ...DEFAULT_TRANSITION.initial,
+                ...(STEP_TRANSITIONS[currentStep.type]?.initial || {}),
+              }}
+              animate={{
+                opacity: 1,
+                x: 0,
+                y: 0,
+                scale: 1,
+                filter: 'blur(0px)',
+              }}
+              exit={{
+                ...DEFAULT_TRANSITION.exit,
+                ...(STEP_TRANSITIONS[currentStep.type]?.exit || {}),
+              }}
+              transition={{
+                duration: STEP_TRANSITIONS[currentStep.type]?.duration || DEFAULT_TRANSITION.duration,
+                ease: EASE_OUT_EXPO,
+              }}
               className="w-full max-w-xl"
             >
               {renderStep()}
@@ -631,16 +695,6 @@ export function FlexibleLessonExperience({
 
       {/* Music controls - mute and change track */}
       <MusicControls />
-
-      {/* Bottom gradient fade */}
-      <div
-        className="fixed bottom-0 left-0 right-0 h-24 pointer-events-none"
-        style={{
-          background: isLight
-            ? 'linear-gradient(to top, rgba(250, 250, 249, 0.9), transparent)'
-            : 'linear-gradient(to top, rgba(12, 10, 9, 0.9), transparent)',
-        }}
-      />
     </div>
   );
 }
