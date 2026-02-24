@@ -228,7 +228,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ ...springs.gentle, delay: 0.1 }}
-          className="mx-auto mb-6 relative"
+          className="mx-auto mb-8 relative"
         >
           <div className="animate-breathe-glow rounded-full">
             <SageAvatar mood={sageMood} size="lg" />

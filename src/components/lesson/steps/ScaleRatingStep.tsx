@@ -140,7 +140,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                       disabled={isSubmitting}
                       className={`
                         w-14 h-14 rounded-full flex items-center justify-center
-                        text-sm font-semibold transition-all duration-200
+                        text-lg font-semibold transition-all duration-200
                         active:scale-90
                         ${isActive
                           ? 'bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/30 scale-110'

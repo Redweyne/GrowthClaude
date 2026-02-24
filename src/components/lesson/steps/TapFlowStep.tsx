@@ -183,7 +183,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="font-serif text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed text-center px-2"
+                  className="font-serif text-2xl sm:text-3xl text-stone-200 light:text-stone-800 leading-relaxed text-center px-2"
                 >
                   {step.instructions[currentIndex]}
                 </motion.p>
@@ -195,7 +195,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
-                  className={`text-lg ${config.accent} leading-relaxed text-center italic`}
+                  className={`font-serif text-lg ${config.accent} leading-relaxed text-center italic`}
                 >
                   {step.closingText}
                 </motion.p>

@@ -112,7 +112,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     const timer = setTimeout(() => {
       setPhase('writing');
       setTimeout(() => textareaRef.current?.focus(), 100);
-    }, 2200);
+    }, 2800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -228,7 +228,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-xl text-stone-300 light:text-stone-700 font-light"
+              className="font-serif text-2xl text-stone-300 light:text-stone-700 font-light"
             >
               {t('lessons.reflection.nowReflect')}
             </motion.p>
@@ -241,7 +241,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: '100%' }}
-                transition={{ duration: 2.2, ease: 'linear' }}
+                transition={{ duration: 2.8, ease: 'linear' }}
                 style={{
                   boxShadow: '0 0 15px rgba(251, 191, 36, 0.4)',
                 }}
@@ -286,7 +286,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               {/* Container with glass-warm feel */}
               <div
                 className={`
-                  h-full min-h-[180px] relative rounded-2xl transition-all duration-300
+                  h-full min-h-[220px] relative rounded-2xl transition-all duration-300
                   border-2 backdrop-blur-xl
                   ${isFocused
                     ? 'bg-stone-900/60 light:bg-stone-200/60 border-amber-500/30'
@@ -303,7 +303,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   placeholder={t('lessons.reflection.beginWriting')}
                   data-testid="reflection-input"
                   className={`
-                    w-full h-full min-h-[180px] p-5
+                    w-full h-full min-h-[220px] p-5
                     bg-transparent text-lg text-stone-200 light:text-stone-800
                     placeholder-stone-600 leading-relaxed
                     focus:outline-none resize-none

@@ -24,7 +24,7 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
 
-  const { playTapConfirm, playSuccess } = useAudio();
+  const { playReveal, playSuccess } = useAudio();
 
   useEffect(() => {
     const timer = setTimeout(() => setShowOptions(true), 400);
@@ -33,7 +33,7 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
 
   const handleSelect = (option: ChoiceOption) => {
     setSelectedOption(option.id);
-    playTapConfirm();
+    playReveal();
     setTimeout(() => {
       playSuccess();
       onComplete(option);
