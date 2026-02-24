@@ -230,7 +230,9 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           transition={{ ...springs.gentle, delay: 0.1 }}
           className="mx-auto mb-6 relative"
         >
-          <SageAvatar mood={sageMood} size="lg" />
+          <div className="animate-breathe-glow rounded-full">
+            <SageAvatar mood={sageMood} size="lg" />
+          </div>
         </motion.div>
 
         {/* Mentor name */}
@@ -254,7 +256,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
           className={`relative rounded-2xl p-8 mb-6 text-left ${
             isLowEffort
               ? 'bg-gradient-to-br from-red-950/30 to-stone-950 border border-red-900/30'
-              : 'bg-gradient-to-br from-stone-900/80 to-stone-950 border border-stone-800/50'
+              : 'glass-warm'
           }`}
           style={{
             boxShadow: isLowEffort
@@ -269,14 +271,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
             </div>
           )}
 
-          {/* Speech bubble pointer */}
-          <div
-            className={`absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 ${
-              isLowEffort
-                ? 'bg-red-950/30 border-l border-t border-red-900/30'
-                : 'bg-stone-900/80 light:bg-stone-200/80 border-l border-t border-stone-800/50'
-            }`}
-          />
+          {/* Removed speech bubble pointer for cleaner look */}
 
           {/* Message text */}
           <p className={`text-lg leading-relaxed ${isLowEffort ? 'text-red-200/90' : 'text-stone-200 light:text-stone-800'}`} data-testid="mentor-response">
@@ -285,7 +280,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
               <motion.span
                 animate={{ opacity: [0, 1, 0] }}
                 transition={{ duration: 0.8, repeat: Infinity }}
-                className={`inline-block w-2 h-5 ml-1 align-middle rounded-sm ${
+                className={`inline-block w-[2px] h-5 ml-1 align-middle rounded-sm ${
                   isLowEffort ? 'bg-red-400' : 'bg-purple-400/80'
                 }`}
               />

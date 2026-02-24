@@ -1,16 +1,17 @@
 'use client';
 
 // ==============================================================================
-// SCENARIO STEP - The Hook
+// SCENARIO STEP - "The Immersion"
 // ==============================================================================
 //
-// This is where transformation begins - with recognition.
-// All text appears with consistent, clean animations.
-// Sequenced reveal: narrative -> subtext -> bridge question -> button
+// Where transformation begins with recognition.
+// Typography drama: first sentence is large display font, rest flows naturally.
+// Mood-driven dual-layer atmospheric glow (3x bolder than before).
+// Bridge question arrives as a reflective descent with centered dot divider.
 //
 // ==============================================================================
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
@@ -24,26 +25,45 @@ interface ScenarioStepProps {
 
 const MOOD_COLORS = {
   struggle: {
-    glow: 'rgba(244, 63, 94, 0.12)',
+    glowStrong: 'rgba(244, 63, 94, 0.30)',
+    glowSubtle: 'rgba(244, 63, 94, 0.15)',
     accent: 'text-rose-400',
-    border: 'border-rose-500/20',
   },
   curiosity: {
-    glow: 'rgba(245, 158, 11, 0.12)',
+    glowStrong: 'rgba(245, 158, 11, 0.30)',
+    glowSubtle: 'rgba(245, 158, 11, 0.15)',
     accent: 'text-amber-400',
-    border: 'border-amber-500/20',
   },
   hope: {
-    glow: 'rgba(16, 185, 129, 0.12)',
+    glowStrong: 'rgba(16, 185, 129, 0.30)',
+    glowSubtle: 'rgba(16, 185, 129, 0.15)',
     accent: 'text-emerald-400',
-    border: 'border-emerald-500/20',
   },
   tension: {
-    glow: 'rgba(168, 85, 247, 0.12)',
+    glowStrong: 'rgba(168, 85, 247, 0.30)',
+    glowSubtle: 'rgba(168, 85, 247, 0.15)',
     accent: 'text-purple-400',
-    border: 'border-purple-500/20',
   },
 };
+
+// Mood-specific fallback button text
+const MOOD_BUTTON_TEXT: Record<string, string> = {
+  tension: 'What would you do?',
+  curiosity: "Let's explore...",
+  hope: 'Step forward...',
+  struggle: 'Face this...',
+};
+
+// Split off the first sentence from narrative text for dramatic display treatment
+function splitFirstSentence(text: string): { first: string; rest: string } {
+  // Match the first sentence ending with punctuation followed by whitespace
+  const match = text.match(/^([\s\S]+?[.!?])\s+([\s\S]+)$/);
+  if (match) {
+    return { first: match[1], rest: match[2] };
+  }
+  // Single sentence — the whole thing is dramatic
+  return { first: text, rest: '' };
+}
 
 // Phases for sequenced reveal
 type Phase = 'narrative' | 'subtext' | 'bridgeQuestion' | 'ready';
@@ -56,56 +76,65 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
   const mood = step.mood || 'tension';
   const colors = MOOD_COLORS[mood];
 
-  // Cleanup on unmount
+  // Split narrative into dramatic first sentence + remaining flow
+  const { first: firstSentence, rest: remainingNarrative } = useMemo(
+    () => splitFirstSentence(step.narrative),
+    [step.narrative]
+  );
+
   useEffect(() => {
     mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    return () => { mountedRef.current = false; };
   }, []);
 
-  // Called when the narrative text animation finishes
+  // ── Phase transitions ──────────────────────────────────────────────────────
+
   const handleNarrativeComplete = useCallback(() => {
     if (!mountedRef.current) return;
-    
-    // Determine next phase
-    if (step.subtext) {
-      setPhase('subtext');
-    } else if (step.bridgeQuestion) {
-      setPhase('bridgeQuestion');
-    } else {
-      setPhase('ready');
-    }
+    if (step.subtext) setPhase('subtext');
+    else if (step.bridgeQuestion) setPhase('bridgeQuestion');
+    else setPhase('ready');
   }, [step.subtext, step.bridgeQuestion]);
 
-  // Called when subtext animation finishes
   const handleSubtextComplete = useCallback(() => {
     if (!mountedRef.current) return;
-    
-    if (step.bridgeQuestion) {
-      setPhase('bridgeQuestion');
-    } else {
-      setPhase('ready');
-    }
+    if (step.bridgeQuestion) setPhase('bridgeQuestion');
+    else setPhase('ready');
   }, [step.bridgeQuestion]);
 
-  // Called when bridge question animation finishes
   const handleBridgeComplete = useCallback(() => {
     if (!mountedRef.current) return;
     setPhase('ready');
   }, []);
 
+  // For single-sentence narratives, advance phase after reading time
+  useEffect(() => {
+    if (remainingNarrative) return; // WisdomText handles completion for multi-sentence
+    const timer = setTimeout(() => {
+      if (mountedRef.current) handleNarrativeComplete();
+    }, 2500); // first sentence animation (600ms) + comfortable reading time
+    return () => clearTimeout(timer);
+  }, [remainingNarrative, handleNarrativeComplete]);
+
+  // ── Derived state ──────────────────────────────────────────────────────────
+
   const showSubtext = phase === 'subtext' || phase === 'bridgeQuestion' || phase === 'ready';
   const showBridge = phase === 'bridgeQuestion' || phase === 'ready';
   const showButton = phase === 'ready';
 
+  // Button text: step's continueLabel > mood-specific > generic fallback
+  const buttonText = step.continueLabel || MOOD_BUTTON_TEXT[mood] || t('lessons.scenario.continue');
+
   return (
     <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4">
-      {/* Atmospheric glow */}
+      {/* Dual-layer atmospheric glow — 3x bolder than before */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse 70% 50% at 50% 40%, ${colors.glow} 0%, transparent 60%)`,
+          background: `
+            radial-gradient(ellipse 90% 70% at 50% 30%, ${colors.glowStrong} 0%, transparent 50%),
+            radial-gradient(ellipse 60% 40% at 50% 80%, ${colors.glowSubtle} 0%, transparent 40%)
+          `,
         }}
       />
 
@@ -116,17 +145,29 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="space-y-6 sm:space-y-5">
-          {/* The narrative - clean sentence-by-sentence reveal */}
-          <WisdomText
-            variant="narrative"
-            animate={true}
-            speed="slow"
-            onComplete={handleNarrativeComplete}
+          {/* ── First sentence — dramatic display typography ────────────── */}
+          <motion.p
+            initial={{ opacity: 0, y: 16, filter: 'blur(2px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="font-serif text-2xl sm:text-3xl leading-[1.5] text-stone-100 light:text-stone-900"
           >
-            {step.narrative}
-          </WisdomText>
+            {firstSentence}
+          </motion.p>
 
-          {/* Subtext - animated with same style, appears after narrative */}
+          {/* ── Remaining narrative — flowing sentence reveal ───────────── */}
+          {remainingNarrative && (
+            <WisdomText
+              variant="narrative"
+              animate={true}
+              speed="slow"
+              onComplete={handleNarrativeComplete}
+            >
+              {remainingNarrative}
+            </WisdomText>
+          )}
+
+          {/* ── Subtext — supporting context ───────────────────────────── */}
           {step.subtext && showSubtext && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -144,27 +185,32 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
             </motion.div>
           )}
 
-          {/* Bridge question - animated with same style, appears after subtext */}
+          {/* ── Bridge question — reflective descent ───────────────────── */}
           {step.bridgeQuestion && showBridge && (
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className={`pt-6 border-t ${colors.border}`}
+              transition={{ duration: 0.5 }}
+              className="mt-10 pt-8"
             >
+              {/* Centered dot divider — replaces clinical border-top */}
+              <div className="flex justify-center mb-6">
+                <span className="text-stone-500 light:text-stone-400 tracking-[1em] text-sm select-none">·  ·  ·</span>
+              </div>
+
               <WisdomText
                 variant="question"
                 animate={true}
                 speed="normal"
                 onComplete={handleBridgeComplete}
-                className="font-medium"
+                className="font-serif italic"
               >
                 {step.bridgeQuestion}
               </WisdomText>
             </motion.div>
           )}
 
-          {/* Continue button - only shows after ALL text is complete */}
+          {/* ── Continue button — atmospheric glass variant ─────────────── */}
           {showButton && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -172,19 +218,20 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="pt-4"
             >
-                <Button
-                  size="lg"
-                  onClick={onComplete}
-                  glow
-                  className="w-full group"
-                  data-testid="scenario-continue-btn"
-                >
-                  {step.continueLabel || t('lessons.scenario.continue')}
-                  <ChevronRight
-                    size={18}
-                    className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
-                  />
-                </Button>
+              <Button
+                variant="glass"
+                size="lg"
+                onClick={onComplete}
+                glow
+                className="w-full group"
+                data-testid="scenario-continue-btn"
+              >
+                {buttonText}
+                <ChevronRight
+                  size={18}
+                  className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
+                />
+              </Button>
             </motion.div>
           )}
         </div>

@@ -1,13 +1,12 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// AFFIRMATION STEP - THE MOMENT OF COMMITMENT
+// AFFIRMATION STEP - "The Moment of Commitment"
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // A dramatic, beautifully presented statement the user confirms by tapping.
-// Replaces GoDoIt and written commitments in the engagement path.
-// Words appear one by one for maximum impact, then user confirms.
-// This is the "swipe right on your intention" moment.
+// Words appear one by one in large serif typography with gradient color.
+// Solidification moment: bell rings, words lock in, then confirm button rises.
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -24,52 +23,54 @@ interface AffirmationStepProps {
 
 const STYLE_CONFIG = {
   commitment: {
-    glow: 'rgba(16, 185, 129, 0.15)',
+    glowStrong: 'rgba(16, 185, 129, 0.25)',
+    glowSubtle: 'rgba(16, 185, 129, 0.12)',
+    gradientClass: 'gradient-text-growth',
     accent: 'text-emerald-400',
     border: 'border-emerald-500/30',
     bg: 'bg-emerald-500/10',
     buttonBg: 'bg-emerald-600 hover:bg-emerald-500',
-    particle: 'bg-emerald-400',
   },
   release: {
-    glow: 'rgba(99, 102, 241, 0.15)',
+    glowStrong: 'rgba(99, 102, 241, 0.25)',
+    glowSubtle: 'rgba(99, 102, 241, 0.12)',
+    gradientClass: 'gradient-text-wisdom',
     accent: 'text-indigo-400',
     border: 'border-indigo-500/30',
     bg: 'bg-indigo-500/10',
     buttonBg: 'bg-indigo-600 hover:bg-indigo-500',
-    particle: 'bg-indigo-400',
   },
   gratitude: {
-    glow: 'rgba(251, 191, 36, 0.15)',
+    glowStrong: 'rgba(251, 191, 36, 0.25)',
+    glowSubtle: 'rgba(251, 191, 36, 0.12)',
+    gradientClass: 'gradient-text-gold',
     accent: 'text-amber-400',
     border: 'border-amber-500/30',
     bg: 'bg-amber-500/10',
     buttonBg: 'bg-amber-600 hover:bg-amber-500',
-    particle: 'bg-amber-400',
   },
   strength: {
-    glow: 'rgba(244, 63, 94, 0.12)',
+    glowStrong: 'rgba(244, 63, 94, 0.20)',
+    glowSubtle: 'rgba(244, 63, 94, 0.10)',
+    gradientClass: 'gradient-text-sunset',
     accent: 'text-rose-400',
     border: 'border-rose-500/30',
     bg: 'bg-rose-500/10',
     buttonBg: 'bg-rose-600 hover:bg-rose-500',
-    particle: 'bg-rose-400',
   },
 };
 
 export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
-  const [phase, setPhase] = useState<'pretext' | 'revealing' | 'ready' | 'confirmed'>('pretext');
+  const [phase, setPhase] = useState<'pretext' | 'revealing' | 'solidified' | 'ready' | 'confirmed'>('pretext');
   const [visibleWords, setVisibleWords] = useState(0);
-  const [showConfirm, setShowConfirm] = useState(false);
   const mountedRef = useRef(true);
 
-  const { playReveal, playSuccess, playReward } = useAudio();
+  const { playBell, playSuccess, playReward } = useAudio();
 
   const style = step.style || 'commitment';
   const config = STYLE_CONFIG[style];
 
   const words = step.statement.split(/\s+/);
-  const allWordsVisible = visibleWords >= words.length;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -79,7 +80,6 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
   // Phase transitions
   useEffect(() => {
     if (phase === 'pretext') {
-      // Show pretext briefly, then start revealing
       const delay = step.preText ? 2000 : 200;
       const timer = setTimeout(() => {
         if (mountedRef.current) setPhase('revealing');
@@ -88,29 +88,32 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
     }
   }, [phase, step.preText]);
 
-  // Word-by-word reveal
+  // Word-by-word reveal — 160ms per word for weight
   useEffect(() => {
     if (phase !== 'revealing') return;
     if (visibleWords >= words.length) {
-      // All words revealed
-      playReveal();
-      setTimeout(() => {
+      // All words revealed → solidification moment
+      playBell();
+      const timer = setTimeout(() => {
         if (mountedRef.current) {
-          setPhase('ready');
-          setShowConfirm(true);
+          setPhase('solidified');
+          // Brief solidification pause, then show button
+          setTimeout(() => {
+            if (mountedRef.current) setPhase('ready');
+          }, 600);
         }
-      }, 600);
-      return;
+      }, 400);
+      return () => clearTimeout(timer);
     }
 
     const timer = setTimeout(() => {
       if (mountedRef.current) {
         setVisibleWords(prev => prev + 1);
       }
-    }, 120); // Fast but readable word reveal
+    }, 160);
 
     return () => clearTimeout(timer);
-  }, [phase, visibleWords, words.length, playReveal]);
+  }, [phase, visibleWords, words.length, playBell]);
 
   const handleConfirm = useCallback(() => {
     if (phase !== 'ready') return;
@@ -118,7 +121,6 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
     playSuccess();
     playReward();
 
-    // Wait for confirmation animation then continue
     setTimeout(() => {
       if (mountedRef.current) {
         onComplete();
@@ -126,9 +128,11 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
     }, 1200);
   }, [phase, playSuccess, playReward, onComplete]);
 
+  const allWordsVisible = visibleWords >= words.length;
+
   return (
     <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4 py-8">
-      {/* Atmospheric glow - intensifies when ready */}
+      {/* Dual-layer atmospheric glow — intensifies on confirm */}
       <motion.div
         className="fixed inset-0 pointer-events-none"
         animate={{
@@ -137,8 +141,8 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
         transition={{ duration: 0.5 }}
         style={{
           background: `
-            radial-gradient(ellipse 80% 60% at 50% 40%, ${config.glow} 0%, transparent 50%),
-            radial-gradient(ellipse 50% 30% at 50% 60%, ${config.glow} 0%, transparent 40%)
+            radial-gradient(ellipse 90% 70% at 50% 30%, ${config.glowStrong} 0%, transparent 50%),
+            radial-gradient(ellipse 60% 40% at 50% 80%, ${config.glowSubtle} 0%, transparent 40%)
           `,
         }}
       />
@@ -165,7 +169,7 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
             )}
           </AnimatePresence>
 
-          {/* The statement - word by word reveal */}
+          {/* The statement — serif + gradient, word by word reveal */}
           {phase !== 'pretext' && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -173,13 +177,15 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
               transition={{ duration: 0.3 }}
               className="py-8"
             >
-              <p className="text-2xl sm:text-3xl md:text-4xl font-medium leading-relaxed text-stone-100 light:text-stone-900">
+              <p className={`font-serif text-3xl sm:text-4xl md:text-5xl font-medium leading-[1.3] ${
+                allWordsVisible ? config.gradientClass : 'text-stone-100 light:text-stone-900'
+              }`}>
                 {words.map((word, i) => (
                   <motion.span
                     key={i}
                     initial={{ opacity: 0, y: 8 }}
                     animate={i < visibleWords ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
                     className="inline-block mr-[0.3em]"
                   >
                     {word}
@@ -205,7 +211,7 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
 
           {/* Confirm button */}
           <AnimatePresence>
-            {showConfirm && phase === 'ready' && (
+            {phase === 'ready' && (
               <motion.div
                 initial={{ opacity: 0, y: 15, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}

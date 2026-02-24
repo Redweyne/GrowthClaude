@@ -1,18 +1,18 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RESONANCE CHECK STEP - TAP WHAT RESONATES
+// RESONANCE CHECK STEP - "Tap What Resonates"
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// Replaces writing prompts in the engagement path.
-// Users tap options that resonate with them - personal without typing.
-// Multi-select with satisfying feedback on each selection.
+// 2-column grid of glass cards. Emoji centered, text below.
+// No checkbox circles — the entire card is the toggle.
+// Satisfying pop sound and scale feedback on each selection.
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Check } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
 import type { ResonanceCheckStep as ResonanceCheckStepType } from '@/types/lessons';
@@ -28,7 +28,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
   const [isSubmitting, setIsSubmitting] = useState(false);
   const mountedRef = useRef(true);
 
-  const { playTapConfirm, playSuccess } = useAudio();
+  const { playPop, playSuccess } = useAudio();
 
   const minSelections = step.minSelections ?? 1;
   const maxSelections = step.maxSelections ?? step.options.length;
@@ -58,14 +58,13 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
       }
       return next;
     });
-    playTapConfirm();
-  }, [maxSelections, isSubmitting, playTapConfirm]);
+    playPop();
+  }, [maxSelections, isSubmitting, playPop]);
 
   const handleContinue = useCallback(() => {
     if (!canContinue || isSubmitting) return;
     setIsSubmitting(true);
     playSuccess();
-    // Brief pause for visual feedback
     setTimeout(() => {
       if (mountedRef.current) {
         onComplete(Array.from(selected));
@@ -79,7 +78,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 70% 50% at 50% 40%, rgba(99, 102, 241, 0.10) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)',
         }}
       />
 
@@ -92,7 +91,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
         <div className="space-y-6">
           {/* Prompt */}
           <div className="text-center space-y-3">
-            <h2 className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
+            <h2 className="font-serif text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
               {step.prompt}
             </h2>
             {step.instruction && (
@@ -109,31 +108,35 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
             )}
           </div>
 
-          {/* Options grid */}
+          {/* Options — 2-column grid of glass cards */}
           {showOptions && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="space-y-3"
+              className="grid grid-cols-2 gap-3"
             >
               {step.options.map((option, index) => {
                 const isSelected = selected.has(option.id);
                 return (
                   <motion.button
                     key={option.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 12, scale: 0.95 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      scale: isSelected ? 1.03 : 1,
+                    }}
                     transition={{ delay: index * 0.06, duration: 0.3 }}
                     onClick={() => handleToggle(option.id)}
                     disabled={isSubmitting}
                     className={`
-                      w-full px-5 py-4 rounded-2xl text-left transition-all duration-200
-                      border-2 relative overflow-hidden
-                      active:scale-[0.98]
+                      p-4 rounded-xl text-center transition-all duration-200
+                      relative overflow-hidden
+                      active:scale-[0.96]
                       ${isSelected
-                        ? 'bg-indigo-500/15 border-indigo-500/50'
-                        : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/40 hover:border-stone-600/60'
+                        ? 'bg-indigo-500/15 border-2 border-indigo-500/50 shadow-lg shadow-indigo-500/10'
+                        : 'bg-stone-900/40 light:bg-stone-100/60 backdrop-blur-xl border border-white/10 light:border-stone-300/50 hover:border-indigo-500/30'
                       }
                     `}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -145,38 +148,21 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         style={{
-                          background: 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 70%)',
+                          background: 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
                         }}
                       />
                     )}
 
-                    <div className="relative z-10 flex items-center gap-3">
-                      {/* Check indicator */}
-                      <div className={`
-                        w-6 h-6 rounded-full border-2 flex items-center justify-center
-                        flex-shrink-0 transition-all duration-200
-                        ${isSelected
-                          ? 'bg-indigo-500 border-indigo-400'
-                          : 'border-stone-600 bg-transparent'
-                        }
-                      `}>
-                        {isSelected && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                          >
-                            <Check size={14} className="text-white" strokeWidth={3} />
-                          </motion.div>
-                        )}
-                      </div>
-
+                    <div className="relative z-10 flex flex-col items-center gap-2">
+                      {/* Emoji — centered and large */}
+                      {option.emoji && (
+                        <span className="text-3xl block">{option.emoji}</span>
+                      )}
                       {/* Option text */}
                       <span className={`
-                        text-base leading-snug transition-colors duration-200
-                        ${isSelected ? 'text-stone-100 light:text-stone-900' : 'text-stone-300 light:text-stone-700'}
+                        text-sm leading-snug transition-colors duration-200
+                        ${isSelected ? 'text-stone-100 light:text-stone-900 font-medium' : 'text-stone-300 light:text-stone-700'}
                       `}>
-                        {option.emoji && <span className="mr-2">{option.emoji}</span>}
                         {option.text}
                       </span>
                     </div>
@@ -196,6 +182,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
                 className="pt-2"
               >
                 <Button
+                  variant="glass"
                   size="lg"
                   onClick={handleContinue}
                   disabled={isSubmitting}

@@ -107,7 +107,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
       <motion.div
         className="fixed inset-0 pointer-events-none"
         animate={{
-          opacity: 0.8 + (progress / step.instructions.length) * 0.4,
+          opacity: 0.7 + (progress / step.instructions.length) * 0.6,
         }}
         transition={{ duration: 0.5 }}
         style={{
@@ -182,8 +182,8 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed text-center px-2"
+                  transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="font-serif text-xl sm:text-2xl text-stone-200 light:text-stone-800 leading-relaxed text-center px-2"
                 >
                   {step.instructions[currentIndex]}
                 </motion.p>
@@ -202,27 +202,25 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
               )}
             </AnimatePresence>
 
-            {/* Tap indicator */}
-            {!allRevealed && currentIndex > 0 && (
-              <motion.p
-                className={`text-xs ${config.tapColor} mt-8 tracking-wider`}
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                TAP TO CONTINUE
-              </motion.p>
-            )}
-
-            {/* First-tap prompt */}
-            {!allRevealed && currentIndex === 0 && (
-              <motion.p
-                className={`text-xs ${config.tapColor} mt-8 tracking-wider`}
+            {/* Subtle pulse indicator — replaces text prompts */}
+            {!allRevealed && (
+              <motion.div
+                className="flex justify-center gap-1.5 mt-8"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+                animate={{ opacity: 0.5 }}
+                transition={{ delay: currentIndex === 0 ? 1.5 : 0 }}
               >
-                TAP ANYWHERE TO BEGIN
-              </motion.p>
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      config.tapColor.replace('/50', '').replace('text-', 'bg-')
+                    }`}
+                    animate={{ opacity: [0.3, 0.8, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
+                  />
+                ))}
+              </motion.div>
             )}
           </div>
 

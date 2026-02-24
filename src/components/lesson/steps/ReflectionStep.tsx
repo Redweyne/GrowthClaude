@@ -1,21 +1,14 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// REFLECTION STEP - THE SANCTUARY
+// REFLECTION STEP - "The Sanctuary"
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// This is the sacred space where transformation crystallizes.
-// Not a form to fill out. A place to meet yourself in writing.
-// The atmosphere should feel safe, intimate, infinite.
-//
-// Visual principles:
-// - Sanctuary-like calm with subtle ambient glow
-// - Writing space that invites depth
-// - Progress that encourages without pressuring
-// - Atmospheric responses to your journey
+// The sacred space where transformation crystallizes.
+// Warm amber atmosphere (not clinical cyan). Journal-feel serif typography.
+// Glass-warm textarea that invites depth. Organic fill bar for progress.
 //
 // NOTE: Music is now managed centrally by FlexibleLessonExperience.
-// This component no longer starts its own music to prevent double audio.
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -82,21 +75,18 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const [milestone, setMilestone] = useState<string | null>(null);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [phase, setPhase] = useState<'entering' | 'writing' | 'complete'>('entering');
-  const [isPublic, setIsPublic] = useState(true); // Default to sharing - community connection is valuable
+  const [isPublic, setIsPublic] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastKeystrokeRef = useRef<number>(0);
   const promptShownRef = useRef<Set<number>>(new Set());
 
   const { t, isRTL } = useTranslation();
 
-  // Audio hooks for immersive experience - only UI sounds, music managed by parent
   const { playSuccess, playChime } = useAudio();
-  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false }); // Disabled - silence is better
+  const { handleKeystroke } = useTypingAmbience({ playKeystrokeSounds: false });
 
-  // Echoes store for publishing public reflections
   const { publishReflection, genderIdentity } = useEchoesStore();
 
-  // Initialize keystroke timestamp on mount
   useEffect(() => {
     lastKeystrokeRef.current = Date.now();
   }, []);
@@ -117,18 +107,14 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     return () => clearInterval(interval);
   }, [phase]);
 
-  // Entering phase timing - no audio starting, managed by parent
+  // Entering phase timing
   useEffect(() => {
     const timer = setTimeout(() => {
       setPhase('writing');
-      // Music already playing from FlexibleLessonExperience
       setTimeout(() => textareaRef.current?.focus(), 100);
     }, 2200);
     return () => clearTimeout(timer);
   }, []);
-
-  // Phase transition - no audio to stop, managed by parent
-  // Left empty intentionally for clarity
 
   // Show encouragement prompts based on inactivity
   useEffect(() => {
@@ -141,7 +127,6 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
         const prompts = reflection.length < 50 ? ENCOURAGEMENT_PROMPTS : DEPTH_PROMPTS;
         const unused = prompts.filter((_, i) => !promptShownRef.current.has(i));
         if (unused.length > 0) {
-          // Use deterministic selection based on current reflection content
           const selectedUnusedIndex = getPromptIndex(reflection + secondsElapsed, unused.length);
           const index = prompts.indexOf(unused[selectedUnusedIndex]);
           promptShownRef.current.add(index);
@@ -163,7 +148,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     const reachedMilestone = MILESTONES.find(m => wordCount >= m.words && wordCount < m.words + 10);
     if (reachedMilestone && milestone !== reachedMilestone.message) {
       setMilestone(reachedMilestone.message);
-      playChime(); // Gentle chime for milestone
+      playChime();
       timerId = setTimeout(() => setMilestone(null), 3000);
     }
     return () => {
@@ -177,7 +162,6 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     lastKeystrokeRef.current = Date.now();
     setShowPrompt(false);
     onKeystroke?.();
-    // Trigger typing sound on keystroke
     handleKeystroke();
   }, [onKeystroke, handleKeystroke]);
 
@@ -185,15 +169,14 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
   const handleSubmit = useCallback(() => {
     if (!isSubstantial) return;
     setPhase('complete');
-    playSuccess(); // Play success sound on completion
+    playSuccess();
 
-    // Publish to Echoes if user chose to share publicly
     if (isPublic && genderIdentity) {
       publishReflection(
         lesson.id,
         lesson.title,
         reflection.trim(),
-        true // isOpenToConnect - always true for public reflections
+        true
       );
     }
 
@@ -218,7 +201,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
     <div className={`min-h-[75vh] flex flex-col ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <AnimatePresence mode="wait">
         {/* ─────────────────────────────────────────────────────────────────
-            Entering Phase - The Transition
+            Entering Phase — Warm Transition
         ───────────────────────────────────────────────────────────────── */}
         {phase === 'entering' && (
           <motion.div
@@ -229,16 +212,15 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
             transition={{ duration: 0.8 }}
             className="flex-1 flex flex-col items-center justify-center text-center px-4"
           >
-            {/* Quill icon with glow */}
+            {/* Quill icon with warm glow */}
             <motion.div
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3, ...springs.gentle }}
               className="relative w-24 h-24 mb-8"
             >
-              {/* Icon container */}
-              <div className="relative w-full h-full rounded-full bg-gradient-to-br from-cyan-500/15 to-stone-900 border border-cyan-500/30 flex items-center justify-center">
-                <Feather size={36} className="text-cyan-400" />
+              <div className="relative w-full h-full rounded-full bg-gradient-to-br from-amber-500/15 to-stone-900 border border-amber-500/30 flex items-center justify-center">
+                <Feather size={36} className="text-amber-400" />
               </div>
             </motion.div>
 
@@ -251,17 +233,17 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               {t('lessons.reflection.nowReflect')}
             </motion.p>
 
-            {/* Progress bar */}
+            {/* Progress bar — warm gradient */}
             <motion.div
               className="w-32 h-1 bg-stone-800 light:bg-stone-200 rounded-full mx-auto mt-8 overflow-hidden"
             >
               <motion.div
-                className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full"
+                className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: '100%' }}
                 transition={{ duration: 2.2, ease: 'linear' }}
                 style={{
-                  boxShadow: '0 0 15px rgba(34, 211, 238, 0.4)',
+                  boxShadow: '0 0 15px rgba(251, 191, 36, 0.4)',
                 }}
               />
             </motion.div>
@@ -269,7 +251,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
         )}
 
         {/* ─────────────────────────────────────────────────────────────────
-            Writing Phase - The Sanctuary
+            Writing Phase — The Sanctuary
         ───────────────────────────────────────────────────────────────── */}
         {phase === 'writing' && (
           <motion.div
@@ -279,40 +261,40 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
             transition={{ duration: 0.5 }}
             className="flex-1 flex flex-col px-4 py-4"
           >
-            {/* The prompt - sacred question */}
+            {/* The prompt — sacred question */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="text-center mb-8"
             >
-              <p className="text-sm font-medium text-cyan-400 mb-4 tracking-[0.2em] uppercase">
+              <p className="text-sm font-medium text-amber-400 mb-4 tracking-[0.2em] uppercase">
                 {t('lessons.reflection.yourReflection')}
               </p>
-              <p className="text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed max-w-lg mx-auto font-light">
+              <p className="font-serif text-xl sm:text-2xl text-stone-100 light:text-stone-900 leading-relaxed max-w-lg mx-auto">
                 {lesson.reflectionPrompt}
               </p>
             </motion.div>
 
-            {/* The writing space - sacred sanctuary */}
+            {/* The writing space — warm glass sanctuary */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               className="flex-1 relative"
             >
-              {/* Container with focus styling */}
+              {/* Container with glass-warm feel */}
               <div
                 className={`
                   h-full min-h-[180px] relative rounded-2xl transition-all duration-300
-                  border-2
+                  border-2 backdrop-blur-xl
                   ${isFocused
-                    ? 'bg-stone-900/80 light:bg-stone-200/80 border-cyan-500/30'
-                    : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50'}
+                    ? 'bg-stone-900/60 light:bg-stone-200/60 border-amber-500/30'
+                    : 'bg-stone-900/40 light:bg-stone-200/40 border-white/10 light:border-stone-300/50'}
                 `}
               >
-                {/* Textarea */}
-<textarea
+                {/* Textarea — serif for journal feel */}
+                <textarea
                   ref={textareaRef}
                   value={reflection}
                   onChange={handleChange}
@@ -325,11 +307,11 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                     bg-transparent text-lg text-stone-200 light:text-stone-800
                     placeholder-stone-600 leading-relaxed
                     focus:outline-none resize-none
-                    font-light tracking-wide
+                    font-serif tracking-wide
                     ${isRTL ? 'text-right' : ''}
                   `}
                   dir={isRTL ? 'rtl' : 'ltr'}
-                  style={{ caretColor: '#22d3ee' }}
+                  style={{ caretColor: '#fbbf24' }}
                 />
 
                 {/* Encouragement prompt overlay */}
@@ -341,49 +323,34 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                       exit={{ opacity: 0, y: -10 }}
                       className="absolute bottom-20 left-6 right-6"
                     >
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-                        <span className="text-cyan-300/80 text-sm italic">
-                          💭 {currentPrompt}
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
+                        <span className="text-amber-300/80 text-sm italic">
+                          {currentPrompt}
                         </span>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {/* Word count and status */}
-                <div className={`absolute bottom-4 left-6 right-6 flex justify-between items-center ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  {/* Word count */}
-                  <motion.div
-                    className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}
-                    animate={{ opacity: reflection.length > 0 ? 1 : 0.5 }}
-                  >
-                    <span className="text-stone-500 light:text-stone-600 text-sm">
-                      {wordCount} {wordCount === 1 ? t('lessons.reflection.word') : t('lessons.reflection.words')}
-                    </span>
-
-                    {/* Progress dots */}
-                    <div className="flex gap-1.5">
-                      {[5, 15, 30, 50].map((threshold) => (
-                        <motion.div
-                          key={threshold}
-                          className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
-                            wordCount >= threshold ? 'bg-cyan-400' : 'bg-stone-700'
-                          }`}
-                          animate={{
-                            scale: wordCount >= threshold && wordCount < threshold + 5 ? [1, 1.4, 1] : 1,
-                            boxShadow: wordCount >= threshold
-                              ? '0 0 8px rgba(34, 211, 238, 0.5)'
-                              : 'none',
-                          }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      ))}
+                {/* Organic fill bar + readiness indicator */}
+                <div className={`absolute bottom-4 left-6 right-6 flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  {/* Organic fill bar — replaces clinical dots */}
+                  <div className="flex-1">
+                    <div className="h-1 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-gradient-to-r from-amber-600 to-amber-400"
+                        animate={{ width: `${Math.min((wordCount / 50) * 100, 100)}%` }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        style={{
+                          boxShadow: wordCount >= 15 ? '0 0 8px rgba(251, 191, 36, 0.4)' : 'none',
+                        }}
+                      />
                     </div>
-                  </motion.div>
+                  </div>
 
                   {/* Readiness indicator */}
                   <motion.span
-                    className={`text-sm transition-colors duration-300 ${
+                    className={`text-sm shrink-0 transition-colors duration-300 ${
                       isReady
                         ? 'text-emerald-400'
                         : isSubstantial
@@ -410,12 +377,12 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   className="fixed bottom-36 left-1/2 transform -translate-x-1/2 z-50"
                 >
                   <div
-                    className="px-5 py-3 rounded-full bg-cyan-500/20 border border-cyan-500/30"
+                    className="px-5 py-3 rounded-full bg-amber-500/20 border border-amber-500/30"
                     style={{
-                      boxShadow: '0 0 30px rgba(34, 211, 238, 0.2)',
+                      boxShadow: '0 0 30px rgba(251, 191, 36, 0.2)',
                     }}
                   >
-                    <span className="text-cyan-300 text-sm">{milestone}</span>
+                    <span className="text-amber-300 text-sm">{milestone}</span>
                   </div>
                 </motion.div>
               )}
@@ -428,53 +395,9 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
               transition={{ delay: 0.6 }}
               className="mt-6 space-y-4"
             >
-              {/* Privacy toggle */}
-              {genderIdentity && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="flex items-center justify-center gap-4 p-3 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800 light:border-stone-200"
-                >
-                  {/* Private option */}
-                  <button
-                    onClick={() => setIsPublic(false)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
-                      !isPublic
-                        ? 'bg-stone-800 light:bg-stone-200 text-stone-200 light:text-stone-800 shadow-lg'
-                        : 'text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700'
-                    }`}
-                  >
-                    <Lock size={16} />
-                    <span className="text-sm font-medium">{t('lessons.reflection.private')}</span>
-                  </button>
-
-                  {/* Public option */}
-                  <button
-                    onClick={() => setIsPublic(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
-                      isPublic
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
-                        : 'text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700'
-                    }`}
-                  >
-                    <Globe size={16} />
-                    <span className="text-sm font-medium">{t('lessons.reflection.shareAnonymously')}</span>
-                  </button>
-                </motion.div>
-              )}
-
-              {/* Privacy description */}
-              <div className="text-center">
-                <p className="text-xs text-stone-600 light:text-stone-500">
-                  {isPublic
-                    ? t('lessons.reflection.publicDesc')
-                    : t('lessons.reflection.privateDesc')}
-                </p>
-              </div>
-
-              {/* Continue button */}
-<Button
+              {/* Continue button — first, so it's closest to thumb zone */}
+              <Button
+                variant="glass"
                 size="lg"
                 onClick={handleSubmit}
                 disabled={!isSubstantial}
@@ -497,7 +420,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 )}
               </Button>
 
-              {/* Keyboard hint - fixed height to prevent layout shift */}
+              {/* Keyboard hint */}
               <div className="h-5 text-center">
                 <AnimatePresence>
                   {isSubstantial && (
@@ -512,12 +435,57 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Privacy toggle — below submit for less cognitive load */}
+              {genderIdentity && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="flex items-center justify-center gap-4 p-3 rounded-xl bg-stone-900/40 light:bg-stone-200/40 backdrop-blur-xl border border-white/10 light:border-stone-300/50"
+                >
+                  {/* Private option */}
+                  <button
+                    onClick={() => setIsPublic(false)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
+                      !isPublic
+                        ? 'bg-stone-800 light:bg-stone-200 text-stone-200 light:text-stone-800 shadow-lg'
+                        : 'text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700'
+                    }`}
+                  >
+                    <Lock size={16} />
+                    <span className="text-sm font-medium">{t('lessons.reflection.private')}</span>
+                  </button>
+
+                  {/* Public option */}
+                  <button
+                    onClick={() => setIsPublic(true)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isRTL ? 'flex-row-reverse' : ''} ${
+                      isPublic
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 shadow-lg shadow-amber-500/10'
+                        : 'text-stone-500 light:text-stone-600 hover:text-stone-400 light:hover:text-stone-700'
+                    }`}
+                  >
+                    <Globe size={16} />
+                    <span className="text-sm font-medium">{t('lessons.reflection.shareAnonymously')}</span>
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Privacy description */}
+              <div className="text-center">
+                <p className="text-xs text-stone-600 light:text-stone-500">
+                  {isPublic
+                    ? t('lessons.reflection.publicDesc')
+                    : t('lessons.reflection.privateDesc')}
+                </p>
+              </div>
             </motion.div>
           </motion.div>
         )}
 
         {/* ─────────────────────────────────────────────────────────────────
-            Complete Phase - Brief Acknowledgment
+            Complete Phase — Brief Acknowledgment
         ───────────────────────────────────────────────────────────────── */}
         {phase === 'complete' && (
           <motion.div
@@ -534,11 +502,11 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 transition={{ ...springs.gentle }}
                 className="relative w-20 h-20 mx-auto mb-6"
               >
-                {/* Glow */}
+                {/* Warm glow */}
                 <motion.div
                   className="absolute inset-0 rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(34, 211, 238, 0.3) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(251, 191, 36, 0.3) 0%, transparent 70%)',
                   }}
                   animate={{
                     scale: [1, 1.3, 1],
@@ -548,7 +516,7 @@ export function ReflectionStep({ lesson, onComplete, onKeystroke }: ReflectionSt
                 />
 
                 {/* Icon */}
-                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-cyan-500/20 to-stone-900 border border-cyan-500/30 flex items-center justify-center">
+                <div className="relative w-full h-full rounded-full bg-gradient-to-br from-amber-500/20 to-stone-900 border border-amber-500/30 flex items-center justify-center">
                   <span className="text-4xl">✨</span>
                 </div>
               </motion.div>

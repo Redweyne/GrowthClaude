@@ -75,6 +75,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const [phase, setPhase] = useState<Phase>('reveal');
   const [showGoldShimmer, setShowGoldShimmer] = useState(true);
   const [showLevelUpRing, setShowLevelUpRing] = useState(false);
+  const [displayedXp, setDisplayedXp] = useState(0);
 
   // Prevent double-playing sounds
   const hasPlayedRevealSound = useRef(false);
@@ -150,6 +151,38 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     audio.playTap();
     onComplete();
   }, [haptics, audio, onComplete]);
+
+  // XP count-up animation
+  useEffect(() => {
+    if (phase !== 'crown') return;
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startTimer = setTimeout(() => {
+      const duration = 1200;
+      const steps = 30;
+      const stepDuration = duration / steps;
+      const increment = safeXpEarned / steps;
+      let count = 0;
+
+      audio.playXpCounting(safeXpEarned, duration);
+
+      intervalId = setInterval(() => {
+        count++;
+        if (count >= steps) {
+          setDisplayedXp(safeXpEarned);
+          if (intervalId) clearInterval(intervalId);
+        } else {
+          setDisplayedXp(Math.round(increment * count));
+        }
+      }, stepDuration);
+    }, 400);
+
+    return () => {
+      clearTimeout(startTimer);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [phase, safeXpEarned, audio]);
 
   // Keyboard support
   useEffect(() => {
@@ -245,7 +278,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               <p className="text-amber-400/80 text-sm font-semibold tracking-[0.3em] uppercase mb-3">
                 {t('lessons.reward.youMastered')}
               </p>
-              <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 tracking-tighter leading-none">
+              <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold gradient-text-gold tracking-tighter leading-none">
                 {concept.title}
               </h2>
             </motion.div>
@@ -303,8 +336,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ ...SPRING_CONFIG, delay: 0.1 }}
             >
-              {/* Card background with subtle gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-stone-800/90 via-stone-900/95 to-black/90 backdrop-blur-sm" />
+              {/* Premium glass card background */}
+              <div className="absolute inset-0 glass-premium" />
               
               {/* Gold accent border on top */}
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
@@ -320,8 +353,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                     transition={{ ...SPRING_CONFIG, delay: 0.3 }}
                   >
                     <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
-                    <span className="text-6xl sm:text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-orange-500 tracking-tighter tabular-nums">
-                      +{safeXpEarned}
+                    <span className="text-6xl sm:text-7xl md:text-8xl font-bold gradient-text-gold tracking-tighter tabular-nums">
+                      +{displayedXp}
                     </span>
                     <span className="text-2xl sm:text-3xl text-stone-400 light:text-stone-600 font-normal">XP</span>
                   </motion.div>

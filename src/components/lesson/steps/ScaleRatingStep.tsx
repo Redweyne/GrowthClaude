@@ -84,7 +84,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 70% 50% at 50% 40%, rgba(251, 191, 36, 0.08) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(251, 191, 36, 0.18) 0%, transparent 50%)',
         }}
       />
 
@@ -97,7 +97,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
         <div className="space-y-8">
           {/* Prompt */}
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
+            <h2 className="font-serif text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
               {step.prompt}
             </h2>
           </div>
@@ -119,6 +119,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                       initial={{ width: 0 }}
                       animate={{ width: `${fillPercent}%` }}
                       transition={{ duration: 0.3, ease: 'easeOut' }}
+                      style={{ boxShadow: '0 0 10px rgba(251, 191, 36, 0.4)' }}
                     />
                   )}
                 </div>
@@ -138,7 +139,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                       onClick={() => handleSelect(value)}
                       disabled={isSubmitting}
                       className={`
-                        w-11 h-11 rounded-full flex items-center justify-center
+                        w-14 h-14 rounded-full flex items-center justify-center
                         text-sm font-semibold transition-all duration-200
                         active:scale-90
                         ${isActive
@@ -175,7 +176,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                 transition={{ duration: 0.3 }}
                 className="text-center"
               >
-                <p className="text-lg text-amber-300/90 leading-relaxed italic">
+                <p className="font-serif text-lg text-amber-300/90 leading-relaxed italic">
                   {responseText}
                 </p>
               </motion.div>

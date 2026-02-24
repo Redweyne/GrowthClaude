@@ -1,11 +1,12 @@
 'use client';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// CHOICE STEP - THE CROSSROADS
+// CHOICE STEP - "The Crossroads"
 // ═══════════════════════════════════════════════════════════════════════════
 //
 // Every transformation requires a choice.
-// Clean, readable options - no unnecessary animation phases.
+// Glass-morphism cards that feel substantial and premium.
+// Selected choice glows golden; rejected paths fade away.
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -23,10 +24,8 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
 
-  // Audio for choice interactions
   const { playTapConfirm, playSuccess } = useAudio();
 
-  // Show options after brief delay
   useEffect(() => {
     const timer = setTimeout(() => setShowOptions(true), 400);
     return () => clearTimeout(timer);
@@ -34,21 +33,20 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
 
   const handleSelect = (option: ChoiceOption) => {
     setSelectedOption(option.id);
-    playTapConfirm(); // Confirmation sound on selection
-    // Brief pause before moving on
+    playTapConfirm();
     setTimeout(() => {
-      playSuccess(); // Success sound before completing
+      playSuccess();
       onComplete(option);
-    }, 500);
+    }, 600);
   };
 
   return (
     <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4">
-      {/* Atmospheric glow */}
+      {/* Atmospheric glow — warmer and bolder */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(251, 191, 36, 0.10) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(251, 191, 36, 0.18) 0%, transparent 50%)',
         }}
       />
 
@@ -59,19 +57,19 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="space-y-8">
-          {/* The question */}
+          {/* The question — serif for gravitas */}
           <div className="text-center space-y-3">
             {step.instruction && (
               <p className="text-sm text-amber-400/80 tracking-[0.15em] uppercase font-medium">
                 {step.instruction}
               </p>
             )}
-            <h2 className="text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
+            <h2 className="font-serif text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
               {step.question}
             </h2>
           </div>
 
-          {/* The options */}
+          {/* The options — glass cards with stagger */}
           {showOptions && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -79,64 +77,66 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
-              {step.options.map((option, index) => (
-<motion.button
-                  key={option.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
-                  onClick={() => handleSelect(option)}
-                  disabled={selectedOption !== null}
-                  data-testid={`choice-option-${option.id}`}
-                  className={`
-                    w-full p-6 rounded-2xl text-left transition-all duration-300
-                    border-2 group relative overflow-hidden
-                    ${selectedOption === option.id
-                      ? 'bg-amber-500/20 border-amber-500/50 scale-[1.02]'
-                      : selectedOption !== null
-                      ? 'bg-stone-900/30 border-stone-800/50 opacity-40'
-                      : 'bg-stone-900/50 light:bg-stone-200/50 border-stone-700/50 hover:bg-stone-800/50 hover:border-amber-500/30'
-                    }
-                  `}
-                >
-                  {/* Selection glow effect */}
-                  {selectedOption === option.id && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background: 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.15) 0%, transparent 70%)',
-                      }}
-                    />
-                  )}
+              {step.options.map((option, index) => {
+                const isSelected = selectedOption === option.id;
+                const isRejected = selectedOption !== null && !isSelected;
 
-                  <div className="relative z-10">
-                    <span className={`
-                      text-xl font-medium block mb-1 transition-colors
-                      ${selectedOption === option.id
-                        ? 'text-amber-300'
-                        : 'text-stone-100 light:text-stone-900 group-hover:text-amber-200'
+                return (
+                  <motion.button
+                    key={option.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{
+                      opacity: isRejected ? 0.15 : 1,
+                      y: 0,
+                      scale: isSelected ? 1.02 : isRejected ? 0.97 : 1,
+                    }}
+                    transition={{
+                      delay: isRejected ? 0 : index * 0.15,
+                      duration: isRejected ? 0.4 : 0.3,
+                    }}
+                    onClick={() => handleSelect(option)}
+                    disabled={selectedOption !== null}
+                    data-testid={`choice-option-${option.id}`}
+                    className={`
+                      w-full p-6 rounded-2xl text-left transition-all duration-300
+                      relative overflow-hidden
+                      ${isSelected
+                        ? 'bg-amber-500/15 border-2 border-amber-500/50 shadow-lg shadow-amber-500/10'
+                        : 'bg-stone-900/40 light:bg-stone-100/60 backdrop-blur-xl border border-white/10 light:border-stone-300/50 hover:border-amber-500/30 hover:bg-stone-800/50'
                       }
-                    `}>
-                      {option.label}
-                    </span>
-                    {option.subtext && (
-                      <span className="text-stone-400 light:text-stone-600 text-sm">
-                        {option.subtext}
-                      </span>
+                    `}
+                  >
+                    {/* Selection golden glow */}
+                    {isSelected && (
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        style={{
+                          background: 'radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.20) 0%, transparent 70%)',
+                        }}
+                      />
                     )}
-                  </div>
 
-                  {/* Selection indicator */}
-                  <div className={`
-                    absolute right-6 top-1/2 -translate-y-1/2
-                    w-3 h-3 rounded-full transition-all
-                    ${selectedOption === option.id
-                      ? 'bg-amber-400 opacity-100'
-                      : 'bg-stone-600 opacity-0 group-hover:opacity-50'
-                    }
-                  `} />
-                </motion.button>
-              ))}
+                    <div className="relative z-10">
+                      <span className={`
+                        text-xl font-medium block mb-1 transition-colors
+                        ${isSelected
+                          ? 'text-amber-300'
+                          : 'text-stone-100 light:text-stone-900'
+                        }
+                      `}>
+                        {option.label}
+                      </span>
+                      {option.subtext && (
+                        <span className="text-stone-400 light:text-stone-600 text-sm">
+                          {option.subtext}
+                        </span>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })}
             </motion.div>
           )}
 
