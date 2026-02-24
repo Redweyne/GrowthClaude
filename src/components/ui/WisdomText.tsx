@@ -1,58 +1,71 @@
 'use client';
 
 // ==============================================================================
-// WISDOM TEXT - Clean, Reliable Text Display for Lessons
+// WISDOM TEXT - Word-by-Word Reveal at Natural Reading Pace
 // ==============================================================================
 //
-// This component displays text in a clean, readable way with optional animation.
-// Inspired by the onboarding's phase-based approach which is smooth and reliable.
+// Reveals text one word at a time, calibrated to human reading speed.
+// Each word fades in via CSS transition — no Framer Motion per-word overhead.
+// Punctuation pauses (.!? commas, semicolons) create natural rhythm.
+// Auto-scrolls to keep new content visible on long texts.
 //
 // Key principles:
-// - Simple sentence-by-sentence reveal (not word-by-word which is buggy)
-// - Clear callback when text is complete (for button timing)
-// - Proper cleanup to prevent memory leaks or weird behavior
-// - Clean typography optimized for mobile
+// - Word-by-word reveal matches how humans actually read
+// - Consistent timing across all step types (no more 4x variation)
+// - Stable layout: unrevealed words hold space (opacity:0) so lines don't reflow
+// - Auto-scroll sentinel keeps new text visible without user scrolling
 // - STABLE: Does not re-animate on parent re-renders
 //
 // ==============================================================================
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 interface WisdomTextProps {
   children: string;
   className?: string;
   variant?: 'narrative' | 'insight' | 'question' | 'instruction' | 'dramatic';
   animate?: boolean;
-  speed?: 'slow' | 'normal' | 'fast'; // Control overall reveal speed
+  speed?: 'slow' | 'normal' | 'fast';
   onComplete?: () => void;
+  /** If provided, the first sentence uses this class instead of variant styles */
+  firstSentenceClassName?: string;
 }
 
-// Split text into natural sentences
+// ─── Text Parsing ────────────────────────────────────────────────────────────
+
 function splitIntoSentences(text: string): string[] {
-  // Split on sentence boundaries but keep the punctuation
   const sentences = text
     .split(/(?<=[.!?])\s+/)
     .map(s => s.trim())
     .filter(Boolean);
-  
-  // If no sentence boundaries found, split by clauses or return as-is
+
+  // If single long sentence, try splitting by clauses
   if (sentences.length === 1 && sentences[0].length > 100) {
-    // Try splitting by semicolons, colons, or long dashes
     const clauses = text
       .split(/(?<=[;:—–])\s+/)
       .map(s => s.trim())
       .filter(Boolean);
-    
-    if (clauses.length > 1) {
-      return clauses;
-    }
+    if (clauses.length > 1) return clauses;
   }
-  
+
   return sentences.length > 0 ? sentences : [text];
 }
 
-// Variant styles - clean, readable typography
+function splitIntoWords(sentence: string): string[] {
+  return sentence.split(/\s+/).filter(Boolean);
+}
+
+// Detect trailing punctuation on a word to determine pause duration
+function getPunctuationPause(word: string, timing: SpeedConfig): number {
+  if (/[.!?]+$/.test(word)) return timing.periodPause;
+  if (/,$/.test(word)) return timing.commaPause;
+  if (/[;:—–\-]+$/.test(word)) return timing.semicolonPause;
+  if (/\.{2,}$/.test(word)) return timing.periodPause; // ellipsis
+  return 0;
+}
+
+// ─── Variant Styles ──────────────────────────────────────────────────────────
+
 const variantStyles = {
   narrative: {
     base: 'text-stone-200 light:text-stone-800',
@@ -86,60 +99,98 @@ const variantStyles = {
   },
 };
 
-// Timing configurations based on speed
-const speedConfigs = {
+// ─── Speed Configs (word-by-word timing) ─────────────────────────────────────
+
+interface SpeedConfig {
+  initialDelay: number;   // ms before first word
+  wordInterval: number;   // ms between word starts
+  periodPause: number;    // extra ms after . ! ?
+  commaPause: number;     // extra ms after ,
+  semicolonPause: number; // extra ms after ; : — –
+  paragraphGap: number;   // extra ms between sentences
+  animDuration: number;   // ms for word fade-in CSS transition
+  finalPause: number;     // ms after last word before onComplete
+}
+
+const speedConfigs: Record<string, SpeedConfig> = {
   slow: {
-    initialDelay: 900,
-    sentenceGap: 200,
-    baseReadTime: 320,
-    charTime: 18,
-    wordTime: 55,
-    punctuationPause: 160,
-    minSentenceTime: 800,
-    maxSentenceTime: 3000,
-    finalPause: 500,
+    initialDelay: 600,
+    wordInterval: 250,
+    periodPause: 450,
+    commaPause: 160,
+    semicolonPause: 220,
+    paragraphGap: 280,
+    animDuration: 120,
+    finalPause: 400,
   },
   normal: {
     initialDelay: 400,
-    sentenceGap: 150,
-    baseReadTime: 250,
-    charTime: 15,
-    wordTime: 45,
-    punctuationPause: 120,
-    minSentenceTime: 600,
-    maxSentenceTime: 2400,
-    finalPause: 400,
+    wordInterval: 180,
+    periodPause: 350,
+    commaPause: 130,
+    semicolonPause: 180,
+    paragraphGap: 220,
+    animDuration: 100,
+    finalPause: 300,
   },
   fast: {
-    initialDelay: 300,
-    sentenceGap: 100,
-    baseReadTime: 200,
-    charTime: 12,
-    wordTime: 35,
-    punctuationPause: 100,
-    minSentenceTime: 500,
-    maxSentenceTime: 2000,
-    finalPause: 300,
+    initialDelay: 250,
+    wordInterval: 120,
+    periodPause: 250,
+    commaPause: 100,
+    semicolonPause: 140,
+    paragraphGap: 160,
+    animDuration: 80,
+    finalPause: 200,
   },
 };
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
+// ─── Word metadata for the timing engine ─────────────────────────────────────
+
+interface SentenceData {
+  words: string[];
+  globalStart: number; // index of first word in the flat word array
 }
 
-function getSentenceReadTime(sentence: string, timing: typeof speedConfigs.slow): number {
-  const wordCount = sentence.trim().split(/\s+/).filter(Boolean).length;
-  const charCount = sentence.length;
-  const punctuationCount = (sentence.match(/[.!?]/g) || []).length + (sentence.match(/[,;:—–]/g) || []).length;
-
-  const rawTime =
-    timing.baseReadTime +
-    (charCount * timing.charTime) +
-    (wordCount * timing.wordTime) +
-    (punctuationCount * timing.punctuationPause);
-
-  return clamp(rawTime, timing.minSentenceTime, timing.maxSentenceTime);
+function buildSentenceData(sentences: string[]): SentenceData[] {
+  let offset = 0;
+  return sentences.map(sentence => {
+    const words = splitIntoWords(sentence);
+    const data: SentenceData = { words, globalStart: offset };
+    offset += words.length;
+    return data;
+  });
 }
+
+function buildWordTimeline(
+  sentenceData: SentenceData[],
+  timing: SpeedConfig,
+): number[] {
+  // Returns an array of cumulative reveal times (ms) for each word
+  const times: number[] = [];
+  let t = timing.initialDelay;
+
+  for (let sIdx = 0; sIdx < sentenceData.length; sIdx++) {
+    const { words } = sentenceData[sIdx];
+
+    // Add paragraph gap before non-first sentences
+    if (sIdx > 0) {
+      t += timing.paragraphGap;
+    }
+
+    for (let wIdx = 0; wIdx < words.length; wIdx++) {
+      times.push(t);
+
+      // Calculate delay AFTER this word
+      const punctPause = getPunctuationPause(words[wIdx], timing);
+      t += timing.wordInterval + punctPause;
+    }
+  }
+
+  return times;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function WisdomText({
   children,
@@ -148,32 +199,58 @@ export function WisdomText({
   animate = true,
   speed = 'normal',
   onComplete,
+  firstSentenceClassName,
 }: WisdomTextProps) {
-  // Split text into sentences once - memoized on text content
   const sentences = useMemo(() => splitIntoSentences(children), [children]);
-  
-  // Track which sentences are visible (by count, not by index array)
-  const [visibleCount, setVisibleCount] = useState(animate ? 0 : sentences.length);
-  
-  // Track if animation has completed - prevents re-triggering
-  const [hasAnimated, setHasAnimated] = useState(false);
-  
-  // Use refs for stable values that don't trigger re-renders
+  const sentenceData = useMemo(() => buildSentenceData(sentences), [sentences]);
+  const totalWords = useMemo(
+    () => sentenceData.reduce((sum, s) => sum + s.words.length, 0),
+    [sentenceData],
+  );
+
+  const timing = speedConfigs[speed] || speedConfigs.normal;
+  const styles = variantStyles[variant];
+
+  // Core state: how many words have been revealed
+  const [revealedCount, setRevealedCount] = useState(animate ? 0 : totalWords);
+  const [hasAnimated, setHasAnimated] = useState(!animate);
+
+  // Refs for stability
   const mountedRef = useRef(true);
-  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const onCompleteRef = useRef(onComplete);
-  const textRef = useRef(children);
   const signatureRef = useRef(`${children}::${speed}::${animate}`);
-  
-  // Keep onComplete ref updated without causing effect re-runs
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Keep onComplete ref fresh
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
-  
-  const styles = variantStyles[variant];
-  const timing = speedConfigs[speed];
-  
-  // Progressive reveal effect - ONLY runs when text content changes
+
+  // Auto-scroll when a new sentence starts revealing
+  const lastScrolledSentence = useRef(-1);
+  const scrollToSentinel = useCallback(() => {
+    sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, []);
+
+  // Determine which sentence we're currently in (for scroll triggering)
+  const currentSentenceIndex = useMemo(() => {
+    for (let i = sentenceData.length - 1; i >= 0; i--) {
+      if (revealedCount > sentenceData[i].globalStart) return i;
+    }
+    return -1;
+  }, [revealedCount, sentenceData]);
+
+  // Scroll when a new sentence starts
+  useEffect(() => {
+    if (currentSentenceIndex > lastScrolledSentence.current && currentSentenceIndex > 0) {
+      lastScrolledSentence.current = currentSentenceIndex;
+      scrollToSentinel();
+    }
+  }, [currentSentenceIndex, scrollToSentinel]);
+
+  // ─── Word reveal engine ──────────────────────────────────────────────────
+
   useEffect(() => {
     const signature = `${children}::${speed}::${animate}`;
     if (signatureRef.current === signature && hasAnimated) {
@@ -181,21 +258,22 @@ export function WisdomText({
     }
 
     signatureRef.current = signature;
-    textRef.current = children;
     mountedRef.current = true;
+    lastScrolledSentence.current = -1;
 
+    // Cleanup previous timers
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
 
     if (!animate) {
-      setVisibleCount(sentences.length);
+      setRevealedCount(totalWords);
       setHasAnimated(true);
-      const completeTimer = setTimeout(() => {
+      const t = setTimeout(() => {
         if (mountedRef.current && onCompleteRef.current) {
           onCompleteRef.current();
         }
       }, 100);
-      timersRef.current.push(completeTimer);
+      timersRef.current.push(t);
       return () => {
         mountedRef.current = false;
         timersRef.current.forEach(clearTimeout);
@@ -203,32 +281,32 @@ export function WisdomText({
       };
     }
 
-    setVisibleCount(0);
+    // Reset
+    setRevealedCount(0);
     setHasAnimated(false);
 
-    let accumulatedDelay = timing.initialDelay;
+    // Build timeline
+    const timeline = buildWordTimeline(sentenceData, timing);
 
-    sentences.forEach((sentence, index) => {
-      const revealAt = accumulatedDelay;
-      const readTime = getSentenceReadTime(sentence, timing);
-
+    // Schedule each word reveal
+    timeline.forEach((revealAt, wordIndex) => {
       const timer = setTimeout(() => {
         if (!mountedRef.current) return;
-        setVisibleCount(index + 1);
+        setRevealedCount(wordIndex + 1);
       }, revealAt);
-
       timersRef.current.push(timer);
-      accumulatedDelay += readTime + timing.sentenceGap;
     });
 
+    // Schedule onComplete after the last word + finalPause
+    const lastWordTime = timeline.length > 0 ? timeline[timeline.length - 1] : 0;
+    const completeAt = lastWordTime + timing.wordInterval + timing.finalPause;
     const completeTimer = setTimeout(() => {
       if (!mountedRef.current) return;
       setHasAnimated(true);
       if (onCompleteRef.current) {
         onCompleteRef.current();
       }
-    }, accumulatedDelay + timing.finalPause);
-
+    }, completeAt);
     timersRef.current.push(completeTimer);
 
     return () => {
@@ -236,41 +314,59 @@ export function WisdomText({
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
-  }, [children, animate, speed, sentences, timing, hasAnimated]);
-  
-  // For very short text (one short sentence), render simply
-  // Reveal sentences with consistent timing
+  }, [children, animate, speed, sentenceData, timing, totalWords, hasAnimated]);
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
   return (
-    <div className={`${styles.spacing} ${className}`}>
-      <AnimatePresence mode="sync">
-        {sentences.slice(0, visibleCount).map((sentence, index) => (
-          <motion.p
-            key={`${textRef.current.slice(0, 20)}-sentence-${index}`}
-            initial={{ opacity: 0, y: 16, filter: 'blur(2px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{
-              duration: 0.5,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-            className={`${styles.base} ${styles.size} ${styles.leading}`}
-          >
-            {sentence}
-          </motion.p>
-        ))}
-      </AnimatePresence>
+    <div className={styles.spacing}>
+      {sentenceData.map((sentence, sIdx) => {
+        // Only render sentences that have at least started revealing
+        if (revealedCount <= sentence.globalStart) return null;
+
+        const isFirst = sIdx === 0;
+        const pClass = isFirst && firstSentenceClassName
+          ? `${firstSentenceClassName} ${className}`
+          : `${styles.base} ${styles.size} ${styles.leading} ${className}`;
+
+        return (
+          <p key={sIdx} className={pClass}>
+            {sentence.words.map((word, wIdx) => {
+              const globalIdx = sentence.globalStart + wIdx;
+              const isRevealed = globalIdx < revealedCount;
+
+              return (
+                <span
+                  key={wIdx}
+                  className="inline-block mr-[0.3em]"
+                  style={{
+                    opacity: isRevealed ? 1 : 0,
+                    transform: isRevealed ? 'translateY(0)' : 'translateY(4px)',
+                    transition: `opacity ${timing.animDuration}ms ease-out, transform ${timing.animDuration}ms ease-out`,
+                  }}
+                >
+                  {word}
+                </span>
+              );
+            })}
+          </p>
+        );
+      })}
+      <div ref={sentinelRef} className="h-0 w-0" aria-hidden />
     </div>
   );
 }
 
-// Simple non-animated version for static display
+// ─── Static version (no animation) ──────────────────────────────────────────
+
 export function WisdomTextStatic({
   children,
   className = '',
   variant = 'narrative',
-}: Omit<WisdomTextProps, 'animate' | 'speed' | 'onComplete'>) {
+}: Omit<WisdomTextProps, 'animate' | 'speed' | 'onComplete' | 'firstSentenceClassName'>) {
   const sentences = useMemo(() => splitIntoSentences(children), [children]);
   const styles = variantStyles[variant];
-  
+
   return (
     <div className={`${styles.spacing} ${className}`}>
       {sentences.map((sentence, index) => (

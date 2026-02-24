@@ -11,7 +11,7 @@
 //
 // ==============================================================================
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
@@ -54,17 +54,6 @@ const MOOD_BUTTON_TEXT: Record<string, string> = {
   struggle: 'Face this...',
 };
 
-// Split off the first sentence from narrative text for dramatic display treatment
-function splitFirstSentence(text: string): { first: string; rest: string } {
-  // Match the first sentence ending with punctuation followed by whitespace
-  const match = text.match(/^([\s\S]+?[.!?])\s+([\s\S]+)$/);
-  if (match) {
-    return { first: match[1], rest: match[2] };
-  }
-  // Single sentence — the whole thing is dramatic
-  return { first: text, rest: '' };
-}
-
 // Phases for sequenced reveal
 type Phase = 'narrative' | 'subtext' | 'bridgeQuestion' | 'ready';
 
@@ -75,12 +64,6 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
 
   const mood = step.mood || 'tension';
   const colors = MOOD_COLORS[mood];
-
-  // Split narrative into dramatic first sentence + remaining flow
-  const { first: firstSentence, rest: remainingNarrative } = useMemo(
-    () => splitFirstSentence(step.narrative),
-    [step.narrative]
-  );
 
   useEffect(() => {
     mountedRef.current = true;
@@ -106,15 +89,6 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
     if (!mountedRef.current) return;
     setPhase('ready');
   }, []);
-
-  // For single-sentence narratives, advance phase after reading time
-  useEffect(() => {
-    if (remainingNarrative) return; // WisdomText handles completion for multi-sentence
-    const timer = setTimeout(() => {
-      if (mountedRef.current) handleNarrativeComplete();
-    }, 2500); // first sentence animation (600ms) + comfortable reading time
-    return () => clearTimeout(timer);
-  }, [remainingNarrative, handleNarrativeComplete]);
 
   // ── Derived state ──────────────────────────────────────────────────────────
 
@@ -145,27 +119,16 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <div className="space-y-6 sm:space-y-5">
-          {/* ── First sentence — dramatic display typography ────────────── */}
-          <motion.p
-            initial={{ opacity: 0, y: 16, filter: 'blur(2px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="font-serif text-2xl sm:text-3xl leading-[1.5] text-stone-100 light:text-stone-900"
+          {/* ── Full narrative — word-by-word reveal with dramatic first sentence ── */}
+          <WisdomText
+            variant="narrative"
+            animate={true}
+            speed="slow"
+            firstSentenceClassName="font-serif text-2xl sm:text-3xl leading-[1.5] text-stone-100 light:text-stone-900"
+            onComplete={handleNarrativeComplete}
           >
-            {firstSentence}
-          </motion.p>
-
-          {/* ── Remaining narrative — flowing sentence reveal ───────────── */}
-          {remainingNarrative && (
-            <WisdomText
-              variant="narrative"
-              animate={true}
-              speed="slow"
-              onComplete={handleNarrativeComplete}
-            >
-              {remainingNarrative}
-            </WisdomText>
-          )}
+            {step.narrative}
+          </WisdomText>
 
           {/* ── Subtext — supporting context ───────────────────────────── */}
           {step.subtext && showSubtext && (

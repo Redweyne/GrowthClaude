@@ -596,7 +596,7 @@ export function FlexibleLessonExperience({
 
   return (
     <div
-      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`}
+      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-x-hidden ${isRTL ? 'rtl' : ''}`}
       dir={isRTL ? 'rtl' : 'ltr'}
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
@@ -660,37 +660,39 @@ export function FlexibleLessonExperience({
         </div>
       </div>
 
-      {/* Main content area — step-aware transitions */}
-      <div className="flex-1 flex items-center justify-center px-4 pt-8 pb-8">
-        <AnimatePresence mode="wait">
-          {!isTransitioning && currentStep && (
-            <motion.div
-              key={currentStepId}
-              initial={{
-                ...DEFAULT_TRANSITION.initial,
-                ...(STEP_TRANSITIONS[currentStep.type]?.initial || {}),
-              }}
-              animate={{
-                opacity: 1,
-                x: 0,
-                y: 0,
-                scale: 1,
-                filter: 'blur(0px)',
-              }}
-              exit={{
-                ...DEFAULT_TRANSITION.exit,
-                ...(STEP_TRANSITIONS[currentStep.type]?.exit || {}),
-              }}
-              transition={{
-                duration: STEP_TRANSITIONS[currentStep.type]?.duration || DEFAULT_TRANSITION.duration,
-                ease: EASE_OUT_EXPO,
-              }}
-              className="w-full max-w-xl"
-            >
-              {renderStep()}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Main content area — scrollable when content overflows, centered when short */}
+      <div className="flex-1 overflow-y-auto hide-scrollbar px-4 pt-8 pb-8">
+        <div className="min-h-full flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            {!isTransitioning && currentStep && (
+              <motion.div
+                key={currentStepId}
+                initial={{
+                  ...DEFAULT_TRANSITION.initial,
+                  ...(STEP_TRANSITIONS[currentStep.type]?.initial || {}),
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  y: 0,
+                  scale: 1,
+                  filter: 'blur(0px)',
+                }}
+                exit={{
+                  ...DEFAULT_TRANSITION.exit,
+                  ...(STEP_TRANSITIONS[currentStep.type]?.exit || {}),
+                }}
+                transition={{
+                  duration: STEP_TRANSITIONS[currentStep.type]?.duration || DEFAULT_TRANSITION.duration,
+                  ease: EASE_OUT_EXPO,
+                }}
+                className="w-full max-w-xl"
+              >
+                {renderStep()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Music controls - mute and change track */}
