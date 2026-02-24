@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface WisdomTextProps {
   children: string;
   className?: string;
-  variant?: 'narrative' | 'insight' | 'question' | 'instruction';
+  variant?: 'narrative' | 'insight' | 'question' | 'instruction' | 'dramatic';
   animate?: boolean;
   speed?: 'slow' | 'normal' | 'fast'; // Control overall reveal speed
   onComplete?: () => void;
@@ -78,12 +78,18 @@ const variantStyles = {
     size: 'text-base sm:text-lg',
     spacing: 'space-y-3 sm:space-y-2',
   },
+  dramatic: {
+    base: 'text-stone-100 light:text-stone-900 font-serif',
+    leading: 'leading-[1.5]',
+    size: 'text-2xl sm:text-3xl',
+    spacing: 'space-y-5',
+  },
 };
 
 // Timing configurations based on speed
 const speedConfigs = {
   slow: {
-    initialDelay: 700,
+    initialDelay: 900,
     sentenceGap: 200,
     baseReadTime: 320,
     charTime: 18,
@@ -240,8 +246,8 @@ export function WisdomText({
         {sentences.slice(0, visibleCount).map((sentence, index) => (
           <motion.p
             key={`${textRef.current.slice(0, 20)}-sentence-${index}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 16, filter: 'blur(2px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{
               duration: 0.5,
               ease: [0.25, 0.46, 0.45, 0.94],

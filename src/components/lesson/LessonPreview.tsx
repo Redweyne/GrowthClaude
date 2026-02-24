@@ -2,14 +2,14 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
-import { BookOpen, Flame, Zap } from 'lucide-react';
+import { BookOpen, Zap } from 'lucide-react';
 import { getLessonThemeColor } from '@/lib/lessonThemes';
 import type { FlexibleLesson } from '@/types/lessons';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LESSON PREVIEW
 // A 2-3 second cinematic intro before each lesson begins.
-// Title zooms in, subtitle fades, theme color washes across, then auto-advances.
+// Title zooms in with serif display font, glow orb pulses, particles float.
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface LessonPreviewProps {
@@ -70,7 +70,7 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
         }}
       />
 
-      {/* Animated glow orb */}
+      {/* Animated glow orb — larger and more diffuse */}
       <motion.div
         className="absolute"
         initial={{ scale: 0, opacity: 0 }}
@@ -80,13 +80,40 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
         }}
         transition={{ duration: 1.2, ease: 'easeOut' }}
         style={{
-          width: 300,
-          height: 300,
+          width: 400,
+          height: 400,
           borderRadius: '50%',
           background: `radial-gradient(circle, ${theme.glow} 0%, transparent 70%)`,
-          filter: 'blur(40px)',
+          filter: 'blur(60px)',
         }}
       />
+
+      {/* Hold-phase floating particles */}
+      {phase === 'hold' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 rounded-full"
+              style={{
+                backgroundColor: theme.primary,
+                left: `${20 + i * 15}%`,
+                bottom: '40%',
+              }}
+              animate={{
+                y: [0, -80, -160],
+                opacity: [0, 0.4, 0],
+              }}
+              transition={{
+                duration: 2 + i * 0.3,
+                repeat: Infinity,
+                delay: i * 0.3,
+                ease: 'easeOut',
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Content */}
       <div className="relative z-10 text-center px-8 max-w-md">
@@ -105,9 +132,9 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
           </span>
         </motion.div>
 
-        {/* Title */}
+        {/* Title — serif display font */}
         <motion.h1
-          className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight"
+          className="font-serif text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight"
           initial={{ opacity: 0, scale: 0.8, y: 30 }}
           animate={{
             opacity: phase === 'exit' ? 0 : 1,
@@ -116,7 +143,7 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
           }}
           transition={{
             duration: 0.6,
-            ease: [0.23, 1, 0.32, 1], // custom ease
+            ease: [0.23, 1, 0.32, 1],
           }}
           style={{
             textShadow: `0 0 60px ${theme.glow}, 0 0 120px ${theme.gradient}`,
@@ -157,15 +184,15 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
           </motion.div>
         )}
 
-        {/* Tap to skip hint */}
-        <motion.p
-          className="text-stone-600 text-xs mt-12"
+        {/* Pulsing dot — replaces "Tap anywhere" text */}
+        <motion.div
+          className="mt-12 flex justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: phase === 'hold' ? 0.5 : 0 }}
           transition={{ delay: 1.2, duration: 0.4 }}
         >
-          Tap anywhere to begin
-        </motion.p>
+          <div className="w-2 h-2 rounded-full bg-white/30 animate-breathe" />
+        </motion.div>
       </div>
 
       {/* Theme-colored top/bottom lines */}
