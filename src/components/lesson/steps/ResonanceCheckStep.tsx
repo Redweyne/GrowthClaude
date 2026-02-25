@@ -10,10 +10,10 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
 import type { ResonanceCheckStep as ResonanceCheckStepType } from '@/types/lessons';
 
@@ -39,10 +39,8 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Stagger option reveal
-  useEffect(() => {
-    const timer = setTimeout(() => setShowOptions(true), 400);
-    return () => clearTimeout(timer);
+  const handlePromptComplete = useCallback(() => {
+    setShowOptions(true);
   }, []);
 
   const handleToggle = useCallback((id: string) => {
@@ -91,9 +89,15 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
         <div className="space-y-6">
           {/* Prompt */}
           <div className="text-center space-y-3">
-            <h2 className="font-serif text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
+            <WisdomText
+              variant="dramatic"
+              animate={true}
+              speed="fast"
+              className="text-center"
+              onComplete={handlePromptComplete}
+            >
               {step.prompt}
-            </h2>
+            </WisdomText>
             {step.instruction && (
               <p className="text-sm text-indigo-400/80 tracking-wide">
                 {step.instruction}

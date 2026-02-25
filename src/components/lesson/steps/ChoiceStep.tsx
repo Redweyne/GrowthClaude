@@ -10,8 +10,9 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
 import type { ChoiceStep as ChoiceStepType, ChoiceOption } from '@/types/lessons';
 
@@ -26,9 +27,8 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
 
   const { playReveal, playSuccess } = useAudio();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowOptions(true), 400);
-    return () => clearTimeout(timer);
+  const handleQuestionComplete = useCallback(() => {
+    setShowOptions(true);
   }, []);
 
   const handleSelect = (option: ChoiceOption) => {
@@ -64,9 +64,15 @@ export function ChoiceStep({ step, onComplete }: ChoiceStepProps) {
                 {step.instruction}
               </p>
             )}
-            <h2 className="font-serif text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
+            <WisdomText
+              variant="dramatic"
+              animate={true}
+              speed="fast"
+              className="text-center"
+              onComplete={handleQuestionComplete}
+            >
               {step.question}
-            </h2>
+            </WisdomText>
           </div>
 
           {/* The options — glass cards with stagger */}

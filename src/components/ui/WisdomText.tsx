@@ -321,8 +321,9 @@ export function WisdomText({
   return (
     <div className={styles.spacing}>
       {sentenceData.map((sentence, sIdx) => {
-        // Only render sentences that have at least started revealing
-        if (revealedCount <= sentence.globalStart) return null;
+        // Only render future sentences once their first word starts revealing
+        // First sentence always renders (with opacity-0 words) to avoid invisible gap
+        if (sIdx > 0 && revealedCount <= sentence.globalStart) return null;
 
         const isFirst = sIdx === 0;
         const pClass = isFirst && firstSentenceClassName

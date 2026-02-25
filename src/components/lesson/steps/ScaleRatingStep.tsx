@@ -13,7 +13,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button, WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
 import type { ScaleRatingStep as ScaleRatingStepType } from '@/types/lessons';
 
@@ -38,10 +38,8 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Reveal scale after prompt
-  useEffect(() => {
-    const timer = setTimeout(() => setShowScale(true), 400);
-    return () => clearTimeout(timer);
+  const handlePromptComplete = useCallback(() => {
+    setShowScale(true);
   }, []);
 
   const handleSelect = useCallback((value: number) => {
@@ -97,9 +95,15 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
         <div className="space-y-8">
           {/* Prompt */}
           <div className="text-center">
-            <h2 className="font-serif text-2xl sm:text-3xl text-stone-100 light:text-stone-900 leading-relaxed">
+            <WisdomText
+              variant="dramatic"
+              animate={true}
+              speed="fast"
+              className="text-center"
+              onComplete={handlePromptComplete}
+            >
               {step.prompt}
-            </h2>
+            </WisdomText>
           </div>
 
           {/* Scale */}
