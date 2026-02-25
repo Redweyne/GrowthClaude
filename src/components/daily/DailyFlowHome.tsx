@@ -2,13 +2,13 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Heart, Dumbbell, ChevronRight, ChevronLeft, Settings, Lock, CheckCircle } from 'lucide-react';
+import { BookOpen, Heart, Dumbbell, ChevronRight, ChevronLeft, Zap, Check, BarChart3, Map, MessageCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { AmbientBackground } from '@/components/ambient';
+import { WisdomText } from '@/components/ui/WisdomText';
 import { SparkLockedCard } from '@/components/spark/SparkLockedCard';
 import { HeroGreeting } from '@/components/home/HeroGreeting';
-import { LevelDisplay } from '@/components/home/LevelDisplay';
 import { getLevelFromXp, getXpProgress } from '@/types';
 import { useTranslation } from '@/i18n';
 import type { FlexibleLesson } from '@/types/lessons';
@@ -16,8 +16,8 @@ import type { DailyFlowState } from '@/types/dailyPractice';
 import { useStore } from '@/store/useStore';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DAILY FLOW HOME
-// The new main screen showing the three-phase daily practice loop
+// THE SANCTUM — A Daily Transformation Portal
+// Not a task manager. A personal sanctuary that reflects your journey.
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface DailyFlowHomeProps {
@@ -44,6 +44,12 @@ interface DailyFlowHomeProps {
   hasPendingAction: boolean;
   pendingCommitment?: string;
 
+  // Identity & progress (NEW)
+  latestIdentityStatement?: string;
+  totalLessonsCompleted: number;
+  daysSinceStart: number;
+  longestStreak: number;
+
   // Actions
   onStartLesson: () => void;
   onContinueLesson: () => void;
@@ -51,7 +57,7 @@ interface DailyFlowHomeProps {
   onStartExercises: () => void;
   onOpenSettings: () => void;
 
-  // When daily practice is complete, show these
+  // Post-completion
   onBrowseMoreEchoes?: () => void;
   onRedoPastLesson?: () => void;
   onWeeklyReflection?: () => void;
@@ -76,6 +82,10 @@ export function DailyFlowHome({
   totalExercises,
   hasPendingAction,
   pendingCommitment,
+  latestIdentityStatement,
+  totalLessonsCompleted,
+  daysSinceStart,
+  longestStreak,
   onStartLesson,
   onContinueLesson,
   onStartEcho,
@@ -83,37 +93,36 @@ export function DailyFlowHome({
   onOpenSettings,
   onBrowseMoreEchoes,
   onRedoPastLesson,
-  onWeeklyReflection,
   onOpenDashboard,
   onOpenSpark,
   isSparkForcedClosed,
 }: DailyFlowHomeProps) {
   const { t, isRTL } = useTranslation();
-  const { longestStreak, lastLessonDate, completedLessons, transformationGoal, streakShieldCount } = useStore();
+  const { lastLessonDate, completedLessons, transformationGoal, streakShieldCount } = useStore();
 
-  // Calculate level and progress
   const level = getLevelFromXp(totalXp);
   const xpProgress = getXpProgress(totalXp);
-
-  // World progress percentage
-  const worldProgress = Math.round((dayNumber / totalDays) * 100);
-
-  // Is everything complete for today?
   const isComplete = flowState.currentPhase === 'complete';
+
+  // Determine which phase index is active (0=lesson, 1=echo, 2=practice, 3=complete)
+  const phaseIndex = isComplete ? 3
+    : flowState.currentPhase === 'practice' ? 2
+    : flowState.currentPhase === 'echo' ? 1
+    : 0;
 
   return (
     <div className="relative min-h-full flex flex-col" data-testid="daily-flow-home">
-      {/* Ambient background */}
       <AmbientBackground intensity="normal" particleCount={15} orbCount={3} />
 
-      {/* Main content */}
       <motion.div
         className="relative z-10 flex-1 flex flex-col p-6 pb-6 max-w-lg mx-auto w-full"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Hero greeting */}
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 1: Compact Header
+        ═══════════════════════════════════════════════════════════ */}
         <HeroGreeting
           name={name}
           streak={currentStreak}
@@ -122,477 +131,577 @@ export function DailyFlowHome({
           lastLessonDate={lastLessonDate}
           transformationGoal={transformationGoal}
           streakShieldCount={streakShieldCount}
+          dayNumber={dayNumber}
+          worldName={worldName}
           onOpenSettings={onOpenSettings}
         />
 
-        {/* Level display */}
-        <div className="mb-6">
-          <LevelDisplay
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 2: Daily Ritual Card (the hero)
+        ═══════════════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.5 }}
+        >
+          <AnimatePresence mode="wait">
+            {isComplete ? (
+              <CompletionCard
+                key="complete"
+                latestIdentityStatement={latestIdentityStatement}
+                totalXp={totalXp}
+                isRTL={isRTL}
+                t={t}
+              />
+            ) : (
+              <RitualCard
+                key={flowState.currentPhase}
+                phase={flowState.currentPhase}
+                todaysLesson={todaysLesson}
+                exercisesCompleted={exercisesCompleted}
+                totalExercises={totalExercises}
+                hasPendingAction={hasPendingAction}
+                pendingCommitment={pendingCommitment}
+                onStartLesson={onStartLesson}
+                onContinueLesson={onContinueLesson}
+                onStartEcho={onStartEcho}
+                onStartExercises={onStartExercises}
+                isRTL={isRTL}
+                t={t}
+              />
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 3: Journey Steps
+        ═══════════════════════════════════════════════════════════ */}
+        <motion.div
+          className="my-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+        >
+          <JourneySteps phaseIndex={phaseIndex} isRTL={isRTL} t={t} />
+        </motion.div>
+
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 4: Becoming (Identity + Level)
+        ═══════════════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <BecomingSection
             level={level}
             totalXp={totalXp}
             xpProgress={xpProgress}
+            latestIdentityStatement={latestIdentityStatement}
+            transformationGoal={transformationGoal}
+            totalLessonsCompleted={totalLessonsCompleted}
+            daysSinceStart={daysSinceStart}
+            longestStreak={longestStreak}
+            isRTL={isRTL}
+            t={t}
           />
-        </div>
-
-        {/* World progress */}
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className={`flex justify-between items-center mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <span className="text-stone-400 light:text-stone-700 text-sm">
-              {t('dailyFlow.dayOf').replace('{current}', String(dayNumber)).replace('{total}', String(totalDays))}
-            </span>
-            <span className="text-amber-400 text-sm font-medium">{worldName}</span>
-          </div>
-          <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${worldProgress}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-            />
-          </div>
         </motion.div>
 
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col">
-          {isComplete ? (
-            // ══════════════════════════════════════════════════════════════════
-            // ALL COMPLETE FOR TODAY
-            // ══════════════════════════════════════════════════════════════════
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex-1 flex flex-col"
-            >
-              {/* Celebration */}
-              <Card variant="glow" padding="lg" className="mb-6 text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', bounce: 0.5 }}
-                  className="text-5xl mb-4"
-                >
-                  ✨
-                </motion.div>
-                <h2 className="text-2xl font-bold text-stone-100 light:text-stone-900 mb-2">
-                  {t('dailyFlow.todaysPracticeComplete')}
-                </h2>
-                <p className="text-stone-400 light:text-stone-600">
-                  {t('dailyFlow.doneTheWork')}
-                </p>
-              </Card>
-
-              {/* Spark — the daily reward */}
-              {onOpenSpark && (
-                <motion.div
-                  className="mb-6"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <SparkLockedCard
-                    isUnlocked={true}
-                    isForcedClosed={isSparkForcedClosed}
-                    onOpen={onOpenSpark}
-                  />
-                </motion.div>
-              )}
-
-              {/* Tomorrow's glimpse */}
-              {tomorrowsLesson && (
-                <Card variant="glass" padding="md" className="mb-6">
-                  <p className={`text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider mb-2 ${isRTL ? 'text-right' : ''}`}>
-                    {t('dailyFlow.tomorrowsGlimpse')}
-                  </p>
-                  <h3 className={`text-lg font-semibold text-stone-200 light:text-stone-800 mb-1 ${isRTL ? 'text-right' : ''}`}>
-                    {tomorrowsLesson.title}
-                  </h3>
-                  <p className={`text-stone-400 light:text-stone-600 text-sm ${isRTL ? 'text-right' : ''}`}>
-                    {tomorrowsLesson.teaserText || tomorrowsLesson.subtitle || tomorrowsLesson.description}
-                  </p>
-                </Card>
-              )}
-
-              {/* Want to go deeper? */}
-              <div className="mt-auto">
-                <p className={`text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider mb-3 ${isRTL ? 'text-right' : ''}`}>
-                  {t('dailyFlow.wantToGoDeeper')}
-                </p>
-                <div className="space-y-2">
-                  {onBrowseMoreEchoes && (
-                    <button
-                      onClick={onBrowseMoreEchoes}
-                      className={`w-full p-4 rounded-xl bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 light:hover:bg-stone-100 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
-                    >
-                      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                          <Heart size={18} className="text-amber-400" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-stone-200 light:text-stone-800 font-medium">{t('dailyFlow.browseMoreEchoes')}</p>
-                          <p className="text-stone-500 light:text-stone-600 text-sm">{t('dailyFlow.connectWithTravelers')}</p>
-                        </div>
-                        {isRTL ? (
-                          <ChevronLeft size={18} className="text-stone-600 light:text-stone-500" />
-                        ) : (
-                          <ChevronRight size={18} className="text-stone-600 light:text-stone-500" />
-                        )}
-                      </div>
-                    </button>
-                  )}
-
-                  {onRedoPastLesson && (
-                    <button
-                      onClick={onRedoPastLesson}
-                      className={`w-full p-4 rounded-xl bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 light:hover:bg-stone-100 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
-                    >
-                      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                          <BookOpen size={18} className="text-blue-400" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-stone-200 light:text-stone-800 font-medium">{t('dailyFlow.redoPastLesson')}</p>
-                          <p className="text-stone-500 light:text-stone-600 text-sm">{t('dailyFlow.revisitDeepen')}</p>
-                        </div>
-                        {isRTL ? (
-                          <ChevronLeft size={18} className="text-stone-600 light:text-stone-500" />
-                        ) : (
-                          <ChevronRight size={18} className="text-stone-600 light:text-stone-500" />
-                        )}
-                      </div>
-                    </button>
-                  )}
-
-                  {onOpenDashboard && (
-                    <button
-                      onClick={onOpenDashboard}
-                      className={`w-full p-4 rounded-xl bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 hover:border-stone-700 light:hover:border-stone-400 light:hover:bg-stone-100 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
-                    >
-                      <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                          <Settings size={18} className="text-purple-400" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-stone-200 light:text-stone-800 font-medium">{t('dailyFlow.viewDashboard')}</p>
-                          <p className="text-stone-500 light:text-stone-600 text-sm">{t('dailyFlow.progressStats')}</p>
-                        </div>
-                        {isRTL ? (
-                          <ChevronLeft size={18} className="text-stone-600 light:text-stone-500" />
-                        ) : (
-                          <ChevronRight size={18} className="text-stone-600 light:text-stone-500" />
-                        )}
-                      </div>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            // ══════════════════════════════════════════════════════════════════
-            // THREE PHASES OF DAILY PRACTICE
-            // ══════════════════════════════════════════════════════════════════
-            <div className="space-y-4">
-              {/* PHASE 1: THE LESSON */}
-              <PhaseCard
-                phase={1}
-                title={t('dailyFlow.phases.lesson.title')}
-                subtitle={todaysLesson?.title || t('common.loading')}
-                description={todaysLesson?.subtitle}
-                icon={<BookOpen size={20} />}
-                status={
-                  hasPendingAction
-                    ? 'pending'
-                    : flowState.currentPhase === 'lesson'
-                    ? 'current'
-                    : 'completed'
-                }
-                estimatedMinutes={todaysLesson?.estimatedMinutes}
-                xpReward={todaysLesson?.xpReward}
-                pendingCommitment={pendingCommitment}
-                onAction={hasPendingAction ? onContinueLesson : onStartLesson}
-                actionLabel={hasPendingAction ? t('dailyFlow.phases.lesson.continueLesson') : t('dailyFlow.phases.lesson.beginLesson')}
-                isRTL={isRTL}
-                t={t}
-              />
-
-              {/* PHASE 2: THE ECHO */}
-              <PhaseCard
-                phase={2}
-                title={t('dailyFlow.phases.echo.title')}
-                subtitle={t('dailyFlow.phases.echo.subtitle')}
-                description={t('dailyFlow.phases.echo.description')}
-                icon={<Heart size={20} />}
-                status={
-                  !flowState.canAccessEcho
-                    ? 'locked'
-                    : flowState.currentPhase === 'echo'
-                    ? 'current'
-                    : 'completed'
-                }
-                estimatedMinutes={3}
-                xpReward={10}
-                onAction={onStartEcho}
-                actionLabel={t('dailyFlow.phases.echo.respondToReflection')}
-                isRTL={isRTL}
-                t={t}
-              />
-
-              {/* PHASE 3: THE PRACTICE */}
-              <PhaseCard
-                phase={3}
-                title={t('dailyFlow.phases.practice.title')}
-                subtitle={t('dailyFlow.phases.practice.subtitle').replace('{count}', String(totalExercises))}
-                description={t('dailyFlow.phases.practice.description')}
-                icon={<Dumbbell size={20} />}
-                status={
-                  !flowState.canAccessPractice
-                    ? 'locked'
-                    : flowState.currentPhase === 'practice'
-                    ? 'current'
-                    : 'completed'
-                }
-                estimatedMinutes={10}
-                xpReward={25}
-                progress={exercisesCompleted}
-                total={totalExercises}
-                onAction={onStartExercises}
-                actionLabel={exercisesCompleted > 0 ? t('dailyFlow.phases.practice.continuePractice') : t('dailyFlow.phases.practice.beginPractice')}
-                isRTL={isRTL}
-                t={t}
+        {/* ═══════════════════════════════════════════════════════════
+            SECTION 5: Bottom — Spark + Tomorrow + Quick Nav
+        ═══════════════════════════════════════════════════════════ */}
+        <motion.div
+          className="mt-6 flex-1 flex flex-col justify-end"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.45 }}
+        >
+          {/* Spark */}
+          {isComplete && onOpenSpark && (
+            <div className="mb-4">
+              <SparkLockedCard
+                isUnlocked={true}
+                isForcedClosed={isSparkForcedClosed}
+                onOpen={onOpenSpark}
               />
             </div>
           )}
 
-          {/* Spark locked preview (when practice not complete) */}
           {!isComplete && onOpenSpark && (
-            <motion.div
-              className="mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
+            <div className="mb-4">
               <SparkLockedCard
                 isUnlocked={false}
                 onOpen={onOpenSpark}
               />
-            </motion.div>
+            </div>
           )}
-        </div>
 
-        {/* Tomorrow teaser (when not complete) */}
-        {!isComplete && tomorrowsLesson && (
-          <motion.div
-            className="mt-6 pt-4 border-t border-stone-800/50 light:border-stone-300"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <p className={`text-stone-600 light:text-stone-500 text-xs uppercase tracking-wider mb-1 ${isRTL ? 'text-right' : ''}`}>
-              {t('dailyFlow.tomorrowsGlimpse')}
-            </p>
-            <p className={`text-stone-500 light:text-stone-600 text-sm ${isRTL ? 'text-right' : ''}`}>
-              <span className="text-stone-400 light:text-stone-700">{tomorrowsLesson.title}</span>
-              {tomorrowsLesson.teaserText && (
-                <span> — {tomorrowsLesson.teaserText.slice(0, 50)}...</span>
+          {/* Tomorrow's glimpse */}
+          {tomorrowsLesson && (
+            <div className={`mb-5 ${isRTL ? 'text-right' : ''}`}>
+              <p className="text-xs uppercase tracking-[0.15em] text-stone-600 light:text-stone-500 mb-1.5">
+                {t('dailyFlow.tomorrowsGlimpse')}
+              </p>
+              <p className="text-sm text-stone-400 light:text-stone-600">
+                <span className="text-stone-300 light:text-stone-700 font-medium">{tomorrowsLesson.title}</span>
+                {tomorrowsLesson.teaserText && (
+                  <span className="text-stone-500"> — {tomorrowsLesson.teaserText.slice(0, 60)}{tomorrowsLesson.teaserText.length > 60 ? '...' : ''}</span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* Quick navigation */}
+          {isComplete && (
+            <div className={`flex justify-center gap-4 pt-2 pb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {onOpenDashboard && (
+                <QuickNavButton
+                  icon={<BarChart3 size={18} />}
+                  label={t('dailyFlow.viewDashboard')}
+                  onClick={onOpenDashboard}
+                />
               )}
-            </p>
-          </motion.div>
-        )}
+              {onRedoPastLesson && (
+                <QuickNavButton
+                  icon={<Map size={18} />}
+                  label={t('dailyFlow.redoPastLesson')}
+                  onClick={onRedoPastLesson}
+                />
+              )}
+              {onBrowseMoreEchoes && (
+                <QuickNavButton
+                  icon={<MessageCircle size={18} />}
+                  label={t('dailyFlow.browseMoreEchoes')}
+                  onClick={onBrowseMoreEchoes}
+                />
+              )}
+            </div>
+          )}
+        </motion.div>
       </motion.div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PHASE CARD COMPONENT
+// RITUAL CARD — One card, one action. Changes based on phase.
 // ═══════════════════════════════════════════════════════════════════════════
 
-type PhaseStatus = 'locked' | 'current' | 'completed' | 'pending';
-
-interface PhaseCardProps {
-  phase: number;
-  title: string;
-  subtitle: string;
-  description?: string;
-  icon: React.ReactNode;
-  status: PhaseStatus;
-  estimatedMinutes?: number;
-  xpReward?: number;
-  progress?: number;
-  total?: number;
-  pendingCommitment?: string;
-  onAction: () => void;
-  actionLabel: string;
-  isRTL?: boolean;
-  t: (key: string) => string;
-}
-
-function PhaseCard({
+function RitualCard({
   phase,
-  title,
-  subtitle,
-  description,
-  icon,
-  status,
-  estimatedMinutes,
-  xpReward,
-  progress,
-  total,
+  todaysLesson,
+  exercisesCompleted,
+  totalExercises,
+  hasPendingAction,
   pendingCommitment,
-  onAction,
-  actionLabel,
-  isRTL = false,
+  onStartLesson,
+  onContinueLesson,
+  onStartEcho,
+  onStartExercises,
+  isRTL,
   t,
-}: PhaseCardProps) {
-  const isLocked = status === 'locked';
-  const isCompleted = status === 'completed';
-  const isCurrent = status === 'current';
-  const isPending = status === 'pending';
+}: {
+  phase: string;
+  todaysLesson: FlexibleLesson | null;
+  exercisesCompleted: number;
+  totalExercises: number;
+  hasPendingAction: boolean;
+  pendingCommitment?: string;
+  onStartLesson: () => void;
+  onContinueLesson: () => void;
+  onStartEcho: () => void;
+  onStartExercises: () => void;
+  isRTL: boolean;
+  t: (key: string) => string;
+}) {
+  const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
-  const borderColor = isLocked
-    ? 'border-stone-800/50 light:border-stone-300/80'
-    : isCompleted
-    ? 'border-emerald-500/30'
-    : isCurrent || isPending
-    ? 'border-amber-500/30'
-    : 'border-stone-800 light:border-stone-300';
+  if (phase === 'lesson') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card variant="glass" padding="none" className="border-amber-500/20 overflow-hidden">
+          <div className="p-6">
+            {/* Wisdom preview */}
+            {(todaysLesson?.subtitle || todaysLesson?.teaserText) && (
+              <p className={`font-serif text-base text-stone-400 light:text-stone-500 italic leading-relaxed mb-5 ${isRTL ? 'text-right' : ''}`}>
+                &ldquo;{todaysLesson.teaserText || todaysLesson.subtitle}&rdquo;
+              </p>
+            )}
 
-  const bgColor = isLocked
-    ? 'bg-stone-900/30 light:bg-stone-100/70'
-    : isCompleted
-    ? 'bg-stone-900/50 light:bg-stone-100/80'
-    : 'bg-stone-900/70 light:bg-stone-100/90';
+            {/* Lesson title */}
+            <h2 className={`text-xl sm:text-2xl font-bold text-stone-100 light:text-stone-900 tracking-tight mb-2 ${isRTL ? 'text-right' : ''}`}>
+              {todaysLesson?.title || t('common.loading')}
+            </h2>
+
+            {/* Meta */}
+            <div className={`flex items-center gap-3 text-sm text-stone-500 light:text-stone-600 mb-5 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
+              {todaysLesson?.estimatedMinutes && (
+                <span>~{todaysLesson.estimatedMinutes} min</span>
+              )}
+              {todaysLesson?.xpReward && (
+                <>
+                  <span className="text-stone-700 light:text-stone-400">·</span>
+                  <span className="text-amber-500">+{todaysLesson.xpReward} {t('common.xp')}</span>
+                </>
+              )}
+            </div>
+
+            {/* Pending commitment */}
+            {hasPendingAction && pendingCommitment && (
+              <div className={`mb-4 p-3 rounded-lg bg-amber-500/5 border border-amber-500/15 ${isRTL ? 'text-right' : ''}`}>
+                <p className="text-amber-500/70 text-xs uppercase tracking-wider mb-1">
+                  {t('dailyFlow.yourCommitment')}
+                </p>
+                <p className="text-stone-300 light:text-stone-700 text-sm italic">
+                  &ldquo;{pendingCommitment.slice(0, 100)}{pendingCommitment.length > 100 ? '...' : ''}&rdquo;
+                </p>
+              </div>
+            )}
+
+            {/* CTA */}
+            <Button
+              onClick={hasPendingAction ? onContinueLesson : onStartLesson}
+              variant="primary"
+              className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
+              glow
+              data-testid={hasPendingAction ? 'continue-lesson-btn' : 'start-lesson-btn'}
+            >
+              {hasPendingAction ? t('dailyFlow.phases.lesson.continueLesson') : t('dailyFlow.phases.lesson.beginLesson')}
+              <ChevronIcon size={18} className={isRTL ? 'mr-2' : 'ml-2'} />
+            </Button>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  if (phase === 'echo') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card variant="glass" padding="none" className="border-amber-500/20 overflow-hidden">
+          <div className="p-6">
+            {/* Completed indicator */}
+            <div className={`flex items-center gap-2 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Check size={12} className="text-emerald-400" />
+              </div>
+              <span className="text-xs text-emerald-400 uppercase tracking-wider">{t('dailyFlow.phases.lesson.title')} {t('common.complete')}</span>
+            </div>
+
+            <h2 className={`text-xl sm:text-2xl font-bold text-stone-100 light:text-stone-900 tracking-tight mb-2 ${isRTL ? 'text-right' : ''}`}>
+              {t('dailyFlow.phases.echo.title')}
+            </h2>
+            <p className={`text-sm text-stone-400 light:text-stone-600 mb-2 ${isRTL ? 'text-right' : ''}`}>
+              {t('dailyFlow.phases.echo.subtitle')}
+            </p>
+            <div className={`flex items-center gap-3 text-sm text-stone-500 light:text-stone-600 mb-5 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
+              <span>~3 min</span>
+              <span className="text-stone-700 light:text-stone-400">·</span>
+              <span className="text-amber-500">+10 {t('common.xp')}</span>
+            </div>
+
+            <Button
+              onClick={onStartEcho}
+              variant="primary"
+              className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
+              glow
+              data-testid="start-echo-btn"
+            >
+              {t('dailyFlow.phases.echo.respondToReflection')}
+              <ChevronIcon size={18} className={isRTL ? 'mr-2' : 'ml-2'} />
+            </Button>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // Practice phase
+  const practiceProgress = totalExercises > 0 ? (exercisesCompleted / totalExercises) * 100 : 0;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: phase * 0.1 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
     >
-      <Card variant="default" padding="none" className={`${bgColor} ${borderColor} overflow-hidden`}>
-        <div className="p-5">
-          <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-            {/* Icon/Status */}
-            <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                isLocked
-                  ? 'bg-stone-800/50 text-stone-600 light:bg-stone-200 light:text-stone-500'
-                  : isCompleted
-                  ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-amber-500/20 text-amber-400'
-              }`}
-            >
-              {isLocked ? (
-                <Lock size={20} />
-              ) : isCompleted ? (
-                <CheckCircle size={20} />
-              ) : (
-                icon
-              )}
-            </div>
-
-            {/* Content */}
-            <div className={`flex-1 min-w-0 ${isRTL ? 'text-right' : ''}`}>
-              <div className={`flex items-center gap-2 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <span className="text-stone-500 light:text-stone-600 text-xs uppercase tracking-wider">
-                  {t('common.phase')} {phase}
-                </span>
-                {isCompleted && (
-                  <span className="text-emerald-500 text-xs font-medium">{t('common.complete')}</span>
-                )}
+      <Card variant="glass" padding="none" className="border-amber-500/20 overflow-hidden">
+        <div className="p-6">
+          {/* Completed indicators */}
+          <div className={`flex items-center gap-4 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Check size={12} className="text-emerald-400" />
               </div>
-
-              <h3 className={`font-semibold mb-1 ${isLocked ? 'text-stone-600 light:text-stone-500' : 'text-stone-100 light:text-stone-900'}`}>
-                {title}
-              </h3>
-
-              <p className={`text-sm ${isLocked ? 'text-stone-700 light:text-stone-500' : 'text-stone-400 light:text-stone-600'}`}>
-                {subtitle}
-              </p>
-
-              {/* Progress bar for exercises */}
-              {progress !== undefined && total !== undefined && !isLocked && (
-                <div className="mt-3">
-                  <div className={`flex justify-between text-xs text-stone-500 light:text-stone-600 mb-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t('dailyFlow.phases.practice.completed').replace('{current}', String(progress)).replace('{total}', String(total))}</span>
-                    <span>+{xpReward} {t('common.xp')}</span>
-                  </div>
-                  <div className="h-1.5 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(progress / total) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Pending commitment */}
-              {isPending && pendingCommitment && (
-                <div className="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  <p className="text-amber-400 text-xs uppercase tracking-wider mb-1">
-                    {t('dailyFlow.yourCommitment')}
-                  </p>
-                  <p className="text-stone-300 light:text-stone-800 text-sm">
-                    &ldquo;{pendingCommitment.slice(0, 100)}{pendingCommitment.length > 100 ? '...' : ''}&rdquo;
-                  </p>
-                </div>
-              )}
+              <span className="text-xs text-emerald-400">{t('dailyFlow.phases.lesson.title')}</span>
             </div>
-
-            {/* Meta info */}
-            {!isLocked && !isCompleted && (
-              <div className={isRTL ? 'text-left' : 'text-right'}>
-                {estimatedMinutes && (
-                  <p className="text-stone-500 light:text-stone-600 text-xs">~{estimatedMinutes}min</p>
-                )}
-                {xpReward && !progress && (
-                  <p className="text-amber-500 text-xs font-medium">+{xpReward} {t('common.xp')}</p>
-                )}
+            <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Check size={12} className="text-emerald-400" />
               </div>
-            )}
+              <span className="text-xs text-emerald-400">{t('dailyFlow.phases.echo.title')}</span>
+            </div>
           </div>
 
-          {/* Action button */}
-          {(isCurrent || isPending) && (
-            <motion.div
-              className="mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-<Button
-                onClick={onAction}
-                variant="primary"
-                className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
-                glow
-                data-testid={phase === 1 ? (status === 'pending' ? 'continue-lesson-btn' : 'start-lesson-btn') : phase === 2 ? 'start-echo-btn' : 'start-exercises-btn'}
-              >
-                {actionLabel}
-                {isRTL ? (
-                  <ChevronLeft size={18} className="mr-2" />
-                ) : (
-                  <ChevronRight size={18} className="ml-2" />
-                )}
-              </Button>
-            </motion.div>
-          )}
+          <h2 className={`text-xl sm:text-2xl font-bold text-stone-100 light:text-stone-900 tracking-tight mb-2 ${isRTL ? 'text-right' : ''}`}>
+            {t('dailyFlow.phases.practice.title')}
+          </h2>
 
-          {/* Locked message */}
-          {isLocked && (
-            <div className="mt-4 text-center">
-              <p className="text-stone-600 light:text-stone-500 text-sm">
-                {t('dailyFlow.completePrevious')}
+          {/* Progress */}
+          <div className="mb-5">
+            <div className={`flex justify-between text-sm text-stone-500 light:text-stone-600 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <span>{t('dailyFlow.phases.practice.completed').replace('{current}', String(exercisesCompleted)).replace('{total}', String(totalExercises))}</span>
+              <span className="text-amber-500">+25 {t('common.xp')}</span>
+            </div>
+            <div className="h-2 bg-stone-800/80 light:bg-stone-200 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${practiceProgress}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+
+          <Button
+            onClick={onStartExercises}
+            variant="primary"
+            className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
+            glow
+            data-testid="start-exercises-btn"
+          >
+            {exercisesCompleted > 0 ? t('dailyFlow.phases.practice.continuePractice') : t('dailyFlow.phases.practice.beginPractice')}
+            <ChevronIcon size={18} className={isRTL ? 'mr-2' : 'ml-2'} />
+          </Button>
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPLETION CARD — Today's ritual is complete
+// ═══════════════════════════════════════════════════════════════════════════
+
+function CompletionCard({
+  latestIdentityStatement,
+  totalXp,
+  isRTL,
+  t,
+}: {
+  latestIdentityStatement?: string;
+  totalXp: number;
+  isRTL: boolean;
+  t: (key: string) => string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.4 }}
+    >
+      <Card variant="glow" padding="none" className="overflow-hidden">
+        <div className="p-6 text-center">
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', bounce: 0.5, delay: 0.1 }}
+            className="text-4xl mb-4"
+          >
+            ✨
+          </motion.div>
+
+          <h2 className="text-xl sm:text-2xl font-serif font-bold text-stone-100 light:text-stone-900 mb-2">
+            {t('dailyFlow.todaysPracticeComplete')}
+          </h2>
+          <p className="text-stone-500 light:text-stone-600 text-sm mb-4">
+            {t('dailyFlow.doneTheWork')}
+          </p>
+
+          {latestIdentityStatement && (
+            <div className="mt-4 pt-4 border-t border-stone-800/50 light:border-stone-300/50">
+              <p className="font-serif text-lg text-stone-300 light:text-stone-700 italic leading-relaxed">
+                &ldquo;{latestIdentityStatement}&rdquo;
               </p>
             </div>
           )}
         </div>
       </Card>
     </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOURNEY STEPS — Minimal 3-step progress indicator
+// ═══════════════════════════════════════════════════════════════════════════
+
+const STEPS = [
+  { key: 'lesson', icon: BookOpen, labelKey: 'dailyFlow.phases.lesson.title' },
+  { key: 'echo', icon: Heart, labelKey: 'dailyFlow.phases.echo.title' },
+  { key: 'practice', icon: Dumbbell, labelKey: 'dailyFlow.phases.practice.title' },
+];
+
+function JourneySteps({ phaseIndex, isRTL, t }: { phaseIndex: number; isRTL: boolean; t: (key: string) => string }) {
+  return (
+    <div className={`flex items-center justify-center gap-0 ${isRTL ? 'flex-row-reverse' : ''}`}>
+      {STEPS.map((step, idx) => {
+        const isCompleted = idx < phaseIndex;
+        const isCurrent = idx === phaseIndex && phaseIndex < 3;
+        const Icon = step.icon;
+
+        return (
+          <div key={step.key} className={`flex items-center ${idx < STEPS.length - 1 ? 'flex-1' : ''}`}>
+            {/* Step circle */}
+            <div className="flex flex-col items-center gap-1.5">
+              <motion.div
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300 ${
+                  isCompleted
+                    ? 'bg-emerald-500/20 border-2 border-emerald-500/40'
+                    : isCurrent
+                    ? 'bg-amber-500/20 border-2 border-amber-500/40'
+                    : 'bg-stone-800/50 light:bg-stone-200/80 border-2 border-stone-700/50 light:border-stone-300/80'
+                }`}
+                animate={isCurrent ? {
+                  boxShadow: ['0 0 0px rgba(251,191,36,0)', '0 0 12px rgba(251,191,36,0.3)', '0 0 0px rgba(251,191,36,0)'],
+                } : {}}
+                transition={isCurrent ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+              >
+                {isCompleted ? (
+                  <Check size={14} className="text-emerald-400" />
+                ) : (
+                  <Icon size={14} className={isCurrent ? 'text-amber-400' : 'text-stone-600 light:text-stone-500'} />
+                )}
+              </motion.div>
+              <span className={`text-[10px] font-medium ${
+                isCompleted ? 'text-emerald-400/80' : isCurrent ? 'text-amber-400/80' : 'text-stone-600 light:text-stone-500'
+              }`}>
+                {t(step.labelKey)}
+              </span>
+            </div>
+
+            {/* Connector line */}
+            {idx < STEPS.length - 1 && (
+              <div className="flex-1 h-0.5 mx-2 mt-[-18px] relative overflow-hidden rounded-full bg-stone-800/50 light:bg-stone-300/80">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-emerald-500/60 rounded-full"
+                  initial={{ width: '0%' }}
+                  animate={{ width: isCompleted ? '100%' : '0%' }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BECOMING SECTION — Identity + Level + Transformation
+// ═══════════════════════════════════════════════════════════════════════════
+
+function BecomingSection({
+  level,
+  totalXp,
+  xpProgress,
+  latestIdentityStatement,
+  transformationGoal,
+  totalLessonsCompleted,
+  daysSinceStart,
+  longestStreak,
+  isRTL,
+  t,
+}: {
+  level: { level: number; title: string };
+  totalXp: number;
+  xpProgress: { current: number; needed: number; percentage: number };
+  latestIdentityStatement?: string;
+  transformationGoal?: string | null;
+  totalLessonsCompleted: number;
+  daysSinceStart: number;
+  longestStreak: number;
+  isRTL: boolean;
+  t: (key: string) => string;
+}) {
+  return (
+    <Card variant="glass" padding="md">
+      <p className={`text-xs uppercase tracking-[0.15em] text-stone-500 light:text-stone-600 mb-4 ${isRTL ? 'text-right' : ''}`}>
+        {t('dailyFlow.becoming') || 'Becoming'}
+      </p>
+
+      {/* Level & XP Progress */}
+      <div className={`flex items-center gap-3 mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-lg shrink-0">
+          <span className="text-lg font-bold text-stone-950">{level.level}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-medium text-stone-200 light:text-stone-800 ${isRTL ? 'text-right' : ''}`}>
+            {level.title}
+          </p>
+          <div className="h-1.5 bg-stone-800/80 light:bg-stone-200 rounded-full overflow-hidden mt-1.5">
+            <motion.div
+              className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${xpProgress.percentage}%` }}
+              transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+        <span className="text-xs text-stone-500 light:text-stone-600 tabular-nums shrink-0">
+          {totalXp.toLocaleString()} {t('common.xp')}
+        </span>
+      </div>
+
+      {/* Identity Statement or Transformation Goal */}
+      {latestIdentityStatement ? (
+        <p className={`font-serif text-base sm:text-lg text-stone-300 light:text-stone-700 italic leading-relaxed mb-4 ${isRTL ? 'text-right' : ''}`}>
+          &ldquo;{latestIdentityStatement}&rdquo;
+        </p>
+      ) : transformationGoal ? (
+        <p className={`font-serif text-base text-stone-400 light:text-stone-600 italic mb-4 ${isRTL ? 'text-right' : ''}`}>
+          {t('dailyFlow.becomingMore') || 'Becoming more'} {transformationGoal}
+        </p>
+      ) : null}
+
+      {/* Compact journey stats */}
+      <div className={`flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 light:text-stone-600 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
+        {totalLessonsCompleted > 0 && <span>{totalLessonsCompleted} {t('dailyFlow.lessons') || 'lessons'}</span>}
+        {daysSinceStart > 0 && <span>{daysSinceStart} {t('dailyFlow.days') || 'days'}</span>}
+        {longestStreak > 3 && <span>{t('dailyFlow.bestStreak') || 'Best streak'}: {longestStreak}</span>}
+      </div>
+    </Card>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// QUICK NAV BUTTON
+// ═══════════════════════════════════════════════════════════════════════════
+
+function QuickNavButton({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-xl hover:bg-stone-800/50 light:hover:bg-stone-200/80 transition-colors"
+      whileTap={{ scale: 0.95 }}
+    >
+      <div className="w-10 h-10 rounded-xl bg-stone-800/80 light:bg-stone-200 border border-stone-700/50 light:border-stone-300 flex items-center justify-center">
+        <span className="text-stone-400 light:text-stone-600">{icon}</span>
+      </div>
+      <span className="text-[10px] text-stone-500 light:text-stone-600 font-medium">{label}</span>
+    </motion.button>
   );
 }
 

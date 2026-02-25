@@ -892,6 +892,10 @@ export default function Home() {
             totalExercises={todaysLesson?.exercises?.length || 5}
             hasPendingAction={hasPendingAction}
             pendingCommitment={undefined}
+            latestIdentityStatement={userIdentityStatements.length > 0 ? userIdentityStatements[userIdentityStatements.length - 1]?.statement : undefined}
+            totalLessonsCompleted={Object.keys(completedLessons).length}
+            daysSinceStart={getProgressStats().daysSinceStart}
+            longestStreak={longestStreak}
             onStartLesson={handleStartLesson}
             onContinueLesson={handleStartLesson}
             onStartEcho={() => setCurrentView('mandatory-echo')}
