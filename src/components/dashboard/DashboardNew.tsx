@@ -433,7 +433,7 @@ export function DashboardNew({
   }, [transformationGoal, t]);
 
   return (
-    <div className="min-h-screen bg-stone-950 light:bg-stone-50 relative">
+    <div className="min-h-full bg-stone-950 light:bg-stone-50 relative">
       <AmbientBackground intensity="subtle" particleCount={8} orbCount={2} />
 
       {/* Header */}

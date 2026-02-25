@@ -32,7 +32,7 @@ export function BottomNavBar({
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40"
+      className="relative z-40 shrink-0"
       style={{
         paddingBottom: 'max(env(safe-area-inset-bottom), 6px)',
       }}

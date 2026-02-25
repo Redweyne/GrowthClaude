@@ -657,15 +657,17 @@ export default function Home() {
   // Echoes Inbox - View received reflections, invitations, connections
   if (currentView === 'echoes') {
     return (
-      <>
-        <EchoInbox onClose={() => setCurrentView('home')} />
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 min-h-0">
+          <EchoInbox onClose={() => setCurrentView('home')} />
+        </main>
         <BottomNavBar
           activeTab="echoes"
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
         />
-      </>
+      </div>
     );
   }
 
@@ -712,15 +714,17 @@ export default function Home() {
   // World map - use active world
   if (currentView === 'map') {
     return (
-      <>
-        <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto overscroll-contain">
+          <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
+        </main>
         <BottomNavBar
           activeTab="journey"
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
         />
-      </>
+      </div>
     );
   }
 
@@ -758,50 +762,52 @@ export default function Home() {
       : undefined;
 
     return (
-      <>
-        <DashboardNew
-          name={userName || 'Friend'}
-          totalXp={totalXp}
-          currentStreak={currentStreak}
-          longestStreak={longestStreak}
-          level={level}
-          transformationGoal={transformationGoal || undefined}
-          latestIdentityStatement={latestIdentity}
-          todayLessonCompleted={dailyFlowState.canAccessEcho}
-          todayEchoCompleted={dailyFlowState.canAccessPractice}
-          exercisesCompleted={exercisesCompletedToday.length}
-          totalExercises={todaysLesson?.exercises?.length || 5}
-          todaysLessonTitle={todaysLesson?.title}
-          currentWorld={activeWorld.name}
-          dayInWorld={dayNumber}
-          totalDaysInWorld={totalDaysInWorld}
-          isWeeklyCheckinDue={isCheckinDue()}
-          isMonthlyAssessmentDue={isAssessmentDue()}
-          unreadEchoCount={totalUnreadCount}
-          totalLessons={Object.keys(completedLessons).length}
-          identityStatements={progressStats.totalIdentityStatements}
-          daysSinceStart={progressStats.daysSinceStart}
-          onClose={() => setCurrentView('home')}
-          onOpenTodayPractice={() => setCurrentView('home')}
-          onOpenWeeklyCheckin={() => setCurrentView('checkin')}
-          onOpenMonthlyAssessment={() => setCurrentView('assessment')}
-          onOpenBrowseEchoes={() => setCurrentView('echoes')}
-          onOpenYourEchoes={() => setCurrentView('echoes')}
-          onOpenPastLessons={() => setCurrentView('map')}
-          onOpenIdentity={() => setCurrentView('identity')}
-          onOpenStats={() => setCurrentView('progress')}
-          onOpenSettings={() => setCurrentView('settings')}
-          onOpenSpark={() => setCurrentView('spark')}
-          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
-          isSparkForcedClosed={isSparkForcedClosed()}
-        />
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto overscroll-contain">
+          <DashboardNew
+            name={userName || 'Friend'}
+            totalXp={totalXp}
+            currentStreak={currentStreak}
+            longestStreak={longestStreak}
+            level={level}
+            transformationGoal={transformationGoal || undefined}
+            latestIdentityStatement={latestIdentity}
+            todayLessonCompleted={dailyFlowState.canAccessEcho}
+            todayEchoCompleted={dailyFlowState.canAccessPractice}
+            exercisesCompleted={exercisesCompletedToday.length}
+            totalExercises={todaysLesson?.exercises?.length || 5}
+            todaysLessonTitle={todaysLesson?.title}
+            currentWorld={activeWorld.name}
+            dayInWorld={dayNumber}
+            totalDaysInWorld={totalDaysInWorld}
+            isWeeklyCheckinDue={isCheckinDue()}
+            isMonthlyAssessmentDue={isAssessmentDue()}
+            unreadEchoCount={totalUnreadCount}
+            totalLessons={Object.keys(completedLessons).length}
+            identityStatements={progressStats.totalIdentityStatements}
+            daysSinceStart={progressStats.daysSinceStart}
+            onClose={() => setCurrentView('home')}
+            onOpenTodayPractice={() => setCurrentView('home')}
+            onOpenWeeklyCheckin={() => setCurrentView('checkin')}
+            onOpenMonthlyAssessment={() => setCurrentView('assessment')}
+            onOpenBrowseEchoes={() => setCurrentView('echoes')}
+            onOpenYourEchoes={() => setCurrentView('echoes')}
+            onOpenPastLessons={() => setCurrentView('map')}
+            onOpenIdentity={() => setCurrentView('identity')}
+            onOpenStats={() => setCurrentView('progress')}
+            onOpenSettings={() => setCurrentView('settings')}
+            onOpenSpark={() => setCurrentView('spark')}
+            isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+            isSparkForcedClosed={isSparkForcedClosed()}
+          />
+        </main>
         <BottomNavBar
           activeTab="profile"
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
         />
-      </>
+      </div>
     );
   }
 
@@ -870,38 +876,42 @@ export default function Home() {
   // Home - Daily Flow Home (new synchronized daily practice)
   return (
     <>
-      <DailyFlowHome
-        name={userName || 'Friend'}
-        totalXp={totalXp}
-        currentStreak={currentStreak}
-        dayNumber={dayNumber}
-        totalDays={totalDaysInWorld}
-        worldName={activeWorld.name}
-        todaysLesson={todaysLesson}
-        tomorrowsLesson={tomorrowsLesson}
-        flowState={dailyFlowState}
-        exercisesCompleted={exercisesCompletedToday.length}
-        totalExercises={todaysLesson?.exercises?.length || 5}
-        hasPendingAction={hasPendingAction}
-        pendingCommitment={undefined}
-        onStartLesson={handleStartLesson}
-        onContinueLesson={handleStartLesson}
-        onStartEcho={() => setCurrentView('mandatory-echo')}
-        onStartExercises={() => setCurrentView('exercises')}
-        onOpenSettings={() => setCurrentView('settings')}
-        onBrowseMoreEchoes={() => setCurrentView('echoes')}
-        onRedoPastLesson={() => setCurrentView('map')}
-        onOpenDashboard={() => setCurrentView('dashboard')}
-        onOpenSpark={() => setCurrentView('spark')}
-        isSparkForcedClosed={isSparkForcedClosed()}
-      />
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto overscroll-contain">
+          <DailyFlowHome
+            name={userName || 'Friend'}
+            totalXp={totalXp}
+            currentStreak={currentStreak}
+            dayNumber={dayNumber}
+            totalDays={totalDaysInWorld}
+            worldName={activeWorld.name}
+            todaysLesson={todaysLesson}
+            tomorrowsLesson={tomorrowsLesson}
+            flowState={dailyFlowState}
+            exercisesCompleted={exercisesCompletedToday.length}
+            totalExercises={todaysLesson?.exercises?.length || 5}
+            hasPendingAction={hasPendingAction}
+            pendingCommitment={undefined}
+            onStartLesson={handleStartLesson}
+            onContinueLesson={handleStartLesson}
+            onStartEcho={() => setCurrentView('mandatory-echo')}
+            onStartExercises={() => setCurrentView('exercises')}
+            onOpenSettings={() => setCurrentView('settings')}
+            onBrowseMoreEchoes={() => setCurrentView('echoes')}
+            onRedoPastLesson={() => setCurrentView('map')}
+            onOpenDashboard={() => setCurrentView('dashboard')}
+            onOpenSpark={() => setCurrentView('spark')}
+            isSparkForcedClosed={isSparkForcedClosed()}
+          />
+        </main>
 
-      <BottomNavBar
-        activeTab="home"
-        onTabChange={handleTabChange}
-        isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
-        unreadEchoCount={totalUnreadCount}
-      />
+        <BottomNavBar
+          activeTab="home"
+          onTabChange={handleTabChange}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          unreadEchoCount={totalUnreadCount}
+        />
+      </div>
 
       {/* First-Session Coaching Modal */}
       {coachingModal && (

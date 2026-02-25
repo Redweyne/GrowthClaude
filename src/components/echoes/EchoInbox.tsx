@@ -167,7 +167,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`}
+      className={`h-full flex flex-col bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`}
       dir={isRTL ? 'rtl' : 'ltr'}
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
@@ -215,7 +215,7 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 h-[calc(100dvh-120px)] overflow-y-auto">
+      <div className="relative z-10 flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           {/* ─────────────────────────────────────────────────────────────────
               ECHOES TAB

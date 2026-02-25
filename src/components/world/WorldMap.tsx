@@ -45,7 +45,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-full bg-stone-950 light:bg-stone-50 ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="sticky top-0 z-20 bg-stone-950/95 light:bg-stone-50/95 backdrop-blur border-b border-stone-800 light:border-stone-300">
         <div className="p-4">
@@ -77,7 +77,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
       </div>
 
       {/* Scrollable lesson list */}
-      <div className="pb-24 pt-4">
+      <div className="pb-6 pt-4">
         <div className="relative max-w-sm mx-auto px-8">
           {completedCount === allLessons.length && (
             <EmptyState
