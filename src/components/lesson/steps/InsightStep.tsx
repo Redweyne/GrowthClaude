@@ -172,17 +172,15 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
           )}
 
           {/* The wisdom text — full-screen typography with gradient color */}
-          <div className={config.gradientClass}>
-            <WisdomText
-              variant="insight"
-              animate={true}
-              speed="slow"
-              onComplete={handleTextComplete}
-              className="font-serif !text-2xl sm:!text-3xl md:!text-4xl !leading-[1.4]"
-            >
-              {step.text}
-            </WisdomText>
-          </div>
+          <WisdomText
+            variant="insight"
+            animate={true}
+            speed="slow"
+            onComplete={handleTextComplete}
+            className={`font-serif !text-2xl sm:!text-3xl md:!text-4xl !leading-[1.4] ${config.gradientClass}`}
+          >
+            {step.text}
+          </WisdomText>
 
           {/* Source attribution */}
           {step.source && showSource && (

@@ -339,11 +339,10 @@ export function WisdomText({
               return (
                 <span
                   key={wIdx}
-                  className="inline-block mr-[0.3em]"
                   style={{
                     opacity: isRevealed ? 1 : 0,
-                    transform: isRevealed ? 'translateY(0)' : 'translateY(4px)',
-                    transition: `opacity ${timing.animDuration}ms ease-out, transform ${timing.animDuration}ms ease-out`,
+                    transition: `opacity ${timing.animDuration}ms ease-out`,
+                    marginRight: '0.3em',
                   }}
                 >
                   {word}

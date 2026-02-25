@@ -596,7 +596,7 @@ export function FlexibleLessonExperience({
 
   return (
     <div
-      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-x-hidden ${isRTL ? 'rtl' : ''}`}
+      className={`min-h-[100dvh] bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-x-hidden ${isRTL ? 'rtl' : ''}`}
       dir={isRTL ? 'rtl' : 'ltr'}
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
@@ -661,8 +661,8 @@ export function FlexibleLessonExperience({
       </div>
 
       {/* Main content area — scrollable when content overflows, centered when short */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar px-4 pt-8 pb-8">
-        <div className="min-h-full flex items-center justify-center">
+      <div className="flex-1 overflow-y-auto hide-scrollbar px-4 pt-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
+        <div className="min-h-full flex flex-col">
           <AnimatePresence mode="wait">
             {!isTransitioning && currentStep && (
               <motion.div
@@ -686,7 +686,7 @@ export function FlexibleLessonExperience({
                   duration: STEP_TRANSITIONS[currentStep.type]?.duration || DEFAULT_TRANSITION.duration,
                   ease: EASE_OUT_EXPO,
                 }}
-                className="w-full max-w-xl"
+                className="w-full max-w-xl my-auto"
               >
                 {renderStep()}
               </motion.div>
