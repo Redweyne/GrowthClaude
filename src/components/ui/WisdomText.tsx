@@ -190,6 +190,16 @@ function buildWordTimeline(
   return times;
 }
 
+// ─── Gradient detection ──────────────────────────────────────────────────────
+
+const GRADIENT_CLASS_RE = /\bgradient-text-\w+\b/;
+
+function extractGradientClass(cls: string): { gradient: string; rest: string } {
+  const match = cls.match(GRADIENT_CLASS_RE);
+  if (!match) return { gradient: '', rest: cls };
+  return { gradient: match[0], rest: cls.replace(GRADIENT_CLASS_RE, '').trim() };
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function WisdomText({
@@ -211,6 +221,12 @@ export function WisdomText({
   const timing = speedConfigs[speed] || speedConfigs.normal;
   const styles = variantStyles[variant];
 
+  // Extract gradient class so we can apply it per-span instead of per-paragraph
+  const { gradient: gradientClass, rest: restClassName } = useMemo(
+    () => extractGradientClass(className),
+    [className],
+  );
+
   // Core state: how many words have been revealed
   const [revealedCount, setRevealedCount] = useState(animate ? 0 : totalWords);
   const [hasAnimated, setHasAnimated] = useState(!animate);
@@ -230,7 +246,9 @@ export function WisdomText({
   // Auto-scroll when a new sentence starts revealing
   const lastScrolledSentence = useRef(-1);
   const scrollToSentinel = useCallback(() => {
-    sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    requestAnimationFrame(() => {
+      sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
   }, []);
 
   // Determine which sentence we're currently in (for scroll triggering)
@@ -326,12 +344,15 @@ export function WisdomText({
         if (sIdx > 0 && revealedCount <= sentence.globalStart) return null;
 
         const isFirst = sIdx === 0;
+        // When gradient class is present, omit styles.base (text color conflicts with gradient)
         const pClass = isFirst && firstSentenceClassName
-          ? `${firstSentenceClassName} ${className}`
-          : `${styles.base} ${styles.size} ${styles.leading} ${className}`;
+          ? `${firstSentenceClassName} ${restClassName}`
+          : gradientClass
+            ? `${styles.size} ${styles.leading} ${restClassName}`
+            : `${styles.base} ${styles.size} ${styles.leading} ${restClassName}`;
 
         return (
-          <p key={sIdx} className={pClass}>
+          <p key={sIdx} className={pClass} style={{ overflowWrap: 'break-word' }}>
             {sentence.words.map((word, wIdx) => {
               const globalIdx = sentence.globalStart + wIdx;
               const isRevealed = globalIdx < revealedCount;
@@ -339,10 +360,12 @@ export function WisdomText({
               return (
                 <span
                   key={wIdx}
+                  className={gradientClass || undefined}
                   style={{
                     opacity: isRevealed ? 1 : 0,
                     transition: `opacity ${timing.animDuration}ms ease-out`,
                     marginRight: '0.3em',
+                    willChange: 'opacity',
                   }}
                 >
                   {word}

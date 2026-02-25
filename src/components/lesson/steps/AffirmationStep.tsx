@@ -177,16 +177,17 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
               transition={{ duration: 0.3 }}
               className="py-8"
             >
-              <p className={`font-serif text-3xl sm:text-4xl md:text-5xl font-medium leading-[1.3] ${
-                allWordsVisible ? config.gradientClass : 'text-stone-100 light:text-stone-900'
-              }`}>
+              <p
+                className="font-serif text-3xl sm:text-4xl md:text-5xl font-medium leading-[1.3] text-stone-100 light:text-stone-900"
+                style={{ overflowWrap: 'break-word' }}
+              >
                 {words.map((word, i) => (
                   <motion.span
                     key={i}
                     initial={{ opacity: 0, y: 8 }}
                     animate={i < visibleWords ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className="inline-block mr-[0.3em]"
+                    className={`inline-block mr-[0.3em] ${allWordsVisible ? config.gradientClass : ''}`}
                   >
                     {word}
                   </motion.span>
