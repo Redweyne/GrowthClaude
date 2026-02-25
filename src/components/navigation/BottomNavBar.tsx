@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Compass, Zap, MessageCircleHeart, User } from 'lucide-react';
 import { useSparkStore } from '@/store/useSparkStore';
@@ -30,67 +29,11 @@ export function BottomNavBar({
 }: BottomNavBarProps) {
   const { isForcedClosedToday } = useSparkStore();
   const sparkForcedClosed = isForcedClosedToday();
-  const [viewportBottomInset, setViewportBottomInset] = useState(0);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    let rafId = 0;
-    const updateViewportInset = () => {
-      rafId = 0;
-      const viewport = window.visualViewport;
-      if (!viewport) {
-        setViewportBottomInset(0);
-        return;
-      }
-
-      const rootStyles = window.getComputedStyle(document.documentElement);
-      const safeAreaBottom = Number.parseFloat(
-        rootStyles.getPropertyValue('--safe-area-inset-bottom') || '0'
-      ) || 0;
-      const layoutViewportHeight = Math.max(
-        window.innerHeight,
-        document.documentElement.clientHeight
-      );
-
-      // Keep the nav pinned to the visible viewport when mobile browser chrome
-      // expands/collapses (notably iPhone Chrome/Safari).
-      const rawInset = Math.max(
-        0,
-        layoutViewportHeight - viewport.height - viewport.offsetTop
-      );
-      // `rawInset` can include iOS safe-area; subtract it so we only track
-      // browser chrome displacement and avoid a persistent floating gap.
-      const nextInset = Math.max(0, Math.round(rawInset - safeAreaBottom));
-      setViewportBottomInset((prev) => (prev === nextInset ? prev : nextInset));
-    };
-
-    const scheduleUpdate = () => {
-      if (rafId !== 0) return;
-      rafId = window.requestAnimationFrame(updateViewportInset);
-    };
-
-    scheduleUpdate();
-
-    window.addEventListener('resize', scheduleUpdate, { passive: true });
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.visualViewport?.addEventListener('resize', scheduleUpdate);
-    window.visualViewport?.addEventListener('scroll', scheduleUpdate);
-
-    return () => {
-      if (rafId !== 0) window.cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', scheduleUpdate);
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.visualViewport?.removeEventListener('resize', scheduleUpdate);
-      window.visualViewport?.removeEventListener('scroll', scheduleUpdate);
-    };
-  }, []);
 
   return (
     <nav
-      className="fixed left-0 right-0 z-40"
+      className="fixed bottom-0 left-0 right-0 z-40"
       style={{
-        bottom: `${viewportBottomInset}px`,
         paddingBottom: 'max(env(safe-area-inset-bottom), 6px)',
       }}
     >
