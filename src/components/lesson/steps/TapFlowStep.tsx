@@ -202,24 +202,29 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
               )}
             </AnimatePresence>
 
-            {/* Subtle pulse indicator — replaces text prompts */}
+            {/* Tap hint — tells user how to advance */}
             {!allRevealed && (
               <motion.div
-                className="flex justify-center gap-1.5 mt-8"
+                className="flex flex-col items-center gap-3 mt-8"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
-                transition={{ delay: currentIndex === 0 ? 1.5 : 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: currentIndex === 0 ? 1.5 : 0.3 }}
               >
-                {[0, 1, 2].map((i) => (
-                  <motion.div
-                    key={i}
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      config.tapColor.replace('/50', '').replace('text-', 'bg-')
-                    }`}
-                    animate={{ opacity: [0.3, 0.8, 0.3] }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
-                  />
-                ))}
+                <div className="flex justify-center gap-1.5">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        config.tapColor.replace('/50', '').replace('text-', 'bg-')
+                      }`}
+                      animate={{ opacity: [0.3, 0.8, 0.3] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
+                    />
+                  ))}
+                </div>
+                <p className={`text-sm ${config.accent} opacity-50`}>
+                  Tap anywhere to continue
+                </p>
               </motion.div>
             )}
           </div>

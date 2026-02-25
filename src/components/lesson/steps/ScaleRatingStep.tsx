@@ -130,7 +130,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
               </div>
 
               {/* Scale points */}
-              <div className="flex justify-between px-1">
+              <div className="flex justify-between">
                 {Array.from({ length: scaleSteps }, (_, i) => {
                   const value = i + 1;
                   const isActive = selectedValue === value;
@@ -143,8 +143,8 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                       onClick={() => handleSelect(value)}
                       disabled={isSubmitting}
                       className={`
-                        w-14 h-14 rounded-full flex items-center justify-center
-                        text-lg font-semibold transition-all duration-200
+                        w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center
+                        text-base sm:text-lg font-semibold transition-all duration-200
                         active:scale-90
                         ${isActive
                           ? 'bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/30 scale-110'
@@ -162,9 +162,9 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
               </div>
 
               {/* Labels */}
-              <div className="flex justify-between px-1">
-                <span className="text-xs text-stone-500 light:text-stone-600 max-w-[80px]">{step.lowLabel}</span>
-                <span className="text-xs text-stone-500 light:text-stone-600 max-w-[80px] text-right">{step.highLabel}</span>
+              <div className="flex justify-between">
+                <span className="text-xs text-stone-500 light:text-stone-600">{step.lowLabel}</span>
+                <span className="text-xs text-stone-500 light:text-stone-600 text-right">{step.highLabel}</span>
               </div>
             </motion.div>
           )}
