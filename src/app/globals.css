@@ -1003,6 +1003,11 @@ body {
   padding: 2px;
 }
 
+@keyframes wisdomReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes border-rotate {
   to {
     --border-angle: 360deg;

@@ -178,8 +178,8 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
               className="py-8"
             >
               <p
-                className="font-serif text-3xl sm:text-4xl md:text-5xl font-medium leading-[1.3] text-stone-100 light:text-stone-900"
-                style={{ overflowWrap: 'break-word' }}
+                className="font-serif text-3xl sm:text-4xl md:text-5xl font-medium leading-[1.3] text-stone-100 light:text-stone-900 overflow-hidden"
+                style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}
               >
                 {words.map((word, i) => (
                   <motion.span
@@ -187,7 +187,8 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
                     initial={{ opacity: 0, y: 8 }}
                     animate={i < visibleWords ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className={`inline-block mr-[0.3em] ${allWordsVisible ? config.gradientClass : ''}`}
+                    className={`inline-block ${allWordsVisible ? config.gradientClass : ''}`}
+                    style={{ marginRight: '0.25em' }}
                   >
                     {word}
                   </motion.span>

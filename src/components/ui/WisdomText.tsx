@@ -1,24 +1,23 @@
 'use client';
 
 // ==============================================================================
-// WISDOM TEXT - Word-by-Word Reveal at Natural Reading Pace
+// WISDOM TEXT - Word-by-Word Reveal via Pure CSS Animation
 // ==============================================================================
 //
-// Reveals text one word at a time, calibrated to human reading speed.
-// Each word fades in via CSS transition — no Framer Motion per-word overhead.
-// Punctuation pauses (.!? commas, semicolons) create natural rhythm.
-// Auto-scrolls to keep new content visible on long texts.
+// Mobile-first word reveal using CSS @keyframes + animation-delay.
+// ZERO per-word React re-renders — all timing is handled by the browser's
+// hardware-accelerated CSS animation engine.
 //
 // Key principles:
-// - Word-by-word reveal matches how humans actually read
-// - Consistent timing across all step types (no more 4x variation)
-// - Stable layout: unrevealed words hold space (opacity:0) so lines don't reflow
-// - Auto-scroll sentinel keeps new text visible without user scrolling
-// - STABLE: Does not re-animate on parent re-renders
+// - Pure CSS animations: each word gets animation-delay, browser handles timing
+// - Only ~N sentence-level renders (2-5), not 30+ word-level renders
+// - Trailing space chars for word spacing (no marginRight overflow)
+// - overflow:hidden on container prevents any horizontal bleed
+// - Gradient classes applied per-span for iOS Safari stacking context compat
 //
 // ==============================================================================
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 interface WisdomTextProps {
   children: string;
@@ -108,7 +107,7 @@ interface SpeedConfig {
   commaPause: number;     // extra ms after ,
   semicolonPause: number; // extra ms after ; : — –
   paragraphGap: number;   // extra ms between sentences
-  animDuration: number;   // ms for word fade-in CSS transition
+  animDuration: number;   // ms for word fade-in CSS animation
   finalPause: number;     // ms after last word before onComplete
 }
 
@@ -221,21 +220,33 @@ export function WisdomText({
   const timing = speedConfigs[speed] || speedConfigs.normal;
   const styles = variantStyles[variant];
 
-  // Extract gradient class so we can apply it per-span instead of per-paragraph
+  // Extract gradient class to apply per-span (not per-paragraph)
   const { gradient: gradientClass, rest: restClassName } = useMemo(
     () => extractGradientClass(className),
     [className],
   );
 
-  // Core state: how many words have been revealed
-  const [revealedCount, setRevealedCount] = useState(animate ? 0 : totalWords);
-  const [hasAnimated, setHasAnimated] = useState(!animate);
+  // Pre-calculate the complete word timing timeline (memoized, runs once)
+  const wordTimeline = useMemo(
+    () => buildWordTimeline(sentenceData, timing),
+    [sentenceData, timing],
+  );
 
-  // Refs for stability
-  const mountedRef = useRef(true);
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Total animation duration for onComplete
+  const totalDuration = useMemo(() => {
+    if (wordTimeline.length === 0) return 0;
+    return wordTimeline[wordTimeline.length - 1] + timing.wordInterval + timing.finalPause;
+  }, [wordTimeline, timing]);
+
+  // Sentence visibility — only N-1 timers (typically 2-4), not 30+
+  const [visibleSentences, setVisibleSentences] = useState(
+    animate ? 1 : sentenceData.length,
+  );
+
+  // Refs
   const onCompleteRef = useRef(onComplete);
-  const signatureRef = useRef(`${children}::${speed}::${animate}`);
+  const signatureRef = useRef('');
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Keep onComplete ref fresh
@@ -243,108 +254,66 @@ export function WisdomText({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // Auto-scroll when a new sentence starts revealing
-  const lastScrolledSentence = useRef(-1);
-  const scrollToSentinel = useCallback(() => {
-    requestAnimationFrame(() => {
-      sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-  }, []);
-
-  // Determine which sentence we're currently in (for scroll triggering)
-  const currentSentenceIndex = useMemo(() => {
-    for (let i = sentenceData.length - 1; i >= 0; i--) {
-      if (revealedCount > sentenceData[i].globalStart) return i;
-    }
-    return -1;
-  }, [revealedCount, sentenceData]);
-
-  // Scroll when a new sentence starts
-  useEffect(() => {
-    if (currentSentenceIndex > lastScrolledSentence.current && currentSentenceIndex > 0) {
-      lastScrolledSentence.current = currentSentenceIndex;
-      scrollToSentinel();
-    }
-  }, [currentSentenceIndex, scrollToSentinel]);
-
-  // ─── Word reveal engine ──────────────────────────────────────────────────
+  // ─── Animation engine — sentence timers + completion ────────────────────
 
   useEffect(() => {
     const signature = `${children}::${speed}::${animate}`;
-    if (signatureRef.current === signature && hasAnimated) {
-      return;
-    }
-
+    if (signatureRef.current === signature) return;
     signatureRef.current = signature;
-    mountedRef.current = true;
-    lastScrolledSentence.current = -1;
 
     // Cleanup previous timers
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
 
     if (!animate) {
-      setRevealedCount(totalWords);
-      setHasAnimated(true);
-      const t = setTimeout(() => {
-        if (mountedRef.current && onCompleteRef.current) {
-          onCompleteRef.current();
-        }
-      }, 100);
+      setVisibleSentences(sentenceData.length);
+      const t = setTimeout(() => onCompleteRef.current?.(), 100);
       timersRef.current.push(t);
       return () => {
-        mountedRef.current = false;
         timersRef.current.forEach(clearTimeout);
         timersRef.current = [];
       };
     }
 
-    // Reset
-    setRevealedCount(0);
-    setHasAnimated(false);
+    // Reset for new animation
+    setVisibleSentences(1);
 
-    // Build timeline
-    const timeline = buildWordTimeline(sentenceData, timing);
-
-    // Schedule each word reveal
-    timeline.forEach((revealAt, wordIndex) => {
-      const timer = setTimeout(() => {
-        if (!mountedRef.current) return;
-        setRevealedCount(wordIndex + 1);
-      }, revealAt);
-      timersRef.current.push(timer);
+    // Schedule sentence reveals (only N-1 timers for N sentences)
+    sentenceData.forEach((s, idx) => {
+      if (idx === 0) return; // First sentence is always visible
+      const delay = wordTimeline[s.globalStart] || 0;
+      timersRef.current.push(
+        setTimeout(() => {
+          setVisibleSentences(prev => Math.max(prev, idx + 1));
+          // Auto-scroll when new sentence appears
+          requestAnimationFrame(() => {
+            sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          });
+        }, delay),
+      );
     });
 
-    // Schedule onComplete after the last word + finalPause
-    const lastWordTime = timeline.length > 0 ? timeline[timeline.length - 1] : 0;
-    const completeAt = lastWordTime + timing.wordInterval + timing.finalPause;
-    const completeTimer = setTimeout(() => {
-      if (!mountedRef.current) return;
-      setHasAnimated(true);
-      if (onCompleteRef.current) {
-        onCompleteRef.current();
-      }
-    }, completeAt);
-    timersRef.current.push(completeTimer);
+    // Schedule onComplete
+    timersRef.current.push(
+      setTimeout(() => onCompleteRef.current?.(), totalDuration),
+    );
 
     return () => {
-      mountedRef.current = false;
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
-  }, [children, animate, speed, sentenceData, timing, totalWords, hasAnimated]);
+  }, [children, speed, animate, sentenceData, wordTimeline, totalDuration]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className={styles.spacing}>
+    <div className={`${styles.spacing} overflow-hidden`}>
       {sentenceData.map((sentence, sIdx) => {
-        // Only render future sentences once their first word starts revealing
-        // First sentence always renders (with opacity-0 words) to avoid invisible gap
-        if (sIdx > 0 && revealedCount <= sentence.globalStart) return null;
+        // Only render sentences that should be visible
+        if (sIdx >= visibleSentences) return null;
 
         const isFirst = sIdx === 0;
-        // When gradient class is present, omit styles.base (text color conflicts with gradient)
+        // When gradient class is present, omit styles.base (text color conflicts)
         const pClass = isFirst && firstSentenceClassName
           ? `${firstSentenceClassName} ${restClassName}`
           : gradientClass
@@ -352,23 +321,31 @@ export function WisdomText({
             : `${styles.base} ${styles.size} ${styles.leading} ${restClassName}`;
 
         return (
-          <p key={sIdx} className={pClass} style={{ overflowWrap: 'break-word' }}>
+          <p
+            key={sIdx}
+            className={pClass}
+            style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}
+          >
             {sentence.words.map((word, wIdx) => {
               const globalIdx = sentence.globalStart + wIdx;
-              const isRevealed = globalIdx < revealedCount;
+              const delayMs = wordTimeline[globalIdx] || 0;
+              const isLast = wIdx === sentence.words.length - 1;
+
+              // CSS animation: opacity 0→1 with per-word delay. Zero JS re-renders.
+              const spanStyle: React.CSSProperties = animate
+                ? {
+                    opacity: 0,
+                    animation: `wisdomReveal ${timing.animDuration}ms ease-out ${delayMs}ms forwards`,
+                  }
+                : {};
 
               return (
                 <span
                   key={wIdx}
                   className={gradientClass || undefined}
-                  style={{
-                    opacity: isRevealed ? 1 : 0,
-                    transition: `opacity ${timing.animDuration}ms ease-out`,
-                    marginRight: '0.3em',
-                    willChange: 'opacity',
-                  }}
+                  style={spanStyle}
                 >
-                  {word}
+                  {word}{isLast ? '' : ' '}
                 </span>
               );
             })}
