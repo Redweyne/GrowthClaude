@@ -41,10 +41,6 @@ function splitIntoSentences(text: string): string[] {
   return sentences.length > 0 ? sentences : [text];
 }
 
-function wordCount(sentence: string): number {
-  return sentence.split(/\s+/).filter(Boolean).length;
-}
-
 // ─── Variant Styles ──────────────────────────────────────────────────────────
 
 const variantStyles = {
@@ -83,34 +79,30 @@ const variantStyles = {
 // ─── Speed Configs (sentence-level timing) ───────────────────────────────────
 
 interface SpeedConfig {
-  initialDelay: number;  // ms before first sentence
-  msPerWord: number;     // reading time allocated per word
-  sentenceGap: number;   // pause between sentences
-  fadeDuration: number;  // ms for sentence fade-in
-  finalPause: number;    // ms after last sentence before onComplete
+  initialDelay: number;   // ms before first sentence
+  interval: number;       // fixed ms between each sentence reveal
+  fadeDuration: number;   // ms for sentence fade-in
+  finalPause: number;     // ms after last sentence before onComplete
 }
 
 const speedConfigs: Record<string, SpeedConfig> = {
   slow: {
     initialDelay: 300,
-    msPerWord: 200,
-    sentenceGap: 350,
-    fadeDuration: 450,
-    finalPause: 400,
+    interval: 1400,
+    fadeDuration: 400,
+    finalPause: 500,
   },
   normal: {
     initialDelay: 200,
-    msPerWord: 150,
-    sentenceGap: 250,
+    interval: 1000,
     fadeDuration: 350,
-    finalPause: 300,
+    finalPause: 400,
   },
   fast: {
     initialDelay: 100,
-    msPerWord: 100,
-    sentenceGap: 150,
+    interval: 650,
     fadeDuration: 250,
-    finalPause: 200,
+    finalPause: 300,
   },
 };
 
@@ -173,15 +165,12 @@ export function WisdomText({
 
     setRevealed(0);
 
-    // Build cumulative reveal times
-    let t = timing.initialDelay;
-
+    // Fixed interval between every sentence — consistent rhythm
     for (let i = 0; i < sentences.length; i++) {
-      const revealAt = t;
+      const revealAt = timing.initialDelay + i * timing.interval;
       timersRef.current.push(
         setTimeout(() => {
           setRevealed(prev => Math.max(prev, i + 1));
-          // Scroll to keep new content visible
           if (i > 0) {
             requestAnimationFrame(() => {
               sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -189,13 +178,12 @@ export function WisdomText({
           }
         }, revealAt),
       );
-      // Reading time for this sentence + gap before next
-      t += wordCount(sentences[i]) * timing.msPerWord + timing.sentenceGap;
     }
 
-    // onComplete after reading time of final sentence
+    // onComplete after last sentence + final pause
+    const totalTime = timing.initialDelay + (sentences.length - 1) * timing.interval + timing.finalPause;
     timersRef.current.push(
-      setTimeout(() => onCompleteRef.current?.(), t - timing.sentenceGap + timing.finalPause),
+      setTimeout(() => onCompleteRef.current?.(), totalTime),
     );
 
     return () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
@@ -204,7 +192,7 @@ export function WisdomText({
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`${styles.spacing} overflow-hidden`}>
+    <div className={styles.spacing}>
       {sentences.map((sentence, sIdx) => {
         if (sIdx >= revealed) return null;
 
