@@ -1,19 +1,12 @@
 'use client';
 
 // ==============================================================================
-// WISDOM TEXT - Word-by-Word Reveal via Pure CSS Animation
+// WISDOM TEXT - Sentence-by-Sentence Reveal
 // ==============================================================================
 //
-// Mobile-first word reveal using CSS @keyframes + animation-delay.
-// ZERO per-word React re-renders — all timing is handled by the browser's
-// hardware-accelerated CSS animation engine.
-//
-// Key principles:
-// - Pure CSS animations: each word gets animation-delay, browser handles timing
-// - Only ~N sentence-level renders (2-5), not 30+ word-level renders
-// - Trailing space chars for word spacing (no marginRight overflow)
-// - overflow:hidden on container prevents any horizontal bleed
-// - Gradient classes applied per-span for iOS Safari stacking context compat
+// Reveals text one SENTENCE at a time. Each sentence fades in as a whole unit.
+// No per-word spans, no timing bugs, no overflow issues.
+// Pure CSS fade-in animation, minimal React re-renders.
 //
 // ==============================================================================
 
@@ -26,7 +19,6 @@ interface WisdomTextProps {
   animate?: boolean;
   speed?: 'slow' | 'normal' | 'fast';
   onComplete?: () => void;
-  /** If provided, the first sentence uses this class instead of variant styles */
   firstSentenceClassName?: string;
 }
 
@@ -38,7 +30,6 @@ function splitIntoSentences(text: string): string[] {
     .map(s => s.trim())
     .filter(Boolean);
 
-  // If single long sentence, try splitting by clauses
   if (sentences.length === 1 && sentences[0].length > 100) {
     const clauses = text
       .split(/(?<=[;:—–])\s+/)
@@ -50,17 +41,8 @@ function splitIntoSentences(text: string): string[] {
   return sentences.length > 0 ? sentences : [text];
 }
 
-function splitIntoWords(sentence: string): string[] {
-  return sentence.split(/\s+/).filter(Boolean);
-}
-
-// Detect trailing punctuation on a word to determine pause duration
-function getPunctuationPause(word: string, timing: SpeedConfig): number {
-  if (/[.!?]+$/.test(word)) return timing.periodPause;
-  if (/,$/.test(word)) return timing.commaPause;
-  if (/[;:—–\-]+$/.test(word)) return timing.semicolonPause;
-  if (/\.{2,}$/.test(word)) return timing.periodPause; // ellipsis
-  return 0;
+function wordCount(sentence: string): number {
+  return sentence.split(/\s+/).filter(Boolean).length;
 }
 
 // ─── Variant Styles ──────────────────────────────────────────────────────────
@@ -98,96 +80,39 @@ const variantStyles = {
   },
 };
 
-// ─── Speed Configs (word-by-word timing) ─────────────────────────────────────
+// ─── Speed Configs (sentence-level timing) ───────────────────────────────────
 
 interface SpeedConfig {
-  initialDelay: number;   // ms before first word
-  wordInterval: number;   // ms between word starts
-  periodPause: number;    // extra ms after . ! ?
-  commaPause: number;     // extra ms after ,
-  semicolonPause: number; // extra ms after ; : — –
-  paragraphGap: number;   // extra ms between sentences
-  animDuration: number;   // ms for word fade-in CSS animation
-  finalPause: number;     // ms after last word before onComplete
+  initialDelay: number;  // ms before first sentence
+  msPerWord: number;     // reading time allocated per word
+  sentenceGap: number;   // pause between sentences
+  fadeDuration: number;  // ms for sentence fade-in
+  finalPause: number;    // ms after last sentence before onComplete
 }
 
 const speedConfigs: Record<string, SpeedConfig> = {
   slow: {
-    initialDelay: 600,
-    wordInterval: 250,
-    periodPause: 450,
-    commaPause: 160,
-    semicolonPause: 220,
-    paragraphGap: 280,
-    animDuration: 120,
+    initialDelay: 300,
+    msPerWord: 200,
+    sentenceGap: 350,
+    fadeDuration: 450,
     finalPause: 400,
   },
   normal: {
-    initialDelay: 400,
-    wordInterval: 180,
-    periodPause: 350,
-    commaPause: 130,
-    semicolonPause: 180,
-    paragraphGap: 220,
-    animDuration: 100,
+    initialDelay: 200,
+    msPerWord: 150,
+    sentenceGap: 250,
+    fadeDuration: 350,
     finalPause: 300,
   },
   fast: {
-    initialDelay: 250,
-    wordInterval: 120,
-    periodPause: 250,
-    commaPause: 100,
-    semicolonPause: 140,
-    paragraphGap: 160,
-    animDuration: 80,
+    initialDelay: 100,
+    msPerWord: 100,
+    sentenceGap: 150,
+    fadeDuration: 250,
     finalPause: 200,
   },
 };
-
-// ─── Word metadata for the timing engine ─────────────────────────────────────
-
-interface SentenceData {
-  words: string[];
-  globalStart: number; // index of first word in the flat word array
-}
-
-function buildSentenceData(sentences: string[]): SentenceData[] {
-  let offset = 0;
-  return sentences.map(sentence => {
-    const words = splitIntoWords(sentence);
-    const data: SentenceData = { words, globalStart: offset };
-    offset += words.length;
-    return data;
-  });
-}
-
-function buildWordTimeline(
-  sentenceData: SentenceData[],
-  timing: SpeedConfig,
-): number[] {
-  // Returns an array of cumulative reveal times (ms) for each word
-  const times: number[] = [];
-  let t = timing.initialDelay;
-
-  for (let sIdx = 0; sIdx < sentenceData.length; sIdx++) {
-    const { words } = sentenceData[sIdx];
-
-    // Add paragraph gap before non-first sentences
-    if (sIdx > 0) {
-      t += timing.paragraphGap;
-    }
-
-    for (let wIdx = 0; wIdx < words.length; wIdx++) {
-      times.push(t);
-
-      // Calculate delay AFTER this word
-      const punctPause = getPunctuationPause(words[wIdx], timing);
-      t += timing.wordInterval + punctPause;
-    }
-  }
-
-  return times;
-}
 
 // ─── Gradient detection ──────────────────────────────────────────────────────
 
@@ -211,37 +136,16 @@ export function WisdomText({
   firstSentenceClassName,
 }: WisdomTextProps) {
   const sentences = useMemo(() => splitIntoSentences(children), [children]);
-  const sentenceData = useMemo(() => buildSentenceData(sentences), [sentences]);
-  const totalWords = useMemo(
-    () => sentenceData.reduce((sum, s) => sum + s.words.length, 0),
-    [sentenceData],
-  );
-
   const timing = speedConfigs[speed] || speedConfigs.normal;
   const styles = variantStyles[variant];
 
-  // Extract gradient class to apply per-span (not per-paragraph)
   const { gradient: gradientClass, rest: restClassName } = useMemo(
     () => extractGradientClass(className),
     [className],
   );
 
-  // Pre-calculate the complete word timing timeline (memoized, runs once)
-  const wordTimeline = useMemo(
-    () => buildWordTimeline(sentenceData, timing),
-    [sentenceData, timing],
-  );
-
-  // Total animation duration for onComplete
-  const totalDuration = useMemo(() => {
-    if (wordTimeline.length === 0) return 0;
-    return wordTimeline[wordTimeline.length - 1] + timing.wordInterval + timing.finalPause;
-  }, [wordTimeline, timing]);
-
-  // Sentence visibility — only N-1 timers (typically 2-4), not 30+
-  const [visibleSentences, setVisibleSentences] = useState(
-    animate ? 1 : sentenceData.length,
-  );
+  // How many sentences are visible
+  const [revealed, setRevealed] = useState(animate ? 0 : sentences.length);
 
   // Refs
   const onCompleteRef = useRef(onComplete);
@@ -249,106 +153,82 @@ export function WisdomText({
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Keep onComplete ref fresh
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
 
-  // ─── Animation engine — sentence timers + completion ────────────────────
+  // ─── Sentence reveal engine ─────────────────────────────────────────────
 
   useEffect(() => {
-    const signature = `${children}::${speed}::${animate}`;
-    if (signatureRef.current === signature) return;
-    signatureRef.current = signature;
+    const sig = `${children}::${speed}::${animate}`;
+    if (signatureRef.current === sig) return;
+    signatureRef.current = sig;
 
-    // Cleanup previous timers
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
 
     if (!animate) {
-      setVisibleSentences(sentenceData.length);
-      const t = setTimeout(() => onCompleteRef.current?.(), 100);
-      timersRef.current.push(t);
-      return () => {
-        timersRef.current.forEach(clearTimeout);
-        timersRef.current = [];
-      };
+      setRevealed(sentences.length);
+      timersRef.current.push(setTimeout(() => onCompleteRef.current?.(), 50));
+      return () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
     }
 
-    // Reset for new animation
-    setVisibleSentences(1);
+    setRevealed(0);
 
-    // Schedule sentence reveals (only N-1 timers for N sentences)
-    sentenceData.forEach((s, idx) => {
-      if (idx === 0) return; // First sentence is always visible
-      const delay = wordTimeline[s.globalStart] || 0;
+    // Build cumulative reveal times
+    let t = timing.initialDelay;
+
+    for (let i = 0; i < sentences.length; i++) {
+      const revealAt = t;
       timersRef.current.push(
         setTimeout(() => {
-          setVisibleSentences(prev => Math.max(prev, idx + 1));
-          // Auto-scroll when new sentence appears
-          requestAnimationFrame(() => {
-            sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          });
-        }, delay),
+          setRevealed(prev => Math.max(prev, i + 1));
+          // Scroll to keep new content visible
+          if (i > 0) {
+            requestAnimationFrame(() => {
+              sentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+          }
+        }, revealAt),
       );
-    });
+      // Reading time for this sentence + gap before next
+      t += wordCount(sentences[i]) * timing.msPerWord + timing.sentenceGap;
+    }
 
-    // Schedule onComplete
+    // onComplete after reading time of final sentence
     timersRef.current.push(
-      setTimeout(() => onCompleteRef.current?.(), totalDuration),
+      setTimeout(() => onCompleteRef.current?.(), t - timing.sentenceGap + timing.finalPause),
     );
 
-    return () => {
-      timersRef.current.forEach(clearTimeout);
-      timersRef.current = [];
-    };
-  }, [children, speed, animate, sentenceData, wordTimeline, totalDuration]);
+    return () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
+  }, [children, speed, animate, sentences, timing]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className={`${styles.spacing} overflow-hidden`}>
-      {sentenceData.map((sentence, sIdx) => {
-        // Only render sentences that should be visible
-        if (sIdx >= visibleSentences) return null;
+      {sentences.map((sentence, sIdx) => {
+        if (sIdx >= revealed) return null;
 
         const isFirst = sIdx === 0;
-        // When gradient class is present, omit styles.base (text color conflicts)
         const pClass = isFirst && firstSentenceClassName
-          ? `${firstSentenceClassName} ${restClassName}`
+          ? `${firstSentenceClassName} ${restClassName} ${gradientClass}`
           : gradientClass
-            ? `${styles.size} ${styles.leading} ${restClassName}`
+            ? `${styles.size} ${styles.leading} ${restClassName} ${gradientClass}`
             : `${styles.base} ${styles.size} ${styles.leading} ${restClassName}`;
 
         return (
           <p
             key={sIdx}
             className={pClass}
-            style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}
+            style={animate ? {
+              animation: `wisdomReveal ${timing.fadeDuration}ms ease-out forwards`,
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
+            } : {
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
+            }}
           >
-            {sentence.words.map((word, wIdx) => {
-              const globalIdx = sentence.globalStart + wIdx;
-              const delayMs = wordTimeline[globalIdx] || 0;
-              const isLast = wIdx === sentence.words.length - 1;
-
-              // CSS animation: opacity 0→1 with per-word delay. Zero JS re-renders.
-              const spanStyle: React.CSSProperties = animate
-                ? {
-                    opacity: 0,
-                    animation: `wisdomReveal ${timing.animDuration}ms ease-out ${delayMs}ms forwards`,
-                  }
-                : {};
-
-              return (
-                <span
-                  key={wIdx}
-                  className={gradientClass || undefined}
-                  style={spanStyle}
-                >
-                  {word}{isLast ? '' : ' '}
-                </span>
-              );
-            })}
+            {sentence}
           </p>
         );
       })}
