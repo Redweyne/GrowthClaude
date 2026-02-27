@@ -9,20 +9,15 @@ import {
   Volume2,
   VolumeX,
   X,
-  Zap,
 } from 'lucide-react';
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
 import type { SparkVideo } from '@/types/spark';
-import { SPARK_CATEGORY_INFO } from '@/types/spark';
 
 interface SparkOverlayProps {
   video: SparkVideo;
-  videoIndex: number;
-  totalVideos: number;
   isSaved: boolean;
   soundEnabled: boolean;
-  videosWatchedSession: number;
   onSave: () => void;
   onToggleSound: () => void;
   onExit: () => void;
@@ -61,11 +56,8 @@ function ActionButton({ label, onClick, children, active = false, testId }: Acti
 
 export function SparkOverlay({
   video,
-  videoIndex,
-  totalVideos,
   isSaved,
   soundEnabled,
-  videosWatchedSession,
   onSave,
   onToggleSound,
   onExit,
@@ -75,8 +67,6 @@ export function SparkOverlay({
 
   const audio = useAudio();
   const { hapticTap, hapticMedium } = useHaptics();
-
-  const categoryInfo = SPARK_CATEGORY_INFO[video.category];
 
   const creatorHandle = useMemo(() => {
     if (!video.creatorName) return null;
@@ -181,15 +171,6 @@ export function SparkOverlay({
           <X size={18} />
         </button>
 
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 rounded-full bg-black/45 border border-white/15 backdrop-blur-sm text-white/90 text-[11px] font-semibold tracking-wide">
-            {videoIndex + 1} / {totalVideos}
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/45 border border-white/15 backdrop-blur-sm">
-            <Zap size={12} className="text-amber-400" />
-            <span className="text-white/90 text-[11px] font-semibold">{videosWatchedSession}</span>
-          </div>
-        </div>
       </div>
 
       <div
@@ -235,12 +216,6 @@ export function SparkOverlay({
           )}
         </ActionButton>
 
-        <div className="flex flex-col items-center gap-1">
-          <div className="w-12 h-12 rounded-full border border-white/15 bg-black/35 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-xl" role="img" aria-label={categoryInfo.label}>{categoryInfo.emoji}</span>
-          </div>
-          <span className="text-white/80 text-[10px] font-medium">{categoryInfo.label}</span>
-        </div>
       </div>
 
       <div
@@ -255,13 +230,6 @@ export function SparkOverlay({
           <p className="text-white/92 text-[13px] leading-[1.45] mb-2 drop-shadow-lg line-clamp-3">{video.caption}</p>
         )}
 
-        {video.tags && video.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {video.tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="text-white/65 text-[11px] font-medium">#{tag}</span>
-            ))}
-          </div>
-        )}
       </div>
 
       <AnimatePresence>

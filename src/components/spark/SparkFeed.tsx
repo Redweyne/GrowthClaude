@@ -6,7 +6,7 @@ import { SparkVideoPlayer } from './SparkVideoPlayer';
 import { SparkOverlay } from './SparkOverlay';
 import { useSparkStore } from '@/store/useSparkStore';
 import { useStore } from '@/store/useStore';
-import { getShuffledSparkVideos } from '@/content/sparkVideos';
+import { getShuffledSparkVideos, sparkVideos } from '@/content/sparkVideos';
 import { SPARK_XP_REWARDS } from '@/types/spark';
 
 interface SparkFeedProps {
@@ -16,7 +16,6 @@ interface SparkFeedProps {
 export function SparkFeed({ onExit }: SparkFeedProps) {
   const {
     watchedVideos,
-    videosWatchedThisSession,
     isFirstSparkSession,
     markVideoWatched,
     toggleSaveVideo,
@@ -33,6 +32,16 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
   }, []);
 
   const playlist = useMemo(() => {
+    // TikTok-like: if every video in the catalog has been watched, reset history
+    const watchedSet = new Set(watchedVideos);
+    const allWatched = sparkVideos.every((v) => watchedSet.has(v.id));
+
+    if (allWatched) {
+      // Clear watch history (savedVideos are preserved separately)
+      useSparkStore.setState({ watchedVideos: [] });
+      return getShuffledSparkVideos([]);
+    }
+
     return getShuffledSparkVideos(watchedVideos);
     // Keep this playlist fixed during one Spark session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -285,11 +294,8 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
         <div className="relative w-full h-full max-w-[430px] mx-auto">
           <SparkOverlay
             video={activeVideo}
-            videoIndex={activeIndex}
-            totalVideos={playlist.length}
             isSaved={isVideoSaved(activeVideo.id)}
             soundEnabled={soundEnabled}
-            videosWatchedSession={videosWatchedThisSession}
             onSave={() => toggleSaveVideo(activeVideo.id)}
             onToggleSound={toggleSound}
             onExit={onExit}
