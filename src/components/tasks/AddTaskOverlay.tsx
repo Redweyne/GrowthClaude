@@ -23,26 +23,29 @@ const MOTIVATIONS = [
 
 export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayProps) {
   const [text, setText] = useState('');
+  const [showSweep, setShowSweep] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const audio = useAudio();
   const { hapticTap, hapticMedium } = useHaptics();
 
-  // Pick a random motivation on each open
   const motivation = useMemo(() => {
     if (!isOpen) return '';
     return MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
   }, [isOpen]);
 
-  // Auto-focus input when overlay opens
+  // Auto-focus input + trigger sweep on open
   useEffect(() => {
     if (isOpen) {
-      // Small delay to let the spring animation start before focusing
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 200);
+      // Light sweep reveal
+      setTimeout(() => setShowSweep(true), 150);
+      setTimeout(() => setShowSweep(false), 1500);
       return () => clearTimeout(timer);
     } else {
       setText('');
+      setShowSweep(false);
     }
   }, [isOpen]);
 
@@ -51,7 +54,9 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
     if (!trimmed) return;
 
     hapticMedium();
-    audio.playTap();
+    // Layered sounds
+    audio.playUI('pop');
+    audio.playUI('whoosh');
     onAddTask(trimmed);
     setText('');
     onClose();
@@ -67,6 +72,9 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
     }
   };
 
+  // Dynamic glow intensity based on text length
+  const glowIntensity = Math.min(text.length * 1.5, 25);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -81,9 +89,9 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
             onClick={onClose}
           />
 
-          {/* Content panel — slides up from bottom */}
+          {/* Content panel */}
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-stone-900/70 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl"
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-stone-900/70 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl overflow-hidden"
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
@@ -93,6 +101,23 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
               paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
             }}
           >
+            {/* Light sweep reveal effect */}
+            <AnimatePresence>
+              {showSweep && (
+                <motion.div
+                  className="absolute left-0 right-0 h-[2px] pointer-events-none z-10"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, #fbbf24 50%, transparent 100%)',
+                    boxShadow: '0 0 30px 10px rgba(251,191,36,0.25)',
+                  }}
+                  initial={{ top: '0%', opacity: 0 }}
+                  animate={{ top: ['0%', '100%'], opacity: [0, 1, 1, 0] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, ease: 'easeInOut', opacity: { times: [0, 0.1, 0.9, 1] } }}
+                />
+              )}
+            </AnimatePresence>
+
             {/* Drag handle pill */}
             <div className="flex justify-center pt-3 pb-2">
               <div className="w-10 h-1 rounded-full bg-stone-600" />
@@ -109,7 +134,7 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
                 {motivation}
               </motion.p>
 
-              {/* Input field — large, centered, premium feel */}
+              {/* Input field with dynamic glow */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -123,23 +148,28 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
                   onKeyDown={handleKeyDown}
                   placeholder="Type your task..."
                   className="w-full text-xl text-center text-stone-100 light:text-stone-800 bg-transparent border-b-2 border-amber-500/30 focus:border-amber-400 outline-none py-4 px-4 placeholder:text-stone-600 transition-colors duration-200"
+                  style={{
+                    boxShadow: text.length > 0
+                      ? `0 4px ${glowIntensity}px rgba(251,191,36,${Math.min(0.1 + text.length * 0.01, 0.3)})`
+                      : 'none',
+                  }}
                   maxLength={120}
                   enterKeyHint="done"
                   autoComplete="off"
                 />
               </motion.div>
 
-              {/* Confirm button — appears when text is entered */}
+              {/* Confirm button */}
               <AnimatePresence>
                 {text.trim().length > 0 && (
                   <motion.button
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    initial={{ opacity: 0, scale: 0.85, y: 12 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                    whileTap={{ scale: 0.95 }}
+                    exit={{ opacity: 0, scale: 0.85, y: 12 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+                    whileTap={{ scale: 0.93 }}
                     onClick={handleSubmit}
-                    className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-stone-950 font-bold text-lg shadow-lg shadow-amber-500/20"
+                    className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-stone-950 font-bold text-lg shadow-lg shadow-amber-500/25"
                   >
                     Add Task
                   </motion.button>

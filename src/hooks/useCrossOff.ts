@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useEffect, useState } from 'react';
-import { playUILoop } from '@/lib/audioEngine';
+import { playUILoop, playUI } from '@/lib/audioEngine';
 
 interface Point {
   x: number;
@@ -126,6 +126,9 @@ export function useCrossOff({
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         try { navigator.vibrate([40, 30, 60, 30, 80]); } catch {}
       }
+
+      // Pre-play chime so it layers with the celebrate sound from parent
+      try { playUI('chime'); } catch {}
 
       onComplete();
     }

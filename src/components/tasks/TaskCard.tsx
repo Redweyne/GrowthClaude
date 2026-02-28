@@ -6,6 +6,7 @@ import { CrossOffLine } from './CrossOffLine';
 import { useCrossOff } from '@/hooks/useCrossOff';
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
+import { ShimmerOverlay, GlowRing, GoldShimmer } from '@/components/effects/GoldShimmer';
 import type { DailyTask } from '@/store/useTasksStore';
 
 interface TaskCardProps {
@@ -28,13 +29,16 @@ interface Particle {
 const PARTICLE_COLORS = [
   '#fbbf24', '#f59e0b', '#d97706',
   '#34d399', '#fcd34d', '#fde68a',
+  '#a78bfa', '#fb7185',
 ];
 
 export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
+  const [showGlow, setShowGlow] = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [cardDimensions, setCardDimensions] = useState({ width: 0, height: 0 });
+  const [stampLanded, setStampLanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const audio = useAudio();
   const { haptic, hapticCelebration } = useHaptics();
@@ -57,21 +61,21 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
 
   const spawnParticles = useCallback(() => {
     const newParticles: Particle[] = [];
-    for (let i = 0; i < 14; i++) {
-      const angle = (Math.PI * 2 * i) / 14 + (Math.random() - 0.5) * 0.4;
+    for (let i = 0; i < 20; i++) {
+      const angle = (Math.PI * 2 * i) / 20 + (Math.random() - 0.5) * 0.4;
       newParticles.push({
         id: Date.now() + i,
         x: 50,
         y: 50,
-        vx: Math.cos(angle) * (70 + Math.random() * 50),
-        vy: Math.sin(angle) * (70 + Math.random() * 50),
+        vx: Math.cos(angle) * (80 + Math.random() * 60),
+        vy: Math.sin(angle) * (80 + Math.random() * 60),
         color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
-        size: 4 + Math.random() * 7,
+        size: 5 + Math.random() * 8,
         rotation: Math.random() * 360,
       });
     }
     setParticles(newParticles);
-    setTimeout(() => setParticles([]), 750);
+    setTimeout(() => setParticles([]), 800);
   }, []);
 
   const handleComplete = useCallback(() => {
@@ -80,17 +84,21 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
 
     // Flash
     setShowFlash(true);
-    setTimeout(() => setShowFlash(false), 250);
+    setTimeout(() => setShowFlash(false), 300);
 
-    // Sound + haptic
+    // GlowRing + GoldShimmer
+    setShowGlow(true);
+
+    // Layered sounds: celebrate + chime
     audio.playUI('celebrate');
+    setTimeout(() => audio.playUI('chime'), 200);
     hapticCelebration();
 
     // Confetti burst
-    setTimeout(() => spawnParticles(), 100);
+    setTimeout(() => spawnParticles(), 80);
 
-    // Signal parent after collapse animation
-    setTimeout(() => onComplete(task.id), 600);
+    // Signal parent after animations
+    setTimeout(() => onComplete(task.id), 700);
   }, [isCompleting, audio, hapticCelebration, spawnParticles, onComplete, task.id]);
 
   // Cross-off hook
@@ -106,24 +114,27 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
   return (
     <motion.div
       layout
-      initial={isNew ? { opacity: 0, scale: 1.2, y: -30 } : { opacity: 1 }}
+      initial={isNew ? { opacity: 0, scale: 1.25, y: -35 } : { opacity: 1 }}
       animate={{
         opacity: isCompleting ? 0 : 1,
-        scale: isCompleting ? 0.85 : 1,
+        scale: isCompleting ? 0.8 : 1,
         height: isCompleting ? 0 : 'auto',
         marginBottom: isCompleting ? 0 : 12,
         y: 0,
       }}
       transition={
         isNew
-          ? { type: 'spring', stiffness: 600, damping: 15, mass: 0.8 }
+          ? { type: 'spring', stiffness: 800, damping: 12, mass: 0.8 }
           : isCompleting
             ? { duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.2 }
             : { type: 'spring', stiffness: 400, damping: 25 }
       }
       onAnimationComplete={() => {
-        if (isNew) {
+        if (isNew && !stampLanded) {
+          setStampLanded(true);
+          // Layered stamp sounds
           audio.playUI('pop');
+          audio.playUI('whoosh');
           haptic('taskStamp');
         }
       }}
@@ -134,22 +145,27 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
         className="relative rounded-2xl overflow-hidden touch-none"
         style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
       >
-        {/* Content layer */}
+        {/* Card content with shake on active cross-off */}
         <div
           className={`relative p-4 rounded-2xl border transition-all duration-200 ${
             crossOff.isActive
-              ? 'bg-stone-900/90 border-amber-500/30 shadow-[0_0_25px_rgba(251,191,36,0.25)]'
+              ? 'bg-stone-900/95 border-amber-500/40 shadow-[0_0_30px_rgba(251,191,36,0.3)] animate-[shake_0.08s_linear_infinite]'
               : 'bg-stone-900/80 border-stone-700/50 light:bg-stone-100/80 light:border-stone-300/50'
           }`}
         >
-          {/* Idle ambient shimmer */}
+          {/* Shimmer overlay on idle cards — premium light sweep */}
+          {!crossOff.isActive && !isCompleting && (
+            <ShimmerOverlay active={true} className="rounded-2xl" />
+          )}
+
+          {/* Idle ambient glow — subtle golden pulse */}
           {!crossOff.isActive && !isCompleting && (
             <motion.div
               className="absolute inset-0 rounded-2xl pointer-events-none"
               animate={{
                 boxShadow: [
                   '0 0 0px rgba(251,191,36,0)',
-                  '0 0 8px rgba(251,191,36,0.08)',
+                  '0 0 12px rgba(251,191,36,0.1)',
                   '0 0 0px rgba(251,191,36,0)',
                 ],
               }}
@@ -157,7 +173,7 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
             />
           )}
 
-          {/* Activation scale */}
+          {/* Task text with activation scale */}
           <motion.div
             animate={{ scale: crossOff.isActive ? 1.02 : 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -181,15 +197,15 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
           />
         )}
 
-        {/* Flash overlay on completion */}
+        {/* Flash overlay */}
         <AnimatePresence>
           {showFlash && (
             <motion.div
-              className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-400/60 to-yellow-300/60 pointer-events-none"
+              className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-400/70 to-yellow-300/70 pointer-events-none"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.7, 0] }}
+              animate={{ opacity: [0, 0.8, 0] }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.3 }}
               style={{ zIndex: 20 }}
             />
           )}
@@ -210,31 +226,47 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
                 backgroundColor: p.color,
                 zIndex: 30,
               }}
-              initial={{ opacity: 1, scale: 0.5, rotate: 0 }}
+              initial={{ opacity: 1, scale: 0.3, rotate: 0 }}
               animate={{
                 x: p.vx,
                 y: p.vy,
                 opacity: [1, 1, 0],
-                scale: [0.5, 1.3, 0.2],
-                rotate: p.rotation + 400,
+                scale: [0.3, 1.4, 0.1],
+                rotate: p.rotation + 500,
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.65, ease: 'easeOut' }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
             />
           ))}
         </AnimatePresence>
 
-        {/* Stamp ripple on new card */}
+        {/* Stamp ripple + flash on new card */}
         {isNew && (
-          <motion.div
-            className="absolute inset-0 rounded-2xl border-2 border-amber-400/60 pointer-events-none"
-            initial={{ opacity: 0.9, scale: 0.95 }}
-            animate={{ opacity: 0, scale: 1.2 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            style={{ zIndex: 5 }}
-          />
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-2xl border-2 border-amber-400/70 pointer-events-none"
+              initial={{ opacity: 0.9, scale: 0.95 }}
+              animate={{ opacity: 0, scale: 1.25 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              style={{ zIndex: 5 }}
+            />
+            {/* Stamp impact flash */}
+            <motion.div
+              className="absolute inset-0 rounded-2xl bg-amber-400/20 pointer-events-none"
+              initial={{ opacity: 0.6 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              style={{ zIndex: 4 }}
+            />
+          </>
         )}
       </div>
+
+      {/* GlowRing on completion — expanding golden rings */}
+      <GlowRing active={showGlow} rings={3} color="#fbbf24" />
+
+      {/* GoldShimmer on completion — rising golden particles */}
+      <GoldShimmer active={showGlow} variant="gold" intensity="intense" duration={1500} />
     </motion.div>
   );
 }

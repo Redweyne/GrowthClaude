@@ -13,6 +13,7 @@ interface Sparkle {
   y: number;
   size: number;
   color: string;
+  direction: number; // 1 = up, -1 = down
 }
 
 interface CrossOffLineProps {
@@ -25,7 +26,7 @@ interface CrossOffLineProps {
   cardHeight: number;
 }
 
-const SPARKLE_COLORS = ['#fbbf24', '#fcd34d', '#fde68a', '#f59e0b'];
+const SPARKLE_COLORS = ['#fbbf24', '#fcd34d', '#fde68a', '#f59e0b', '#d97706'];
 
 export function CrossOffLine({
   startPoint,
@@ -39,6 +40,7 @@ export function CrossOffLine({
   const wobbleOffset = useRef(0);
   const lastSparkleProgress = useRef(0);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
+  const [burstSparkles, setBurstSparkles] = useState<Sparkle[]>([]);
   const sparkleIdRef = useRef(0);
 
   // Compute wobble once when drag starts
@@ -47,32 +49,52 @@ export function CrossOffLine({
       wobbleOffset.current = (Math.sin(startPoint.x * 7.3 + startPoint.y * 3.7) * 2) - 1;
       lastSparkleProgress.current = 0;
       setSparkles([]);
+      setBurstSparkles([]);
     }
   }, [isActive, startPoint]);
 
-  // Spawn sparkles along the line as progress increases
+  // Spawn sparkles along the line — every 5% of progress
   useEffect(() => {
     if (!isActive || !currentPoint) return;
 
     const progressDelta = progress - lastSparkleProgress.current;
-    if (progressDelta >= 8) { // every ~8% of width
+    if (progressDelta >= 5) {
       lastSparkleProgress.current = progress;
       sparkleIdRef.current++;
       const newSparkle: Sparkle = {
         id: sparkleIdRef.current,
         x: currentPoint.x,
         y: currentPoint.y,
-        size: 2 + Math.random() * 3,
+        size: 2 + Math.random() * 3.5,
         color: SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)],
+        direction: Math.random() > 0.5 ? 1 : -1,
       };
-      setSparkles(prev => [...prev.slice(-12), newSparkle]); // max 12 active sparkles
+      setSparkles(prev => [...prev.slice(-20), newSparkle]);
 
-      // Auto-remove sparkle after animation
       setTimeout(() => {
         setSparkles(prev => prev.filter(s => s.id !== newSparkle.id));
-      }, 450);
+      }, 550);
     }
   }, [isActive, currentPoint, progress]);
+
+  // Spawn burst sparkles on completion — firework at the endpoint
+  useEffect(() => {
+    if (!isComplete || !currentPoint) return;
+    const burst: Sparkle[] = [];
+    for (let i = 0; i < 10; i++) {
+      sparkleIdRef.current++;
+      burst.push({
+        id: sparkleIdRef.current,
+        x: currentPoint.x,
+        y: currentPoint.y,
+        size: 3 + Math.random() * 4,
+        color: SPARKLE_COLORS[Math.floor(Math.random() * SPARKLE_COLORS.length)],
+        direction: 1,
+      });
+    }
+    setBurstSparkles(burst);
+    setTimeout(() => setBurstSparkles([]), 700);
+  }, [isComplete, currentPoint]);
 
   // Build the SVG path with hand-drawn wobble
   const pathD = useMemo(() => {
@@ -85,6 +107,10 @@ export function CrossOffLine({
   if (!startPoint || !currentPoint) return null;
   if (!isActive && !isComplete) return null;
 
+  // Use unique filter IDs to prevent conflicts between multiple cards
+  const filterId = `glow-${startPoint.x.toFixed(0)}-${startPoint.y.toFixed(0)}`;
+  const filterIdIntense = `glow-i-${startPoint.x.toFixed(0)}-${startPoint.y.toFixed(0)}`;
+
   return (
     <svg
       className="absolute inset-0 pointer-events-none overflow-visible"
@@ -94,11 +120,10 @@ export function CrossOffLine({
       style={{ zIndex: 10 }}
     >
       <defs>
-        {/* Glow filter for the line */}
-        <filter id="cross-off-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <filter id={filterId} x="-25%" y="-25%" width="150%" height="150%">
           <feGaussianBlur
             in="SourceGraphic"
-            stdDeviation={isComplete ? 6 : 3}
+            stdDeviation={isComplete ? 8 : 4}
             result="blur"
           />
           <feMerge>
@@ -107,9 +132,8 @@ export function CrossOffLine({
           </feMerge>
         </filter>
 
-        {/* Brighter glow for completion */}
-        <filter id="cross-off-glow-intense" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+        <filter id={filterIdIntense} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="blur" />
@@ -118,21 +142,30 @@ export function CrossOffLine({
         </filter>
       </defs>
 
+      {/* Soft underglow shadow path — wide, faint glow behind the line */}
+      <path
+        d={pathD}
+        fill="none"
+        stroke="rgba(251,191,36,0.15)"
+        strokeWidth={16}
+        strokeLinecap="round"
+      />
+
       {/* The strikethrough line */}
       <path
         d={pathD}
         fill="none"
         stroke={isComplete ? '#fbbf24' : '#f59e0b'}
-        strokeWidth={isComplete ? 6 : 5}
+        strokeWidth={isComplete ? 8 : 6}
         strokeLinecap="round"
-        filter={isComplete ? 'url(#cross-off-glow-intense)' : 'url(#cross-off-glow)'}
+        filter={isComplete ? `url(#${filterIdIntense})` : `url(#${filterId})`}
         style={{
-          opacity: isComplete ? 0.85 : 1,
+          opacity: isComplete ? 0.9 : 1,
           transition: isComplete ? 'stroke-width 0.3s ease, stroke 0.3s ease, opacity 0.5s ease 0.3s' : 'none',
         }}
       />
 
-      {/* Sparkle particles trailing along the line */}
+      {/* Sparkle trail along the line */}
       {sparkles.map((sparkle) => (
         <circle
           key={sparkle.id}
@@ -140,18 +173,54 @@ export function CrossOffLine({
           cy={sparkle.y}
           r={sparkle.size}
           fill={sparkle.color}
-          style={{
-            animation: 'sparkle-trail 400ms ease-out forwards',
-          }}
+          className={sparkle.direction > 0 ? 'sparkle-up' : 'sparkle-down'}
         />
       ))}
 
-      {/* Inline keyframes for sparkle animation */}
+      {/* Burst sparkles on completion — firework at endpoint */}
+      {burstSparkles.map((sparkle, i) => {
+        const angle = (Math.PI * 2 * i) / burstSparkles.length;
+        const dist = 15 + Math.random() * 20;
+        return (
+          <circle
+            key={sparkle.id}
+            cx={sparkle.x}
+            cy={sparkle.y}
+            r={sparkle.size}
+            fill={sparkle.color}
+            className="sparkle-burst"
+            style={{
+              '--burst-x': `${Math.cos(angle) * dist}px`,
+              '--burst-y': `${Math.sin(angle) * dist}px`,
+            } as React.CSSProperties}
+          />
+        );
+      })}
+
       <style>{`
-        @keyframes sparkle-trail {
+        .sparkle-up {
+          animation: sparkle-trail-up 500ms ease-out forwards;
+        }
+        .sparkle-down {
+          animation: sparkle-trail-down 500ms ease-out forwards;
+        }
+        .sparkle-burst {
+          animation: sparkle-burst 600ms ease-out forwards;
+        }
+        @keyframes sparkle-trail-up {
           0% { opacity: 1; transform: scale(0.5); }
-          40% { opacity: 0.9; transform: scale(1.3); }
-          100% { opacity: 0; transform: scale(0) translateY(-10px); }
+          40% { opacity: 0.9; transform: scale(1.4); }
+          100% { opacity: 0; transform: scale(0) translateY(-14px); }
+        }
+        @keyframes sparkle-trail-down {
+          0% { opacity: 1; transform: scale(0.5); }
+          40% { opacity: 0.9; transform: scale(1.4); }
+          100% { opacity: 0; transform: scale(0) translateY(14px); }
+        }
+        @keyframes sparkle-burst {
+          0% { opacity: 1; transform: scale(0.3) translate(0, 0); }
+          30% { opacity: 1; transform: scale(1.5) translate(var(--burst-x), var(--burst-y)); }
+          100% { opacity: 0; transform: scale(0) translate(var(--burst-x), var(--burst-y)); }
         }
       `}</style>
     </svg>

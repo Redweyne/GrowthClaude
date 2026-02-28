@@ -8,6 +8,8 @@ import { AddTaskOverlay } from './AddTaskOverlay';
 import { useTasksStore } from '@/store/useTasksStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
+import { Confetti } from '@/components/effects/Confetti';
+import { GoldShimmer, GlowRing, LightSweep } from '@/components/effects/GoldShimmer';
 
 function getFormattedDate(): string {
   return new Date().toLocaleDateString('en-US', {
@@ -16,17 +18,6 @@ function getFormattedDate(): string {
     day: 'numeric',
   });
 }
-
-interface ConfettiRainParticle {
-  id: number;
-  x: number;
-  delay: number;
-  size: number;
-  color: string;
-  rotation: number;
-}
-
-const RAIN_COLORS = ['#fbbf24', '#f59e0b', '#d97706', '#34d399', '#fcd34d', '#a78bfa'];
 
 export function DailyTasksView() {
   const { addTask, completeTask, clearOldTasks } = useTasksStore();
@@ -37,7 +28,6 @@ export function DailyTasksView() {
   const [newTaskIds, setNewTaskIds] = useState<Set<string>>(new Set());
   const [showAddOverlay, setShowAddOverlay] = useState(false);
   const [showAllDone, setShowAllDone] = useState(false);
-  const [confettiRain, setConfettiRain] = useState<ConfettiRainParticle[]>([]);
 
   const todayKey = useMemo(() => new Date().toISOString().split('T')[0], []);
   const todaysTasks = useMemo(
@@ -67,7 +57,7 @@ export function DailyTasksView() {
         next.delete(task.id);
         return next;
       });
-    }, 600);
+    }, 700);
   }, [addTask]);
 
   const handleCompleteTask = useCallback((taskId: string) => {
@@ -76,37 +66,27 @@ export function DailyTasksView() {
     // Check if this was the last pending task
     const remainingAfter = pendingTasks.filter(t => t.id !== taskId);
     if (remainingAfter.length === 0 && todaysTasks.length > 0) {
-      // ALL DONE — MASSIVE celebration
+      // ALL DONE — MASSIVE layered celebration
       setTimeout(() => {
         setShowAllDone(true);
-        audio.playUI('levelUp');
-        customHaptic([40, 50, 40, 50, 50, 80, 70, 100, 50]);
 
-        // Confetti rain
-        const rainParticles: ConfettiRainParticle[] = [];
-        for (let i = 0; i < 30; i++) {
-          rainParticles.push({
-            id: Date.now() + i,
-            x: Math.random() * 100,
-            delay: Math.random() * 0.6,
-            size: 5 + Math.random() * 9,
-            color: RAIN_COLORS[Math.floor(Math.random() * RAIN_COLORS.length)],
-            rotation: Math.random() * 360,
-          });
-        }
-        setConfettiRain(rainParticles);
+        // Layered audio
+        audio.playUI('levelUp');
+        setTimeout(() => audio.playUI('celebrate'), 300);
+
+        // Extended intense haptic burst
+        customHaptic([40, 50, 40, 50, 50, 80, 70, 100, 50]);
 
         setTimeout(() => {
           setShowAllDone(false);
-          setConfettiRain([]);
-        }, 3000);
+        }, 3500);
       }, 500);
     }
   }, [completeTask, pendingTasks, todaysTasks, audio, customHaptic]);
 
   return (
     <div
-      className="h-full flex flex-col bg-stone-950 light:bg-stone-50 overflow-hidden relative"
+      className="h-full flex flex-col bg-stone-950 light:bg-stone-50 relative"
       style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
     >
       {/* Header */}
@@ -141,8 +121,11 @@ export function DailyTasksView() {
         </motion.p>
       </div>
 
-      {/* Task list */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Task list — SCROLLABLE with generous bottom padding */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ paddingBottom: '120px' }}
+      >
         <AnimatePresence mode="popLayout">
           {pendingTasks.length === 0 && todaysTasks.length === 0 ? (
             /* Empty state */
@@ -155,17 +138,17 @@ export function DailyTasksView() {
             >
               <motion.div
                 animate={{
-                  scale: [1, 1.06, 1],
-                  opacity: [0.35, 0.55, 0.35],
+                  scale: [1, 1.08, 1],
+                  opacity: [0.3, 0.55, 0.3],
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <ListChecks size={60} className="text-stone-700 light:text-stone-300" strokeWidth={1.5} />
+                <ListChecks size={64} className="text-stone-700 light:text-stone-300" strokeWidth={1.5} />
               </motion.div>
-              <p className="mt-5 text-stone-400 light:text-stone-500 text-base font-semibold">
+              <p className="mt-6 text-stone-400 light:text-stone-500 text-base font-semibold">
                 Your slate is clean
               </p>
-              <p className="mt-1.5 text-stone-600 light:text-stone-400 text-xs">
+              <p className="mt-2 text-stone-600 light:text-stone-400 text-xs">
                 Tap the golden button to add your first task
               </p>
             </motion.div>
@@ -179,17 +162,17 @@ export function DailyTasksView() {
             >
               <motion.div
                 animate={{
-                  scale: [1, 1.1, 1],
-                  rotate: [0, 6, -6, 0],
+                  scale: [1, 1.12, 1],
+                  rotate: [0, 8, -8, 0],
                 }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <Sparkles size={60} className="text-amber-400" strokeWidth={1.5} />
+                <Sparkles size={64} className="text-amber-400" strokeWidth={1.5} />
               </motion.div>
-              <p className="mt-5 text-amber-300 light:text-amber-600 text-base font-bold">
+              <p className="mt-6 text-amber-300 light:text-amber-600 text-base font-bold">
                 You conquered everything
               </p>
-              <p className="mt-1.5 text-stone-500 light:text-stone-400 text-xs">
+              <p className="mt-2 text-stone-500 light:text-stone-400 text-xs">
                 {completedCount} task{completedCount !== 1 ? 's' : ''} crossed off today
               </p>
             </motion.div>
@@ -209,17 +192,16 @@ export function DailyTasksView() {
 
       {/* Floating Add Task button */}
       <motion.button
-        className="fixed bottom-24 right-5 z-30 w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center"
+        className="fixed bottom-24 right-5 z-30 w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center animate-[float_3s_ease-in-out_infinite]"
         animate={{
-          scale: [1, 1.06, 1],
           boxShadow: [
-            '0 0 20px rgba(251,191,36,0.3)',
-            '0 0 35px rgba(251,191,36,0.5)',
-            '0 0 20px rgba(251,191,36,0.3)',
+            '0 0 25px rgba(251,191,36,0.4)',
+            '0 0 45px rgba(251,191,36,0.6)',
+            '0 0 25px rgba(251,191,36,0.4)',
           ],
         }}
         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.88 }}
         onClick={() => setShowAddOverlay(true)}
         aria-label="Add task"
       >
@@ -233,11 +215,25 @@ export function DailyTasksView() {
         onAddTask={handleAddTask}
       />
 
-      {/* ALL DONE celebration overlay */}
+      {/* ═══ ALL DONE CELEBRATION — LAYERED EFFECTS ═══ */}
+
+      {/* Light sweep */}
+      <LightSweep active={showAllDone} color="#fbbf24" duration={1.5} />
+
+      {/* Glow rings */}
+      <GlowRing active={showAllDone} rings={4} color="#fbbf24" />
+
+      {/* Confetti — real multi-shape system */}
+      <Confetti active={showAllDone} particleCount={50} duration={3500} />
+
+      {/* Gold shimmer — rising particles */}
+      <GoldShimmer active={showAllDone} variant="gold" intensity="intense" duration={3000} />
+
+      {/* Celebration text overlay */}
       <AnimatePresence>
         {showAllDone && (
           <motion.div
-            className="fixed inset-0 z-[90] flex items-center justify-center pointer-events-none"
+            className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -245,54 +241,32 @@ export function DailyTasksView() {
           >
             {/* Background dim */}
             <motion.div
-              className="absolute inset-0 bg-stone-950/70 backdrop-blur-sm"
+              className="absolute inset-0 bg-stone-950/60 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             />
 
-            {/* Celebration text */}
+            {/* Text */}
             <motion.div
               className="relative z-10 text-center"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ scale: 0.4, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 1.3, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 12 }}
             >
-              <h2 className="text-5xl font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">
+              <h2 className="text-5xl font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
                 You crushed it!
               </h2>
-              <p className="mt-3 text-stone-300 text-base">
+              <motion.p
+                className="mt-3 text-stone-300 text-base"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 {completedCount} task{completedCount !== 1 ? 's' : ''} conquered today
-              </p>
+              </motion.p>
             </motion.div>
-
-            {/* Confetti rain */}
-            {confettiRain.map((p) => (
-              <motion.div
-                key={p.id}
-                className="absolute pointer-events-none"
-                style={{
-                  left: `${p.x}%`,
-                  width: p.size,
-                  height: p.size,
-                  borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-                  backgroundColor: p.color,
-                }}
-                initial={{ top: '-5%', rotate: 0, opacity: 1 }}
-                animate={{
-                  top: '115%',
-                  rotate: p.rotation + 720,
-                  opacity: [1, 1, 1, 0],
-                  x: [0, Math.sin(p.id) * 35, Math.cos(p.id) * -25, Math.sin(p.id) * 18],
-                }}
-                transition={{
-                  duration: 2 + Math.random() * 1,
-                  delay: p.delay,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-              />
-            ))}
           </motion.div>
         )}
       </AnimatePresence>
