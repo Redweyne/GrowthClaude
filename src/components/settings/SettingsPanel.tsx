@@ -18,6 +18,7 @@ import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { useAudio } from '@/hooks/useAudio';
 import { useAuth } from '@/hooks/useAuth';
 import { backgroundMusic } from '@/lib/backgroundMusic';
+import { saveAllProgress, clearAllStores } from '@/lib/progressSync';
 import { useTranslation, languageConfig, type Locale } from '@/i18n';
 import { ThemeToggle } from '@/components/ui';
 import { LoginModal } from '@/components/auth/LoginModal';
@@ -39,10 +40,16 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   const [showSignup, setShowSignup] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
-  // Handle sign out
+  // Handle sign out — save progress to server, sign out, then clear local stores
   const handleSignOut = async () => {
     setSigningOut(true);
+    // Save one last time while still authenticated (RLS requires active session)
+    if (user?.id) {
+      await saveAllProgress(user.id);
+    }
     await signOut();
+    // Clear all local Zustand stores + localStorage so the next user starts fresh
+    clearAllStores();
     setSigningOut(false);
   };
 

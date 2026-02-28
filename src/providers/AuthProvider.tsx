@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { getSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase';
+import { clearAllStores, loadAllProgress } from '@/lib/progressSync';
 
 type AuthActionResult = {
   error: string | null;
@@ -81,13 +82,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange((_event, nextSession) => {
+    } = client.auth.onAuthStateChange((event, nextSession) => {
       if (!active) {
         return;
       }
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
       setIsLoading(false);
+
+      // On explicit sign-in: restore progress from server
+      if (event === 'SIGNED_IN' && nextSession?.user) {
+        void loadAllProgress(nextSession.user.id);
+      }
+
+      // On sign-out: clear all local stores (safety net alongside SettingsPanel logic)
+      if (event === 'SIGNED_OUT') {
+        clearAllStores();
+      }
     });
 
     return () => {

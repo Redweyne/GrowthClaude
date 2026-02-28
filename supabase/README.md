@@ -7,6 +7,7 @@ This directory contains the core schema and Row Level Security migration for Pha
 - `migrations/20260213_phase4_core_schema.sql`
 - `migrations/20260213_phase4_echoes_metadata.sql`
 - `migrations/20260213_phase4_echo_responses_metadata.sql`
+- `migrations/20260228_user_progress_blob.sql`
 
 ## Apply in Supabase
 
@@ -19,6 +20,7 @@ This directory contains the core schema and Row Level Security migration for Pha
    - `migrations/20260213_phase4_core_schema.sql`
    - `migrations/20260213_phase4_echoes_metadata.sql`
    - `migrations/20260213_phase4_echo_responses_metadata.sql`
+   - `migrations/20260228_user_progress_blob.sql`
 
 ## Verification Queries
 
