@@ -309,7 +309,7 @@ export function RapidVerdictExercise({
       </div>
 
       {/* Swipe hint */}
-      <div className="px-6 pb-8 text-center">
+      <div className="px-6 pb-20 text-center">
         <p className="text-stone-600 light:text-stone-500 text-xs">
           {t('exercises.swipeHint')}
         </p>

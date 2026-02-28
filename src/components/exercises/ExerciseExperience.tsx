@@ -252,7 +252,7 @@ export function ExerciseExperience({
       </div>
 
       {/* Exercise List */}
-      <div className="flex-1 px-6 pb-6">
+      <div className="flex-1 px-6 pb-24">
         {allComplete ? (
           // All complete celebration
           <motion.div

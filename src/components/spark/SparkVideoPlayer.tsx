@@ -346,6 +346,7 @@ export function SparkVideoPlayer({
             playlist: initialYoutubeId,
             rel: 0,
             mute: 1,
+            vq: 'hd1080' as never,
             origin: typeof window !== 'undefined' ? window.location.origin : '',
           },
           events: {
@@ -355,6 +356,16 @@ export function SparkVideoPlayer({
               readyRef.current = true;
               currentVideoIdRef.current = initialYoutubeId;
               setStatus('loading');
+
+              // Force highest available quality
+              try {
+                const p = playerRef.current;
+                if (p && p.setPlaybackQuality) {
+                  p.setPlaybackQuality('hd1080');
+                }
+              } catch {
+                // Quality API may not be available
+              }
 
               if (activeRef.current) {
                 beginActivation();
@@ -374,6 +385,15 @@ export function SparkVideoPlayer({
                 recoveryCountRef.current = 0;
                 clearPlayRetryTimer();
                 applySoundIntent();
+
+                // Force highest quality on each play
+                try {
+                  if (player) {
+                    player.setPlaybackQuality('hd1080');
+                  }
+                } catch {
+                  // no-op
+                }
                 return;
               }
 

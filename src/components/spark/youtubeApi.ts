@@ -19,6 +19,7 @@ export interface YouTubePlayer {
   isMuted: () => boolean;
   seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
   getPlayerState: () => number;
+  setPlaybackQuality: (quality: string) => void;
 }
 
 export interface YouTubePlayerEvent {

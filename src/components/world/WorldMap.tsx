@@ -77,7 +77,7 @@ export function WorldMap({ world, onSelectLesson }: WorldMapProps) {
       </div>
 
       {/* Scrollable lesson list */}
-      <div className="pb-6 pt-4">
+      <div className="pb-24 pt-4">
         <div className="relative max-w-sm mx-auto px-8">
           {completedCount === allLessons.length && (
             <EmptyState

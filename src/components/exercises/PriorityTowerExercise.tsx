@@ -298,7 +298,7 @@ export function PriorityTowerExercise({
 
       {/* Confirm button */}
       {!confirmed && (
-        <div className="px-6 pb-8">
+        <div className="px-6 pb-20">
           <p className="text-stone-500 light:text-stone-600 text-xs text-center mb-3">
             {t('exercises.dragToReorder')}
           </p>

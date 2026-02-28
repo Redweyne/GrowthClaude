@@ -338,7 +338,7 @@ export function WordForgeExercise({
       </AnimatePresence>
 
       {/* Forge button */}
-      <div className="px-6 pb-8 pt-2">
+      <div className="px-6 pb-20 pt-2">
         <Button
           onClick={handleForge}
           variant="primary"

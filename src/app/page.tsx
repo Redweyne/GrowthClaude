@@ -402,22 +402,31 @@ export default function Home() {
   };
 
   // Handle lesson select from map (including redo)
+  // Validates that the lesson is actually accessible (all prior lessons completed)
   const handleSelectLesson = (lessonId: string) => {
     const lesson = getFlexibleLessonById(lessonId);
-    if (lesson) {
-      setSelectedFlexibleLesson(lesson);
-      setFlexibleLessonProgress(null);
-      setCurrentView('lesson');
+    if (!lesson) return;
+
+    // Verify lesson accessibility — find it in the world and check all prior lessons
+    const allLessons = allWorlds.flatMap(w => w.chapters.flatMap(ch => ch.lessons));
+    const lessonIndex = allLessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex > 0) {
+      for (let i = 0; i < lessonIndex; i++) {
+        if (!completedLessons[allLessons[i].id]) return; // Prior lesson not done — block
+      }
     }
+
+    setSelectedFlexibleLesson(lesson);
+    setFlexibleLessonProgress(null);
+    setCurrentView('lesson');
   };
 
 
   // Handle lesson completion - now goes to mandatory echo
   const handleLessonComplete = () => {
-    // CRITICAL: Stop all audio when leaving the lesson
-    // This ensures background music doesn't continue playing through echo and exercises
+    // Stop background music when leaving the lesson
+    // Only stop music — don't kill all audio, as celebration sounds may still be playing
     backgroundMusic.stop();
-    stopAllAudio(false); // false = allow fadeout for smooth transition
 
     // Save completed lesson info for Echo prompt
     if (selectedFlexibleLesson) {

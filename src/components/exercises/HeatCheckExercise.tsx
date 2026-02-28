@@ -297,22 +297,20 @@ export function HeatCheckExercise({
 
       {/* Grid */}
       <div className="flex-1 px-6 pb-4 flex flex-col items-center justify-center">
-        <div className="w-full max-w-sm aspect-square relative">
-          {/* Y-axis labels */}
-          <div className="absolute -start-1 top-0 text-xs text-stone-500 light:text-stone-600 -translate-x-full pe-2 whitespace-nowrap">
-            {content.yAxis.high}
-          </div>
-          <div className="absolute -start-1 bottom-0 text-xs text-stone-500 light:text-stone-600 -translate-x-full pe-2 whitespace-nowrap">
-            {content.yAxis.low}
-          </div>
+        {/* Y-axis labels — placed ABOVE the grid container so they don't overflow the screen */}
+        <div className="w-full max-w-sm flex justify-between mb-1 px-1">
+          <span className="text-[10px] text-stone-500 light:text-stone-600 truncate max-w-[45%]">
+            {content.yAxis.high} ↑
+          </span>
+          <span className="text-[10px] text-stone-500 light:text-stone-600 truncate max-w-[45%] text-right">
+            {content.yAxis.low} ↓
+          </span>
+        </div>
 
-          {/* X-axis labels */}
-          <div className="absolute start-0 -bottom-1 text-xs text-stone-500 light:text-stone-600 translate-y-full pt-2">
-            {content.xAxis.low}
-          </div>
-          <div className={`absolute end-0 -bottom-1 text-xs text-stone-500 light:text-stone-600 translate-y-full pt-2 ${isRTL ? 'text-left' : 'text-right'}`}>
-            {content.xAxis.high}
-          </div>
+        <div className="w-full max-w-sm aspect-square relative">
+
+          {/* X-axis labels — placed inside the flow, no absolute overflow */}
+          {/* (rendered below the grid via the sibling div) */}
 
           {/* The grid itself */}
           <div
@@ -367,11 +365,21 @@ export function HeatCheckExercise({
             )}
           </div>
         </div>
+
+        {/* X-axis labels — in-flow below the grid, safe from overflow */}
+        <div className="w-full max-w-sm flex justify-between mt-2 px-1">
+          <span className="text-[10px] text-stone-500 light:text-stone-600 truncate max-w-[45%]">
+            ← {content.xAxis.low}
+          </span>
+          <span className={`text-[10px] text-stone-500 light:text-stone-600 truncate max-w-[45%] ${isRTL ? 'text-left' : 'text-right'}`}>
+            {content.xAxis.high} →
+          </span>
+        </div>
       </div>
 
       {/* Place button */}
       {!allPlaced && (
-        <div className="px-6 pb-8">
+        <div className="px-6 pb-20">
           <p className="text-stone-500 light:text-stone-600 text-xs text-center mb-3">
             {t('exercises.dragToPlace')}
           </p>

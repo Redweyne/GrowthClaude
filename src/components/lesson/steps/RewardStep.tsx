@@ -253,17 +253,35 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Concept icon with glow */}
+            {/* App branding — subtle top mark */}
+            <motion.p
+              className="text-stone-600 light:text-stone-400 text-xs font-bold tracking-[0.5em] uppercase mb-12"
+              initial={{ opacity: 0, y: -15 }}
+              animate={{ opacity: 0.5, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.8 }}
+            >
+              GROWTH
+            </motion.p>
+
+            {/* Concept icon with glow — larger and more dramatic */}
             <motion.div
-              className="relative mb-8"
+              className="relative mb-10"
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ ...SPRING_CONFIG, delay: 0.2 }}
             >
-              {/* Glow behind icon */}
-              <div className="absolute inset-0 w-24 h-24 rounded-full bg-amber-500/20 blur-2xl" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-stone-800/90 to-stone-900/90 border border-amber-500/30 flex items-center justify-center">
-                <span className="text-4xl" role="img" aria-label={concept.title}>
+              {/* Multi-layer glow behind icon */}
+              <motion.div
+                className="absolute inset-0 w-28 h-28 -m-2 rounded-full bg-amber-500/30 blur-3xl"
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <div className="absolute inset-0 w-28 h-28 -m-2 rounded-full bg-amber-400/10 blur-xl" />
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-stone-800/90 to-stone-900/90 border-2 border-amber-500/40 flex items-center justify-center shadow-[0_0_40px_rgba(251,191,36,0.2)]">
+                <span className="text-5xl" role="img" aria-label={concept.title}>
                   {concept.icon}
                 </span>
               </div>
@@ -283,9 +301,17 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               </h2>
             </motion.div>
 
+            {/* Decorative line */}
+            <motion.div
+              className="mt-8 h-px w-24 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+            />
+
             {/* Subtle pulse indicator that it will auto-advance */}
             <motion.div
-              className="mt-12 flex gap-1.5"
+              className="mt-8 flex gap-1.5"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               transition={{ delay: 1.5 }}

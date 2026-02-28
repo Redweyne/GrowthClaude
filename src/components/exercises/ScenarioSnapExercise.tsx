@@ -269,7 +269,7 @@ export function ScenarioSnapExercise({
       </div>
 
       {/* Frame content */}
-      <div className="flex-1 flex flex-col justify-center px-6" onClick={skipTypewriter}>
+      <div className="flex-1 flex flex-col justify-center px-6 pb-16" onClick={skipTypewriter}>
         <AnimatePresence mode="wait">
           <motion.div
             key={currentFrameId}

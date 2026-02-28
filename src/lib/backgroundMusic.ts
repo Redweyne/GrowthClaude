@@ -98,15 +98,17 @@ function ensureContext(): void {
  */
 function start(): void {
   log('start() called, isPlaying:', state.isPlaying);
-  
+
   wantsToPlay = true;
   ensureContext();
-  
+
   // If already playing, just make sure context is active
   if (state.isPlaying && state.currentTrack) {
     return;
   }
 
+  // Randomize track selection each time music starts fresh
+  state.currentTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
   const trackInfo = MUSIC_TRACKS[state.currentTrackIndex];
   const fullPath = getBasePath() + trackInfo.path;
   log('Starting track:', trackInfo.name, fullPath);
