@@ -1,10 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Home, Compass, Zap, MessageCircleHeart, User } from 'lucide-react';
+import { Home, Compass, ListChecks, Zap, MessageCircleHeart, User } from 'lucide-react';
 import { useSparkStore } from '@/store/useSparkStore';
 
-export type NavTab = 'home' | 'journey' | 'spark' | 'echoes' | 'profile';
+export type NavTab = 'home' | 'journey' | 'tasks' | 'spark' | 'echoes' | 'profile';
 
 interface BottomNavBarProps {
   activeTab: NavTab;
@@ -16,6 +16,7 @@ interface BottomNavBarProps {
 const TABS: { id: NavTab; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'journey', label: 'Journey', icon: Compass },
+  { id: 'tasks', label: 'Tasks', icon: ListChecks },
   { id: 'spark', label: 'Spark', icon: Zap },
   { id: 'echoes', label: 'Echoes', icon: MessageCircleHeart },
   { id: 'profile', label: 'Profile', icon: User },
@@ -116,7 +117,7 @@ export function BottomNavBar({
               key={tab.id}
               type="button"
               onClick={() => onTabChange(tab.id)}
-              className="relative flex flex-col items-center py-2 px-3 min-w-[60px]"
+              className="relative flex flex-col items-center py-2 px-2 min-w-[52px]"
               aria-label={tab.label}
             >
               <motion.div

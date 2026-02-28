@@ -63,6 +63,14 @@ const HAPTIC_PATTERNS = {
 
   // Swipe — single short pulse (navigation swipe confirmation)
   swipe: [8],
+
+  // ── Daily Tasks patterns ──────────────────────────────────────────────────
+
+  // Task stamp — heavy thud when task is added
+  taskStamp: [50, 30, 80],
+
+  // Scratch pulse — single pulse for continuous scratch feedback
+  scratchPulse: [15],
 };
 
 type HapticType = keyof typeof HAPTIC_PATTERNS;

@@ -56,7 +56,9 @@ export type UISound =
   // Exercise-specific sounds (aliased to existing sounds)
   | 'swipeRight' | 'swipeLeft' | 'placeItem' | 'reorderItem'
   | 'frameAdvance' | 'choiceSelect' | 'markerPlace'
-  | 'wordSelect' | 'forgeComplete' | 'resultReveal';
+  | 'wordSelect' | 'forgeComplete' | 'resultReveal'
+  // Daily Tasks sounds
+  | 'taskStamp' | 'scratchLoop' | 'scratchComplete';
 
 export type AmbientSound =
   | 'onboarding' | 'lessonCalm' | 'lessonDeep' | 'reflection'
@@ -181,6 +183,10 @@ const UI_SOUNDS: Record<string, string> = {
   markerPlace: `${BASE_PATH}/audio/ui/chime.mp3`,
   wordSelect: `${BASE_PATH}/audio/ui/tap.mp3`,
   forgeComplete: `${BASE_PATH}/audio/ui/celebrate.mp3`,
+  // Daily Tasks sounds
+  taskStamp: `${BASE_PATH}/audio/ui/pop.mp3`,
+  scratchLoop: `${BASE_PATH}/audio/ui/scratch-loop.mp3`,
+  scratchComplete: `${BASE_PATH}/audio/ui/celebrate.mp3`,
   resultReveal: `${BASE_PATH}/audio/ui/chime.mp3`,
 };
 
@@ -564,6 +570,45 @@ export function playUI(sound: UISound): void {
       howl.play();
     }
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI SOUND LOOP - Continuous playback with stop handle
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function playUILoop(sound: UISound): { stop: () => void } {
+  if (!ensureInitialized()) return { stop: () => {} };
+
+  tryUnlock();
+
+  const path = UI_SOUNDS[sound];
+  if (!path) return { stop: () => {} };
+
+  const volume = engineState.settings.uiVolume * engineState.settings.masterVolume * 0.6;
+
+  const howl = new Howl({
+    src: [path],
+    loop: true,
+    volume,
+    onplayerror: () => {
+      logWarn(`UI loop sound failed: ${sound}`);
+    },
+  });
+
+  howl.play();
+
+  return {
+    stop: () => {
+      try {
+        howl.fade(volume, 0, 150);
+        setTimeout(() => {
+          try { howl.unload(); } catch {}
+        }, 200);
+      } catch {
+        try { howl.unload(); } catch {}
+      }
+    },
+  };
 }
 
 // Convenience exports

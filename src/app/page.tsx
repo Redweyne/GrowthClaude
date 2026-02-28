@@ -35,6 +35,7 @@ import { getModernWisdomWorld } from '@/content/modernWisdom';
 import { useTranslation } from '@/i18n';
 import type { FlexibleLesson, LessonProgress, FlexibleWorld } from '@/types/lessons';
 import { SparkFeed, SparkUnlockScreen } from '@/components/spark';
+import { DailyTasksView } from '@/components/tasks';
 import { useSparkStore } from '@/store/useSparkStore';
 import { BottomNavBar, type NavTab } from '@/components/navigation/BottomNavBar';
 import { backgroundMusic } from '@/lib/backgroundMusic';
@@ -58,6 +59,7 @@ type AppView =
   | 'worldSwitcher'
   | 'echoes'
   | 'echo-review'
+  | 'tasks'
   | 'spark'
   | 'spark-unlock';
 
@@ -306,6 +308,7 @@ export default function Home() {
     switch (tab) {
       case 'home': setCurrentView('home'); break;
       case 'journey': setCurrentView('map'); break;
+      case 'tasks': setCurrentView('tasks'); break;
       case 'spark':
         if (dailyFlowState.currentPhase === 'complete') {
           if (!sparkUnlockSeen) {
@@ -651,6 +654,23 @@ export default function Home() {
           onSkip={handleEchoReviewSkip}
         />
       </>
+    );
+  }
+
+  // Daily Tasks - Scratch & Conquer
+  if (currentView === 'tasks') {
+    return (
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 min-h-0">
+          <DailyTasksView />
+        </main>
+        <BottomNavBar
+          activeTab="tasks"
+          onTabChange={handleTabChange}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          unreadEchoCount={totalUnreadCount}
+        />
+      </div>
     );
   }
 
