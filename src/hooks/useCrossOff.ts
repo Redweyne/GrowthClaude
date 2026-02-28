@@ -25,12 +25,14 @@ export function useCrossOff({
   const [isComplete, setIsComplete] = useState(false);
   const [startPoint, setStartPoint] = useState<Point | null>(null);
   const [currentPoint, setCurrentPoint] = useState<Point | null>(null);
+  const [points, setPoints] = useState<Point[]>([]);
   const [progress, setProgress] = useState(0);
 
   const isTouching = useRef(false);
   const audioLoopRef = useRef<{ stop: () => void } | null>(null);
   const hapticIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const completedRef = useRef(false);
+  const pointsRef = useRef<Point[]>([]);
 
   const stopFeedback = useCallback(() => {
     if (audioLoopRef.current) {
@@ -50,6 +52,8 @@ export function useCrossOff({
     setIsActive(false);
     setStartPoint(null);
     setCurrentPoint(null);
+    setPoints([]);
+    pointsRef.current = [];
     setProgress(0);
     isTouching.current = false;
     stopFeedback();
@@ -74,6 +78,8 @@ export function useCrossOff({
     setIsActive(true);
     setStartPoint(point);
     setCurrentPoint(point);
+    pointsRef.current = [point];
+    setPoints([point]);
     setProgress(0);
 
     // Capture pointer for smooth tracking
@@ -101,17 +107,32 @@ export function useCrossOff({
     const point = getRelativePoint(e);
     setCurrentPoint(point);
 
-    // Calculate progress as horizontal distance percentage
+    // Accumulate points for free-form line — throttle to every ~3px movement
+    const lastPoint = pointsRef.current[pointsRef.current.length - 1];
+    if (lastPoint) {
+      const dx = point.x - lastPoint.x;
+      const dy = point.y - lastPoint.y;
+      if (dx * dx + dy * dy >= 9) { // ~3px distance threshold
+        pointsRef.current = [...pointsRef.current, point];
+        setPoints([...pointsRef.current]);
+      }
+    }
+
+    // Calculate progress as horizontal span percentage (leftmost to rightmost point)
     const card = cardRef.current;
     if (!card) return;
     const cardWidth = card.getBoundingClientRect().width;
 
-    // Use startPoint from state via ref workaround
-    const start = startPoint;
-    if (!start) return;
+    const allPoints = pointsRef.current;
+    if (allPoints.length < 2) return;
 
-    const horizontalDistance = Math.abs(point.x - start.x);
-    const newProgress = Math.min(100, (horizontalDistance / cardWidth) * 100);
+    let minX = Infinity, maxX = -Infinity;
+    for (const p of allPoints) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+    }
+    const horizontalSpan = maxX - minX;
+    const newProgress = Math.min(100, (horizontalSpan / cardWidth) * 100);
     setProgress(newProgress);
 
     // Check completion
@@ -132,7 +153,7 @@ export function useCrossOff({
 
       onComplete();
     }
-  }, [cardRef, completionThreshold, onComplete, stopFeedback, startPoint]);
+  }, [cardRef, completionThreshold, onComplete, stopFeedback, getRelativePoint]);
 
   const onPointerUp = useCallback(() => {
     if (!isTouching.current) return;
@@ -177,6 +198,7 @@ export function useCrossOff({
     isComplete,
     startPoint,
     currentPoint,
+    points,
     progress,
   };
 }

@@ -6,7 +6,8 @@ import { CrossOffLine } from './CrossOffLine';
 import { useCrossOff } from '@/hooks/useCrossOff';
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
-import { ShimmerOverlay, GlowRing, GoldShimmer } from '@/components/effects/GoldShimmer';
+import { ShimmerOverlay, GlowRing, GoldShimmer, LightSweep } from '@/components/effects/GoldShimmer';
+import { Confetti } from '@/components/effects/Confetti';
 import type { DailyTask } from '@/store/useTasksStore';
 
 interface TaskCardProps {
@@ -36,12 +37,16 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [showGlow, setShowGlow] = useState(false);
+  const [showSweep, setShowSweep] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showImpact, setShowImpact] = useState(false);
+  const [isCollapsing, setIsCollapsing] = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [cardDimensions, setCardDimensions] = useState({ width: 0, height: 0 });
   const [stampLanded, setStampLanded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const audio = useAudio();
-  const { haptic, hapticCelebration } = useHaptics();
+  const { haptic, hapticCelebration, customHaptic } = useHaptics();
 
   // Measure card dimensions
   useEffect(() => {
@@ -61,45 +66,64 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
 
   const spawnParticles = useCallback(() => {
     const newParticles: Particle[] = [];
-    for (let i = 0; i < 20; i++) {
-      const angle = (Math.PI * 2 * i) / 20 + (Math.random() - 0.5) * 0.4;
+    for (let i = 0; i < 28; i++) {
+      const angle = (Math.PI * 2 * i) / 28 + (Math.random() - 0.5) * 0.5;
+      const speed = 100 + Math.random() * 80;
       newParticles.push({
         id: Date.now() + i,
         x: 50,
         y: 50,
-        vx: Math.cos(angle) * (80 + Math.random() * 60),
-        vy: Math.sin(angle) * (80 + Math.random() * 60),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
         color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
-        size: 5 + Math.random() * 8,
+        size: 6 + Math.random() * 10,
         rotation: Math.random() * 360,
       });
     }
     setParticles(newParticles);
-    setTimeout(() => setParticles([]), 800);
+    setTimeout(() => setParticles([]), 1000);
   }, []);
 
   const handleComplete = useCallback(() => {
     if (isCompleting) return;
-    setIsCompleting(true);
 
-    // Flash
+    // === PHASE 1: IMPACT (0ms) — Immediate visceral hit ===
     setShowFlash(true);
-    setTimeout(() => setShowFlash(false), 300);
-
-    // GlowRing + GoldShimmer
-    setShowGlow(true);
-
-    // Layered sounds: celebrate + chime
+    setShowImpact(true);
     audio.playUI('celebrate');
-    setTimeout(() => audio.playUI('chime'), 200);
     hapticCelebration();
 
-    // Confetti burst
-    setTimeout(() => spawnParticles(), 80);
+    // === PHASE 2: WEIGHT (100ms) — Let the moment breathe ===
+    setTimeout(() => {
+      setShowFlash(false);
+      setShowGlow(true);
+      setShowSweep(true);
+      setShowConfetti(true);
+      audio.playUI('chime');
+      customHaptic([30, 40, 50, 30, 70]);
+    }, 100);
 
-    // Signal parent after animations
-    setTimeout(() => onComplete(task.id), 700);
-  }, [isCompleting, audio, hapticCelebration, spawnParticles, onComplete, task.id]);
+    // === PHASE 3: ERUPTION (250ms) — Particle burst + second sound layer ===
+    setTimeout(() => {
+      spawnParticles();
+      audio.playUI('pop');
+    }, 250);
+
+    // === PHASE 4: GLORY HOLD (500ms) — Let them SEE what they did ===
+    setTimeout(() => {
+      setShowImpact(false);
+      setShowSweep(false);
+    }, 800);
+
+    // === PHASE 5: GRACEFUL COLLAPSE (1200ms) — Dramatic weighted fall ===
+    setTimeout(() => {
+      setIsCompleting(true);
+      setIsCollapsing(true);
+    }, 1200);
+
+    // === PHASE 6: SIGNAL PARENT (2000ms) — After full animation ===
+    setTimeout(() => onComplete(task.id), 2000);
+  }, [isCompleting, audio, hapticCelebration, customHaptic, spawnParticles, onComplete, task.id]);
 
   // Cross-off hook
   const crossOff = useCrossOff({
@@ -116,17 +140,18 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
       layout
       initial={isNew ? { opacity: 0, scale: 1.25, y: -35 } : { opacity: 1 }}
       animate={{
-        opacity: isCompleting ? 0 : 1,
-        scale: isCompleting ? 0.8 : 1,
-        height: isCompleting ? 0 : 'auto',
-        marginBottom: isCompleting ? 0 : 12,
-        y: 0,
+        opacity: isCollapsing ? 0 : 1,
+        scale: isCollapsing ? 0.3 : 1,
+        height: isCollapsing ? 0 : 'auto',
+        marginBottom: isCollapsing ? 0 : 12,
+        y: isCollapsing ? -20 : 0,
+        filter: isCollapsing ? 'blur(8px)' : 'blur(0px)',
       }}
       transition={
         isNew
           ? { type: 'spring', stiffness: 800, damping: 12, mass: 0.8 }
-          : isCompleting
-            ? { duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.2 }
+          : isCollapsing
+            ? { duration: 0.8, ease: [0.4, 0, 0.2, 1] }
             : { type: 'spring', stiffness: 400, damping: 25 }
       }
       onAnimationComplete={() => {
@@ -184,11 +209,12 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
           </motion.div>
         </div>
 
-        {/* Cross-off line overlay */}
-        {cardDimensions.width > 0 && !isCompleting && (
+        {/* Cross-off line overlay — stays visible through completion celebration */}
+        {cardDimensions.width > 0 && !isCollapsing && (
           <CrossOffLine
             startPoint={crossOff.startPoint}
             currentPoint={crossOff.currentPoint}
+            points={crossOff.points}
             isActive={crossOff.isActive}
             isComplete={crossOff.isComplete}
             progress={crossOff.progress}
@@ -197,17 +223,70 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
           />
         )}
 
-        {/* Flash overlay */}
+        {/* Flash overlay — immediate white-gold burst */}
         <AnimatePresence>
           {showFlash && (
             <motion.div
-              className="absolute inset-0 rounded-2xl bg-gradient-to-r from-amber-400/70 to-yellow-300/70 pointer-events-none"
+              className="absolute inset-0 rounded-2xl pointer-events-none"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.8, 0] }}
+              animate={{ opacity: [0, 1, 0.6, 0] }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ zIndex: 20 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                zIndex: 20,
+                background: 'radial-gradient(circle at center, rgba(255,255,255,0.9) 0%, rgba(251,191,36,0.7) 40%, rgba(245,158,11,0.3) 70%, transparent 100%)',
+              }}
             />
+          )}
+        </AnimatePresence>
+
+        {/* Impact shockwave — expanding ring on completion */}
+        <AnimatePresence>
+          {showImpact && (
+            <>
+              <motion.div
+                className="absolute inset-0 rounded-2xl pointer-events-none"
+                initial={{ opacity: 0.8, scale: 1 }}
+                animate={{ opacity: 0, scale: 1.6 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.7, ease: 'easeOut' }}
+                style={{
+                  zIndex: 21,
+                  border: '3px solid rgba(251,191,36,0.6)',
+                  borderRadius: '16px',
+                }}
+              />
+              <motion.div
+                className="absolute inset-0 rounded-2xl pointer-events-none"
+                initial={{ opacity: 0.5, scale: 1 }}
+                animate={{ opacity: 0, scale: 2 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
+                style={{
+                  zIndex: 21,
+                  border: '2px solid rgba(251,191,36,0.3)',
+                  borderRadius: '16px',
+                }}
+              />
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Completion text stamp — "DONE" that appears briefly */}
+        <AnimatePresence>
+          {showImpact && (
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              initial={{ opacity: 0, scale: 0.3, rotate: -15 }}
+              animate={{ opacity: [0, 1, 1, 0], scale: [0.3, 1.1, 1, 0.95], rotate: [-15, 3, 0, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              style={{ zIndex: 25 }}
+            >
+              <span className="text-3xl font-black text-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.8)] tracking-widest">
+                CONQUERED
+              </span>
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -230,12 +309,12 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
               animate={{
                 x: p.vx,
                 y: p.vy,
-                opacity: [1, 1, 0],
-                scale: [0.3, 1.4, 0.1],
-                rotate: p.rotation + 500,
+                opacity: [1, 1, 0.8, 0],
+                scale: [0.3, 1.8, 1.2, 0],
+                rotate: p.rotation + 720,
               }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
             />
           ))}
         </AnimatePresence>
@@ -262,11 +341,17 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
         )}
       </div>
 
+      {/* LightSweep on completion — golden sweep across the card */}
+      <LightSweep active={showSweep} color="#fbbf24" duration={0.8} />
+
       {/* GlowRing on completion — expanding golden rings */}
-      <GlowRing active={showGlow} rings={3} color="#fbbf24" />
+      <GlowRing active={showGlow} rings={4} color="#fbbf24" />
 
       {/* GoldShimmer on completion — rising golden particles */}
-      <GoldShimmer active={showGlow} variant="gold" intensity="intense" duration={1500} />
+      <GoldShimmer active={showGlow} variant="gold" intensity="intense" duration={2000} />
+
+      {/* Confetti burst on completion */}
+      <Confetti active={showConfetti} particleCount={30} duration={2000} />
     </motion.div>
   );
 }
