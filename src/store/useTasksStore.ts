@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DAILY TASKS STORE - "Scratch & Conquer"
+// DAILY TASKS STORE - Cross & Conquer
 // ═══════════════════════════════════════════════════════════════════════════
 
 function getTodayString(): string {
@@ -20,8 +20,8 @@ export interface DailyTask {
   text: string;
   createdAt: string;
   completedAt: string | null;
-  scratchProgress: number; // 0-100
-  dateKey: string;         // YYYY-MM-DD
+  crossedOff: boolean;
+  dateKey: string; // YYYY-MM-DD
 }
 
 interface TasksState {
@@ -31,7 +31,6 @@ interface TasksState {
 
 interface TasksActions {
   addTask: (text: string) => DailyTask;
-  updateScratchProgress: (taskId: string, progress: number) => void;
   completeTask: (taskId: string) => void;
   removeTask: (taskId: string) => void;
   getTodaysTasks: () => DailyTask[];
@@ -52,26 +51,18 @@ export const useTasksStore = create<TasksState & TasksActions>()(
           text: text.trim(),
           createdAt: new Date().toISOString(),
           completedAt: null,
-          scratchProgress: 0,
+          crossedOff: false,
           dateKey: getTodayString(),
         };
         set(state => ({ tasks: [task, ...state.tasks] }));
         return task;
       },
 
-      updateScratchProgress: (taskId, progress) => {
-        set(state => ({
-          tasks: state.tasks.map(t =>
-            t.id === taskId ? { ...t, scratchProgress: Math.min(100, progress) } : t
-          ),
-        }));
-      },
-
       completeTask: (taskId) => {
         set(state => ({
           tasks: state.tasks.map(t =>
             t.id === taskId
-              ? { ...t, completedAt: new Date().toISOString(), scratchProgress: 100 }
+              ? { ...t, completedAt: new Date().toISOString(), crossedOff: true }
               : t
           ),
           totalTasksCompleted: state.totalTasksCompleted + 1,

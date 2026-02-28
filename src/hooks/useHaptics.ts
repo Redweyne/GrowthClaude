@@ -69,8 +69,11 @@ const HAPTIC_PATTERNS = {
   // Task stamp — heavy thud when task is added
   taskStamp: [50, 30, 80],
 
-  // Scratch pulse — single pulse for continuous scratch feedback
-  scratchPulse: [15],
+  // Cross-off pulse — single pulse for continuous cross-off feedback
+  crossOffPulse: [30],
+
+  // Cross-off completion — heavy celebration burst
+  crossOffComplete: [40, 30, 60, 30, 80],
 };
 
 type HapticType = keyof typeof HAPTIC_PATTERNS;
