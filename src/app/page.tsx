@@ -60,6 +60,7 @@ type AppView =
   | 'echoes'
   | 'echo-review'
   | 'tasks'
+  | 'worlds'
   | 'spark'
   | 'spark-unlock';
 
@@ -308,6 +309,7 @@ export default function Home() {
     switch (tab) {
       case 'home': setCurrentView('home'); break;
       case 'journey': setCurrentView('map'); break;
+      case 'worlds': setCurrentView('worlds'); break;
       case 'tasks': setCurrentView('tasks'); break;
       case 'spark':
         if (dailyFlowState.currentPhase === 'complete') {
@@ -654,6 +656,33 @@ export default function Home() {
           onSkip={handleEchoReviewSkip}
         />
       </>
+    );
+  }
+
+  // Worlds — wisdom worlds (coming soon)
+  if (currentView === 'worlds') {
+    return (
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 min-h-0 flex flex-col items-center justify-center bg-stone-950 light:bg-stone-50 px-6 text-center"
+          style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
+        >
+          <div className="text-6xl mb-6">🌍</div>
+          <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-3">Wisdom Worlds</h1>
+          <p className="text-stone-400 light:text-stone-500 text-base max-w-xs leading-relaxed">
+            Explore different worlds of wisdom, each with unique lessons and perspectives.
+          </p>
+          <div className="mt-8 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+            <p className="text-amber-400 light:text-amber-600 text-sm font-semibold">Coming Soon</p>
+            <p className="text-stone-500 light:text-stone-400 text-xs mt-1">This feature is currently under development</p>
+          </div>
+        </main>
+        <BottomNavBar
+          activeTab="worlds"
+          onTabChange={handleTabChange}
+          isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
+          unreadEchoCount={totalUnreadCount}
+        />
+      </div>
     );
   }
 
