@@ -109,27 +109,18 @@ function ensureContext(): void {
 }
 
 /**
- * Start playing background music
- * If already playing, does nothing
+ * Internal: create Howl and start playback for the track at state.currentTrackIndex.
+ * Does NOT change the index — caller is responsible for setting it first.
  */
-function start(): void {
-  log('start() called, isPlaying:', state.isPlaying);
-
+function playCurrentTrack(): void {
   wantsToPlay = true;
   ensureContext();
 
-  // If already playing, just make sure context is active
-  if (state.isPlaying && state.currentTrack) {
-    return;
-  }
-
-  // Randomize track selection each time music starts fresh
-  state.currentTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
   const trackInfo = MUSIC_TRACKS[state.currentTrackIndex];
   const fullPath = getBasePath() + trackInfo.path;
   log('Starting track:', trackInfo.name, fullPath);
 
-  // Notify subscribers of new track
+  // Notify subscribers of the track we're about to play
   notifyTrackChange();
 
   // Clean up old track if exists
@@ -190,13 +181,31 @@ function start(): void {
 
   state.currentTrack = howl;
   applyMuteState(howl, state.isMuted, state.currentPlayId);
-  
+
   // Play immediately - with html5:true this will start as soon as enough is buffered
   log('Calling play()');
   howl.play();
-  
+
   // Mark as playing optimistically (onplay will confirm)
   state.isPlaying = true;
+}
+
+/**
+ * Start playing background music (picks a random track)
+ * If already playing, does nothing
+ */
+function start(): void {
+  log('start() called, isPlaying:', state.isPlaying);
+
+  // If already playing, just make sure context is active
+  if (state.isPlaying && state.currentTrack) {
+    ensureContext();
+    return;
+  }
+
+  // Randomize track selection each time music starts fresh
+  state.currentTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
+  playCurrentTrack();
 }
 
 /**
@@ -246,12 +255,12 @@ function changeTrack(): void {
 
   log('Changed to track index:', state.currentTrackIndex);
 
-  // Notify subscribers of track change
-  notifyTrackChange();
-  
-  // If was playing, start the new track
+  // If was playing, start the new track (playCurrentTrack, NOT start — start re-randomizes)
   if (wasPlaying) {
-    start();
+    playCurrentTrack();
+  } else {
+    // Even if not playing, notify subscribers so the UI label updates
+    notifyTrackChange();
   }
 }
 
