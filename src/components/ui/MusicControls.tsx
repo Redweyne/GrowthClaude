@@ -37,6 +37,16 @@ export function MusicControls({ show = true }: MusicControlsProps) {
     }
   }, [soundEnabled]);
 
+  // Subscribe to track changes so the label always reflects the actual playing track
+  useEffect(() => {
+    const unsubscribe = backgroundMusic.subscribe((trackName) => {
+      setCurrentTrack(trackName);
+    });
+    // Also sync the current track name on mount in case it already changed
+    setCurrentTrack(backgroundMusic.getCurrentTrackName());
+    return unsubscribe;
+  }, []);
+
   const shouldIgnoreEvent = useCallback(() => {
     const now = Date.now();
     if (now - lastInteractionRef.current < DEBOUNCE_MS) {
@@ -78,7 +88,7 @@ export function MusicControls({ show = true }: MusicControlsProps) {
 
     try {
       backgroundMusic.changeTrack();
-      setCurrentTrack(backgroundMusic.getCurrentTrackName());
+      // Track label update is handled by the subscription listener
     } catch (err) {
       console.warn('[MusicControls] Error changing track:', err);
     }

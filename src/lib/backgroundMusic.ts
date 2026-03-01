@@ -82,6 +82,22 @@ function applyMuteState(track: Howl, muted: boolean, playId: number | null): voi
 // Track if we want to play (for async loading)
 let wantsToPlay = false;
 
+// Subscriber system for track change notifications
+const trackChangeListeners = new Set<(trackName: TrackName) => void>();
+
+function notifyTrackChange(): void {
+  const name = MUSIC_TRACKS[state.currentTrackIndex].name;
+  trackChangeListeners.forEach(listener => {
+    try { listener(name); } catch (e) { log('Listener error:', e); }
+  });
+}
+
+function subscribe(callback: (trackName: TrackName) => void): () => void {
+  trackChangeListeners.add(callback);
+  return () => { trackChangeListeners.delete(callback); };
+}
+
+
 /**
  * Ensure AudioContext is running (crucial for iOS)
  */
@@ -112,6 +128,9 @@ function start(): void {
   const trackInfo = MUSIC_TRACKS[state.currentTrackIndex];
   const fullPath = getBasePath() + trackInfo.path;
   log('Starting track:', trackInfo.name, fullPath);
+
+  // Notify subscribers of new track
+  notifyTrackChange();
 
   // Clean up old track if exists
   if (state.currentTrack) {
@@ -224,8 +243,11 @@ function changeTrack(): void {
   state.currentTrackIndex = (state.currentTrackIndex + 1) % MUSIC_TRACKS.length;
   state.isPlaying = false;
   state.currentPlayId = null;
-  
+
   log('Changed to track index:', state.currentTrackIndex);
+
+  // Notify subscribers of track change
+  notifyTrackChange();
   
   // If was playing, start the new track
   if (wasPlaying) {
@@ -321,6 +343,7 @@ export const backgroundMusic = {
   getCurrentTrackName,
   setVolume,
   cleanup,
+  subscribe,
   TRACKS: MUSIC_TRACKS,
 };
 

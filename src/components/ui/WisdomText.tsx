@@ -76,11 +76,13 @@ const variantStyles = {
   },
 };
 
-// ─── Speed Configs (sentence-level timing) ───────────────────────────────────
+// ─── Speed Configs (adaptive word-count-based timing) ────────────────────────
 
 interface SpeedConfig {
   initialDelay: number;   // ms before first sentence
-  interval: number;       // fixed ms between each sentence reveal
+  msPerWord: number;      // ms per word (based on ~200 WPM comfortable reading)
+  minInterval: number;    // minimum ms per sentence (even short ones need time to land)
+  maxInterval: number;    // maximum ms per sentence (cap for very long sentences)
   fadeDuration: number;   // ms for sentence fade-in
   finalPause: number;     // ms after last sentence before onComplete
 }
@@ -88,23 +90,38 @@ interface SpeedConfig {
 const speedConfigs: Record<string, SpeedConfig> = {
   slow: {
     initialDelay: 300,
-    interval: 1400,
+    msPerWord: 320,       // ~187 WPM — deliberate, contemplative reading
+    minInterval: 700,
+    maxInterval: 4500,
     fadeDuration: 400,
     finalPause: 500,
   },
   normal: {
     initialDelay: 200,
-    interval: 1000,
+    msPerWord: 250,       // ~240 WPM — natural comfortable reading
+    minInterval: 550,
+    maxInterval: 3500,
     fadeDuration: 350,
     finalPause: 400,
   },
   fast: {
     initialDelay: 100,
-    interval: 650,
+    msPerWord: 170,       // ~350 WPM — brisk but readable
+    minInterval: 400,
+    maxInterval: 2500,
     fadeDuration: 250,
     finalPause: 300,
   },
 };
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function getSentenceDuration(sentence: string, config: SpeedConfig): number {
+  const wordCount = sentence.split(/\s+/).filter(Boolean).length;
+  return clamp(wordCount * config.msPerWord, config.minInterval, config.maxInterval);
+}
 
 // ─── Gradient detection ──────────────────────────────────────────────────────
 
@@ -165,9 +182,10 @@ export function WisdomText({
 
     setRevealed(0);
 
-    // Fixed interval between every sentence — consistent rhythm
+    // Adaptive timing: each sentence gets time proportional to its word count
+    let cumulativeTime = timing.initialDelay;
     for (let i = 0; i < sentences.length; i++) {
-      const revealAt = timing.initialDelay + i * timing.interval;
+      const revealAt = cumulativeTime;
       timersRef.current.push(
         setTimeout(() => {
           setRevealed(prev => Math.max(prev, i + 1));
@@ -178,10 +196,12 @@ export function WisdomText({
           }
         }, revealAt),
       );
+      // Add this sentence's reading time for the next sentence's reveal
+      cumulativeTime += getSentenceDuration(sentences[i], timing);
     }
 
     // onComplete after last sentence + final pause
-    const totalTime = timing.initialDelay + (sentences.length - 1) * timing.interval + timing.finalPause;
+    const totalTime = cumulativeTime + timing.finalPause;
     timersRef.current.push(
       setTimeout(() => onCompleteRef.current?.(), totalTime),
     );

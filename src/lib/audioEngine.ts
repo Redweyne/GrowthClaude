@@ -238,8 +238,13 @@ let activeAmbienceId: number | null = null;
 let pendingMusicStop: ReturnType<typeof setTimeout> | null = null;
 let pendingAmbienceStop: ReturnType<typeof setTimeout> | null = null;
 
-// Retry queue for failed audio
-const retryQueue: Array<() => void> = [];
+// Retry queue for failed audio (music/ambience only — NOT UI sounds)
+interface RetryEntry {
+  fn: () => void;
+  timestamp: number;
+}
+const retryQueue: RetryEntry[] = [];
+const RETRY_STALENESS_MS = 3000; // Skip retries older than 3 seconds
 
 // Stop lock - prevents multiple concurrent stop attempts
 let isStoppingAll = false;
@@ -370,12 +375,15 @@ async function unlockAudioAsync(): Promise<boolean> {
 
         if (success) {
           log('🔓 Audio unlock complete!');
-          // Process any queued retries
+          // Process any queued retries (skip stale entries)
+          const now = Date.now();
           while (retryQueue.length > 0) {
-            const retry = retryQueue.shift();
-            if (retry) {
+            const entry = retryQueue.shift();
+            if (entry && (now - entry.timestamp) < RETRY_STALENESS_MS) {
               log('Processing retry from queue');
-              setTimeout(retry, 50);
+              setTimeout(entry.fn, 50);
+            } else if (entry) {
+              log('Skipping stale retry entry');
             }
           }
         } else {
@@ -553,8 +561,9 @@ export function playUI(sound: UISound): void {
     const playId = cachedSound.play();
 
     if (playId === undefined || playId === null) {
-      logWarn(`UI sound failed to play: ${sound}, queueing retry`);
-      retryQueue.push(() => playUI(sound));
+      logWarn(`UI sound failed to play: ${sound} (dropped — UI sounds are ephemeral)`);
+      // UI sounds are one-shot and ephemeral. Do NOT queue for retry —
+      // replaying a stale tap/click sound seconds later causes phantom sounds.
     }
   } else {
     // Fallback: load and play
@@ -834,7 +843,7 @@ export function startAmbientMusic(type: AmbientSound, fadeInDuration: number = 3
 
       // Queue retry (but only if not already retrying)
       if (retryQueue.length < 3) {
-        retryQueue.push(() => startAmbientMusic(type, fadeInDuration));
+        retryQueue.push({ fn: () => startAmbientMusic(type, fadeInDuration), timestamp: Date.now() });
       }
 
       if (howl) {
@@ -1021,7 +1030,7 @@ export function startWritingAmbience(type?: WritingAmbience): void {
       logError(`Failed to play ambience: ${ambienceType}`, error);
       // Limit retry queue size
       if (retryQueue.length < 3) {
-        retryQueue.push(() => startWritingAmbience(ambienceType));
+        retryQueue.push({ fn: () => startWritingAmbience(ambienceType), timestamp: Date.now() });
       }
     },
   });
@@ -1086,6 +1095,17 @@ export function stopWritingAmbience(immediate: boolean = false): void {
 // Aliases
 export const startAmbience = startWritingAmbience;
 export const stopAmbience = stopWritingAmbience;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLEAR RETRY QUEUE - Call on phase transitions to prevent stale sound replays
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function clearRetryQueue(): void {
+  if (retryQueue.length > 0) {
+    log(`Clearing ${retryQueue.length} stale retry entries`);
+    retryQueue.length = 0;
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STOP ALL AUDIO

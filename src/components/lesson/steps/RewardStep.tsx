@@ -80,6 +80,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   // Prevent double-playing sounds
   const hasPlayedRevealSound = useRef(false);
   const hasPlayedLevelUpSound = useRef(false);
+  const hasSkippedReveal = useRef(false);
 
   // Calculate values
   const safeXpEarned = xpEarned > 0 ? xpEarned : Math.max(lesson.xpReward ?? 0, 15);
@@ -124,26 +125,38 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     }
   }, [audio, haptics]);
 
-  // Auto-advance from reveal to crown
+  // Advance from reveal to crown (shared logic for auto-advance and tap-to-skip)
+  const advanceToCrown = useCallback(() => {
+    if (hasSkippedReveal.current) return;
+    hasSkippedReveal.current = true;
+
+    setPhase('crown');
+    haptics.hapticMedium();
+
+    // Trigger level-up effects if applicable
+    if (leveledUp && !hasPlayedLevelUpSound.current) {
+      hasPlayedLevelUpSound.current = true;
+      setShowLevelUpRing(true);
+      audio.playLevelUp();
+      audio.playCelebrate();
+      haptics.hapticCelebration();
+    }
+  }, [leveledUp, audio, haptics]);
+
+  // Auto-advance from reveal to crown (reduced from 2.5s to 1.5s)
   useEffect(() => {
     if (phase !== 'reveal') return;
 
-    const timer = setTimeout(() => {
-      setPhase('crown');
-      haptics.hapticMedium();
-
-      // Trigger level-up effects if applicable
-      if (leveledUp && !hasPlayedLevelUpSound.current) {
-        hasPlayedLevelUpSound.current = true;
-        setShowLevelUpRing(true);
-        audio.playLevelUp();
-        audio.playCelebrate();
-        haptics.hapticCelebration();
-      }
-    }, 2500); // 2.5 seconds for reveal
-
+    const timer = setTimeout(advanceToCrown, 1500);
     return () => clearTimeout(timer);
-  }, [phase, leveledUp, audio, haptics]);
+  }, [phase, advanceToCrown]);
+
+  // Tap/click to skip reveal phase immediately
+  const handleRevealTap = useCallback(() => {
+    if (phase === 'reveal') {
+      advanceToCrown();
+    }
+  }, [phase, advanceToCrown]);
 
   // Handle completion
   const handleContinue = useCallback(() => {
@@ -184,18 +197,22 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     };
   }, [phase, safeXpEarned, audio]);
 
-  // Keyboard support
+  // Keyboard support (Enter/Space works in both phases)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Enter' || e.key === ' ') && phase === 'crown') {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        handleContinue();
+        if (phase === 'reveal') {
+          handleRevealTap();
+        } else if (phase === 'crown') {
+          handleContinue();
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [phase, handleContinue]);
+  }, [phase, handleContinue, handleRevealTap]);
 
   return (
     <div
@@ -247,11 +264,15 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
         {phase === 'reveal' && (
           <motion.div
             key="reveal"
-            className="flex flex-col items-center justify-center text-center"
+            className="flex flex-col items-center justify-center text-center cursor-pointer"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.5 }}
+            onClick={handleRevealTap}
+            role="button"
+            tabIndex={0}
+            aria-label="Tap to continue"
           >
             {/* App branding — subtle top mark */}
             <motion.p
@@ -309,28 +330,15 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               transition={{ delay: 0.9, duration: 0.6 }}
             />
 
-            {/* Subtle pulse indicator that it will auto-advance */}
-            <motion.div
-              className="mt-8 flex gap-1.5"
+            {/* Tap to continue hint */}
+            <motion.p
+              className="mt-8 text-stone-500 light:text-stone-400 text-sm tracking-wide"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ delay: 1.5 }}
+              animate={{ opacity: [0, 0.6, 0.4, 0.6] }}
+              transition={{ delay: 0.6, duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-1.5 h-1.5 rounded-full bg-stone-500 light:bg-stone-400"
-                  animate={{
-                    opacity: [0.3, 1, 0.3],
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                  }}
-                />
-              ))}
-            </motion.div>
+              {t('common.tapToContinue') || 'Tap to continue'}
+            </motion.p>
           </motion.div>
         )}
 

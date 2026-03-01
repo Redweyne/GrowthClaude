@@ -847,56 +847,106 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   GRADIENT TEXT
+   GRADIENT TEXT — Modern Luminous Typography (2026)
+   Flowing gradients with glow, animated color shifts, and shimmer.
    ───────────────────────────────────────────────────────────────── */
 
+/* Shared animation for all gradient text */
+@keyframes gradientFlow {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+@keyframes textGlowPulse {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--glow-color, rgba(251, 191, 36, 0.25))); }
+  50% { filter: drop-shadow(0 0 16px var(--glow-color, rgba(251, 191, 36, 0.4))); }
+}
+
+/* One-time shimmer sweep — apply alongside gradient text for luxurious reveal */
+@keyframes shimmerSweep {
+  0% { mask-position: -200% center; -webkit-mask-position: -200% center; }
+  100% { mask-position: 200% center; -webkit-mask-position: 200% center; }
+}
+
 .gradient-text-gold {
-  color: var(--luminous-gold); /* Fallback for browsers without gradient text support */
-  background: var(--gradient-gold);
+  color: var(--luminous-gold);
+  background: linear-gradient(135deg, #fde68a 0%, #fbbf24 20%, #f59e0b 40%, #ea580c 60%, #f59e0b 80%, #fde68a 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientFlow 8s ease infinite, textGlowPulse 4s ease-in-out infinite;
+  --glow-color: rgba(251, 191, 36, 0.3);
 }
 
 .gradient-text-sunset {
-  color: var(--luminous-rose); /* Fallback */
-  background: var(--gradient-sunset);
+  color: var(--luminous-rose);
+  background: linear-gradient(135deg, #fda4af 0%, #f97316 20%, #ec4899 45%, #8b5cf6 70%, #f97316 90%, #fda4af 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientFlow 10s ease infinite, textGlowPulse 5s ease-in-out infinite;
+  --glow-color: rgba(249, 115, 22, 0.3);
 }
 
 .gradient-text-wisdom {
-  color: var(--luminous-purple); /* Fallback */
-  background: var(--gradient-wisdom);
+  color: var(--luminous-purple);
+  background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 20%, #6366f1 45%, #a78bfa 65%, #8b5cf6 85%, #c4b5fd 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientFlow 9s ease infinite, textGlowPulse 4.5s ease-in-out infinite;
+  --glow-color: rgba(139, 92, 246, 0.3);
 }
 
 .gradient-text-growth {
-  color: var(--luminous-emerald); /* Fallback */
-  background: var(--gradient-growth);
+  color: var(--luminous-emerald);
+  background: linear-gradient(135deg, #6ee7b7 0%, #059669 20%, #10b981 45%, #34d399 65%, #059669 85%, #6ee7b7 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientFlow 8s ease infinite, textGlowPulse 4s ease-in-out infinite;
+  --glow-color: rgba(16, 185, 129, 0.3);
 }
 
 .gradient-text-insight {
-  color: var(--luminous-indigo); /* Fallback */
-  background: var(--gradient-insight);
+  color: var(--luminous-indigo);
+  background: linear-gradient(135deg, #7dd3fc 0%, #0ea5e9 20%, #3b82f6 45%, #6366f1 65%, #3b82f6 85%, #7dd3fc 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientFlow 9s ease infinite, textGlowPulse 5s ease-in-out infinite;
+  --glow-color: rgba(59, 130, 246, 0.3);
 }
 
 /* Legacy alias */
 .gradient-text-warm {
-  color: var(--luminous-gold); /* Fallback */
-  background: var(--gradient-gold);
+  color: var(--luminous-gold);
+  background: linear-gradient(135deg, #fde68a 0%, #fbbf24 20%, #f59e0b 40%, #ea580c 60%, #f59e0b 80%, #fde68a 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientFlow 8s ease infinite, textGlowPulse 4s ease-in-out infinite;
+  --glow-color: rgba(251, 191, 36, 0.3);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .gradient-text-gold,
+  .gradient-text-sunset,
+  .gradient-text-wisdom,
+  .gradient-text-growth,
+  .gradient-text-insight,
+  .gradient-text-warm {
+    animation: none;
+    filter: none;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
