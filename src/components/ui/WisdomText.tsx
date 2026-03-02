@@ -80,6 +80,7 @@ const variantStyles = {
 
 interface SpeedConfig {
   initialDelay: number;   // ms before first sentence
+  baseDuration: number;   // ms flat base per sentence (smooths short vs long)
   msPerWord: number;      // ms per word (based on ~200 WPM comfortable reading)
   minInterval: number;    // minimum ms per sentence (even short ones need time to land)
   maxInterval: number;    // maximum ms per sentence (cap for very long sentences)
@@ -90,25 +91,28 @@ interface SpeedConfig {
 const speedConfigs: Record<string, SpeedConfig> = {
   slow: {
     initialDelay: 300,
-    msPerWord: 320,       // ~187 WPM — deliberate, contemplative reading
-    minInterval: 700,
-    maxInterval: 4500,
+    baseDuration: 250,
+    msPerWord: 300,       // ~200 WPM — deliberate, contemplative reading
+    minInterval: 750,
+    maxInterval: 4000,
     fadeDuration: 400,
     finalPause: 500,
   },
   normal: {
     initialDelay: 200,
-    msPerWord: 250,       // ~240 WPM — natural comfortable reading
-    minInterval: 550,
-    maxInterval: 3500,
+    baseDuration: 200,
+    msPerWord: 230,       // ~260 WPM — natural comfortable reading
+    minInterval: 600,
+    maxInterval: 3200,
     fadeDuration: 350,
     finalPause: 400,
   },
   fast: {
     initialDelay: 100,
-    msPerWord: 170,       // ~350 WPM — brisk but readable
-    minInterval: 400,
-    maxInterval: 2500,
+    baseDuration: 150,
+    msPerWord: 155,       // ~390 WPM — brisk but readable
+    minInterval: 450,
+    maxInterval: 2300,
     fadeDuration: 250,
     finalPause: 300,
   },
@@ -120,7 +124,7 @@ function clamp(value: number, min: number, max: number): number {
 
 function getSentenceDuration(sentence: string, config: SpeedConfig): number {
   const wordCount = sentence.split(/\s+/).filter(Boolean).length;
-  return clamp(wordCount * config.msPerWord, config.minInterval, config.maxInterval);
+  return clamp(config.baseDuration + wordCount * config.msPerWord, config.minInterval, config.maxInterval);
 }
 
 // ─── Gradient detection ──────────────────────────────────────────────────────

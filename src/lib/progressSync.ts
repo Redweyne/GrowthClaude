@@ -16,6 +16,7 @@ import { useTasksStore } from '@/store/useTasksStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useDailyPracticeStore } from '@/store/useDailyPracticeStore';
 import { useSparkStore } from '@/store/useSparkStore';
+import { getTodayDateString } from '@/types/dailyPractice';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -113,7 +114,15 @@ export async function loadAllProgress(userId: string): Promise<boolean> {
     }
 
     if (data.daily_practice_store && typeof data.daily_practice_store === 'object' && Object.keys(data.daily_practice_store).length > 0) {
-      useDailyPracticeStore.setState(data.daily_practice_store);
+      // Strip stale todayProgress so initializeToday() creates fresh daily state.
+      // Without this, yesterday's completed status would overwrite today's fresh progress.
+      const dailyData = { ...data.daily_practice_store } as Record<string, unknown>;
+      const todayProgress = dailyData.todayProgress as { date?: string } | null | undefined;
+      if (todayProgress?.date && todayProgress.date !== getTodayDateString()) {
+        dailyData.todayProgress = null;
+        dailyData.hasInitializedToday = false;
+      }
+      useDailyPracticeStore.setState(dailyData);
     }
 
     if (data.spark_store && typeof data.spark_store === 'object' && Object.keys(data.spark_store).length > 0) {

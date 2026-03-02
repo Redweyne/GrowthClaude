@@ -81,6 +81,8 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const hasPlayedRevealSound = useRef(false);
   const hasPlayedLevelUpSound = useRef(false);
   const hasSkippedReveal = useRef(false);
+  const hasStartedXpCount = useRef(false);
+  const audioRef = useRef(audio);
 
   // Calculate values
   const safeXpEarned = xpEarned > 0 ? xpEarned : Math.max(lesson.xpReward ?? 0, 15);
@@ -165,9 +167,14 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
     onComplete();
   }, [haptics, audio, onComplete]);
 
+  // Keep audio ref current
+  useEffect(() => { audioRef.current = audio; }, [audio]);
+
   // XP count-up animation
   useEffect(() => {
     if (phase !== 'crown') return;
+    if (hasStartedXpCount.current) return;
+    hasStartedXpCount.current = true;
 
     let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -178,7 +185,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       const increment = safeXpEarned / steps;
       let count = 0;
 
-      audio.playXpCounting(safeXpEarned, duration);
+      audioRef.current.playXpCounting(safeXpEarned, duration);
 
       intervalId = setInterval(() => {
         count++;
@@ -195,7 +202,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
       clearTimeout(startTimer);
       if (intervalId) clearInterval(intervalId);
     };
-  }, [phase, safeXpEarned, audio]);
+  }, [phase, safeXpEarned]);
 
   // Keyboard support (Enter/Space works in both phases)
   useEffect(() => {

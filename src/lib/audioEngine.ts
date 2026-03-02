@@ -1230,11 +1230,11 @@ export function stopBreathingGuide(): void {
 // XP COUNTING
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function playXpCounting(totalXp: number, duration: number = 1.5): void {
+export function playXpCounting(totalXp: number, durationMs: number = 1200): void {
   if (!ensureInitialized()) return;
 
   const ticks = Math.min(totalXp, 20);
-  const interval = (duration * 1000) / ticks;
+  const interval = durationMs / ticks;
 
   for (let i = 0; i < ticks; i++) {
     setTimeout(() => {
@@ -1244,7 +1244,7 @@ export function playXpCounting(totalXp: number, duration: number = 1.5): void {
 
   setTimeout(() => {
     playUI('success');
-  }, duration * 1000);
+  }, durationMs);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
