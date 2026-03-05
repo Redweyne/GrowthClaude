@@ -27,7 +27,6 @@ import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
 import { SettingsPanel } from '@/components/settings';
 import { useTransformationStory } from '@/hooks';
-import { useAudio } from '@/hooks/useAudio';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
 import { getLevelFromXp } from '@/types';
 import type { PublicReflection } from '@/types/echoes';
@@ -152,7 +151,6 @@ export default function Home() {
   const [activeStory, setActiveStory] = useState<TransformationStoryType | null>(null);
   const [showShareCard, setShowShareCard] = useState(false);
   const { generateStory, canGenerateStory, generateDemoStory } = useTransformationStory();
-  const { stopAllAudio } = useAudio();
   const prevOnboardingCompleteRef = useRef(onboardingComplete);
 
   // Coaching modal state (first-session guidance)
@@ -167,12 +165,12 @@ export default function Home() {
 
   useEffect(() => {
     if (!prevOnboardingCompleteRef.current && onboardingComplete) {
-      // Onboarding just completed - ensure all audio is stopped
-      // The debounce in audioEngine handles if this was already called by OnboardingFlow
-      stopAllAudio(true);
+      // Onboarding just completed - stop sound effects but NOT background music.
+      // Background music should continue seamlessly from onboarding into the app.
+      // It will be stopped naturally when the user navigates away from lesson view.
     }
     prevOnboardingCompleteRef.current = onboardingComplete;
-  }, [onboardingComplete, stopAllAudio]);
+  }, [onboardingComplete]);
 
   useEffect(() => {
     if (!onboardingComplete) return;

@@ -86,15 +86,9 @@ export function OnboardingFlow() {
     };
   }, [initializeAudio]);
 
-  // Cleanup audio when onboarding completes
-  useEffect(() => {
-    return () => {
-      // Only stop if audio was actually started during onboarding
-      // Note: We always call stop() since the component unmounting
-      // means we're leaving onboarding
-      backgroundMusic.stop();
-    };
-  }, []);
+  // Note: We intentionally do NOT stop music on unmount here.
+  // Music should continue seamlessly from onboarding into the main app.
+  // The main app (page.tsx) manages music lifecycle from here.
 
   // Play sounds on step changes
   useEffect(() => {
@@ -127,10 +121,8 @@ export function OnboardingFlow() {
       setDirection(1);
       setOnboardingStep(onboardingStep + 1);
     } else {
-      // Completing onboarding - IMMEDIATELY stop background music
-      backgroundMusic.stop();
-
-      // Small delay for clean transition, then complete
+      // Completing onboarding - let music continue playing seamlessly
+      // into the main app (it will be managed by the lesson view)
       setTimeout(() => {
         completeOnboarding();
       }, 100);

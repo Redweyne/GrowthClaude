@@ -42,14 +42,35 @@ interface MusicState {
   currentPlayId: number | null;
 }
 
+// Persist track index so it survives page reloads (e.g. OAuth redirects)
+const TRACK_INDEX_KEY = 'bgm_trackIndex';
+
+function loadSavedTrackIndex(): number {
+  if (typeof window === 'undefined') return 0;
+  const saved = localStorage.getItem(TRACK_INDEX_KEY);
+  if (saved !== null) {
+    const idx = parseInt(saved, 10);
+    if (!isNaN(idx) && idx >= 0 && idx < MUSIC_TRACKS.length) return idx;
+  }
+  return -1; // -1 means "no saved preference, pick random on first start"
+}
+
+function saveTrackIndex(index: number): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TRACK_INDEX_KEY, String(index));
+}
+
 const state: MusicState = {
   currentTrack: null,
-  currentTrackIndex: 0,
+  currentTrackIndex: Math.max(0, loadSavedTrackIndex()),
   isPlaying: false,
   isMuted: false,
   volume: 0.3,
   currentPlayId: null,
 };
+
+// Whether we have a saved track preference (vs fresh first-time user)
+const hasSavedTrack = loadSavedTrackIndex() >= 0;
 
 // Debug mode
 const DEBUG = typeof window !== 'undefined' && localStorage.getItem('MUSIC_DEBUG') === 'true';
@@ -191,8 +212,9 @@ function playCurrentTrack(): void {
 }
 
 /**
- * Start playing background music (picks a random track)
- * If already playing, does nothing
+ * Start playing background music.
+ * Resumes the last-played track if one was saved, otherwise picks random.
+ * If already playing, does nothing.
  */
 function start(): void {
   log('start() called, isPlaying:', state.isPlaying);
@@ -203,8 +225,12 @@ function start(): void {
     return;
   }
 
-  // Randomize track selection each time music starts fresh
-  state.currentTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
+  // Only randomize for first-time users who have no saved preference
+  if (!hasSavedTrack && !state.isPlaying) {
+    state.currentTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
+    saveTrackIndex(state.currentTrackIndex);
+  }
+
   playCurrentTrack();
 }
 
@@ -250,6 +276,7 @@ function changeTrack(): void {
   
   // Move to next track
   state.currentTrackIndex = (state.currentTrackIndex + 1) % MUSIC_TRACKS.length;
+  saveTrackIndex(state.currentTrackIndex);
   state.isPlaying = false;
   state.currentPlayId = null;
 
