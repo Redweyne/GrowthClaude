@@ -18,6 +18,7 @@ import { type Locale } from '@/i18n';
 import { chapter2_Resilience } from './modernWisdomChapter2';
 import { chapter3_Relationships } from './modernWisdomChapter3';
 import { lesson1Exercises, lesson2Exercises, lesson3Exercises, lesson4Exercises, lesson5Exercises } from './exerciseContent';
+import { localizeModernWisdomContent } from './localizeModernWisdomContent';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LESSON 1: THE WEIGHT YOU CARRY (Dichotomy of Control)
@@ -1073,7 +1074,8 @@ const MODERN_WISDOM_WORLD_BY_LOCALE: Record<Locale, Pick<FlexibleWorld, 'name' |
   },
 };
 
-// FR/AR translations: metadata is localized, lesson steps use EN (engagement flow content is language-independent for now)
+// Legacy locale-specific chapter constants are kept for reference.
+// Runtime localization now uses the English source world plus translation maps.
 const lesson1_FR: FlexibleLesson = { ...lesson1_InstantReframe, title: 'Le poids que tu portes', subtitle: 'D\u00e9couvre la question qui te lib\u00e8re', description: 'Une seule question a lib\u00e9r\u00e9 empereurs et prisonniers. Aujourd\u2019hui, elle te lib\u00e8re.', teaserText: "Demain, tu d\u00e9couvriras l'unique question qui lib\u00e8re empereurs et prisonniers depuis 2000 ans." };
 const lesson2_FR: FlexibleLesson = { ...lesson2_PowerOfTiny, title: 'Le pouvoir du minuscule', subtitle: 'Pourquoi 1% vaut mieux que 100%', description: 'D\u00e9couvre pourquoi les plus petites actions cr\u00e9ent les plus grands changements.', teaserText: "Demain, tu apprendras la r\u00e8gle des 2 minutes qui rend les habitudes impossibles \u00e0 rater." };
 const lesson3_FR: FlexibleLesson = { ...lesson3_ObstacleOpportunity, title: 'Le cadeau cach\u00e9', subtitle: 'Trouver l\u2019opportunit\u00e9 dans chaque obstacle', description: 'Apprends \u00e0 voir tes probl\u00e8mes comme du carburant pour grandir.', teaserText: "Demain, tu apprendras le secret ancien qui transforme chaque obstacle en ton plus grand avantage." };
@@ -1130,15 +1132,7 @@ export const modernWisdomWorld: FlexibleWorld = {
 };
 
 export function getModernWisdomWorld(locale: Locale): FlexibleWorld {
-  const localized = MODERN_WISDOM_WORLD_BY_LOCALE[locale] || MODERN_WISDOM_WORLD_BY_LOCALE.en;
-  const localizedChapter1 = CHAPTER1_FOUNDATIONS_BY_LOCALE[locale] || CHAPTER1_FOUNDATIONS_BY_LOCALE.en;
-  return {
-    ...modernWisdomWorld,
-    name: localized.name,
-    subtitle: localized.subtitle,
-    description: localized.description,
-    chapters: [localizedChapter1, chapter2_Resilience, chapter3_Relationships],
-  };
+  return localizeModernWisdomContent(modernWisdomWorld, locale);
 }
 
 export default modernWisdomWorld;

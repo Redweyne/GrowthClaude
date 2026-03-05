@@ -28,6 +28,7 @@ const en = {
     add: 'Add',
     copy: 'Copy',
     copied: 'Copied!',
+    tapToContinue: 'Tap to continue',
     share: 'Share',
     settings: 'Settings',
     profile: 'Profile',
@@ -307,6 +308,11 @@ const en = {
     revisitDeepen: 'Revisit and deepen',
     viewDashboard: 'View Dashboard',
     progressStats: 'Progress, stats, and more',
+    becoming: 'Becoming',
+    becomingMore: 'Becoming more',
+    lessons: 'lessons',
+    days: 'days',
+    bestStreak: 'Best streak',
 
     // Phases
     phases: {
@@ -565,6 +571,10 @@ const en = {
     dangerZone: 'Danger Zone',
     resetProgress: 'Reset All Progress',
     resetDesc: 'Delete all data and start fresh',
+    resetButton: 'Reset Everything',
+    confirmResetTitle: 'Reset All Progress?',
+    confirmResetDesc: 'This will permanently delete all your lessons, reflections, streak, and identity statements. You will start completely fresh.',
+    confirmReset: 'Yes, Reset',
     resetWarning: 'This will permanently delete all your progress, reflections, and echoes. This action cannot be undone.',
     resetConfirm: 'Yes, Reset Everything',
     resetCancel: 'Cancel',
