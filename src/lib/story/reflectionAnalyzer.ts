@@ -55,11 +55,11 @@ const GROWTH_NARRATIVE_COPY: Record<StoryLocale, {
     fallback: 'Your perspective has evolved meaningfully.',
   },
   fr: {
-    struggleToGrowth: 'Vous etes passe de la lutte a la progression.',
-    agency: 'Vous avez retrouve votre pouvoir d agir.',
-    depth: 'Votre introspection s est approfondie de facon nette.',
-    acceptance: 'Vous avez appris a accepter ce qui ne depend pas de vous.',
-    fallback: 'Votre regard sur les choses a evolue avec sens.',
+    struggleToGrowth: "Vous êtes passé de la lutte à la progression.",
+    agency: "Vous avez retrouvé votre pouvoir d'agir.",
+    depth: "Votre introspection s'est approfondie de façon nette.",
+    acceptance: "Vous avez appris à accepter ce qui ne dépend pas de vous.",
+    fallback: "Votre regard sur les choses a évolué avec sens.",
   },
   ar: {
     struggleToGrowth: 'انتقلت من الصراع إلى النمو.',

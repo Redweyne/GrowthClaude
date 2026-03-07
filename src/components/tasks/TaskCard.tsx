@@ -8,6 +8,7 @@ import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
 import { ShimmerOverlay, GlowRing, GoldShimmer, LightSweep } from '@/components/effects/GoldShimmer';
 import { Confetti } from '@/components/effects/Confetti';
+import { useTranslation } from '@/i18n';
 import type { DailyTask } from '@/store/useTasksStore';
 
 interface TaskCardProps {
@@ -33,7 +34,14 @@ const PARTICLE_COLORS = [
   '#a78bfa', '#fb7185',
 ];
 
+const CONQUERED_COPY = {
+  en: 'CONQUERED',
+  fr: 'ACCOMPLI',
+  ar: 'تم الإنجاز',
+} as const;
+
 export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
+  const { locale } = useTranslation();
   const [isCompleting, setIsCompleting] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [showGlow, setShowGlow] = useState(false);
@@ -284,7 +292,7 @@ export function TaskCard({ task, onComplete, isNew = false }: TaskCardProps) {
               style={{ zIndex: 25 }}
             >
               <span className="text-3xl font-black text-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.8)] tracking-widest">
-                CONQUERED
+                {CONQUERED_COPY[locale] ?? CONQUERED_COPY.en}
               </span>
             </motion.div>
           )}

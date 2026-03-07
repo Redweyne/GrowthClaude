@@ -78,7 +78,7 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
       monthlyAssessmentDue: 'Évaluation mensuelle disponible',
       measureTransformation: 'Mesurez votre transformation',
       yourGrowthSnapshot: 'Aperçu de votre progression',
-      quote: '"L âme se colore de la teinte de ses pensées."',
+      quote: "\"L'âme se colore de la teinte de ses pensées.\"",
       quoteAuthor: 'Marc Aurèle',
     },
     ar: {

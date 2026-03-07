@@ -200,7 +200,7 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
       },
       noAssessments: 'Aucune évaluation pour le moment',
       noAssessmentsBody: 'Complétez votre première évaluation mensuelle pour visualiser votre transformation.',
-      noAssessmentsQuote: '"Nul homme n est libre s il n est pas maître de lui-même." - Épictète',
+      noAssessmentsQuote: "\"Nul homme n'est libre s'il n'est pas maître de lui-même.\" - Épictète",
       yourGrowth: 'Votre progression',
       yourTransformation: 'Votre transformation',
       visualProof: 'Preuve visuelle de votre progression',

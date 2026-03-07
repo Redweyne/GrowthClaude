@@ -36,7 +36,7 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
     },
     fr: {
       motivations: [
-        'Que vas-tu conquérir aujourd hui ?',
+        "Que vas-tu conquérir aujourd'hui ?",
         'Nomme ta prochaine victoire.',
         'Une tâche de plus vers la grandeur.',
         'Écris-la. Assume-la. Réussis.',

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STREAK BADGE COMPONENT
@@ -93,6 +94,10 @@ export function StreakBadge({
   animated = false,
   showEmbers = true,
 }: StreakBadgeProps) {
+  const { locale } = useTranslation();
+  const dayLabel = locale === 'fr' ? (streak === 1 ? 'jour' : 'jours')
+    : locale === 'ar' ? (streak === 1 ? 'يوم' : 'أيام')
+    : (streak === 1 ? 'day' : 'days');
   const [embers, setEmbers] = useState<Ember[]>([]);
   const intensity = getFireIntensity(streak);
   const config = fireConfigs[intensity];
@@ -313,7 +318,7 @@ export function StreakBadge({
       {/* Label */}
       {showLabel && (
         <span className={`text-stone-400 light:text-stone-600 font-normal ${sizeConfig.text}`}>
-          {streak === 1 ? 'day' : 'days'}
+          {dayLabel}
         </span>
       )}
 

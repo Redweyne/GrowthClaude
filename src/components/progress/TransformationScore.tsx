@@ -169,7 +169,7 @@ export function TransformationScore({
       grades: {
         awakening: { title: 'Éveil', description: 'Vous avez ouvert les yeux au changement. Le parcours commence.' },
         emerging: { title: 'Émergence', description: 'Vous sortez de vos anciens schémas. Ils se relâchent déjà.' },
-        growing: { title: 'Croissance', description: 'La progression est réelle. Vous n êtes plus la même personne.' },
+        growing: { title: 'Croissance', description: "La progression est réelle. Vous n'êtes plus la même personne." },
         flourishing: { title: 'Épanouissement', description: 'Votre transformation est visible et concrète.' },
         transcending: { title: 'Transcendance', description: 'Vous êtes devenu ce que vous visiez. Vous allez encore plus loin.' },
       },

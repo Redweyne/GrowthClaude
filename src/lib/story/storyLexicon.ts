@@ -26,12 +26,12 @@
   ],
   perspective: [
     'perspective', 'realize', 'understand', 'bigger picture', 'view',
-    'perspective', 'realiser', 'comprendre', 'vue d ensemble', 'regard',
+    'perspective', 'réaliser', 'comprendre', "vue d'ensemble", 'regard',
     'المنظور', 'أدرك', 'ادرك', 'أفهم', 'افهم', 'الصورة الكبرى', 'نظرة'
   ],
   growth: [
     'growth', 'grow', 'learn', 'improve', 'progress',
-    'croissance', 'grandir', 'apprendre', 'ameliorer', 'progres',
+    'croissance', 'grandir', 'apprendre', 'améliorer', 'progrès',
     'النمو', 'أنمو', 'انمو', 'أتعلم', 'اتعلم', 'أتحسن', 'اتحسن', 'تقدم'
   ],
   discipline: [
@@ -46,12 +46,12 @@
   ],
   anger: [
     'anger', 'angry', 'frustrated', 'frustration', 'rage', 'irritated',
-    'colere', 'colerique', 'frustre', 'frustration', 'rage', 'irrite',
+    'colère', 'colérique', 'frustré', 'frustration', 'rage', 'irrité',
     'الغضب', 'غاضب', 'منزعج', 'إحباط', 'احباط', 'غيظ'
   ],
   fear: [
     'fear', 'afraid', 'scared', 'worry', 'worried', 'anxious', 'anxiety',
-    'peur', 'effraye', 'inquiet', 'anxieux', 'anxiete',
+    'peur', 'effrayé', 'inquiet', 'anxieux', 'anxiété',
     'الخوف', 'خائف', 'قلق', 'أقلق', 'اقلق', 'توتر', 'القلق'
   ],
   comparison: [
@@ -61,17 +61,17 @@
   ],
   procrastination: [
     'procrastinate', 'delay', 'putting off', 'avoid', 'later', 'tomorrow',
-    'procrastiner', 'retarder', 'remettre', 'eviter', 'plus tard', 'demain',
+    'procrastiner', 'retarder', 'remettre', 'éviter', 'plus tard', 'demain',
     'التسويف', 'أؤجل', 'اؤجل', 'تأجيل', 'أتجنب', 'اتجنب', 'لاحقا', 'غدا'
   ],
   presence: [
     'present', 'moment', 'now', 'here', 'mindful', 'aware', 'awareness',
-    'present', 'moment', 'maintenant', 'ici', 'conscient', 'attention',
+    'présent', 'moment', 'maintenant', 'ici', 'conscient', 'attention',
     'الحاضر', 'اللحظة', 'الآن', 'هنا', 'وعي', 'منتبه', 'انتباه'
   ],
   resilience: [
     'resilience', 'resilient', 'bounce back', 'overcome', 'despite', 'keep going',
-    'resilience', 'resilient', 'rebondir', 'surmonter', 'malgre', 'continuer',
+    'résilience', 'résilient', 'rebondir', 'surmonter', 'malgré', 'continuer',
     'المرونة', 'الصمود', 'أتجاوز', 'اتجاوز', 'رغم', 'أواصل', 'اواصل'
   ],
 };
@@ -82,8 +82,8 @@ export const STRUGGLE_INDICATORS = [
   'overwhelmed', 'confused', 'lost', 'stuck', 'fail', 'failed', 'failing',
   "can't", 'cannot', 'unable', 'fear', 'afraid', 'scared', 'doubt', 'doubting',
   'angry', 'anger', 'upset', 'discouraged', 'hopeless', 'helpless', 'weak',
-  'difficile', 'dur', 'frustre', 'anxieux', 'stress', 'perdu', 'bloque',
-  'peur', 'doute', 'colere', 'abattu', 'faible', 'impossible',
+  'difficile', 'dur', 'frustré', 'anxieux', 'stressé', 'perdu', 'bloqué',
+  'peur', 'doute', 'colère', 'abattu', 'faible', 'impossible',
   'صعب', 'مرهق', 'مرهقة', 'متوتر', 'قلق', 'ضائع', 'عالق', 'فشل', 'أخاف', 'اخاف',
   'خائف', 'غاضب', 'محبط', 'ضعيف', 'مستحيل'
 ];
@@ -97,9 +97,9 @@ export const GROWTH_INDICATORS = [
   'gratitude', 'appreciate', 'strong', 'stronger', 'courage', 'confident',
   'clarity', 'clear', 'focused', 'discipline', 'patient', 'patience', 'wisdom',
   'perspective', 'let go', 'release',
-  'realiser', 'comprendre', 'apprendre', 'accepter', 'paix', 'calme', 'choisir',
-  'remarquer', 'conscient', 'present', 'respirer', 'pause', 'progres', 'meilleur',
-  'reconnaissant', 'fort', 'courage', 'confiant', 'clarte', 'focalise', 'sagesse',
+  'réaliser', 'comprendre', 'apprendre', 'accepter', 'paix', 'calme', 'choisir',
+  'remarquer', 'conscient', 'présent', 'respirer', 'pause', 'progrès', 'meilleur',
+  'reconnaissant', 'fort', 'courage', 'confiant', 'clarté', 'focalisé', 'sagesse',
   'أدرك', 'ادرك', 'أفهم', 'افهم', 'أتعلم', 'اتعلم', 'أتقبل', 'اتقبل', 'سلام',
   'هدوء', 'أختار', 'اختار', 'ألاحظ', 'الوعي', 'الحاضر', 'أتنفس', 'اتنفس',
   'تقدم', 'أفضل', 'أقوى', 'اقوى', 'شجاعة', 'ثقة', 'وضوح', 'تركيز', 'حكمة', 'منظور'
@@ -111,8 +111,8 @@ export const AGENCY_INDICATORS = [
   'act', 'created', 'create', 'built', 'build', 'changed', 'change',
   'transformed', 'transform', 'practiced', 'practice', 'applied', 'apply',
   'implemented', 'implement', 'tried', 'try', 'experimented', 'experiment',
-  'decide', 'choisi', 'pris', 'commence', 'engage', 'agi', 'cree', 'construit',
-  'change', 'pratique', 'applique', 'essaie', 'j ai',
+  'décidé', 'choisi', 'pris', 'commencé', 'engagé', 'agi', 'créé', 'construit',
+  'changé', 'pratiqué', 'appliqué', 'essayé', "j'ai",
   'قررت', 'أقرر', 'اقرر', 'اخترت', 'أختار', 'اخذت', 'أخذت', 'بدأت', 'ابتدأت',
   'التزمت', 'تصرفت', 'فعلت', 'أنشأت', 'انشأت', 'بنيت', 'غيرت', 'مارست', 'طبقت',
   'حاولت', 'جربت'
@@ -123,8 +123,8 @@ export const INTROSPECTION_INDICATORS = [
   "i've been", 'i have been', "i've learned", 'i have learned',
   'myself', 'my mind', 'my thoughts', 'my feelings', 'my emotions',
   'my reaction', 'my response', 'my behavior', 'my pattern', 'my habit',
-  'je realise', 'j ai remarque', 'je comprends', 'je vois', 'je ressens', 'je suis',
-  'moi', 'mon esprit', 'mes pensees', 'mes emotions', 'ma reaction', 'ma reponse',
+  'je réalise', "j'ai remarqué", 'je comprends', 'je vois', 'je ressens', 'je suis',
+  'moi', 'mon esprit', 'mes pensées', 'mes émotions', 'ma réaction', 'ma réponse',
   'أدرك أنني', 'ادرك انني', 'لاحظت أنني', 'لاحظت انني', 'أفهم', 'افهم', 'أرى', 'ارى',
   'أشعر', 'اشعر', 'أنا', 'نفسي', 'أفكاري', 'افكاري', 'مشاعري', 'ردة فعلي', 'سلوكي'
 ];

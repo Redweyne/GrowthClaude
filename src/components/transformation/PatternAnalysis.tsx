@@ -71,7 +71,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
       growthThemes: 'Thèmes de progression',
       workingThrough: 'En cours de travail',
       mentions: 'mentions',
-      obstacleQuote: '"L obstacle est le chemin." - Marc Aurèle',
+      obstacleQuote: "\"L'obstacle est le chemin.\" - Marc Aurèle",
       allDetectedPatterns: 'Tous les schémas détectés',
       labels: {
         control: 'Contrôle',

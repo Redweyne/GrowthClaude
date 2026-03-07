@@ -50,10 +50,10 @@ export function DailyTasksView() {
       emptyTitle: 'Votre liste est vide',
       emptyBody: 'Touchez le bouton doré pour ajouter votre première tâche',
       allDoneTitle: 'Vous avez tout conquis',
-      crossedOffToday: '{count} tâche{suffix} cochée aujourd hui',
+      crossedOffToday: "{count} tâche{suffix} cochée aujourd'hui",
       addTaskAria: 'Ajouter une tâche',
       crushedIt: 'Mission accomplie !',
-      conqueredToday: '{count} tâche{suffix} accomplie aujourd hui',
+      conqueredToday: "{count} tâche{suffix} accomplie aujourd'hui",
     },
     ar: {
       title: 'مهام اليوم',
