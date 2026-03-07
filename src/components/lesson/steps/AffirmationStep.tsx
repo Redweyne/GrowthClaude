@@ -14,12 +14,19 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import type { AffirmationStep as AffirmationStepType } from '@/types/lessons';
 
 interface AffirmationStepProps {
   step: AffirmationStepType;
   onComplete: () => void;
 }
+
+const CONFIRMED_BY_LOCALE = {
+  en: 'Committed',
+  fr: 'Engagé',
+  ar: 'تم الالتزام',
+} as const;
 
 const STYLE_CONFIG = {
   commitment: {
@@ -61,6 +68,7 @@ const STYLE_CONFIG = {
 };
 
 export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
+  const { locale } = useTranslation();
   const [phase, setPhase] = useState<'pretext' | 'revealing' | 'solidified' | 'ready' | 'confirmed'>('pretext');
   const [visibleWords, setVisibleWords] = useState(0);
   const mountedRef = useRef(true);
@@ -254,7 +262,7 @@ export function AffirmationStep({ step, onComplete }: AffirmationStepProps) {
                   <Check size={32} className={config.accent} strokeWidth={3} />
                 </div>
                 <p className={`text-sm ${config.accent} font-medium tracking-wide`}>
-                  Committed
+                  {CONFIRMED_BY_LOCALE[locale] ?? CONFIRMED_BY_LOCALE.en}
                 </p>
               </motion.div>
             )}

@@ -27,10 +27,10 @@ import { useTransformationStory } from '@/hooks';
 import {
   generateHeroMessage,
   generatePersonalInsights,
-  generateJourneyMilestones,
   type ProgressContext,
   type PersonalInsight,
 } from '@/lib/progressInsights';
+import { useTranslation } from '@/i18n';
 
 interface ProgressDashboardProps {
   onBack: () => void;
@@ -120,6 +120,7 @@ export function ProgressDashboard({
   onOpenStory,
   onOpenDemoStory,
 }: ProgressDashboardProps) {
+  const { locale } = useTranslation();
   const {
     getProgressStats,
     totalXp,
@@ -135,6 +136,110 @@ export function ProgressDashboard({
 
   const { canGenerateStory, storyReadiness } = useTransformationStory();
   const [showAllInsights, setShowAllInsights] = useState(false);
+
+  const copy = {
+    en: {
+      title: 'Your Progress',
+      totalXp: 'Total XP',
+      level: 'Level',
+      xpThisLevel: '{xp} XP this level',
+      maxLevel: 'Max Level',
+      toNext: '{xp} to next',
+      viewStory: 'View Your Transformation Story',
+      reflectionsReady: '{count} reflections ready',
+      reflectionsNeeded: '{current}/{target} reflections needed',
+      lessonsCompleted: 'Lessons Completed',
+      reflectionsWritten: 'Reflections Written',
+      identityStatements: 'Identity Statements',
+      personalInsights: 'Personal Insights',
+      showLess: 'Show less',
+      viewAll: 'View all ({count})',
+      yourWords: 'Your Words',
+      wordsWritten: 'Words written',
+      avgPerReflection: 'Avg per reflection',
+      daysOnPath: 'Days on path',
+      writingBook: "You've written a small book about your transformation.",
+      writingThousand: 'Over a thousand words of self-discovery.',
+      writingStep: 'Every word is a step toward understanding yourself.',
+      writingBeginning: 'Your story is just beginning to be written.',
+      journeyDataProof: 'This is not just data. This is proof of who you are becoming.',
+      closingQuote: '"No man is free who is not master of himself."',
+      quoteAuthor: 'Epictetus',
+      withIntention: 'and kept showing up with intention.',
+      inDays: 'In {days} days',
+      completedLessons: 'completed {count} lessons',
+      wroteWords: 'you have written {count} words of reflection',
+      declaredStatements: 'declared {count} identity statement{suffix}',
+    },
+    fr: {
+      title: 'Votre progression',
+      totalXp: 'XP total',
+      level: 'Niveau',
+      xpThisLevel: '{xp} XP dans ce niveau',
+      maxLevel: 'Niveau max',
+      toNext: '{xp} avant le suivant',
+      viewStory: 'Voir votre histoire de transformation',
+      reflectionsReady: '{count} réflexions prêtes',
+      reflectionsNeeded: '{current}/{target} réflexions requises',
+      lessonsCompleted: 'Leçons terminées',
+      reflectionsWritten: 'Réflexions écrites',
+      identityStatements: 'Déclarations identitaires',
+      personalInsights: 'Observations personnelles',
+      showLess: 'Voir moins',
+      viewAll: 'Tout voir ({count})',
+      yourWords: 'Vos mots',
+      wordsWritten: 'Mots écrits',
+      avgPerReflection: 'Moyenne par réflexion',
+      daysOnPath: 'Jours sur le chemin',
+      writingBook: 'Vous avez écrit un petit livre sur votre transformation.',
+      writingThousand: 'Plus de mille mots de découverte de soi.',
+      writingStep: 'Chaque mot est un pas vers une meilleure compréhension de vous-même.',
+      writingBeginning: "Votre histoire commence tout juste à s'écrire.",
+      journeyDataProof: 'Ce ne sont pas seulement des données. C est la preuve de ce que vous devenez.',
+      closingQuote: '"Nul homme n est libre s il n est pas maître de lui-même."',
+      quoteAuthor: 'Épictète',
+      withIntention: 'et vous êtes resté présent avec intention.',
+      inDays: 'En {days} jours',
+      completedLessons: 'vous avez terminé {count} leçons',
+      wroteWords: 'vous avez écrit {count} mots de réflexion',
+      declaredStatements: 'déclaré {count} affirmation{suffix} identitaire',
+    },
+    ar: {
+      title: 'تقدمك',
+      totalXp: 'إجمالي XP',
+      level: 'المستوى',
+      xpThisLevel: '{xp} XP في هذا المستوى',
+      maxLevel: 'أقصى مستوى',
+      toNext: '{xp} للوصول للمستوى التالي',
+      viewStory: 'عرض قصة تحوّلك',
+      reflectionsReady: '{count} تأملات جاهزة',
+      reflectionsNeeded: '{current}/{target} تأملات مطلوبة',
+      lessonsCompleted: 'الدروس المكتملة',
+      reflectionsWritten: 'التأملات المكتوبة',
+      identityStatements: 'عبارات الهوية',
+      personalInsights: 'رؤى شخصية',
+      showLess: 'عرض أقل',
+      viewAll: 'عرض الكل ({count})',
+      yourWords: 'كلماتك',
+      wordsWritten: 'كلمات مكتوبة',
+      avgPerReflection: 'المتوسط لكل تأمل',
+      daysOnPath: 'أيام على الطريق',
+      writingBook: 'لقد كتبت كتاباً صغيراً عن تحوّلك.',
+      writingThousand: 'أكثر من ألف كلمة من اكتشاف الذات.',
+      writingStep: 'كل كلمة خطوة نحو فهم نفسك.',
+      writingBeginning: 'قصتك بدأت للتو في التشكل.',
+      journeyDataProof: 'هذه ليست مجرد بيانات. هذا دليل على من تصبح.',
+      closingQuote: '"لا يكون الإنسان حراً إن لم يكن سيد نفسه."',
+      quoteAuthor: 'إبكتيتوس',
+      withIntention: 'وواصلت الحضور بنية واضحة.',
+      inDays: 'خلال {days} يوماً',
+      completedLessons: 'أنجزت {count} درساً',
+      wroteWords: 'كتبت {count} كلمة تأملية',
+      declaredStatements: 'صرحت بـ {count} عبارة هوية{suffix}',
+    },
+  } as const;
+
+  const c = copy[locale] ?? copy.en;
 
   const stats = getProgressStats();
   const level = getLevelFromXp(totalXp);
@@ -163,9 +268,8 @@ export function ProgressDashboard({
   ]);
 
   // Generate personalized content
-  const heroMessage = useMemo(() => generateHeroMessage(progressContext), [progressContext]);
-  const insights = useMemo(() => generatePersonalInsights(progressContext), [progressContext]);
-  const milestones = useMemo(() => generateJourneyMilestones(progressContext), [progressContext]);
+  const heroMessage = useMemo(() => generateHeroMessage(progressContext, locale), [progressContext, locale]);
+  const insights = useMemo(() => generatePersonalInsights(progressContext, locale), [progressContext, locale]);
 
   // Top 2 insights for preview, all for expanded view
   const visibleInsights = showAllInsights ? insights : insights.slice(0, 2);
@@ -184,7 +288,7 @@ export function ProgressDashboard({
                 <ChevronLeft size={24} />
               </button>
               <div>
-                <h1 className="text-lg font-bold text-white light:text-stone-900">Your Progress</h1>
+                <h1 className="text-lg font-bold text-white light:text-stone-900">{c.title}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2 text-amber-400">
@@ -243,19 +347,19 @@ export function ProgressDashboard({
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white light:text-stone-900">{level.title}</h3>
-                <p className="text-sm text-indigo-300/70 light:text-indigo-700">Level {level.level}</p>
+                <p className="text-sm text-indigo-300/70 light:text-indigo-700">{c.level} {level.level}</p>
               </div>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-white light:text-stone-900">{totalXp.toLocaleString()}</div>
-              <div className="text-sm text-indigo-300/70 light:text-indigo-700">Total XP</div>
+              <div className="text-sm text-indigo-300/70 light:text-indigo-700">{c.totalXp}</div>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-indigo-300/70 light:text-indigo-700">
-              <span>{xpProgress.current} XP this level</span>
-              <span>{level.maxXp === Infinity ? 'Max Level' : `${xpProgress.needed - xpProgress.current} to next`}</span>
+              <span>{c.xpThisLevel.replace('{xp}', String(xpProgress.current))}</span>
+              <span>{level.maxXp === Infinity ? c.maxLevel : c.toNext.replace('{xp}', String(xpProgress.needed - xpProgress.current))}</span>
             </div>
             <div className="h-2 bg-indigo-950/50 light:bg-indigo-200 rounded-full overflow-hidden">
               <motion.div
@@ -277,11 +381,13 @@ export function ProgressDashboard({
           <StoryTrigger
             variant="card"
             onClick={onOpenStory}
-            label="View Your Transformation Story"
+            label={c.viewStory}
             subtitle={
               canGenerateStory
-                ? `${storyReadiness.reflectionCount} reflections ready`
-                : `${storyReadiness.minimumRequired.current}/${storyReadiness.minimumRequired.reflections} reflections needed`
+                ? c.reflectionsReady.replace('{count}', String(storyReadiness.reflectionCount))
+                : c.reflectionsNeeded
+                  .replace('{current}', String(storyReadiness.minimumRequired.current))
+                  .replace('{target}', String(storyReadiness.minimumRequired.reflections))
             }
             disabled={!canGenerateStory}
             showDemoOption={!!onOpenDemoStory}
@@ -298,7 +404,7 @@ export function ProgressDashboard({
         >
           <StatCard
             icon={BookOpen}
-            label="Lessons Completed"
+            label={c.lessonsCompleted}
             value={stats.totalLessons}
             color="text-blue-400"
             bgColor="from-blue-500/10 to-blue-600/5"
@@ -306,7 +412,7 @@ export function ProgressDashboard({
           />
           <StatCard
             icon={PenTool}
-            label="Reflections Written"
+            label={c.reflectionsWritten}
             value={stats.totalReflections}
             color="text-purple-400"
             bgColor="from-purple-500/10 to-purple-600/5"
@@ -314,7 +420,7 @@ export function ProgressDashboard({
           />
           <StatCard
             icon={Sparkles}
-            label="Identity Statements"
+            label={c.identityStatements}
             value={stats.totalIdentityStatements}
             color="text-amber-400"
             bgColor="from-amber-500/10 to-amber-600/5"
@@ -334,14 +440,14 @@ export function ProgressDashboard({
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-stone-400 light:text-stone-600 flex items-center gap-2">
                 <Target size={16} />
-                Personal Insights
+                {c.personalInsights}
               </h3>
               {insights.length > 2 && (
                 <button
                   onClick={() => setShowAllInsights(!showAllInsights)}
                   className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
                 >
-                  {showAllInsights ? 'Show less' : `View all (${insights.length})`}
+                  {showAllInsights ? c.showLess : c.viewAll.replace('{count}', String(insights.length))}
                 </button>
               )}
             </div>
@@ -367,25 +473,25 @@ export function ProgressDashboard({
           transition={{ delay: 0.7 }}
           className="bg-stone-900/50 light:bg-stone-100/80 border border-stone-800 light:border-stone-300 rounded-xl p-4"
         >
-          <h3 className="text-sm font-semibold text-stone-400 light:text-stone-600 mb-4">Your Words</h3>
+          <h3 className="text-sm font-semibold text-stone-400 light:text-stone-600 mb-4">{c.yourWords}</h3>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-xl font-bold text-white light:text-stone-900">
                 {stats.totalWords.toLocaleString()}
               </div>
-              <div className="text-xs text-stone-500 light:text-stone-600">Words written</div>
+              <div className="text-xs text-stone-500 light:text-stone-600">{c.wordsWritten}</div>
             </div>
             <div>
               <div className="text-xl font-bold text-white light:text-stone-900">
                 {stats.averageReflectionLength}
               </div>
-              <div className="text-xs text-stone-500 light:text-stone-600">Avg per reflection</div>
+              <div className="text-xs text-stone-500 light:text-stone-600">{c.avgPerReflection}</div>
             </div>
             <div>
               <div className="text-xl font-bold text-white light:text-stone-900">
                 {stats.daysSinceStart}
               </div>
-              <div className="text-xs text-stone-500 light:text-stone-600">Days on path</div>
+              <div className="text-xs text-stone-500 light:text-stone-600">{c.daysOnPath}</div>
             </div>
           </div>
 
@@ -393,12 +499,12 @@ export function ProgressDashboard({
           <div className="mt-4 pt-4 border-t border-stone-800 light:border-stone-300">
             <p className="text-xs text-stone-500 light:text-stone-600 text-center">
               {stats.totalWords >= 5000
-                ? "You've written a small book about your transformation."
+                ? c.writingBook
                 : stats.totalWords >= 1000
-                ? "Over a thousand words of self-discovery."
+                ? c.writingThousand
                 : stats.totalWords >= 100
-                ? "Every word is a step toward understanding yourself."
-                : "Your story is just beginning to be written."}
+                ? c.writingStep
+                : c.writingBeginning}
             </p>
           </div>
         </motion.div>
@@ -421,16 +527,19 @@ export function ProgressDashboard({
             className="bg-gradient-to-br from-amber-500/5 to-purple-500/5 border border-amber-500/20 rounded-xl p-6 text-center"
           >
             <p className="text-stone-300 light:text-stone-700 leading-relaxed">
-              {name ? `${name}, ` : ''}In <span className="text-amber-400 font-semibold">{stats.daysSinceStart} days</span>,
-              you&apos;ve written <span className="text-purple-400 font-semibold">{stats.totalWords.toLocaleString()} words</span> of
-              reflection, completed <span className="text-blue-400 font-semibold">{stats.totalLessons} lessons</span>,
+              {name ? `${name}, ` : ''}
+              {c.inDays.replace('{days}', String(stats.daysSinceStart))},{' '}
+              {c.wroteWords.replace('{count}', stats.totalWords.toLocaleString())},{' '}
+              {c.completedLessons.replace('{count}', String(stats.totalLessons))},
               {stats.totalIdentityStatements > 0 && (
-                <> declared <span className="text-amber-400 font-semibold">{stats.totalIdentityStatements} identity statement{stats.totalIdentityStatements !== 1 ? 's' : ''}</span>,</>
+                <> {c.declaredStatements
+                  .replace('{count}', String(stats.totalIdentityStatements))
+                  .replace('{suffix}', stats.totalIdentityStatements !== 1 ? 's' : '')},</>
               )}
-              {' '}and kept showing up with intention.
+              {' '}{c.withIntention}
             </p>
             <p className="text-sm text-stone-500 light:text-stone-600 mt-4 italic">
-              This is not just data. This is proof of who you are becoming.
+              {c.journeyDataProof}
             </p>
           </motion.div>
         )}
@@ -443,9 +552,9 @@ export function ProgressDashboard({
           className="text-center py-6"
         >
           <p className="text-sm text-stone-600 light:text-stone-600 italic">
-            &quot;No man is free who is not master of himself.&quot;
+            {c.closingQuote}
           </p>
-          <p className="text-xs text-stone-700 light:text-stone-500 mt-1">— Epictetus</p>
+          <p className="text-xs text-stone-700 light:text-stone-500 mt-1">- {c.quoteAuthor}</p>
         </motion.div>
       </div>
     </div>

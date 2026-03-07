@@ -120,7 +120,7 @@ export function LessonCard({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          All Caught Up!
+          {t('home.lessonCard.allCaughtUpTitle')}
         </motion.h2>
 
         <motion.p
@@ -129,8 +129,7 @@ export function LessonCard({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          You&apos;ve completed all available lessons in {world.name}.
-          Continue practicing to reinforce your wisdom.
+          {t('home.lessonCard.allCaughtUpBody', { world: world.name })}
         </motion.p>
       </motion.div>
     );
@@ -172,7 +171,7 @@ export function LessonCard({
               }}
             />
             <span className="text-amber-400 text-sm font-medium tracking-wide">
-              ACTION IN PROGRESS
+              {t('home.lessonCard.actionInProgress')}
             </span>
           </span>
         </motion.div>
@@ -265,7 +264,7 @@ export function LessonCard({
               }}
             >
               <span className="mr-2">✓</span>
-              I&apos;ve Done It — Continue
+              {t('home.lessonCard.iveDoneItContinue')}
               <ChevronRight
                 size={18}
                 className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"
@@ -291,7 +290,7 @@ export function LessonCard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
       >
-        Today&apos;s Lesson
+        {t('home.lessonCard.todaysLesson')}
       </motion.p>
 
       {/* Main card with 3D effect */}
@@ -417,11 +416,11 @@ export function LessonCard({
             <div className="flex items-center gap-4 mb-8 text-sm text-stone-500 light:text-stone-600">
               <div className="flex items-center gap-1.5">
                 <Clock size={14} className="text-stone-600 light:text-stone-500" />
-                <span>~{duration} min</span>
+                <span>{t('home.lessonCard.estimatedMinutes', { minutes: duration })}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <BookOpen size={14} className="text-stone-600 light:text-stone-500" />
-                <span>Lesson {completedCount + 1} of {totalCount}</span>
+                <span>{t('home.lessonCard.lessonOfTotal', { current: completedCount + 1, total: totalCount })}</span>
               </div>
             </div>
 
@@ -440,7 +439,7 @@ export function LessonCard({
                 }}
               >
                 <Play size={20} className="mr-2 group-hover:scale-110 transition-transform" />
-                Begin Your Journey
+                {t('home.lessonCard.beginYourJourney')}
                 <ChevronRight
                   size={18}
                   className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

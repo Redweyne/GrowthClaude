@@ -306,13 +306,13 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           transition={{ delay: 0.175 }}
         >
           <h2 className={`text-sm font-medium text-stone-500 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
-            {t('settings.appearance') || 'Appearance'}
+            {t('settings.appearance')}
           </h2>
           <div className="bg-stone-900/50 light:bg-stone-100/80 rounded-2xl border border-stone-800/50 light:border-stone-300 p-4">
             <div className={`flex items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <div className={isRTL ? 'text-right' : ''}>
-                <p className="text-white light:text-stone-900 font-medium">{t('settings.theme') || 'Theme'}</p>
-                <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.themeDesc') || 'Switch between dark and light mode'}</p>
+                <p className="text-white light:text-stone-900 font-medium">{t('settings.theme')}</p>
+                <p className="text-sm text-stone-500 light:text-stone-600">{t('settings.themeDesc')}</p>
               </div>
               <ThemeToggle size="sm" showLabel />
             </div>
@@ -423,7 +423,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
           transition={{ delay: 0.5 }}
         >
           <h2 className={`text-sm font-medium text-red-500/70 uppercase tracking-wider mb-4 ${isRTL ? 'text-right' : ''}`}>
-            {t('settings.dangerZone') || 'Danger Zone'}
+            {t('settings.dangerZone')}
           </h2>
           <div className="bg-red-950/20 light:bg-red-100/70 rounded-2xl border border-red-900/30 light:border-red-300 p-4">
             <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -431,15 +431,15 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
                 <Trash2 size={20} className="text-red-400" />
               </div>
               <div className={`flex-1 ${isRTL ? 'text-right' : ''}`}>
-                <p className="text-white light:text-red-900 font-medium">{t('settings.resetProgress') || 'Reset All Progress'}</p>
+                <p className="text-white light:text-red-900 font-medium">{t('settings.resetProgress')}</p>
                 <p className="text-sm text-stone-400 light:text-stone-600 mt-1">
-                  {t('settings.resetDesc') || 'Delete all your progress and start fresh. This cannot be undone.'}
+                  {t('settings.resetDesc')}
                 </p>
                 <button
                   onClick={() => setShowResetConfirm(true)}
                   className="mt-4 px-4 py-2 rounded-lg bg-red-600/30 border border-red-600/50 text-red-300 hover:bg-red-600/50 transition-colors text-sm font-medium"
                 >
-                  {t('settings.resetButton') || 'Reset Everything'}
+                  {t('settings.resetButton')}
                 </button>
               </div>
             </div>
@@ -484,23 +484,23 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
                   <AlertTriangle size={32} className="text-red-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-white light:text-stone-900">
-                  {t('settings.confirmResetTitle') || 'Reset All Progress?'}
+                  {t('settings.confirmResetTitle')}
                 </h3>
                 <p className="text-stone-400 light:text-stone-600">
-                  {t('settings.confirmResetDesc') || 'This will permanently delete all your lessons, reflections, streak, and identity statements. You will start completely fresh.'}
+                  {t('settings.confirmResetDesc')}
                 </p>
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setShowResetConfirm(false)}
                     className="flex-1 px-4 py-3 rounded-xl bg-stone-800 light:bg-stone-200 text-stone-300 light:text-stone-700 hover:bg-stone-700 light:hover:bg-stone-300 transition-colors font-medium"
                   >
-                    {t('common.cancel') || 'Cancel'}
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={handleResetAll}
                     className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white hover:bg-red-500 transition-colors font-medium"
                   >
-                    {t('settings.confirmReset') || 'Yes, Reset'}
+                    {t('settings.confirmReset')}
                   </button>
                 </div>
               </div>

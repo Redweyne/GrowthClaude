@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { getLevelFromXp, getXpProgress } from '@/types';
+import { useTranslation } from '@/i18n';
 import type { DisplayLesson, DisplayWorld } from '@/types';
 
 // Import our breathtaking new components
@@ -61,8 +62,14 @@ export function TodaysLesson({
   hasPendingAction = false,
   pendingCommitment,
 }: TodaysLessonProps) {
+  const { locale } = useTranslation();
   // Get user state
   const { name, totalXp, currentStreak, longestStreak, completedLessons, lastLessonDate, transformationGoal, streakShieldCount } = useStore();
+  const fallbackNameByLocale = {
+    en: 'Seeker',
+    fr: 'Chercheur',
+    ar: 'باحث',
+  } as const;
 
   // Calculate level and progress
   const level = getLevelFromXp(totalXp);
@@ -91,7 +98,7 @@ export function TodaysLesson({
       >
         {/* Hero greeting section */}
         <HeroGreeting
-          name={name || 'Seeker'}
+          name={name || fallbackNameByLocale[locale] || fallbackNameByLocale.en}
           streak={currentStreak}
           longestStreak={longestStreak}
           totalLessons={Object.keys(completedLessons).length}

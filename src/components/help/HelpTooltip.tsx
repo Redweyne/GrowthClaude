@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, X, Sparkles, Heart, Dumbbell, BookOpen, Flame, Star, Users, Target } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 // Help content definitions
 export type HelpTopic =
@@ -145,6 +146,199 @@ const helpContent: Record<HelpTopic, HelpContent> = {
   },
 };
 
+type LocalizedHelpContent = Record<HelpTopic, { title: string; description: string; details: string[] }>;
+
+const localizedHelpContentByLocale: { fr: LocalizedHelpContent; ar: LocalizedHelpContent } = {
+  fr: {
+    echoes: {
+      title: 'Que sont les Échos ?',
+      description: "Les Échos sont des réponses aux réflexions d'autres voyageurs. Quand vous terminez une leçon, vous répondez aux idées de quelqu'un d'autre.",
+      details: [
+        'Enseigner aux autres approfondit votre propre compréhension',
+        'Chaque réflexion reçoit au moins un écho',
+        'Vous pouvez ouvrir la porte à une connexion plus profonde si vous le souhaitez',
+        "C'est anonyme et sûr - utilisez frère, sœur ou voyageur",
+      ],
+    },
+    exercises: {
+      title: 'Que sont les Exercices ?',
+      description: "Cinq exercices quotidiens vous aident à appliquer la sagesse de la leçon à votre vie réelle. C'est ici que la connaissance devient transformation.",
+      details: [
+        'Scénario : appliquer la sagesse à une situation réelle',
+        "Citation : contempler l'idée la plus puissante du jour",
+        "Application : planifier comment l'utiliser demain",
+        'Ancre : créer un rappel physique',
+        'Reformulation : voir un défi avec un nouveau regard',
+      ],
+    },
+    xp: {
+      title: "Qu'est-ce que l'XP ?",
+      description: "Les points d'expérience (XP) mesurent votre engagement dans la croissance. Ils sont gagnés grâce à la pratique quotidienne et débloquent de nouveaux niveaux.",
+      details: [
+        'Leçon terminée : ~20 XP',
+        "Réponse à un Écho : 10 XP",
+        'Chaque exercice : 5 XP (25 au total)',
+        'Bonus de fin de journée : 10 XP',
+        "L'XP débloque des niveaux et des titres plus élevés",
+      ],
+    },
+    streak: {
+      title: "Qu'est-ce qu'une série ?",
+      description: "Votre série compte les jours consécutifs de pratique. C'est la mesure de la constance, le vrai moteur de la transformation.",
+      details: [
+        'Terminez une pratique quotidienne pour maintenir votre série',
+        'Manquer un jour remet la série à zéro',
+        'Des séries plus longues = une transformation plus profonde',
+        "Ne poursuivez pas le chiffre - poursuivez l'habitude",
+      ],
+    },
+    levels: {
+      title: 'Que sont les Niveaux ?',
+      description: 'Les niveaux représentent votre parcours de novice à maître. Chaque niveau a un titre qui reflète votre croissance.',
+      details: [
+        'Niveau 1 : Éveil',
+        'Niveau 2 : Chercheur',
+        'Niveau 3 : Pratiquant',
+        'Niveau 5 : Philosophe',
+        'Niveau 10 : Sage (le sommet)',
+      ],
+    },
+    worlds: {
+      title: 'Que sont les Mondes ?',
+      description: 'Les Mondes sont des collections de sagesse issues de différentes traditions. Chaque monde contient des chapitres avec des leçons quotidiennes.',
+      details: [
+        "Sagesse Moderne : des idées contemporaines pour aujourd'hui",
+        'Stoïcisme : philosophie gréco-romaine antique',
+        'D’autres mondes arrivent bientôt',
+        'Terminez un monde pour débloquer le suivant',
+      ],
+    },
+    synchronized: {
+      title: 'Pourquoi la même leçon pour tous ?',
+      description: "Tout le monde apprend la même leçon le même jour. Cela crée une expérience partagée et permet des Échos plus significatifs.",
+      details: [
+        "Vous n'apprenez jamais seul",
+        "Les Échos viennent de l'expérience partagée du jour",
+        'La communauté grandit grâce à une sagesse commune',
+        'La constance avant la vitesse - une leçon par jour',
+      ],
+    },
+    identity: {
+      title: "Que sont les Déclarations d'identité ?",
+      description: 'Les déclarations "Je suis quelqu’un qui..." capturent qui vous devenez. Ce sont des jalons dans votre transformation.',
+      details: [
+        'Créées pendant les leçons et les réflexions',
+        "Suivent l'évolution de votre identité",
+        'Renforcent une perception positive de soi',
+        'Relisez-les pour voir votre croissance',
+      ],
+    },
+  },
+  ar: {
+    echoes: {
+      title: 'ما هي الأصداء؟',
+      description: 'الأصداء هي ردود على تأملات مسافرين آخرين. عندما تنهي درسًا، ترد على أفكار شخص آخر.',
+      details: [
+        'تعليم الآخرين يعمّق فهمك أنت',
+        'كل تأمل يحصل على صدى واحد على الأقل',
+        'يمكنك فتح الباب لاتصال أعمق إذا رغبت',
+        'الأمر مجهول وآمن - استخدم أخ أو أخت أو مسافر',
+      ],
+    },
+    exercises: {
+      title: 'ما هي التمارين؟',
+      description: 'خمسة تمارين يومية تساعدك على تطبيق حكمة الدرس على حياتك الواقعية. هنا تتحول المعرفة إلى تغيير حقيقي.',
+      details: [
+        'سيناريو: طبّق الحكمة على موقف حقيقي',
+        'اقتباس: تأمل أقوى فكرة في اليوم',
+        'تطبيق: خطط لكيف ستستخدم هذا غدًا',
+        'مرساة: أنشئ تذكيرًا جسديًا',
+        'إعادة صياغة: انظر إلى التحدي بعين جديدة',
+      ],
+    },
+    xp: {
+      title: 'ما هو XP؟',
+      description: 'نقاط الخبرة (XP) تتبع التزامك بالنمو. تُكتسب عبر الممارسة اليومية وتفتح مستويات جديدة.',
+      details: [
+        'إكمال الدرس: حوالي 20 XP',
+        'الرد على صدى: 10 XP',
+        'كل تمرين: 5 XP (25 إجمالًا)',
+        'مكافأة الإكمال اليومي: 10 XP',
+        'XP يفتح مستويات وألقاب أعلى',
+      ],
+    },
+    streak: {
+      title: 'ما هي السلسلة؟',
+      description: 'السلسلة تحسب الأيام المتتالية من الممارسة. إنها مقياس الاستمرارية، وهو المحرك الحقيقي للتحول.',
+      details: [
+        'أكمل أي ممارسة يومية للحفاظ على سلسلتك',
+        'تفويت يوم واحد يعيدها إلى الصفر',
+        'سلاسل أطول = تحول أعمق',
+        'لا تطارد الرقم - طارد العادة',
+      ],
+    },
+    levels: {
+      title: 'ما هي المستويات؟',
+      description: 'المستويات تمثل رحلتك من مبتدئ إلى متمكن. لكل مستوى لقب يعكس نموك.',
+      details: [
+        'المستوى 1: الاستيقاظ',
+        'المستوى 2: الباحث',
+        'المستوى 3: الممارس',
+        'المستوى 5: الفيلسوف',
+        'المستوى 10: الحكيم (القمة)',
+      ],
+    },
+    worlds: {
+      title: 'ما هي العوالم؟',
+      description: 'العوالم هي مجموعات حكمة من تقاليد مختلفة. كل عالم يحتوي على فصول بدروس يومية.',
+      details: [
+        'الحكمة الحديثة: أفكار معاصرة لليوم',
+        'الرواقية: فلسفة رومانية ويونانية قديمة',
+        'عوالم أخرى قادمة قريبًا',
+        'أكمل عالمًا لفتح العالم التالي',
+      ],
+    },
+    synchronized: {
+      title: 'لماذا نفس الدرس للجميع؟',
+      description: 'الجميع يتعلم نفس الدرس في نفس اليوم. هذا يخلق تجربة مشتركة ويجعل الأصداء أكثر معنى.',
+      details: [
+        'أنت لا تتعلم وحدك أبدًا',
+        'الأصداء تأتي من تجربة اليوم المشتركة',
+        'المجتمع ينمو عبر حكمة مشتركة',
+        'الاستمرارية قبل السرعة - درس واحد يوميًا',
+      ],
+    },
+    identity: {
+      title: 'ما هي عبارات الهوية؟',
+      description: 'عبارات "أنا شخص..." تلتقط من تصبح عليه. إنها محطات في مسار تحولك.',
+      details: [
+        'تُنشأ أثناء الدروس والتأملات',
+        'تتبع كيف تتطور هويتك',
+        'تعزز صورة ذاتية إيجابية',
+        'راجعها لترى نموك',
+      ],
+    },
+  },
+};
+
+const uiCopyByLocale = {
+  en: {
+    helpPrefix: 'Help',
+    gotIt: 'Got it',
+    dontShowAgain: "Don't show again",
+  },
+  fr: {
+    helpPrefix: 'Aide',
+    gotIt: "J'ai compris",
+    dontShowAgain: 'Ne plus afficher',
+  },
+  ar: {
+    helpPrefix: 'مساعدة',
+    gotIt: 'فهمت',
+    dontShowAgain: 'عدم الإظهار مرة أخرى',
+  },
+} as const;
+
 interface HelpTooltipProps {
   topic: HelpTopic;
   size?: 'sm' | 'md';
@@ -152,12 +346,15 @@ interface HelpTooltipProps {
 }
 
 export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipProps) {
+  const { locale } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const { isHelpDismissed, dismissHelp } = useStore();
 
-  const content = helpContent[topic];
+  const localized = localizedHelpContentByLocale[locale as 'fr' | 'ar']?.[topic];
+  const content = localized ? { ...helpContent[topic], ...localized } : helpContent[topic];
   const Icon = content.icon;
   const iconSize = size === 'sm' ? 14 : 16;
+  const uiCopy = uiCopyByLocale[locale] ?? uiCopyByLocale.en;
 
   // Don't render if permanently dismissed
   if (isHelpDismissed(topic)) {
@@ -172,7 +369,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
         className={`inline-flex items-center justify-center rounded-full text-stone-500 light:text-stone-400 hover:text-stone-400 light:hover:text-stone-700 hover:bg-stone-800/50 light:hover:bg-stone-200/50 transition-all ${
           size === 'sm' ? 'w-5 h-5' : 'w-6 h-6'
         } ${className}`}
-        aria-label={`Help: ${content.title}`}
+        aria-label={`${uiCopy.helpPrefix}: ${content.title}`}
       >
         <HelpCircle size={iconSize} />
       </button>
@@ -275,7 +472,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                       onClick={() => setIsOpen(false)}
                       className="flex-1 py-3 px-4 rounded-xl bg-amber-500 text-stone-900 font-medium hover:bg-amber-400 light:hover:bg-amber-500 transition-colors"
                     >
-                      Got it
+                      {uiCopy.gotIt}
                     </button>
                     <button
                       onClick={() => {
@@ -284,7 +481,7 @@ export function HelpTooltip({ topic, size = 'sm', className = '' }: HelpTooltipP
                       }}
                       className="py-3 px-4 rounded-xl bg-stone-800 light:bg-stone-100 text-stone-400 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm"
                     >
-                      Don&apos;t show again
+                      {uiCopy.dontShowAgain}
                     </button>
                   </motion.div>
                 </div>

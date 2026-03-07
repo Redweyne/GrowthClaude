@@ -16,6 +16,7 @@ import { StoryProgress } from './StoryProgress';
 import { StoryParticles } from './StoryParticles';
 import { useStoryAudio } from '@/hooks/useStoryAudio';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 interface TransformationStoryProps {
   story: TransformationStoryType;
@@ -64,6 +65,7 @@ export function TransformationStory({
   onComplete
 }: TransformationStoryProps) {
   const { soundEnabled, setSoundEnabled } = useStore();
+  const { t } = useTranslation();
   const { startAmbience, stopAmbience, setMood, swell, playTransition, playReveal } = useStoryAudio();
 
   const [playbackState, setPlaybackState] = useState<StoryPlaybackState>({
@@ -360,7 +362,7 @@ export function TransformationStory({
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                Your Transformation Story
+                {t('story.viewer.title')}
               </motion.p>
             </motion.div>
           </motion.div>
@@ -555,7 +557,7 @@ export function TransformationStory({
             className="absolute bottom-20 left-0 right-0 flex justify-center z-20"
           >
             <p className="text-white/30 text-xs tracking-wide">
-              ← → to navigate • space to advance • p to pause • m for sound
+              {t('story.viewer.keyboardHints')}
             </p>
           </motion.div>
         )}

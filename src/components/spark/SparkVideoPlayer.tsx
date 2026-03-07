@@ -8,6 +8,7 @@ import {
   type YouTubePlayer,
   loadYouTubeApi,
 } from './youtubeApi';
+import { useTranslation } from '@/i18n';
 
 type PlayerStatus = 'loading' | 'ready' | 'error';
 
@@ -37,6 +38,32 @@ export function SparkVideoPlayer({
   disableTapToggle = false,
   onAutoplaySoundBlocked,
 }: SparkVideoPlayerProps) {
+  const { locale } = useTranslation();
+  const copy = {
+    en: {
+      videoUnavailable: 'Video unavailable',
+      swipeNext: 'Swipe up for the next one',
+      pauseVideo: 'Pause video',
+      playVideo: 'Play video',
+      soundOn: 'Sound on',
+    },
+    fr: {
+      videoUnavailable: 'Vidéo indisponible',
+      swipeNext: 'Glissez vers le haut pour la suivante',
+      pauseVideo: 'Mettre la vidéo en pause',
+      playVideo: 'Lire la vidéo',
+      soundOn: 'Son activé',
+    },
+    ar: {
+      videoUnavailable: 'الفيديو غير متاح',
+      swipeNext: 'اسحب للأعلى للمقطع التالي',
+      pauseVideo: 'إيقاف الفيديو مؤقتاً',
+      playVideo: 'تشغيل الفيديو',
+      soundOn: 'الصوت مفعّل',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
+
   const initialYoutubeIdRef = useRef(youtubeId);
   const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
@@ -558,8 +585,8 @@ export function SparkVideoPlayer({
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-black px-8">
         <AlertCircle size={40} className="text-stone-700 mb-3" />
-        <p className="text-stone-500 text-center text-base mb-1">Video unavailable</p>
-        <p className="text-stone-700 text-center text-sm">Swipe up for the next one</p>
+        <p className="text-stone-500 text-center text-base mb-1">{c.videoUnavailable}</p>
+        <p className="text-stone-700 text-center text-sm">{c.swipeNext}</p>
       </div>
     );
   }
@@ -586,7 +613,7 @@ export function SparkVideoPlayer({
         className="absolute inset-0 z-30"
         role="button"
         tabIndex={0}
-        aria-label={isPlaying ? 'Pause video' : 'Play video'}
+        aria-label={isPlaying ? c.pauseVideo : c.playVideo}
         style={{ touchAction: 'pan-y' }}
         onPointerDown={(event) => {
           if (disableTapToggle) return;
@@ -660,7 +687,7 @@ export function SparkVideoPlayer({
           >
             <div className="px-3 py-1.5 rounded-full bg-black/60 border border-white/15 text-white/90 text-xs font-medium backdrop-blur-md flex items-center gap-1.5">
               <Volume2 size={14} className="text-emerald-300" />
-              Sound on
+              {c.soundOn}
             </div>
           </motion.div>
         )}

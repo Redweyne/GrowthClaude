@@ -10,14 +10,38 @@ import React, { useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Share2, X, Quote } from 'lucide-react';
 import { ShareableStoryCard as ShareableStoryCardType } from '@/types/story';
+import { useTranslation } from '@/i18n';
 
 interface ShareableStoryCardProps {
   card: ShareableStoryCardType;
   onClose: () => void;
 }
 
+const COPY_BY_LOCALE = {
+  en: {
+    brand: 'Transformation Hub',
+    copyText: 'Copy Text',
+    share: 'Share',
+    helper: 'Copy to clipboard or share directly to social media',
+  },
+  fr: {
+    brand: 'Transformation Hub',
+    copyText: 'Copier le texte',
+    share: 'Partager',
+    helper: 'Copiez dans le presse-papiers ou partagez directement sur les réseaux sociaux',
+  },
+  ar: {
+    brand: 'Transformation Hub',
+    copyText: 'نسخ النص',
+    share: 'مشاركة',
+    helper: 'انسخ إلى الحافظة أو شارك مباشرة على وسائل التواصل الاجتماعي',
+  },
+} as const;
+
 export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
+  const { locale } = useTranslation();
   const cardRef = useRef<HTMLDivElement>(null);
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
 
   // Get background gradient
   const backgroundStyle = {
@@ -183,7 +207,7 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
                 className="text-xs font-medium opacity-70"
                 style={{ color: card.theme.accentColor }}
               >
-                Transformation Hub
+                {copy.brand}
               </span>
             </div>
           </div>
@@ -196,19 +220,19 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
             className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-gray-900 font-medium hover:bg-gray-100 transition-colors"
           >
             <Download className="w-5 h-5" />
-            Copy Text
+            {copy.copyText}
           </button>
           <button
             onClick={handleShare}
             className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 text-white font-medium hover:bg-white/20 transition-colors"
           >
             <Share2 className="w-5 h-5" />
-            Share
+            {copy.share}
           </button>
         </div>
 
         <p className="text-white/40 light:text-stone-500 text-sm text-center">
-          Copy to clipboard or share directly to social media
+          {copy.helper}
         </p>
       </div>
     </motion.div>

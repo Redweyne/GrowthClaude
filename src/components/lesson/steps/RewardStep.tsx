@@ -54,23 +54,55 @@ const SPRING_CONFIG = {
   mass: 1,
 };
 
-// Concept display names for the reveal phase
-const CONCEPT_DISPLAY: Record<string, { icon: string; title: string }> = {
-  control: { icon: '⚖️', title: 'CONTROL' },
-  habits: { icon: '🌱', title: 'HABITS' },
-  obstacles: { icon: '🔥', title: 'OBSTACLES' },
-  mindset: { icon: '🧠', title: 'MINDSET' },
-  gratitude: { icon: '✨', title: 'GRATITUDE' },
-  resilience: { icon: '💪', title: 'RESILIENCE' },
-  focus: { icon: '🎯', title: 'FOCUS' },
-  default: { icon: '⭐', title: 'WISDOM' },
+const CONCEPT_ICONS: Record<string, string> = {
+  control: '⚖️',
+  habits: '🌱',
+  obstacles: '🔥',
+  mindset: '🧠',
+  gratitude: '✨',
+  resilience: '💪',
+  focus: '🎯',
+  default: '⭐',
 };
+
+const CONCEPT_TITLES_BY_LOCALE = {
+  en: {
+    control: 'CONTROL',
+    habits: 'HABITS',
+    obstacles: 'OBSTACLES',
+    mindset: 'MINDSET',
+    gratitude: 'GRATITUDE',
+    resilience: 'RESILIENCE',
+    focus: 'FOCUS',
+    default: 'WISDOM',
+  },
+  fr: {
+    control: 'CONTROLE',
+    habits: 'HABITUDES',
+    obstacles: 'OBSTACLES',
+    mindset: "ETAT D'ESPRIT",
+    gratitude: 'GRATITUDE',
+    resilience: 'RESILIENCE',
+    focus: 'FOCUS',
+    default: 'SAGESSE',
+  },
+  ar: {
+    control: 'التحكم',
+    habits: 'العادات',
+    obstacles: 'العقبات',
+    mindset: 'العقلية',
+    gratitude: 'الامتنان',
+    resilience: 'المرونة',
+    focus: 'التركيز',
+    default: 'الحكمة',
+  },
+} as const;
 
 export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const { totalXp, currentStreak, lastLessonDate, name } = useStore();
   const audio = useAudio();
   const haptics = useHaptics();
-  const { t, isRTL } = useTranslation();
+  const { t, isRTL, locale } = useTranslation();
 
   const [phase, setPhase] = useState<Phase>('reveal');
   const [showGoldShimmer, setShowGoldShimmer] = useState(true);
@@ -98,7 +130,12 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
   const predictedStreak = isFirstLessonToday ? currentStreak + 1 : currentStreak;
 
   // Get concept for reveal
-  const concept = CONCEPT_DISPLAY[lesson.coreConceptTag ?? ''] ?? CONCEPT_DISPLAY.default;
+  const conceptTitles = CONCEPT_TITLES_BY_LOCALE[locale] ?? CONCEPT_TITLES_BY_LOCALE.en;
+  const conceptKey = lesson.coreConceptTag ?? 'default';
+  const concept = {
+    icon: CONCEPT_ICONS[conceptKey] ?? CONCEPT_ICONS.default,
+    title: conceptTitles[conceptKey as keyof typeof conceptTitles] ?? conceptTitles.default,
+  };
 
   // Get wisdom quote
   const wisdomQuote = useMemo(
@@ -279,7 +316,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
             onClick={handleRevealTap}
             role="button"
             tabIndex={0}
-            aria-label="Tap to continue"
+            aria-label={t('common.tapToContinue')}
           >
             {/* App branding — subtle top mark */}
             <motion.p
@@ -344,7 +381,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
               animate={{ opacity: [0, 0.6, 0.4, 0.6] }}
               transition={{ delay: 0.6, duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {t('common.tapToContinue') || 'Tap to continue'}
+              {t('common.tapToContinue')}
             </motion.p>
           </motion.div>
         )}
@@ -397,7 +434,7 @@ export function RewardStep({ xpEarned, lesson, onComplete }: RewardStepProps) {
                     <span className="text-6xl sm:text-7xl md:text-8xl font-bold gradient-text-gold tracking-tighter tabular-nums">
                       +{displayedXp}
                     </span>
-                    <span className="text-2xl sm:text-3xl text-stone-400 light:text-stone-600 font-normal">XP</span>
+                    <span className="text-2xl sm:text-3xl text-stone-400 light:text-stone-600 font-normal">{t('common.xp')}</span>
                   </motion.div>
                 </div>
 

@@ -312,7 +312,7 @@ function RitualCard({
   onStartEcho: () => void;
   onStartExercises: () => void;
   isRTL: boolean;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
@@ -341,7 +341,7 @@ function RitualCard({
             {/* Meta */}
             <div className={`flex items-center gap-3 text-sm text-stone-500 light:text-stone-600 mb-5 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
               {todaysLesson?.estimatedMinutes && (
-                <span>~{todaysLesson.estimatedMinutes} min</span>
+                <span>{t('practiceMode.estimatedTime', { minutes: todaysLesson.estimatedMinutes })}</span>
               )}
               {todaysLesson?.xpReward && (
                 <>
@@ -405,7 +405,7 @@ function RitualCard({
               {t('dailyFlow.phases.echo.subtitle')}
             </p>
             <div className={`flex items-center gap-3 text-sm text-stone-500 light:text-stone-600 mb-5 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
-              <span>~3 min</span>
+              <span>{t('practiceMode.estimatedTime', { minutes: 3 })}</span>
               <span className="text-stone-700 light:text-stone-400">·</span>
               <span className="text-amber-500">+10 {t('common.xp')}</span>
             </div>
@@ -503,7 +503,7 @@ function CompletionCard({
   latestIdentityStatement?: string;
   totalXp: number;
   isRTL: boolean;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   return (
     <motion.div
@@ -553,7 +553,7 @@ const STEPS = [
   { key: 'practice', icon: Dumbbell, labelKey: 'dailyFlow.phases.practice.title' },
 ];
 
-function JourneySteps({ phaseIndex, isRTL, t }: { phaseIndex: number; isRTL: boolean; t: (key: string) => string }) {
+function JourneySteps({ phaseIndex, isRTL, t }: { phaseIndex: number; isRTL: boolean; t: (key: string, params?: Record<string, string | number>) => string }) {
   return (
     <div className={`flex items-center justify-center gap-0 ${isRTL ? 'flex-row-reverse' : ''}`}>
       {STEPS.map((step, idx) => {
@@ -634,12 +634,12 @@ function BecomingSection({
   daysSinceStart: number;
   longestStreak: number;
   isRTL: boolean;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   return (
     <Card variant="glass" padding="md">
       <p className={`text-xs uppercase tracking-[0.15em] text-stone-500 light:text-stone-600 mb-4 ${isRTL ? 'text-right' : ''}`}>
-        {t('dailyFlow.becoming') || 'Becoming'}
+        {t('dailyFlow.becoming')}
       </p>
 
       {/* Level & XP Progress */}
@@ -672,15 +672,15 @@ function BecomingSection({
         </p>
       ) : transformationGoal ? (
         <p className={`font-serif text-base text-stone-400 light:text-stone-600 italic mb-4 ${isRTL ? 'text-right' : ''}`}>
-          {t('dailyFlow.becomingMore') || 'Becoming more'} {transformationGoal}
+          {t('dailyFlow.becomingMore')} {transformationGoal}
         </p>
       ) : null}
 
       {/* Compact journey stats */}
       <div className={`flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 light:text-stone-600 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
-        {totalLessonsCompleted > 0 && <span>{totalLessonsCompleted} {t('dailyFlow.lessons') || 'lessons'}</span>}
-        {daysSinceStart > 0 && <span>{daysSinceStart} {t('dailyFlow.days') || 'days'}</span>}
-        {longestStreak > 3 && <span>{t('dailyFlow.bestStreak') || 'Best streak'}: {longestStreak}</span>}
+        {totalLessonsCompleted > 0 && <span>{totalLessonsCompleted} {t('dailyFlow.lessons')}</span>}
+        {daysSinceStart > 0 && <span>{daysSinceStart} {t('dailyFlow.days')}</span>}
+        {longestStreak > 3 && <span>{t('dailyFlow.bestStreak')}: {longestStreak}</span>}
       </div>
     </Card>
   );

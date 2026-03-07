@@ -80,14 +80,14 @@ const INTEGRATION_MESSAGES = [
 ];
 
 // Get deterministic integration message based on lesson
-function getIntegrationMessage(lessonId: string): string {
+function getIntegrationMessage(lessonId: string, messages: string[]): string {
   let hash = 0;
   for (let i = 0; i < lessonId.length; i++) {
     const char = lessonId.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
-  return INTEGRATION_MESSAGES[Math.abs(hash) % INTEGRATION_MESSAGES.length];
+  return messages[Math.abs(hash) % messages.length];
 }
 
 // Springs
@@ -138,12 +138,12 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
   // Preparation phase
   useEffect(() => {
     if (phase === 'preparing') {
-      const messages = GUIDANCE_MESSAGES[actionType];
+      const messages = getGuidanceMessages(actionType);
       setCurrentGuidance(messages[0]);
       const timer = setTimeout(() => setPhase('practicing'), 3500);
       return () => clearTimeout(timer);
     }
-  }, [phase, actionType]);
+  }, [phase, actionType, getGuidanceMessages]);
 
   // Main practice timer
   useEffect(() => {
@@ -228,7 +228,7 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
   // Rotate guidance messages
   useEffect(() => {
     if (phase !== 'practicing') return;
-    const messages = GUIDANCE_MESSAGES[actionType];
+    const messages = getGuidanceMessages(actionType);
     const interval = setInterval(() => {
       setGuidanceIndex(prev => {
         const next = (prev + 1) % messages.length;
@@ -237,16 +237,17 @@ export function ActionStep({ lesson, onComplete, onStartAmbience }: ActionStepPr
       });
     }, 10000);
     return () => clearInterval(interval);
-  }, [phase, actionType]);
+  }, [phase, actionType, getGuidanceMessages]);
 
   // Integration phase
   useEffect(() => {
     if (phase === 'integrating') {
-      setIntegrationMessage(getIntegrationMessage(lesson.id));
+      const integrationMessages = getIntegrationMessages();
+      setIntegrationMessage(getIntegrationMessage(lesson.id, integrationMessages));
       const timer = setTimeout(() => setPhase('complete'), 4000);
       return () => clearTimeout(timer);
     }
-  }, [phase, lesson.id]);
+  }, [phase, lesson.id, getIntegrationMessages]);
 
   const handleComplete = useCallback((completed: boolean) => {
     onComplete(completed);

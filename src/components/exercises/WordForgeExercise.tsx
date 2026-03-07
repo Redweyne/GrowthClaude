@@ -323,7 +323,7 @@ export function WordForgeExercise({
                             handleRemoveWord(word.id);
                           }}
                           className="text-stone-400 hover:text-stone-200 ms-0.5"
-                          aria-label={`Remove ${word.text}`}
+                          aria-label={`${t('common.delete')} ${word.text}`}
                         >
                           <X size={12} />
                         </button>

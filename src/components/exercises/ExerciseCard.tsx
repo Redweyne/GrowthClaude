@@ -25,12 +25,12 @@ const exerciseColors: Record<ExerciseType, string> = {
   'word-forge': 'from-emerald-500/20 to-teal-500/20',
 };
 
-const exerciseLabels: Record<ExerciseType, string> = {
-  'rapid-verdict': 'Rapid Verdict',
-  'priority-tower': 'Priority Tower',
-  'scenario-snap': 'Scenario Snap',
-  'heat-check': 'Heat Check',
-  'word-forge': 'Word Forge',
+const exerciseLabelKeys: Record<ExerciseType, string> = {
+  'rapid-verdict': 'exercises.rapidVerdictLabel',
+  'priority-tower': 'exercises.priorityTowerLabel',
+  'scenario-snap': 'exercises.scenarioSnapLabel',
+  'heat-check': 'exercises.heatCheckLabel',
+  'word-forge': 'exercises.wordForgeLabel',
 };
 
 interface ExerciseCardProps {
@@ -54,7 +54,7 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const icon = exerciseIcons[exercise.type];
   const colorGradient = exerciseColors[exercise.type];
-  const label = exerciseLabels[exercise.type];
+  const label = t(exerciseLabelKeys[exercise.type]);
 
   return (
     <motion.button

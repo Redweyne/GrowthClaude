@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { BookOpen, Zap } from 'lucide-react';
 import { getLessonThemeColor } from '@/lib/lessonThemes';
+import { useTranslation } from '@/i18n';
 import type { FlexibleLesson } from '@/types/lessons';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -19,9 +20,32 @@ interface LessonPreviewProps {
   onBack: () => void;
 }
 
+const COPY_BY_LOCALE = {
+  en: {
+    chapter: 'Chapter',
+    lesson: 'Lesson',
+    deepMode: 'Deep Wisdom Mode',
+    engagementMode: 'Engagement Mode',
+  },
+  fr: {
+    chapter: 'Chapitre',
+    lesson: 'Leçon',
+    deepMode: 'Mode Sagesse Profonde',
+    engagementMode: "Mode d'Engagement",
+  },
+  ar: {
+    chapter: 'الفصل',
+    lesson: 'الدرس',
+    deepMode: 'وضع الحكمة العميقة',
+    engagementMode: 'وضع التفاعل',
+  },
+} as const;
+
 export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewProps) {
+  const { locale } = useTranslation();
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter');
   const theme = useMemo(() => lesson.themeColor || getLessonThemeColor(lesson.id), [lesson]);
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
 
   // Auto-advance through phases
   useEffect(() => {
@@ -128,7 +152,7 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
             className="text-xs font-medium tracking-[0.3em] uppercase"
             style={{ color: theme.primary }}
           >
-            Chapter {chapterNum} &middot; Lesson {lessonNum}
+            {copy.chapter} {chapterNum} &middot; {copy.lesson} {lessonNum}
           </span>
         </motion.div>
 
@@ -173,12 +197,12 @@ export function LessonPreview({ lesson, mode, onStart, onBack }: LessonPreviewPr
             {mode === 'deep' ? (
               <>
                 <BookOpen size={14} className="text-stone-500" />
-                <span className="text-xs text-stone-500 tracking-wide">Deep Wisdom Mode</span>
+                <span className="text-xs text-stone-500 tracking-wide">{copy.deepMode}</span>
               </>
             ) : (
               <>
                 <Zap size={14} className="text-stone-500" />
-                <span className="text-xs text-stone-500 tracking-wide">Engagement Mode</span>
+                <span className="text-xs text-stone-500 tracking-wide">{copy.engagementMode}</span>
               </>
             )}
           </motion.div>

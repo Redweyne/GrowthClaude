@@ -28,9 +28,34 @@ interface AuthStepProps {
   onBack: () => void;
 }
 
+const EXTRA_COPY_BY_LOCALE = {
+  en: {
+    connecting: 'Connecting...',
+    sealing: 'Sealing...',
+    googleCouldNotOpen: 'Google sign-in could not open. Please try again or use email and password below.',
+    googleFailedToStart: 'Google sign-in failed to start.',
+    passwordStrengthLabel: (strength: number) => `Password strength: ${strength} of 3`,
+  },
+  fr: {
+    connecting: 'Connexion...',
+    sealing: 'Scellement...',
+    googleCouldNotOpen: "La connexion Google n'a pas pu s'ouvrir. Réessayez ou utilisez l'e-mail et le mot de passe ci-dessous.",
+    googleFailedToStart: "Impossible de lancer la connexion Google.",
+    passwordStrengthLabel: (strength: number) => `Force du mot de passe : ${strength} sur 3`,
+  },
+  ar: {
+    connecting: 'جارٍ الاتصال...',
+    sealing: 'جارٍ الختم...',
+    googleCouldNotOpen: 'تعذر فتح تسجيل الدخول عبر Google. حاول مرة أخرى أو استخدم البريد الإلكتروني وكلمة المرور أدناه.',
+    googleFailedToStart: 'فشل بدء تسجيل الدخول عبر Google.',
+    passwordStrengthLabel: (strength: number) => `قوة كلمة المرور: ${strength} من 3`,
+  },
+} as const;
+
 export function AuthStep({ onNext, onBack }: AuthStepProps) {
-  const { t, isRTL } = useTranslation();
+  const { t, isRTL, locale } = useTranslation();
   const { signUpWithPassword, signInWithGoogle, isConfigured, isAuthenticated } = useAuth();
+  const extraCopy = EXTRA_COPY_BY_LOCALE[locale] ?? EXTRA_COPY_BY_LOCALE.en;
 
   const [phase, setPhase] = useState<AuthPhase>('reveal');
   const [email, setEmail] = useState('');
@@ -139,7 +164,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
     setPhase('seal');
   };
 
-  const handleGoogleSignup = async () => {
+  const handleGoogleSignup = useCallback(async () => {
     setError(null);
     setGoogleRedirecting(true);
 
@@ -148,7 +173,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
     // Reset the button so the user can try again.
     googleTimeoutRef.current = setTimeout(() => {
       setGoogleRedirecting(false);
-      setError('Google sign-in could not open. Please try again or use email and password below.');
+      setError(extraCopy.googleCouldNotOpen);
     }, 10000);
 
     try {
@@ -167,11 +192,11 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
       if (googleTimeoutRef.current) {
         clearTimeout(googleTimeoutRef.current);
       }
-      const rawMessage = googleError instanceof Error ? googleError.message : 'Google sign-in failed to start.';
+      const rawMessage = googleError instanceof Error ? googleError.message : extraCopy.googleFailedToStart;
       setError(mapError(rawMessage));
       setGoogleRedirecting(false);
     }
-  };
+  }, [extraCopy, mapError, signInWithGoogle]);
 
   const handleWanderer = () => {
     onNext();
@@ -395,7 +420,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
                   </svg>
                 )}
                 <span>
-                  {googleRedirecting ? 'Connecting...' : t('onboarding.auth.sealWithGoogle' as any)}
+                  {googleRedirecting ? extraCopy.connecting : t('onboarding.auth.sealWithGoogle' as any)}
                 </span>
               </button>
             </motion.div>
@@ -466,7 +491,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5"
-                    aria-label={`Password strength: ${strength} of 3`}
+                    aria-label={extraCopy.passwordStrengthLabel(strength)}
                   >
                     {[1, 2, 3].map((level) => (
                       <motion.span
@@ -531,7 +556,7 @@ export function AuthStep({ onNext, onBack }: AuthStepProps) {
                       animate={{ rotate: 360 }}
                       transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
                     />
-                    <span>Sealing...</span>
+                    <span>{extraCopy.sealing}</span>
                   </>
                 ) : (
                   t('onboarding.auth.sealOrigin' as any)

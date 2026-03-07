@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Trophy, Calendar, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 interface StreakCalendarProps {
   months?: number;
@@ -25,8 +26,92 @@ interface DayData {
 }
 
 export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
+  const { locale } = useTranslation();
   const { getStreakCalendarData, currentStreak, longestStreak } = useStore();
   const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
+  const localeTag = locale === 'ar' ? 'ar' : locale === 'fr' ? 'fr-FR' : 'en-US';
+
+  const copy = {
+    en: {
+      commitment: 'Your Commitment',
+      daysPractice: '{days} days of practice in {months} months',
+      current: 'Current',
+      best: 'Best',
+      consistency: 'Consistency',
+      consistencyHigh: "Exceptional consistency. You're building something lasting.",
+      consistencyMid: 'Good consistency. Keep pushing to make this a daily habit.',
+      consistencyLow: 'Building momentum. Every day you show up matters.',
+      consistencyStart: 'Start your streak today. One day at a time.',
+      andCounting: '{count} {dayWord} and counting...',
+      startStreakToday: 'Start your streak today',
+      day: 'day',
+      days: 'days',
+      less: 'Less',
+      more: 'More',
+      lesson: 'Lesson',
+      lessons: 'Lessons',
+      xpEarned: 'XP Earned',
+      reflectionWritten: '{count} reflection{suffix} written',
+      todayGreatWork: 'Great work today! Keep the momentum going.',
+      showedUp: "You showed up. That's what matters.",
+      noLessonsToday: 'No lessons yet today. Time to change that?',
+      noPractice: 'No practice this day.',
+      everyDayOpportunity: 'Every day is a new opportunity.',
+    },
+    fr: {
+      commitment: 'Votre engagement',
+      daysPractice: '{days} jours de pratique en {months} mois',
+      current: 'Actuel',
+      best: 'Meilleur',
+      consistency: 'Régularité',
+      consistencyHigh: 'Régularité exceptionnelle. Vous construisez quelque chose de durable.',
+      consistencyMid: 'Bonne régularité. Continuez pour en faire une habitude quotidienne.',
+      consistencyLow: 'La dynamique se construit. Chaque jour compte.',
+      consistencyStart: 'Commencez votre série aujourd hui. Un jour à la fois.',
+      andCounting: '{count} {dayWord} et ça continue...',
+      startStreakToday: 'Commencez votre série aujourd hui',
+      day: 'jour',
+      days: 'jours',
+      less: 'Moins',
+      more: 'Plus',
+      lesson: 'Leçon',
+      lessons: 'Leçons',
+      xpEarned: 'XP gagné',
+      reflectionWritten: '{count} réflexion{suffix} écrite',
+      todayGreatWork: 'Excellent travail aujourd hui. Gardez cet élan.',
+      showedUp: 'Vous vous êtes présenté. C est ce qui compte.',
+      noLessonsToday: 'Aucune leçon pour aujourd hui. Et si vous changiez ça ?',
+      noPractice: 'Aucune pratique ce jour-là.',
+      everyDayOpportunity: 'Chaque jour est une nouvelle opportunité.',
+    },
+    ar: {
+      commitment: 'التزامك',
+      daysPractice: '{days} يوم ممارسة خلال {months} أشهر',
+      current: 'الحالي',
+      best: 'الأفضل',
+      consistency: 'الاستمرارية',
+      consistencyHigh: 'استمرارية ممتازة. أنت تبني شيئاً دائماً.',
+      consistencyMid: 'استمرارية جيدة. واصل حتى تصبح عادة يومية.',
+      consistencyLow: 'الزخم يتشكل. كل يوم تحضر فيه مهم.',
+      consistencyStart: 'ابدأ سلسلتك اليوم. يوماً بعد يوم.',
+      andCounting: '{count} {dayWord} وما زالت مستمرة...',
+      startStreakToday: 'ابدأ سلسلتك اليوم',
+      day: 'يوم',
+      days: 'أيام',
+      less: 'أقل',
+      more: 'أكثر',
+      lesson: 'درس',
+      lessons: 'دروس',
+      xpEarned: 'XP مكتسب',
+      reflectionWritten: 'تمت كتابة {count} تأمل{suffix}',
+      todayGreatWork: 'عمل رائع اليوم! واصل الزخم.',
+      showedUp: 'لقد حضرت. هذا هو المهم.',
+      noLessonsToday: 'لا توجد دروس بعد اليوم. هل تريد تغيير ذلك؟',
+      noPractice: 'لا توجد ممارسة في هذا اليوم.',
+      everyDayOpportunity: 'كل يوم فرصة جديدة.',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -135,7 +220,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
     weeks.forEach((week, weekIndex) => {
       if (week[0]) {
         const firstDayOfWeek = new Date(week[0].date);
-        const monthStr = firstDayOfWeek.toLocaleDateString('en-US', { month: 'short' });
+        const monthStr = firstDayOfWeek.toLocaleDateString(localeTag, { month: 'short' });
 
         if (monthStr !== lastMonth) {
           labels.push({ month: monthStr, index: weekIndex });
@@ -160,10 +245,10 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
         <div>
           <h3 className="text-lg font-semibold text-white light:text-stone-900 flex items-center gap-2">
             <Calendar size={20} className="text-stone-500 light:text-stone-500" />
-            Your Commitment
+            {c.commitment}
           </h3>
           <p className="text-sm text-stone-500 light:text-stone-500 mt-1">
-            {stats.activeDays} days of practice in {months} months
+            {c.daysPractice.replace('{days}', String(stats.activeDays)).replace('{months}', String(months))}
           </p>
         </div>
 
@@ -174,14 +259,14 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
               <Flame size={18} />
               <span className="text-xl font-bold">{currentStreak}</span>
             </div>
-            <div className="text-xs text-stone-500 light:text-stone-500">Current</div>
+            <div className="text-xs text-stone-500 light:text-stone-500">{c.current}</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-amber-400">
               <Trophy size={18} />
               <span className="text-xl font-bold">{longestStreak}</span>
             </div>
-            <div className="text-xs text-stone-500 light:text-stone-500">Best</div>
+            <div className="text-xs text-stone-500 light:text-stone-500">{c.best}</div>
           </div>
         </div>
       </div>
@@ -189,7 +274,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       {/* Consistency bar */}
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-stone-400 light:text-stone-600">Consistency</span>
+          <span className="text-stone-400 light:text-stone-600">{c.consistency}</span>
           <span className="text-white light:text-stone-900 font-medium">{consistencyPercent}%</span>
         </div>
         <div className="h-2 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
@@ -202,12 +287,12 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
         </div>
         <p className="text-xs text-stone-600 light:text-stone-500 mt-2">
           {consistencyPercent >= 80
-            ? "Exceptional consistency. You're building something lasting."
+            ? c.consistencyHigh
             : consistencyPercent >= 50
-            ? "Good consistency. Keep pushing to make this a daily habit."
+            ? c.consistencyMid
             : consistencyPercent >= 20
-            ? "Building momentum. Every day you show up matters."
-            : "Start your streak today. One day at a time."}
+            ? c.consistencyLow
+            : c.consistencyStart}
         </p>
       </div>
 
@@ -257,7 +342,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
                   className={`w-[14px] h-[14px] rounded-sm transition-all ${getLevelColor(day.level, day.isToday)} ${
                     !day.isFuture ? 'hover:ring-2 hover:ring-white/30 cursor-pointer' : 'cursor-default'
                   }`}
-                  title={day.isFuture ? '' : `${day.date}: ${day.lessonsCompleted} lessons`}
+                  title={day.isFuture ? '' : `${day.date}: ${day.lessonsCompleted} ${day.lessonsCompleted === 1 ? c.lesson : c.lessons}`}
                 />
               ))}
             </div>
@@ -269,18 +354,20 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
       <div className="flex items-center justify-between mt-4">
         <div className="text-xs text-stone-600 light:text-stone-500">
           {currentStreak > 0
-            ? `${currentStreak === 1 ? "1 day" : `${currentStreak} days`} and counting...`
-            : "Start your streak today"}
+            ? c.andCounting
+              .replace('{count}', String(currentStreak))
+              .replace('{dayWord}', currentStreak === 1 ? c.day : c.days)
+            : c.startStreakToday}
         </div>
         <div className="flex items-center gap-2 text-xs text-stone-500 light:text-stone-500">
-          <span>Less</span>
+          <span>{c.less}</span>
           {[0, 1, 2, 3, 4].map((level) => (
             <div
               key={level}
               className={`w-[12px] h-[12px] rounded-sm ${getLevelColor(level, false)}`}
             />
           ))}
-          <span>More</span>
+          <span>{c.more}</span>
         </div>
       </div>
 
@@ -303,7 +390,7 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
             >
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold text-white light:text-stone-900">
-                  {new Date(selectedDay.date).toLocaleDateString('en-US', {
+                  {new Date(selectedDay.date).toLocaleDateString(localeTag, {
                     weekday: 'long',
                     month: 'long',
                     day: 'numeric'
@@ -325,29 +412,31 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
                         {selectedDay.lessonsCompleted}
                       </div>
                       <div className="text-xs text-stone-500 light:text-stone-500">
-                        {selectedDay.lessonsCompleted === 1 ? 'Lesson' : 'Lessons'}
+                        {selectedDay.lessonsCompleted === 1 ? c.lesson : c.lessons}
                       </div>
                     </div>
                     <div className="bg-stone-800/50 light:bg-stone-200/50 rounded-xl p-3 text-center">
                       <div className="text-2xl font-bold text-amber-400">
                         +{selectedDay.xpEarned}
                       </div>
-                      <div className="text-xs text-stone-500 light:text-stone-500">XP Earned</div>
+                      <div className="text-xs text-stone-500 light:text-stone-500">{c.xpEarned}</div>
                     </div>
                   </div>
 
                   {selectedDay.reflectionsWritten > 0 && (
                     <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3">
                       <div className="text-sm text-purple-300">
-                        {selectedDay.reflectionsWritten} reflection{selectedDay.reflectionsWritten !== 1 ? 's' : ''} written
+                        {c.reflectionWritten
+                          .replace('{count}', String(selectedDay.reflectionsWritten))
+                          .replace('{suffix}', selectedDay.reflectionsWritten !== 1 ? 's' : '')}
                       </div>
                     </div>
                   )}
 
                   <p className="text-sm text-stone-400 light:text-stone-600 text-center">
                     {selectedDay.isToday
-                      ? "Great work today! Keep the momentum going."
-                      : "You showed up. That's what matters."}
+                      ? c.todayGreatWork
+                      : c.showedUp}
                   </p>
                 </div>
               ) : (
@@ -357,12 +446,12 @@ export function StreakCalendar({ months = 3 }: StreakCalendarProps) {
                   </div>
                   <p className="text-stone-400 light:text-stone-600">
                     {selectedDay.isToday
-                      ? "No lessons yet today. Time to change that?"
-                      : "No practice this day."}
+                      ? c.noLessonsToday
+                      : c.noPractice}
                   </p>
                   {!selectedDay.isToday && (
                     <p className="text-xs text-stone-600 light:text-stone-500 mt-2">
-                      Every day is a new opportunity.
+                      {c.everyDayOpportunity}
                     </p>
                   )}
                 </div>

@@ -18,6 +18,7 @@ import { PatternAnalysis } from './PatternAnalysis';
 import { TransformationRadar } from './TransformationRadar';
 import { WisdomInActionLog } from './WisdomInActionLog';
 import { StreakCalendar } from './StreakCalendar';
+import { useTranslation } from '@/i18n';
 
 type TabType = 'overview' | 'patterns' | 'growth' | 'wisdom';
 
@@ -27,6 +28,7 @@ interface TransformationHubProps {
 }
 
 export function TransformationHub({ onBack, onOpenAssessment }: TransformationHubProps) {
+  const { locale } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const {
     name,
@@ -36,39 +38,102 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
     monthlyAssessments,
     wisdomInActionLogs,
     isAssessmentDue,
-    getStreakCalendarData
   } = useStore();
 
+  const copy = {
+    en: {
+      tabs: { overview: 'Overview', patterns: 'Patterns', growth: 'Growth', wisdom: 'Actions' },
+      stats: {
+        totalReflections: 'Total Reflections',
+        assessments: 'Assessments',
+        wisdomLogs: 'Wisdom Logs',
+        currentStreak: 'Current Streak',
+      },
+      days: 'days',
+      back: 'Back',
+      xpSuffix: 'XP',
+      title: 'Transformation Hub',
+      yourProof: 'Your proof of growth',
+      nameProof: "{name}'s proof of growth",
+      monthlyAssessmentDue: 'Monthly Assessment Due',
+      measureTransformation: 'Measure your transformation',
+      yourGrowthSnapshot: 'Your Growth Snapshot',
+      quote: '"The soul becomes dyed with the color of its thoughts."',
+      quoteAuthor: 'Marcus Aurelius',
+    },
+    fr: {
+      tabs: { overview: "Vue d'ensemble", patterns: 'Schémas', growth: 'Croissance', wisdom: 'Actions' },
+      stats: {
+        totalReflections: 'Réflexions totales',
+        assessments: 'Évaluations',
+        wisdomLogs: 'Journal de sagesse',
+        currentStreak: 'Série actuelle',
+      },
+      days: 'jours',
+      back: 'Retour',
+      xpSuffix: 'XP',
+      title: 'Hub de transformation',
+      yourProof: 'Votre preuve de progression',
+      nameProof: 'La preuve de progression de {name}',
+      monthlyAssessmentDue: 'Évaluation mensuelle disponible',
+      measureTransformation: 'Mesurez votre transformation',
+      yourGrowthSnapshot: 'Aperçu de votre progression',
+      quote: '"L âme se colore de la teinte de ses pensées."',
+      quoteAuthor: 'Marc Aurèle',
+    },
+    ar: {
+      tabs: { overview: 'نظرة عامة', patterns: 'الأنماط', growth: 'النمو', wisdom: 'التطبيق' },
+      stats: {
+        totalReflections: 'إجمالي التأملات',
+        assessments: 'التقييمات',
+        wisdomLogs: 'سجل الحكمة',
+        currentStreak: 'السلسلة الحالية',
+      },
+      days: 'أيام',
+      back: 'رجوع',
+      xpSuffix: 'XP',
+      title: 'مركز التحول',
+      yourProof: 'دليلك على النمو',
+      nameProof: 'دليل نمو {name}',
+      monthlyAssessmentDue: 'موعد التقييم الشهري',
+      measureTransformation: 'قِس تحوّلك',
+      yourGrowthSnapshot: 'لقطة عن نموك',
+      quote: '"تتلون الروح بلون أفكارها."',
+      quoteAuthor: 'ماركوس أوريليوس',
+    },
+  } as const;
+
+  const c = copy[locale] ?? copy.en;
+
   const tabs = [
-    { id: 'overview' as const, label: 'Overview', icon: Sparkles },
-    { id: 'patterns' as const, label: 'Patterns', icon: Brain },
-    { id: 'growth' as const, label: 'Growth', icon: TrendingUp },
-    { id: 'wisdom' as const, label: 'Actions', icon: BookOpen },
+    { id: 'overview' as const, label: c.tabs.overview, icon: Sparkles },
+    { id: 'patterns' as const, label: c.tabs.patterns, icon: Brain },
+    { id: 'growth' as const, label: c.tabs.growth, icon: TrendingUp },
+    { id: 'wisdom' as const, label: c.tabs.wisdom, icon: BookOpen },
   ];
 
-  // Stats for overview
   const stats = [
     {
-      label: 'Total Reflections',
+      label: c.stats.totalReflections,
       value: allReflections.length,
       icon: Brain,
       color: '#8b5cf6',
     },
     {
-      label: 'Assessments',
+      label: c.stats.assessments,
       value: monthlyAssessments.length,
       icon: BarChart3,
       color: '#10b981',
     },
     {
-      label: 'Wisdom Logs',
+      label: c.stats.wisdomLogs,
       value: wisdomInActionLogs.length,
       icon: BookOpen,
       color: '#f59e0b',
     },
     {
-      label: 'Current Streak',
-      value: `${currentStreak} days`,
+      label: c.stats.currentStreak,
+      value: `${currentStreak} ${c.days}`,
       icon: Zap,
       color: '#ec4899',
     },
@@ -76,7 +141,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
 
   return (
     <div className="min-h-screen bg-stone-950 light:bg-stone-50 pb-20">
-      {/* Header */}
       <div className="sticky top-0 z-40 bg-stone-950/95 light:bg-stone-50/95 backdrop-blur border-b border-stone-800 light:border-stone-200">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
@@ -85,22 +149,21 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
               className="flex items-center gap-1 text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 transition-colors"
             >
               <ChevronLeft size={20} />
-              <span>Back</span>
+              <span>{c.back}</span>
             </button>
             <div className="flex items-center gap-2 text-amber-400">
               <Zap size={16} />
-              <span className="text-sm font-medium">{totalXp.toLocaleString()} XP</span>
+              <span className="text-sm font-medium">{totalXp.toLocaleString()} {c.xpSuffix}</span>
             </div>
           </div>
 
           <div className="text-center mb-4">
-            <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-1">Transformation Hub</h1>
+            <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-1">{c.title}</h1>
             <p className="text-stone-500 light:text-stone-500 text-sm">
-              {name ? `${name}'s` : 'Your'} proof of growth
+              {name ? c.nameProof.replace('{name}', name) : c.yourProof}
             </p>
           </div>
 
-          {/* Tab Navigation */}
           <div className="flex gap-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -124,10 +187,8 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-4">
         <AnimatePresence mode="wait">
-          {/* Overview Tab */}
           {activeTab === 'overview' && (
             <motion.div
               key="overview"
@@ -136,7 +197,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-3">
                 {stats.map((stat, index) => {
                   const Icon = stat.icon;
@@ -162,7 +222,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 })}
               </div>
 
-              {/* Streak Calendar */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -173,7 +232,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 </Card>
               </motion.div>
 
-              {/* Assessment CTA */}
               {isAssessmentDue() && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -189,8 +247,8 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                         <Calendar size={24} className="text-purple-400" />
                       </div>
                       <div className="text-left">
-                        <p className="text-white light:text-stone-900 font-medium">Monthly Assessment Due</p>
-                        <p className="text-xs text-stone-400 light:text-stone-600">Measure your transformation</p>
+                        <p className="text-white light:text-stone-900 font-medium">{c.monthlyAssessmentDue}</p>
+                        <p className="text-xs text-stone-400 light:text-stone-600">{c.measureTransformation}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-amber-400">
@@ -201,13 +259,12 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 </motion.div>
               )}
 
-              {/* Quick Views */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <h2 className="text-lg font-medium text-white light:text-stone-900 mb-4">Your Growth Snapshot</h2>
+                <h2 className="text-lg font-medium text-white light:text-stone-900 mb-4">{c.yourGrowthSnapshot}</h2>
                 <TransformationRadar compact />
               </motion.div>
 
@@ -227,7 +284,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 <WisdomInActionLog compact />
               </motion.div>
 
-              {/* Inspiring quote */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -235,14 +291,13 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
                 className="text-center pt-4 pb-8"
               >
                 <p className="text-stone-600 light:text-stone-500 text-sm italic">
-                  &quot;The soul becomes dyed with the color of its thoughts.&quot;
+                  {c.quote}
                 </p>
-                <p className="text-stone-700 light:text-stone-500 text-xs mt-1">— Marcus Aurelius</p>
+                <p className="text-stone-700 light:text-stone-500 text-xs mt-1">- {c.quoteAuthor}</p>
               </motion.div>
             </motion.div>
           )}
 
-          {/* Patterns Tab */}
           {activeTab === 'patterns' && (
             <motion.div
               key="patterns"
@@ -254,7 +309,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
             </motion.div>
           )}
 
-          {/* Growth Tab */}
           {activeTab === 'growth' && (
             <motion.div
               key="growth"
@@ -266,7 +320,6 @@ export function TransformationHub({ onBack, onOpenAssessment }: TransformationHu
             </motion.div>
           )}
 
-          {/* Wisdom Tab */}
           {activeTab === 'wisdom' && (
             <motion.div
               key="wisdom"

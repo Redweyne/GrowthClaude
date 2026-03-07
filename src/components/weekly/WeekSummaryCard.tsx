@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { Calendar, Flame, BookOpen, Zap, PenLine, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // WEEK IN REVIEW SUMMARY CARD
@@ -16,13 +17,49 @@ interface WeekSummaryCardProps {
 }
 
 export function WeekSummaryCard({ onDismiss }: WeekSummaryCardProps) {
+  const { locale } = useTranslation();
   const {
     activityLog,
     currentStreak,
-    totalXp,
-    completedLessons,
-    allReflections,
   } = useStore();
+  const localeTag = locale === 'ar' ? 'ar' : locale === 'fr' ? 'fr-FR' : 'en';
+
+  const copy = {
+    en: {
+      title: 'Your Week in Review',
+      subtitle: 'Keep building momentum',
+      lessons: 'Lessons',
+      reflections: 'Reflections',
+      xpEarned: 'XP Earned',
+      activeDays: 'Active Days',
+      dayStreak: '{count}-day streak',
+      bestDay: 'Best day: {day}',
+      continue: 'Continue',
+    },
+    fr: {
+      title: 'Votre semaine en revue',
+      subtitle: 'Continuez à construire votre élan',
+      lessons: 'Leçons',
+      reflections: 'Réflexions',
+      xpEarned: 'XP gagné',
+      activeDays: 'Jours actifs',
+      dayStreak: 'Série de {count} jours',
+      bestDay: 'Meilleur jour : {day}',
+      continue: 'Continuer',
+    },
+    ar: {
+      title: 'مراجعة أسبوعك',
+      subtitle: 'واصل بناء الزخم',
+      lessons: 'الدروس',
+      reflections: 'التأملات',
+      xpEarned: 'XP مكتسب',
+      activeDays: 'الأيام النشطة',
+      dayStreak: 'سلسلة {count} يوم',
+      bestDay: 'أفضل يوم: {day}',
+      continue: 'متابعة',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const weekData = useMemo(() => {
     const now = new Date();
@@ -46,7 +83,7 @@ export function WeekSummaryCard({ onDismiss }: WeekSummaryCardProps) {
 
     // Day name for best day
     const bestDayName = bestDay
-      ? new Date(bestDay.date + 'T12:00:00').toLocaleDateString('en', { weekday: 'long' })
+      ? new Date(bestDay.date + 'T12:00:00').toLocaleDateString(localeTag, { weekday: 'long' })
       : '';
 
     return {
@@ -57,30 +94,30 @@ export function WeekSummaryCard({ onDismiss }: WeekSummaryCardProps) {
       bestDayName,
       streak: currentStreak,
     };
-  }, [activityLog, currentStreak]);
+  }, [activityLog, currentStreak, localeTag]);
 
   const stats = [
     {
       icon: BookOpen,
-      label: 'Lessons',
+      label: c.lessons,
       value: weekData.lessonsThisWeek,
       color: 'text-amber-400',
     },
     {
       icon: PenLine,
-      label: 'Reflections',
+      label: c.reflections,
       value: weekData.reflectionsThisWeek,
       color: 'text-violet-400',
     },
     {
       icon: Zap,
-      label: 'XP Earned',
+      label: c.xpEarned,
       value: weekData.xpThisWeek,
       color: 'text-emerald-400',
     },
     {
       icon: Flame,
-      label: 'Active Days',
+      label: c.activeDays,
       value: weekData.activeDays,
       color: 'text-orange-400',
     },
@@ -113,8 +150,8 @@ export function WeekSummaryCard({ onDismiss }: WeekSummaryCardProps) {
             <Calendar size={20} className="text-amber-400" />
           </motion.div>
           <div>
-            <h3 className="text-lg font-bold text-white">Your Week in Review</h3>
-            <p className="text-xs text-stone-500">Keep building momentum</p>
+            <h3 className="text-lg font-bold text-white">{c.title}</h3>
+            <p className="text-xs text-stone-500">{c.subtitle}</p>
           </div>
         </div>
 
@@ -147,9 +184,9 @@ export function WeekSummaryCard({ onDismiss }: WeekSummaryCardProps) {
           >
             <Trophy size={18} className="text-amber-400 flex-shrink-0" />
             <p className="text-sm text-stone-300 light:text-stone-600">
-              <span className="font-semibold text-amber-400">{weekData.streak}-day streak</span>
+              <span className="font-semibold text-amber-400">{c.dayStreak.replace('{count}', String(weekData.streak))}</span>
               {weekData.bestDayName && (
-                <span className="text-stone-500"> &middot; Best day: {weekData.bestDayName}</span>
+                <span className="text-stone-500"> &middot; {c.bestDay.replace('{day}', weekData.bestDayName)}</span>
               )}
             </p>
           </motion.div>
@@ -163,7 +200,7 @@ export function WeekSummaryCard({ onDismiss }: WeekSummaryCardProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          Continue
+          {c.continue}
         </motion.button>
       </Card>
     </motion.div>

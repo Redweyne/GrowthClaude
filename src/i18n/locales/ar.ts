@@ -504,6 +504,14 @@ const ar = {
       },
     },
     lessonCard: {
+      allCaughtUpTitle: 'أكملت كل شيء!',
+      allCaughtUpBody: 'لقد أكملت جميع الدروس المتاحة في {world}. واصل الممارسة لترسيخ حكمتك.',
+      actionInProgress: 'إجراء قيد التنفيذ',
+      iveDoneItContinue: 'أنجزته — متابعة',
+      todaysLesson: 'درس اليوم',
+      estimatedMinutes: '~{minutes} د',
+      lessonOfTotal: 'الدرس {current} من {total}',
+      beginYourJourney: 'ابدأ رحلتك',
       actionAwaits: 'ÙØ¹Ù„Ùƒ ÙŠÙ†ØªØ¸Ø±Ùƒ',
       completeThenReturn: 'Ø£ÙƒÙ…Ù„Ù‡Ø§ Ø«Ù… Ø¹Ø¯ Ø¥Ù„Ù‰ Ù‡Ù†Ø§',
       youCommittedTo: 'Ù„Ù‚Ø¯ Ø§Ù„ØªØ²Ù…Øª Ø¨Ù€:',
@@ -986,7 +994,8 @@ const ar = {
       sageIsSpeaking: 'Ø§Ù„Ø­ÙƒÙŠÙ… ÙŠØªØ­Ø¯Ø«...',
       completeLesson: 'Ø¥ÙƒÙ…Ø§Ù„ Ø§Ù„Ø¯Ø±Ø³',
       tryAgain: 'Ø­Ø§ÙˆÙ„ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰',
-      reflectionNeedsDepth: 'ØªØ£Ù…Ù„Ùƒ ÙŠØ­ØªØ§Ø¬ Ù…Ø²ÙŠØ¯Ø§Ù‹ Ù…Ù† Ø§Ù„Ø¹Ù…Ù‚',
+      reflectionNeedsDepth: 'ØªØ£Ù…Ù„Ùƒ ÙŠØ­ØªØ§Ø¬ Ø¹Ù…Ù‚Ø§Ù‹ Ø£ÙƒØ«Ø±',
+      dayStreak: 'Ø³Ù„Ø³Ù„Ø© {count} ÙŠÙˆÙ…Ù‹Ø§',
       daysToStreak: '{days} {dayWord} Ø£Ø®Ø±Ù‰ Ù„Ø³Ù„Ø³Ù„Ø© Ø£Ø³Ø¨ÙˆØ¹Ùƒ Ø§Ù„Ø£ÙˆÙ„Ù‰',
       day: 'ÙŠÙˆÙ…',
       days: 'Ø£ÙŠØ§Ù…',
@@ -1220,6 +1229,8 @@ const ar = {
       unknownType: 'Ù†ÙˆØ¹ Ø´Ø±ÙŠØ­Ø© ØºÙŠØ± Ù…Ø¹Ø±ÙˆÙ',
       firstLessonWas: 'ÙƒØ§Ù† Ø¯Ø±Ø³Ùƒ Ø§Ù„Ø£ÙˆÙ„',
       daysSinceMoment: 'Ø£ÙŠØ§Ù… Ù…Ù†Ø° ØªÙ„Ùƒ Ø§Ù„Ù„Ø­Ø¸Ø©',
+      identityStatementsCreated: 'ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ {count} Ø¹Ø¨Ø§Ø±Ø§Øª Ù‡ÙˆÙŠØ©',
+      wordsWrittenInReflection: 'ØªÙ…Øª ÙƒØªØ§Ø¨Ø© {count} ÙƒÙ„Ù…Ø© ÙÙŠ Ø§Ù„ØªØ£Ù…Ù„',
       before: 'Ù‚Ø¨Ù„',
       after: 'Ø¨Ø¹Ø¯',
       patternShift: {
@@ -1231,6 +1242,10 @@ const ar = {
         consistency: 'Ø§Ù„Ø§ØªØ³Ø§Ù‚',
       },
       MilestoneUnlockedCount: '{unlocked} Ù…Ù† {total} Ù…ÙØªÙˆØ­Ø©',
+    },
+    viewer: {
+      title: 'Ù‚ØµØ© ØªØ­ÙˆÙ‘Ù„Ùƒ',
+      keyboardHints: 'â† â†’ Ù„Ù„ØªÙ†Ù‚Ù„ â€¢ Ù…Ø³Ø§ÙØ© Ù„Ù„ØªÙ‚Ø¯Ù… â€¢ p Ù„Ù„Ø¥ÙŠÙ‚Ø§Ù â€¢ m Ù„Ù„ØµÙˆØª',
     },
   },
 
@@ -1321,6 +1336,7 @@ const ar = {
 } as const;
 
 export default ar;
+
 
 
 

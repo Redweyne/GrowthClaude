@@ -131,6 +131,36 @@ export default function Home() {
   } = useSparkStore();
 
   const { locale } = useTranslation();
+  const copy = {
+    en: {
+      worldsTitle: 'Wisdom Worlds',
+      worldsBody: 'Explore different worlds of wisdom, each with unique lessons and perspectives.',
+      comingSoon: 'Coming Soon',
+      inDevelopment: 'This feature is currently under development',
+      friend: 'Friend',
+      practiceFallback: 'Practice',
+      growthJourney: 'Growth Journey',
+    },
+    fr: {
+      worldsTitle: 'Mondes de sagesse',
+      worldsBody: 'Explorez différents mondes de sagesse, chacun avec ses leçons et perspectives uniques.',
+      comingSoon: 'Bientôt disponible',
+      inDevelopment: 'Cette fonctionnalité est en cours de développement',
+      friend: 'Ami',
+      practiceFallback: 'Pratique',
+      growthJourney: 'Parcours de croissance',
+    },
+    ar: {
+      worldsTitle: 'عوالم الحكمة',
+      worldsBody: 'استكشف عوالم مختلفة من الحكمة، لكل عالم دروسه ورؤاه الخاصة.',
+      comingSoon: 'قريباً',
+      inDevelopment: 'هذه الميزة قيد التطوير حالياً',
+      friend: 'صديق',
+      practiceFallback: 'ممارسة',
+      growthJourney: 'رحلة النمو',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
   const { logEvent, trackView } = useActivityLog();
 
   const [currentView, setCurrentView] = useState<AppView>('home');
@@ -522,7 +552,7 @@ export default function Home() {
     // Get a reflection to review (using the completed lesson's info)
     const reflection = completedLessonInfo
       ? getReflectionToReview(completedLessonInfo.id, completedLessonInfo.title)
-      : getReflectionToReview('any', 'Growth Journey');
+      : getReflectionToReview('any', c.growthJourney);
 
     if (reflection) {
       setReflectionForReview(reflection);
@@ -674,13 +704,13 @@ export default function Home() {
           style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
         >
           <div className="text-6xl mb-6">🌍</div>
-          <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-3">Wisdom Worlds</h1>
+          <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-3">{c.worldsTitle}</h1>
           <p className="text-stone-400 light:text-stone-500 text-base max-w-xs leading-relaxed">
-            Explore different worlds of wisdom, each with unique lessons and perspectives.
+            {c.worldsBody}
           </p>
           <div className="mt-8 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-            <p className="text-amber-400 light:text-amber-600 text-sm font-semibold">Coming Soon</p>
-            <p className="text-stone-500 light:text-stone-400 text-xs mt-1">This feature is currently under development</p>
+            <p className="text-amber-400 light:text-amber-600 text-sm font-semibold">{c.comingSoon}</p>
+            <p className="text-stone-500 light:text-stone-400 text-xs mt-1">{c.inDevelopment}</p>
           </div>
         </main>
         <BottomNavBar
@@ -821,7 +851,7 @@ export default function Home() {
       <div className="h-[100dvh] flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto overscroll-contain">
           <DashboardNew
-            name={userName || 'Friend'}
+            name={userName || c.friend}
             totalXp={totalXp}
             currentStreak={currentStreak}
             longestStreak={longestStreak}
@@ -882,7 +912,7 @@ export default function Home() {
           <CoachModal
             step={coachingModal}
             onDismiss={dismissCoaching}
-            userName={userName || 'Friend'}
+            userName={userName || c.friend}
           />
         )}
       </>
@@ -893,7 +923,7 @@ export default function Home() {
   // Use exercisesForSession (saved from completed lesson) as primary source,
   // fallback to todaysLesson.exercises
   const availableExercises = exercisesForSession || todaysLesson?.exercises;
-  const exerciseLessonTitle = completedLessonInfo?.title || todaysLesson?.title || 'Practice';
+  const exerciseLessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.practiceFallback;
 
   if (currentView === 'exercises') {
     // Check if we have exercises available
@@ -913,7 +943,7 @@ export default function Home() {
             <CoachModal
               step={coachingModal}
               onDismiss={dismissCoaching}
-              userName={userName || 'Friend'}
+              userName={userName || c.friend}
             />
           )}
         </>
@@ -935,7 +965,7 @@ export default function Home() {
       <div className="h-[100dvh] flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto overscroll-contain">
           <DailyFlowHome
-            name={userName || 'Friend'}
+            name={userName || c.friend}
             totalXp={totalXp}
             currentStreak={currentStreak}
             dayNumber={dayNumber}
@@ -978,7 +1008,7 @@ export default function Home() {
         <CoachModal
           step={coachingModal}
           onDismiss={dismissCoaching}
-          userName={userName || 'Friend'}
+          userName={userName || c.friend}
         />
       )}
 

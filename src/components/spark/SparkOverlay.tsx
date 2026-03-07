@@ -13,6 +13,7 @@ import {
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
 import type { SparkVideo } from '@/types/spark';
+import { useTranslation } from '@/i18n';
 
 interface SparkOverlayProps {
   video: SparkVideo;
@@ -62,11 +63,52 @@ export function SparkOverlay({
   onToggleSound,
   onExit,
 }: SparkOverlayProps) {
+  const { locale } = useTranslation();
   const [savePulse, setSavePulse] = useState(false);
   const [shareStatus, setShareStatus] = useState<'copied' | 'shared' | null>(null);
 
   const audio = useAudio();
   const { hapticTap, hapticMedium } = useHaptics();
+
+  const copy = {
+    en: {
+      closeSpark: 'Close Spark',
+      save: 'Save',
+      saved: 'Saved',
+      share: 'Share',
+      soundOn: 'Sound on',
+      soundOff: 'Sound off',
+      shareFallbackText: 'Check this Spark video.',
+      sparkTitle: 'Spark',
+      linkCopied: 'Link copied',
+      shared: 'Shared',
+    },
+    fr: {
+      closeSpark: 'Fermer Spark',
+      save: 'Enregistrer',
+      saved: 'Enregistré',
+      share: 'Partager',
+      soundOn: 'Son activé',
+      soundOff: 'Son désactivé',
+      shareFallbackText: 'Regarde cette vidéo Spark.',
+      sparkTitle: 'Spark',
+      linkCopied: 'Lien copié',
+      shared: 'Partagé',
+    },
+    ar: {
+      closeSpark: 'إغلاق Spark',
+      save: 'حفظ',
+      saved: 'تم الحفظ',
+      share: 'مشاركة',
+      soundOn: 'الصوت مفعّل',
+      soundOff: 'الصوت متوقف',
+      shareFallbackText: 'شاهد فيديو Spark هذا.',
+      sparkTitle: 'Spark',
+      linkCopied: 'تم نسخ الرابط',
+      shared: 'تمت المشاركة',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const creatorHandle = useMemo(() => {
     if (!video.creatorName) return null;
@@ -99,12 +141,12 @@ export function SparkOverlay({
 
   const handleShare = useCallback(async () => {
     const url = `https://www.youtube.com/shorts/${video.youtubeId}`;
-    const text = video.caption || 'Check this Spark video.';
+    const text = video.caption || c.shareFallbackText;
 
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'Spark',
+          title: c.sparkTitle,
           text,
           url,
         });
@@ -133,7 +175,7 @@ export function SparkOverlay({
       audio.playTap();
       hapticTap();
     }
-  }, [audio, hapticMedium, hapticTap, showShareStatus, video.caption, video.youtubeId]);
+  }, [audio, c.shareFallbackText, c.sparkTitle, hapticMedium, hapticTap, showShareStatus, video.caption, video.youtubeId]);
 
   const handleToggleSound = useCallback(() => {
     onToggleSound();
@@ -165,7 +207,7 @@ export function SparkOverlay({
           type="button"
           onClick={onExit}
           className="w-10 h-10 rounded-full bg-black/45 border border-white/15 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"
-          aria-label="Close Spark"
+          aria-label={c.closeSpark}
           data-testid="spark-close-btn"
         >
           <X size={18} />
@@ -178,7 +220,7 @@ export function SparkOverlay({
         style={{ bottom: 'calc(8.75rem + env(safe-area-inset-bottom))' }}
       >
         <div className="relative">
-          <ActionButton label={isSaved ? 'Saved' : 'Save'} onClick={handleSave} testId="spark-save-btn">
+          <ActionButton label={isSaved ? c.saved : c.save} onClick={handleSave} testId="spark-save-btn">
             {isSaved ? (
               <BookmarkCheck size={22} className="text-amber-300" />
             ) : (
@@ -199,12 +241,12 @@ export function SparkOverlay({
           </AnimatePresence>
         </div>
 
-        <ActionButton label="Share" onClick={handleShare} testId="spark-share-btn">
+        <ActionButton label={c.share} onClick={handleShare} testId="spark-share-btn">
           <Share2 size={21} className="text-white" />
         </ActionButton>
 
         <ActionButton
-          label={soundEnabled ? 'Sound on' : 'Sound off'}
+          label={soundEnabled ? c.soundOn : c.soundOff}
           onClick={handleToggleSound}
           active={soundEnabled}
           testId="spark-sound-btn"
@@ -241,7 +283,7 @@ export function SparkOverlay({
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
           >
-            {shareStatus === 'copied' ? 'Link copied' : 'Shared'}
+            {shareStatus === 'copied' ? c.linkCopied : c.shared}
           </motion.div>
         )}
       </AnimatePresence>

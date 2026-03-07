@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import type { ScaleRatingStep as ScaleRatingStepType } from '@/types/lessons';
 
 interface ScaleRatingStepProps {
@@ -23,6 +24,7 @@ interface ScaleRatingStepProps {
 }
 
 export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
+  const { t } = useTranslation();
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
   const [responseText, setResponseText] = useState<string | null>(null);
   const [showScale, setShowScale] = useState(false);
@@ -203,7 +205,7 @@ export function ScaleRatingStep({ step, onComplete }: ScaleRatingStepProps) {
                   glow
                   className="w-full group"
                 >
-                  Continue
+                  {t('common.continue')}
                   <ChevronRight
                     size={18}
                     className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

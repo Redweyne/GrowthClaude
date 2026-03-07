@@ -504,6 +504,14 @@ const en = {
       },
     },
     lessonCard: {
+      allCaughtUpTitle: 'All Caught Up!',
+      allCaughtUpBody: "You've completed all available lessons in {world}. Continue practicing to reinforce your wisdom.",
+      actionInProgress: 'ACTION IN PROGRESS',
+      iveDoneItContinue: "I've Done It — Continue",
+      todaysLesson: "Today's Lesson",
+      estimatedMinutes: '~{minutes} min',
+      lessonOfTotal: 'Lesson {current} of {total}',
+      beginYourJourney: 'Begin Your Journey',
       actionAwaits: 'Your Action Awaits',
       completeThenReturn: 'Complete it, then return here',
       youCommittedTo: 'You committed to:',
@@ -987,6 +995,7 @@ const en = {
       completeLesson: 'Complete Lesson',
       tryAgain: 'Try Again',
       reflectionNeedsDepth: 'Your reflection needs more depth',
+      dayStreak: '{count} Day Streak',
       daysToStreak: '{days} more {dayWord} to your first week streak',
       day: 'day',
       days: 'days',
@@ -1220,6 +1229,8 @@ const en = {
       unknownType: 'Unknown slide type',
       firstLessonWas: 'Your first lesson was',
       daysSinceMoment: 'days since that moment',
+      identityStatementsCreated: '{count} identity statements created',
+      wordsWrittenInReflection: '{count} words written in reflection',
       before: 'Before',
       after: 'After',
       patternShift: {
@@ -1231,6 +1242,10 @@ const en = {
         consistency: 'Consistency',
       },
       MilestoneUnlockedCount: '{unlocked} of {total} unlocked',
+    },
+    viewer: {
+      title: 'Your Transformation Story',
+      keyboardHints: '← → to navigate • space to advance • p to pause • m for sound',
     },
   },
 
