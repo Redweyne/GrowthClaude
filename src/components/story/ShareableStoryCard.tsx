@@ -1,9 +1,8 @@
-'use client';
+﻿'use client';
 
 // ============================================================================
 // SHAREABLE STORY CARD
 // Beautiful, exportable cards for sharing your transformation on social media.
-// Designed to make people curious about your journey.
 // ============================================================================
 
 import React, { useRef, useCallback } from 'react';
@@ -23,18 +22,21 @@ const COPY_BY_LOCALE = {
     copyText: 'Copy Text',
     share: 'Share',
     helper: 'Copy to clipboard or share directly to social media',
+    hashtags: '#TransformationHub #PersonalGrowth',
   },
   fr: {
-    brand: 'Transformation Hub',
+    brand: 'Hub de transformation',
     copyText: 'Copier le texte',
     share: 'Partager',
     helper: 'Copiez dans le presse-papiers ou partagez directement sur les réseaux sociaux',
+    hashtags: '#TransformationHub #CroissancePersonnelle',
   },
   ar: {
-    brand: 'Transformation Hub',
+    brand: 'مركز التحول',
     copyText: 'نسخ النص',
     share: 'مشاركة',
     helper: 'انسخ إلى الحافظة أو شارك مباشرة على وسائل التواصل الاجتماعي',
+    hashtags: '#TransformationHub #النمو_الشخصي',
   },
 } as const;
 
@@ -43,56 +45,49 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
 
-  // Get background gradient
   const backgroundStyle = {
-    background: `linear-gradient(135deg, ${card.theme.background.join(', ')})`
+    background: `linear-gradient(135deg, ${card.theme.background.join(', ')})`,
   };
 
-  // Handle copy to clipboard (simplified - no canvas export to avoid dependency)
-  const handleDownload = useCallback(async () => {
-    const shareText = createShareText();
-    try {
-      await navigator.clipboard.writeText(shareText);
-      // Could show a toast notification here
-    } catch {
-      handleShare();
-    }
-  }, [card]);
-
-  // Create shareable text
-  const createShareText = () => {
+  const createShareText = useCallback(() => {
     let text = `${card.title}\n\n`;
-    text += card.stats.map(s => `${s.icon} ${s.value} ${s.label}`).join('\n');
+    text += card.stats.map((stat) => `${stat.icon} ${stat.value} ${stat.label}`).join('\n');
     if (card.quote) {
       text += `\n\n"${card.quote.text}"\n${card.quote.attribution}`;
     }
-    text += `\n\n${card.period}\n\n#TransformationHub #PersonalGrowth`;
+    text += `\n\n${card.period}\n\n${copy.hashtags}`;
     return text;
+  }, [card, copy.hashtags]);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
   };
 
-  // Handle native share
   const handleShare = useCallback(async () => {
-    const shareText = `${card.title}\n\n${card.stats.map(s => `${s.icon} ${s.value} ${s.label}`).join('\n')}\n\n#TransformationHub #PersonalGrowth`;
+    const shareText = createShareText();
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: card.title,
-          text: shareText
+          text: shareText,
         });
-      } catch (error) {
-        // User cancelled or share failed - fallback to clipboard
+      } catch {
         copyToClipboard(shareText);
       }
     } else {
       copyToClipboard(shareText);
     }
-  }, [card]);
+  }, [card.title, createShareText]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // Could show a toast here
-  };
+  const handleDownload = useCallback(async () => {
+    const shareText = createShareText();
+    try {
+      await navigator.clipboard.writeText(shareText);
+    } catch {
+      handleShare();
+    }
+  }, [createShareText, handleShare]);
 
   return (
     <motion.div
@@ -101,7 +96,6 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Close button */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
@@ -110,18 +104,16 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
       </button>
 
       <div className="flex flex-col items-center gap-6 max-w-md w-full">
-        {/* The Card */}
         <div
           ref={cardRef}
           className="w-full aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl"
           style={backgroundStyle}
         >
-          {/* Pattern overlay */}
           {card.theme.pattern === 'geometric' && (
             <div
               className="absolute inset-0 opacity-5"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
               }}
             />
           )}
@@ -130,90 +122,58 @@ export function ShareableStoryCard({ card, onClose }: ShareableStoryCardProps) {
               className="absolute inset-0 opacity-5"
               style={{
                 backgroundImage: 'radial-gradient(circle at 25% 25%, white 2%, transparent 2%), radial-gradient(circle at 75% 75%, white 2%, transparent 2%)',
-                backgroundSize: '50px 50px'
+                backgroundSize: '50px 50px',
               }}
             />
           )}
 
           <div className="relative h-full flex flex-col p-8">
-            {/* Header */}
             <div className="mb-auto">
-              <h2
-                className="text-2xl font-bold mb-2"
-                style={{ color: card.theme.textColor }}
-              >
+              <h2 className="text-2xl font-bold mb-2" style={{ color: card.theme.textColor }}>
                 {card.title}
               </h2>
-              <p
-                className="text-sm opacity-70"
-                style={{ color: card.theme.textColor }}
-              >
+              <p className="text-sm opacity-70" style={{ color: card.theme.textColor }}>
                 {card.subtitle}
               </p>
             </div>
 
-            {/* Stats */}
             <div className="flex justify-between mb-8">
               {card.stats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="text-2xl mb-1">{stat.icon}</div>
-                  <div
-                    className="text-3xl font-bold"
-                    style={{ color: card.theme.accentColor }}
-                  >
+                  <div className="text-3xl font-bold" style={{ color: card.theme.accentColor }}>
                     {stat.value}
                   </div>
-                  <div
-                    className="text-xs opacity-60"
-                    style={{ color: card.theme.textColor }}
-                  >
+                  <div className="text-xs opacity-60" style={{ color: card.theme.textColor }}>
                     {stat.label}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Quote (if available) */}
             {card.quote && (
               <div className="mb-8">
-                <Quote
-                  className="w-6 h-6 mb-2 opacity-30"
-                  style={{ color: card.theme.textColor }}
-                />
-                <p
-                  className="text-sm italic opacity-80 leading-relaxed"
-                  style={{ color: card.theme.textColor }}
-                >
+                <Quote className="w-6 h-6 mb-2 opacity-30" style={{ color: card.theme.textColor }} />
+                <p className="text-sm italic opacity-80 leading-relaxed" style={{ color: card.theme.textColor }}>
                   "{card.quote.text}"
                 </p>
-                <p
-                  className="text-xs opacity-50 mt-2"
-                  style={{ color: card.theme.textColor }}
-                >
+                <p className="text-xs opacity-50 mt-2" style={{ color: card.theme.textColor }}>
                   {card.quote.attribution}
                 </p>
               </div>
             )}
 
-            {/* Footer */}
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
-              <span
-                className="text-xs opacity-50"
-                style={{ color: card.theme.textColor }}
-              >
+              <span className="text-xs opacity-50" style={{ color: card.theme.textColor }}>
                 {card.period}
               </span>
-              <span
-                className="text-xs font-medium opacity-70"
-                style={{ color: card.theme.accentColor }}
-              >
+              <span className="text-xs font-medium opacity-70" style={{ color: card.theme.accentColor }}>
                 {copy.brand}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex gap-4">
           <button
             onClick={handleDownload}

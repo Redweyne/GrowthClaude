@@ -9,12 +9,16 @@ import './globals.css';
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const metadata: Metadata = {
-  title: 'Transformation Hub',
+  title: 'GrowthClaude',
   description:
-    'A daily, guided self-transformation journey that turns timeless human wisdom into small, repeatable actions that reshape identity over time.',
+    'Guided self-transformation journey | Parcours guide de transformation personnelle | رحلة موجهة للتحول الذاتي',
   keywords: [
     'self-improvement',
     'personal growth',
+    'croissance personnelle',
+    'developpement personnel',
+    'النمو الشخصي',
+    'التطور الذاتي',
     'stoicism',
     'habits',
     'mindfulness',
@@ -22,17 +26,17 @@ export const metadata: Metadata = {
     'wisdom',
     'transformation',
   ],
-  authors: [{ name: 'Transformation Hub' }],
+  authors: [{ name: 'GrowthClaude' }],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Transformation Hub',
+    title: 'GrowthClaude',
     startupImage: [],
   },
   openGraph: {
-    title: 'Transformation Hub',
-    description: 'A daily journey of self-transformation through timeless wisdom.',
+    title: 'GrowthClaude',
+    description: 'Guided self-transformation journey | Parcours guide de transformation personnelle | رحلة موجهة للتحول الذاتي',
     type: 'website',
   },
 };

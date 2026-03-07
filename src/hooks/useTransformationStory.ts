@@ -1,9 +1,8 @@
-'use client';
+﻿'use client';
 
 // ============================================================================
 // USE TRANSFORMATION STORY HOOK
 // Bridges the store with the story generation system.
-// Gathers all user data and generates personalized stories.
 // ============================================================================
 
 import { useMemo, useCallback } from 'react';
@@ -17,21 +16,126 @@ import {
   IdentityForStory,
   AssessmentForStory,
   WisdomLogForStory,
-  MonthlyPatternForStory
+  MonthlyPatternForStory,
 } from '@/types/story';
 import { buildTransformationStory } from '@/lib/story';
+import { formatStory, resolveStoryLocale, type StoryLocale } from '@/lib/story/storyLocale';
+import { PATTERN_HISTORY_KEYS, THEME_KEYWORDS } from '@/lib/story/storyLexicon';
+
+const COPY = {
+  en: {
+    personalReflection: 'Personal reflection',
+    minutes: '{count} minutes',
+    hours: '{count} hours',
+    days: '{count} days',
+    demoUser: 'Demo User',
+    whyStatement: 'I want to find calm in the chaos and become the best version of myself.',
+    lessons: [
+      'Introduction to Stoicism',
+      'The Dichotomy of Control',
+      'The Stoic Morning',
+      'Negative Visualization',
+      'The Obstacle Is the Way',
+      'Living in the Present',
+    ],
+    reflections: [
+      'I keep trying to control everything around me and it is exhausting. My boss made a decision I disagree with, and I spent the whole night stressed about it. I realize now that I waste so much energy fighting battles I cannot win.',
+      'Today I caught myself getting angry about traffic. Then I remembered that this is outside my control. For the first time, I felt my shoulders drop. I cannot control traffic, but I can control my response.',
+      'I started my morning with ten quiet minutes before checking my phone. It felt strange at first, but by the end my mind was clearer than usual. It was a small win, but it mattered.',
+      'I imagined losing the things I love. Instead of feeling empty, I felt grateful for what I still have. My problems suddenly felt smaller, and I called my mother just to tell her I love her.',
+      'I was rejected from a job I really wanted. The old me would have spiraled. This time I asked what it could teach me. The rejection was not the end. It was information.',
+      'I am starting to notice a real shift in myself. When my colleague criticized my work today, I did not react defensively. I listened, kept what was useful, and let the rest go. It felt powerful.',
+    ],
+    identity: [
+      {
+        statement: 'I am someone who responds rather than reacts.',
+        context: 'After practicing the pause',
+      },
+      {
+        statement: 'I welcome obstacles as invitations to grow.',
+        context: 'After the job rejection',
+      },
+    ],
+  },
+  fr: {
+    personalReflection: 'Reflexion personnelle',
+    minutes: '{count} minutes',
+    hours: '{count} heures',
+    days: '{count} jours',
+    demoUser: 'Utilisateur demo',
+    whyStatement: 'Je veux trouver du calme dans le chaos et devenir la meilleure version de moi-meme.',
+    lessons: [
+      'Introduction au stoicisme',
+      'La dichotomie du controle',
+      'Le matin stoicien',
+      'La visualisation negative',
+      'L obstacle est le chemin',
+      'Vivre dans le present',
+    ],
+    reflections: [
+      'J essaie encore de tout controler autour de moi et cela m epuise. Mon responsable a pris une decision que je n aimais pas et j ai passe la nuit a stresser. Je vois maintenant toute l energie que je perds a me battre contre ce que je ne peux pas changer.',
+      'Aujourd hui, je me suis surpris a m agacer dans les embouteillages. Puis je me suis souvenu que cela ne dependait pas de moi. Pour la premiere fois, j ai senti mes epaules se relacher. Je ne controle pas la circulation, mais je peux choisir ma reaction.',
+      'J ai commence ma matinee par dix minutes de silence avant de regarder mon telephone. C etait etrange au debut, mais mon esprit etait plus clair a la fin. C etait une petite victoire, mais elle comptait.',
+      'J ai imagine perdre ce que j aime. Au lieu de me sentir vide, j ai ressenti de la gratitude pour ce qui est encore la. Mes problemes ont paru plus petits et j ai appele ma mere juste pour lui dire que je l aime.',
+      'J ai ete refuse pour un poste que je voulais vraiment. L ancienne version de moi se serait ecroulee. Cette fois, je me suis demande ce que cela pouvait m apprendre. Ce refus n etait pas une fin, c etait une information.',
+      'Je commence a remarquer un vrai changement en moi. Quand mon collegue a critique mon travail aujourd hui, je n ai pas reagi sur la defensive. J ai ecoute, garde ce qui etait utile et laisse le reste. C etait puissant.',
+    ],
+    identity: [
+      {
+        statement: 'Je suis quelqu un qui repond au lieu de reagir.',
+        context: 'Apres avoir pratique la pause',
+      },
+      {
+        statement: 'J accueille les obstacles comme des occasions de grandir.',
+        context: 'Apres le refus du poste',
+      },
+    ],
+  },
+  ar: {
+    personalReflection: 'تأمل شخصي',
+    minutes: '{count} دقيقة',
+    hours: '{count} ساعة',
+    days: '{count} يوم',
+    demoUser: 'مستخدم تجريبي',
+    whyStatement: 'أريد أن أجد هدوءا وسط الفوضى وأن أصبح أفضل نسخة من نفسي.',
+    lessons: [
+      'مدخل إلى الرواقية',
+      'ثنائية التحكم',
+      'الصباح الرواقي',
+      'التصور السلبي',
+      'العقبة هي الطريق',
+      'العيش في الحاضر',
+    ],
+    reflections: [
+      'ما زلت أحاول التحكم في كل ما حولي، وهذا يرهقني. اتخذ مديري قرارا لم يعجبني وبقيت طوال الليل متوترا بسببه. بدأت أدرك الآن كم أستهلك من طاقة وأنا أحارب أشياء لا أستطيع الفوز بها.',
+      'اليوم لاحظت أنني أغضب بسبب الازدحام. ثم تذكرت أن هذا خارج سيطرتي. للمرة الأولى شعرت بأن كتفي قد ارتخيا. أنا لا أتحكم في الطريق، لكنني أتحكم في استجابتي.',
+      'بدأت صباحي بعشر دقائق من الصمت قبل أن ألمس هاتفي. كان الأمر غريبا في البداية، لكن ذهني أصبح أكثر صفاء في النهاية. كان انتصارا صغيرا، لكنه مهم.',
+      'تخيلت أنني فقدت الأشياء التي أحبها. بدلا من أن أشعر بالفراغ، شعرت بالامتنان لما ما زال موجودا. بدت مشكلاتي أصغر فجأة، فاتصلت بأمي فقط لأخبرها أنني أحبها.',
+      'تم رفضي في وظيفة كنت أريدها بشدة. النسخة القديمة مني كانت ستنهار. هذه المرة سألت نفسي: ماذا يمكن أن يعلمني هذا؟ لم يكن الرفض نهاية، بل معلومة.',
+      'أبدأ بملاحظة تحول حقيقي داخلي. عندما انتقد زميلي عملي اليوم لم أدافع عن نفسي كما كنت أفعل سابقا. استمعت، وأخذت ما يفيدني، وتركت الباقي. كان ذلك شعورا قويا.',
+    ],
+    identity: [
+      {
+        statement: 'أنا شخص يستجيب بدلا من أن يندفع.',
+        context: 'بعد ممارسة التوقف',
+      },
+      {
+        statement: 'أستقبل العقبات كفرص للنمو.',
+        context: 'بعد رفض الوظيفة',
+      },
+    ],
+  },
+} as const;
 
 export function useTransformationStory() {
   const store = useStore();
 
-  // Check if user has enough data for a story
   const canGenerateStory = useMemo(() => {
     const hasReflections = (store.allReflections?.length || 0) >= 3;
     const hasLessons = Object.keys(store.completedLessons || {}).length >= 1;
     return hasReflections || hasLessons;
   }, [store.allReflections, store.completedLessons]);
 
-  // Get story readiness info
   const storyReadiness = useMemo(() => {
     const reflectionCount = store.allReflections?.length || 0;
     const lessonCount = Object.keys(store.completedLessons || {}).length;
@@ -46,86 +150,69 @@ export function useTransformationStory() {
       hasStreak,
       minimumRequired: {
         reflections: 3,
-        current: reflectionCount
+        current: reflectionCount,
       },
-      richness: calculateRichness(reflectionCount, lessonCount, hasIdentity, hasStreak)
+      richness: calculateRichness(reflectionCount, lessonCount, hasIdentity, hasStreak),
     };
   }, [canGenerateStory, store]);
 
-  // Build the story generation context from store
   const buildContext = useCallback((): StoryGenerationContext | null => {
     if (!canGenerateStory) return null;
 
-    // Get first activity date
+    const locale = resolveStoryLocale(store.language);
+    const copy = COPY[locale];
     const allReflections = store.allReflections || [];
     const sortedReflections = [...allReflections].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    const firstDate = sortedReflections[0]?.date
-      ? new Date(sortedReflections[0].date)
-      : new Date();
+    const firstDate = sortedReflections[0]?.date ? new Date(sortedReflections[0].date) : new Date();
     const now = new Date();
 
-    // Transform reflections
-    const reflections: ReflectionForStory[] = sortedReflections.map(r => ({
-      id: r.id,
-      text: r.reflection,
-      date: r.date,
-      lessonTitle: r.lessonTitle,
-      coreConceptTag: r.coreConceptTag,
-      wordCount: r.reflection.split(/\s+/).length
+    const reflections: ReflectionForStory[] = sortedReflections.map((entry) => ({
+      id: entry.id,
+      text: entry.reflection,
+      date: entry.date,
+      lessonTitle: entry.lessonTitle,
+      coreConceptTag: entry.coreConceptTag,
+      wordCount: entry.reflection.split(/\s+/).filter(Boolean).length,
     }));
 
-    // Transform identity statements
-    const identityStatements: IdentityForStory[] = (store.identityStatements || []).map(s => ({
-      statement: s.statement,
-      date: s.createdAt,
-      context: s.context?.description || 'Personal reflection'
+    const identityStatements: IdentityForStory[] = (store.identityStatements || []).map((statement) => ({
+      statement: statement.statement,
+      date: statement.createdAt,
+      context: statement.context?.description || copy.personalReflection,
     }));
 
-    // Transform assessments
-    const assessments: AssessmentForStory[] = (store.monthlyAssessments || []).map(a => ({
-      date: a.date,
-      month: a.month,
-      scores: a.scores
+    const assessments: AssessmentForStory[] = (store.monthlyAssessments || []).map((assessment) => ({
+      date: assessment.date,
+      month: assessment.month,
+      scores: assessment.scores,
     }));
 
-    // Transform wisdom logs
-    const wisdomLogs: WisdomLogForStory[] = (store.wisdomInActionLogs || []).map(w => ({
-      situation: w.situation,
-      principle: w.stoicPrinciple,
-      outcome: w.outcome,
-      date: w.date
+    const wisdomLogs: WisdomLogForStory[] = (store.wisdomInActionLogs || []).map((entry) => ({
+      situation: entry.situation,
+      principle: entry.stoicPrinciple,
+      outcome: entry.outcome,
+      date: entry.date,
     }));
 
-    // Build pattern history (simplified - using reflection themes)
     const patternHistory = buildPatternHistory(reflections);
-
-    // Calculate metrics
-    const daysSinceStart = Math.floor(
-      (now.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const totalWordsWritten = reflections.reduce((sum, r) => sum + r.wordCount, 0);
+    const daysSinceStart = Math.floor((now.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+    const totalWordsWritten = reflections.reduce((sum, reflection) => sum + reflection.wordCount, 0);
     const totalActiveDays = (store.activityLog || []).length;
-    const consistencyPercentage = daysSinceStart > 0
-      ? (totalActiveDays / daysSinceStart) * 100
-      : 100;
+    const consistencyPercentage = daysSinceStart > 0 ? (totalActiveDays / daysSinceStart) * 100 : 100;
 
     const metrics: StoryMetrics = {
       totalReflections: reflections.length,
       totalWordsWritten,
-      averageReflectionLength: reflections.length > 0
-        ? Math.round(totalWordsWritten / reflections.length)
-        : 0,
-      longestReflection: reflections.length > 0
-        ? Math.max(...reflections.map(r => r.wordCount))
-        : 0,
+      averageReflectionLength: reflections.length > 0 ? Math.round(totalWordsWritten / reflections.length) : 0,
+      longestReflection: reflections.length > 0 ? Math.max(...reflections.map((reflection) => reflection.wordCount)) : 0,
       totalActiveDays,
       currentStreak: store.currentStreak,
       longestStreak: store.longestStreak,
       consistencyPercentage,
       lessonsCompleted: Object.keys(store.completedLessons || {}).length,
-      practiceSessionsCompleted: 0, // Could track this
+      practiceSessionsCompleted: 0,
       assessmentsCompleted: assessments.length,
       identityStatementsCreated: identityStatements.length,
       wisdomApplications: wisdomLogs.length,
@@ -134,10 +221,11 @@ export function useTransformationStory() {
       dominantPatterns: getDominantPatterns(patternHistory),
       patternShifts: [],
       daysSinceStart,
-      totalTimeInvested: formatTimeInvested(totalActiveDays * 10) // Estimate 10 mins per session
+      totalTimeInvested: formatTimeInvested(totalActiveDays * 10, locale),
     };
 
     return {
+      locale,
       userName: store.name || '',
       transformationGoal: store.transformationGoal || 'growth',
       whyStatement: store.whyStatement || '',
@@ -149,37 +237,30 @@ export function useTransformationStory() {
       assessments,
       wisdomLogs,
       patternHistory,
-      metrics
+      metrics,
     };
   }, [canGenerateStory, store]);
 
-  // Generate a story
   const generateStory = useCallback((type: StoryType = 'on_demand'): TransformationStory | null => {
     const context = buildContext();
     if (!context) return null;
-
     return buildTransformationStory(context, type);
   }, [buildContext]);
 
-  // Generate a demo story WITHOUT modifying user data
-  // This creates a story from demo context for preview purposes only
   const generateDemoStory = useCallback((): TransformationStory | null => {
-    const demoContext = buildDemoContext();
+    const locale = resolveStoryLocale(store.language);
+    const demoContext = buildDemoContext(locale);
     return buildTransformationStory(demoContext, 'on_demand');
-  }, []);
+  }, [store.language]);
 
   return {
     canGenerateStory,
     storyReadiness,
     generateStory,
     buildContext,
-    generateDemoStory
+    generateDemoStory,
   };
 }
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
 
 function calculateRichness(
   reflections: number,
@@ -212,66 +293,56 @@ function getCurrentLevel(xp: number): number {
     { level: 7, minXp: 1900 },
     { level: 8, minXp: 2700 },
     { level: 9, minXp: 3800 },
-    { level: 10, minXp: 5200 }
+    { level: 10, minXp: 5200 },
   ];
 
-  for (let i = levels.length - 1; i >= 0; i--) {
-    if (xp >= levels[i].minXp) return levels[i].level;
+  for (let index = levels.length - 1; index >= 0; index -= 1) {
+    if (xp >= levels[index].minXp) return levels[index].level;
   }
+
   return 1;
 }
 
-function formatTimeInvested(minutes: number): string {
-  if (minutes < 60) return `${minutes} minutes`;
+function formatTimeInvested(minutes: number, locale: StoryLocale): string {
+  const copy = COPY[locale];
+  if (minutes < 60) return formatStory(copy.minutes, { count: minutes });
+
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hours`;
+  if (hours < 24) return formatStory(copy.hours, { count: hours });
+
   const days = Math.floor(hours / 24);
-  return `${days} days`;
+  return formatStory(copy.days, { count: days });
 }
 
 function buildPatternHistory(reflections: ReflectionForStory[]): MonthlyPatternForStory[] {
-  // Group reflections by month
   const monthlyReflections = new Map<string, ReflectionForStory[]>();
 
   for (const reflection of reflections) {
     const date = new Date(reflection.date);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-
     if (!monthlyReflections.has(monthKey)) {
       monthlyReflections.set(monthKey, []);
     }
     monthlyReflections.get(monthKey)!.push(reflection);
   }
 
-  // Pattern keywords (simplified)
-  const patterns = {
-    control: ['control', 'can\'t control', 'out of control'],
-    acceptance: ['accept', 'let go', 'peace with'],
-    patience: ['patient', 'patience', 'wait'],
-    courage: ['courage', 'brave', 'fear', 'afraid'],
-    gratitude: ['grateful', 'thankful', 'appreciate'],
-    perspective: ['perspective', 'realize', 'understand'],
-    growth: ['grow', 'growth', 'learn', 'improve'],
-    discipline: ['discipline', 'habit', 'routine', 'consistent']
-  };
-
   const result: MonthlyPatternForStory[] = [];
 
   for (const [month, monthReflections] of monthlyReflections) {
     const themes: Record<string, number> = {};
 
-    for (const [pattern, keywords] of Object.entries(patterns)) {
+    for (const key of PATTERN_HISTORY_KEYS) {
+      const keywords = THEME_KEYWORDS[key] || [];
       let count = 0;
+
       for (const reflection of monthReflections) {
-        const text = reflection.text.toLowerCase();
-        for (const keyword of keywords) {
-          if (text.includes(keyword)) {
-            count++;
-            break;
-          }
+        const normalizedText = normalizeText(reflection.text);
+        if (keywords.some((keyword) => normalizedText.includes(normalizeText(keyword)))) {
+          count += 1;
         }
       }
-      themes[pattern] = count;
+
+      themes[key] = count;
     }
 
     result.push({ month, themes });
@@ -283,95 +354,41 @@ function buildPatternHistory(reflections: ReflectionForStory[]): MonthlyPatternF
 function getDominantPatterns(history: MonthlyPatternForStory[]): string[] {
   if (history.length === 0) return [];
 
-  // Get patterns from the most recent month
   const recent = history[history.length - 1];
-  const sorted = Object.entries(recent.themes)
+  return Object.entries(recent.themes)
     .sort(([, a], [, b]) => b - a)
     .filter(([, count]) => count > 0)
     .slice(0, 3)
     .map(([pattern]) => pattern);
-
-  return sorted;
 }
 
-// ============================================================================
-// BUILD DEMO CONTEXT - Creates demo data without touching user state
-// ============================================================================
-function buildDemoContext(): StoryGenerationContext {
+function buildDemoContext(locale: StoryLocale): StoryGenerationContext {
   const now = new Date();
   const startDate = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
+  const copy = COPY[locale];
 
-  const demoReflections: ReflectionForStory[] = [
-    {
-      id: 'demo-1',
-      text: 'I keep trying to control everything around me and it\'s exhausting. My boss made a decision I disagree with and I spent the whole night stressed about it. I realize now that I waste so much energy fighting battles I can\'t win.',
-      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-      lessonTitle: 'Introduction to Stoicism',
-      coreConceptTag: 'acceptance',
-      wordCount: 49
-    },
-    {
-      id: 'demo-2',
-      text: 'Today I caught myself getting angry about traffic. But then I remembered - this is outside my control. For the first time, I actually felt my shoulders drop. I can\'t control traffic, but I can control my reaction. This is harder than it sounds.',
-      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-      lessonTitle: 'The Dichotomy of Control',
-      coreConceptTag: 'control',
-      wordCount: 52
-    },
-    {
-      id: 'demo-3',
-      text: 'Started my morning with 10 minutes of silent reflection before checking my phone. It felt strange at first - almost uncomfortable. But by the end I noticed my mind was clearer than usual. Small win, but it felt meaningful.',
-      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-      lessonTitle: 'The Stoic Morning',
-      coreConceptTag: 'discipline',
-      wordCount: 45
-    },
-    {
-      id: 'demo-4',
-      text: 'I imagined losing everything - my job, my relationships, my health. Instead of feeling depressed, I felt this wave of appreciation for what I have. My problems suddenly seemed smaller. I called my mom just to tell her I love her.',
-      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      lessonTitle: 'Negative Visualization',
-      coreConceptTag: 'gratitude',
-      wordCount: 48
-    },
-    {
-      id: 'demo-5',
-      text: 'Got rejected from a job I really wanted. Old me would have spiraled. But I asked myself: what can this teach me? I realized the interview revealed gaps in my skills I didn\'t know existed. The rejection wasn\'t the end - it was information.',
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      lessonTitle: 'The Obstacle Is The Way',
-      coreConceptTag: 'perspective',
-      wordCount: 51
-    },
-    {
-      id: 'demo-6',
-      text: 'I\'m starting to notice a real shift in myself. When my colleague criticized my work today, I didn\'t react defensively like I used to. I listened, took what was useful, and let go of the rest. It felt... powerful. Like I\'m finally becoming the person I\'ve always wanted to be.',
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      lessonTitle: 'Living in the Present',
-      coreConceptTag: 'acceptance',
-      wordCount: 56
-    }
-  ];
+  const demoReflections: ReflectionForStory[] = copy.reflections.map((text, index) => ({
+    id: `demo-${index + 1}`,
+    text,
+    date: new Date(Date.now() - [28, 21, 14, 10, 5, 2][index] * 24 * 60 * 60 * 1000).toISOString(),
+    lessonTitle: copy.lessons[index],
+    coreConceptTag: ['acceptance', 'control', 'discipline', 'gratitude', 'perspective', 'acceptance'][index],
+    wordCount: text.split(/\s+/).filter(Boolean).length,
+  }));
 
-  const demoIdentity: IdentityForStory[] = [
-    {
-      statement: 'I am someone who responds rather than reacts.',
-      date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      context: 'After practicing the pause'
-    },
-    {
-      statement: 'I embrace obstacles as opportunities for growth.',
-      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      context: 'After the job rejection'
-    }
-  ];
+  const demoIdentity: IdentityForStory[] = copy.identity.map((item, index) => ({
+    statement: item.statement,
+    date: new Date(Date.now() - [10, 3][index] * 24 * 60 * 60 * 1000).toISOString(),
+    context: item.context,
+  }));
 
-  const totalWords = demoReflections.reduce((sum, r) => sum + r.wordCount, 0);
+  const totalWords = demoReflections.reduce((sum, reflection) => sum + reflection.wordCount, 0);
 
   const metrics: StoryMetrics = {
     totalReflections: demoReflections.length,
     totalWordsWritten: totalWords,
     averageReflectionLength: Math.round(totalWords / demoReflections.length),
-    longestReflection: Math.max(...demoReflections.map(r => r.wordCount)),
+    longestReflection: Math.max(...demoReflections.map((reflection) => reflection.wordCount)),
     totalActiveDays: 20,
     currentStreak: 7,
     longestStreak: 12,
@@ -386,13 +403,14 @@ function buildDemoContext(): StoryGenerationContext {
     dominantPatterns: ['control', 'acceptance', 'growth'],
     patternShifts: [],
     daysSinceStart: 28,
-    totalTimeInvested: '3 hours'
+    totalTimeInvested: formatTimeInvested(180, locale),
   };
 
   return {
-    userName: 'Demo User',
+    locale,
+    userName: copy.demoUser,
     transformationGoal: 'calmer',
-    whyStatement: 'I want to find calm in the chaos and become the best version of myself.',
+    whyStatement: copy.whyStatement,
     periodStart: startDate,
     periodEnd: now,
     daysSinceJourneyStart: 28,
@@ -401,7 +419,16 @@ function buildDemoContext(): StoryGenerationContext {
     assessments: [],
     wisdomLogs: [],
     patternHistory: buildPatternHistory(demoReflections),
-    metrics
+    metrics,
   };
 }
 
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s']/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

@@ -347,6 +347,8 @@ export interface PatternShiftData {
 // ----------------------------------------------------------------------------
 
 export interface StoryGenerationContext {
+  locale: 'en' | 'fr' | 'ar';
+
   // User info
   userName: string;
   transformationGoal: string;

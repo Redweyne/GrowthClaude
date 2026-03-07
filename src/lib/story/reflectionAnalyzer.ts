@@ -1,110 +1,88 @@
-// ============================================================================
+﻿// ============================================================================
 // REFLECTION ANALYZER
 // Extracts meaningful insights, contrasts, and growth patterns from reflections.
-// This is where we find the "before and after" that makes people emotional.
 // ============================================================================
 
-import { ReflectionForStory, TransformationInsight, WordData } from '@/types/story';
-
-// ----------------------------------------------------------------------------
-// SENTIMENT & THEME DETECTION
-// ----------------------------------------------------------------------------
-
-// Words that indicate struggle, challenge, or difficulty
-const STRUGGLE_INDICATORS = [
-  'struggle', 'struggling', 'difficult', 'hard', 'challenging', 'frustrated',
-  'frustrated', 'anxious', 'anxiety', 'worried', 'worry', 'stressed', 'stress',
-  'overwhelmed', 'confused', 'lost', 'stuck', 'fail', 'failed', 'failing',
-  'can\'t', 'cannot', 'unable', 'fear', 'afraid', 'scared', 'doubt', 'doubting',
-  'angry', 'anger', 'upset', 'discouraged', 'hopeless', 'helpless', 'weak',
-  'impossible', 'never', 'always', 'terrible', 'awful', 'hate', 'worst'
-];
-
-// Words that indicate growth, acceptance, or mastery
-const GROWTH_INDICATORS = [
-  'realize', 'realized', 'understand', 'understood', 'learn', 'learned', 'learning',
-  'accept', 'accepted', 'accepting', 'peace', 'peaceful', 'calm', 'calmer',
-  'control', 'controlled', 'choose', 'chose', 'chosen', 'notice', 'noticed',
-  'aware', 'awareness', 'present', 'moment', 'breathe', 'breath', 'pause',
-  'paused', 'respond', 'responded', 'instead', 'growth', 'growing', 'progress',
-  'better', 'improved', 'improving', 'grateful', 'gratitude', 'appreciate',
-  'strong', 'stronger', 'courage', 'courageous', 'confident', 'confidence',
-  'clarity', 'clear', 'focused', 'discipline', 'disciplined', 'patient',
-  'patience', 'wisdom', 'wise', 'perspective', 'let go', 'release', 'released'
-];
-
-// Words that indicate action and agency
-const AGENCY_INDICATORS = [
-  'decided', 'decide', 'chose', 'choose', 'took', 'take', 'made', 'make',
-  'started', 'start', 'began', 'begin', 'committed', 'commit', 'acted',
-  'act', 'created', 'create', 'built', 'build', 'changed', 'change',
-  'transformed', 'transform', 'practiced', 'practice', 'applied', 'apply',
-  'implemented', 'implement', 'tried', 'try', 'experimented', 'experiment'
-];
-
-// Words that indicate self-reflection and introspection
-const INTROSPECTION_INDICATORS = [
-  'i realize', 'i noticed', 'i understand', 'i see', 'i feel', 'i am',
-  'i\'ve been', 'i have been', 'i\'ve learned', 'i have learned',
-  'myself', 'my mind', 'my thoughts', 'my feelings', 'my emotions',
-  'my reaction', 'my response', 'my behavior', 'my pattern', 'my habit'
-];
+import { ReflectionForStory, WordData } from '@/types/story';
+import { resolveStoryLocale, type StoryLocale, joinStorySentences } from './storyLocale';
+import {
+  STRUGGLE_INDICATORS,
+  GROWTH_INDICATORS,
+  AGENCY_INDICATORS,
+  INTROSPECTION_INDICATORS,
+  FIRST_PERSON_MARKERS,
+  MEANINGFUL_WORDS,
+  STOP_WORDS,
+  THEME_KEYWORDS,
+} from './storyLexicon';
 
 export interface ReflectionAnalysis {
-  // Basic metrics
   wordCount: number;
   sentenceCount: number;
   averageWordsPerSentence: number;
-
-  // Sentiment scoring (0-1)
   struggleScore: number;
   growthScore: number;
   agencyScore: number;
   introspectionScore: number;
-
-  // Derived metrics
   overallSentiment: 'struggling' | 'neutral' | 'growing' | 'thriving';
   emotionalDepth: 'surface' | 'moderate' | 'deep' | 'profound';
-
-  // Key phrases extracted
   keyPhrases: string[];
-
-  // Themes present
   themes: string[];
 }
 
 export interface ReflectionContrast {
   before: ReflectionForStory;
   after: ReflectionForStory;
-  contrastScore: number; // 0-1, higher = more dramatic contrast
+  contrastScore: number;
   beforeAnalysis: ReflectionAnalysis;
   afterAnalysis: ReflectionAnalysis;
   growthNarrative: string;
   contrastType: 'struggle_to_growth' | 'confusion_to_clarity' | 'passive_to_active' | 'surface_to_deep';
 }
 
-// ----------------------------------------------------------------------------
-// ANALYSIS FUNCTIONS
-// ----------------------------------------------------------------------------
+const GROWTH_NARRATIVE_COPY: Record<StoryLocale, {
+  struggleToGrowth: string;
+  agency: string;
+  depth: string;
+  acceptance: string;
+  fallback: string;
+}> = {
+  en: {
+    struggleToGrowth: 'You moved from struggle to growth.',
+    agency: 'You found your agency and power to act.',
+    depth: 'Your self-reflection deepened profoundly.',
+    acceptance: 'You learned to accept what you cannot control.',
+    fallback: 'Your perspective has evolved meaningfully.',
+  },
+  fr: {
+    struggleToGrowth: 'Vous etes passe de la lutte a la progression.',
+    agency: 'Vous avez retrouve votre pouvoir d agir.',
+    depth: 'Votre introspection s est approfondie de facon nette.',
+    acceptance: 'Vous avez appris a accepter ce qui ne depend pas de vous.',
+    fallback: 'Votre regard sur les choses a evolue avec sens.',
+  },
+  ar: {
+    struggleToGrowth: 'انتقلت من الصراع إلى النمو.',
+    agency: 'استعدت قدرتك على الفعل والاختيار.',
+    depth: 'تعمق تأملك الذاتي بشكل واضح.',
+    acceptance: 'تعلمت أن تتقبل ما لا يقع تحت سيطرتك.',
+    fallback: 'لقد تطور منظورك بشكل ملموس.',
+  },
+};
 
-/**
- * Analyzes a single reflection for sentiment and depth
- */
 export function analyzeReflection(text: string): ReflectionAnalysis {
-  const lowerText = text.toLowerCase();
-  const words = text.split(/\s+/).filter(w => w.length > 0);
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const normalizedText = normalizeText(text);
+  const words = tokenize(text);
+  const sentences = splitSentences(text);
 
   const wordCount = words.length;
   const sentenceCount = Math.max(sentences.length, 1);
 
-  // Calculate scores
-  const struggleScore = calculateIndicatorScore(lowerText, STRUGGLE_INDICATORS, wordCount);
-  const growthScore = calculateIndicatorScore(lowerText, GROWTH_INDICATORS, wordCount);
-  const agencyScore = calculateIndicatorScore(lowerText, AGENCY_INDICATORS, wordCount);
-  const introspectionScore = calculateIndicatorScore(lowerText, INTROSPECTION_INDICATORS, wordCount);
+  const struggleScore = calculateIndicatorScore(normalizedText, STRUGGLE_INDICATORS, wordCount);
+  const growthScore = calculateIndicatorScore(normalizedText, GROWTH_INDICATORS, wordCount);
+  const agencyScore = calculateIndicatorScore(normalizedText, AGENCY_INDICATORS, wordCount);
+  const introspectionScore = calculateIndicatorScore(normalizedText, INTROSPECTION_INDICATORS, wordCount);
 
-  // Determine overall sentiment
   const sentimentDelta = growthScore - struggleScore;
   let overallSentiment: ReflectionAnalysis['overallSentiment'];
   if (sentimentDelta > 0.3) overallSentiment = 'thriving';
@@ -112,19 +90,12 @@ export function analyzeReflection(text: string): ReflectionAnalysis {
   else if (sentimentDelta < -0.2) overallSentiment = 'struggling';
   else overallSentiment = 'neutral';
 
-  // Determine emotional depth
   const depthScore = introspectionScore + (agencyScore * 0.5) + (wordCount > 100 ? 0.2 : 0);
   let emotionalDepth: ReflectionAnalysis['emotionalDepth'];
   if (depthScore > 0.5) emotionalDepth = 'profound';
   else if (depthScore > 0.3) emotionalDepth = 'deep';
   else if (depthScore > 0.15) emotionalDepth = 'moderate';
   else emotionalDepth = 'surface';
-
-  // Extract key phrases (sentences with high indicator density)
-  const keyPhrases = extractKeyPhrases(sentences);
-
-  // Identify themes
-  const themes = identifyThemes(lowerText);
 
   return {
     wordCount,
@@ -136,126 +107,93 @@ export function analyzeReflection(text: string): ReflectionAnalysis {
     introspectionScore,
     overallSentiment,
     emotionalDepth,
-    keyPhrases,
-    themes
+    keyPhrases: extractKeyPhrases(sentences),
+    themes: identifyThemes(normalizedText),
   };
 }
 
-/**
- * Calculates how prevalent certain indicator words are in the text
- */
 function calculateIndicatorScore(text: string, indicators: string[], totalWords: number): number {
   if (totalWords === 0) return 0;
 
   let matchCount = 0;
   for (const indicator of indicators) {
-    // Count occurrences of each indicator
-    const regex = new RegExp(`\\b${indicator}\\b`, 'gi');
-    const matches = text.match(regex);
-    if (matches) {
-      matchCount += matches.length;
-    }
+    matchCount += countOccurrences(text, normalizeText(indicator));
   }
 
-  // Normalize by word count, with diminishing returns
   const rawScore = matchCount / totalWords;
-  return Math.min(rawScore * 10, 1); // Scale up but cap at 1
+  return Math.min(rawScore * 10, 1);
 }
 
-/**
- * Extracts the most meaningful sentences from the text
- */
 function extractKeyPhrases(sentences: string[]): string[] {
   const allIndicators = [...GROWTH_INDICATORS, ...INTROSPECTION_INDICATORS, ...AGENCY_INDICATORS];
 
-  const scoredSentences = sentences.map(sentence => {
-    const lower = sentence.toLowerCase();
+  const scored = sentences.map((sentence) => {
+    const normalized = normalizeText(sentence);
     let score = 0;
+
     for (const indicator of allIndicators) {
-      if (lower.includes(indicator)) score++;
+      if (normalized.includes(normalizeText(indicator))) score += 1;
     }
-    // Bonus for "I" statements
-    if (lower.includes('i ')) score += 0.5;
-    // Penalty for very short sentences
-    if (sentence.split(/\s+/).length < 5) score -= 1;
+
+    for (const marker of FIRST_PERSON_MARKERS) {
+      if (normalized.includes(normalizeText(marker))) {
+        score += 0.5;
+        break;
+      }
+    }
+
+    if (tokenize(sentence).length < 5) score -= 1;
+
     return { sentence: sentence.trim(), score };
   });
 
-  return scoredSentences
-    .filter(s => s.score > 0.5 && s.sentence.length > 20)
+  return scored
+    .filter((item) => item.score > 0.5 && item.sentence.length > 20)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
-    .map(s => s.sentence);
+    .map((item) => item.sentence);
 }
 
-/**
- * Identifies major themes present in the reflection
- */
 function identifyThemes(text: string): string[] {
   const themes: string[] = [];
 
-  const themePatterns: [string, string[]][] = [
-    ['acceptance', ['accept', 'let go', 'release', 'surrender', 'peace with']],
-    ['control', ['control', 'can\'t control', 'within my control', 'outside my control']],
-    ['patience', ['patient', 'patience', 'wait', 'time', 'rushing']],
-    ['courage', ['courage', 'brave', 'fear', 'afraid', 'scared', 'face']],
-    ['gratitude', ['grateful', 'thankful', 'appreciate', 'gratitude', 'blessed']],
-    ['perspective', ['perspective', 'view', 'realize', 'see now', 'understand now']],
-    ['presence', ['present', 'moment', 'now', 'here', 'mindful', 'aware']],
-    ['growth', ['grow', 'growth', 'learn', 'improve', 'better', 'progress']],
-    ['discipline', ['discipline', 'habit', 'routine', 'consistent', 'commit']],
-    ['resilience', ['bounce back', 'overcome', 'despite', 'anyway', 'still']]
-  ];
-
-  for (const [theme, keywords] of themePatterns) {
-    for (const keyword of keywords) {
-      if (text.includes(keyword)) {
-        themes.push(theme);
-        break;
-      }
+  for (const [theme, keywords] of Object.entries(THEME_KEYWORDS)) {
+    if (keywords.some((keyword) => text.includes(normalizeText(keyword)))) {
+      themes.push(theme);
     }
   }
 
   return themes;
 }
 
-// ----------------------------------------------------------------------------
-// CONTRAST FINDING - The magic of "before and after"
-// ----------------------------------------------------------------------------
-
-/**
- * Finds the most compelling "before and after" contrast in reflections
- */
-export function findBestContrast(reflections: ReflectionForStory[]): ReflectionContrast | null {
+export function findBestContrast(
+  reflections: ReflectionForStory[],
+  locale: StoryLocale = 'en'
+): ReflectionContrast | null {
   if (reflections.length < 2) return null;
 
-  // Sort by date
+  const safeLocale = resolveStoryLocale(locale);
   const sorted = [...reflections].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  // Analyze all reflections
-  const analyzed = sorted.map(r => ({
-    reflection: r,
-    analysis: analyzeReflection(r.text)
+  const analyzed = sorted.map((reflection) => ({
+    reflection,
+    analysis: analyzeReflection(reflection.text),
   }));
 
   let bestContrast: ReflectionContrast | null = null;
   let bestScore = 0;
 
-  // Find pairs with maximum contrast
-  // Prioritize early reflections vs late reflections
   const earlyReflections = analyzed.slice(0, Math.ceil(analyzed.length * 0.3));
   const lateReflections = analyzed.slice(Math.floor(analyzed.length * 0.7));
 
   for (const early of earlyReflections) {
     for (const late of lateReflections) {
       const contrast = calculateContrastScore(early.analysis, late.analysis);
-
-      // We want: struggle→growth, passive→active, surface→deep
       const isPositiveGrowth =
-        (late.analysis.growthScore > early.analysis.growthScore) ||
-        (late.analysis.agencyScore > early.analysis.agencyScore) ||
+        late.analysis.growthScore > early.analysis.growthScore ||
+        late.analysis.agencyScore > early.analysis.agencyScore ||
         (late.analysis.emotionalDepth !== 'surface' && early.analysis.emotionalDepth === 'surface');
 
       if (contrast > bestScore && isPositiveGrowth) {
@@ -266,8 +204,8 @@ export function findBestContrast(reflections: ReflectionForStory[]): ReflectionC
           contrastScore: contrast,
           beforeAnalysis: early.analysis,
           afterAnalysis: late.analysis,
-          growthNarrative: generateGrowthNarrative(early.analysis, late.analysis),
-          contrastType: determineContrastType(early.analysis, late.analysis)
+          growthNarrative: generateGrowthNarrative(early.analysis, late.analysis, safeLocale),
+          contrastType: determineContrastType(early.analysis, late.analysis),
         };
       }
     }
@@ -276,24 +214,13 @@ export function findBestContrast(reflections: ReflectionForStory[]): ReflectionC
   return bestContrast;
 }
 
-/**
- * Calculates how different two reflections are
- */
 function calculateContrastScore(before: ReflectionAnalysis, after: ReflectionAnalysis): number {
-  // Growth improvement
   const growthDelta = after.growthScore - before.growthScore;
-
-  // Struggle reduction
   const struggleDelta = before.struggleScore - after.struggleScore;
-
-  // Agency increase
   const agencyDelta = after.agencyScore - before.agencyScore;
-
-  // Depth increase
-  const depthMap = { 'surface': 0, 'moderate': 1, 'deep': 2, 'profound': 3 };
+  const depthMap = { surface: 0, moderate: 1, deep: 2, profound: 3 };
   const depthDelta = depthMap[after.emotionalDepth] - depthMap[before.emotionalDepth];
 
-  // Combine scores (all positive = good contrast)
   const score = (
     Math.max(0, growthDelta) * 0.3 +
     Math.max(0, struggleDelta) * 0.3 +
@@ -304,38 +231,37 @@ function calculateContrastScore(before: ReflectionAnalysis, after: ReflectionAna
   return Math.min(score, 1);
 }
 
-/**
- * Generates a human-readable narrative about the growth
- */
-function generateGrowthNarrative(before: ReflectionAnalysis, after: ReflectionAnalysis): string {
-  const narratives: string[] = [];
+function generateGrowthNarrative(
+  before: ReflectionAnalysis,
+  after: ReflectionAnalysis,
+  locale: StoryLocale
+): string {
+  const copy = GROWTH_NARRATIVE_COPY[locale];
+  const parts: string[] = [];
 
   if (before.struggleScore > 0.3 && after.growthScore > before.struggleScore) {
-    narratives.push('You moved from struggle to growth.');
+    parts.push(copy.struggleToGrowth);
   }
 
   if (after.agencyScore > before.agencyScore + 0.2) {
-    narratives.push('You found your agency and power to act.');
+    parts.push(copy.agency);
   }
 
   if (after.emotionalDepth === 'profound' && before.emotionalDepth === 'surface') {
-    narratives.push('Your self-reflection deepened profoundly.');
+    parts.push(copy.depth);
   }
 
   if (after.themes.includes('acceptance') && before.themes.includes('control')) {
-    narratives.push('You learned to accept what you cannot control.');
+    parts.push(copy.acceptance);
   }
 
-  if (narratives.length === 0) {
-    narratives.push('Your perspective has evolved meaningfully.');
+  if (parts.length === 0) {
+    parts.push(copy.fallback);
   }
 
-  return narratives.join(' ');
+  return joinStorySentences(parts);
 }
 
-/**
- * Determines what type of transformation the contrast represents
- */
 function determineContrastType(
   before: ReflectionAnalysis,
   after: ReflectionAnalysis
@@ -343,9 +269,8 @@ function determineContrastType(
   const struggleDelta = before.struggleScore - after.struggleScore;
   const growthDelta = after.growthScore - before.growthScore;
   const agencyDelta = after.agencyScore - before.agencyScore;
-  const depthDelta =
-    ['surface', 'moderate', 'deep', 'profound'].indexOf(after.emotionalDepth) -
-    ['surface', 'moderate', 'deep', 'profound'].indexOf(before.emotionalDepth);
+  const depthOrder: ReflectionAnalysis['emotionalDepth'][] = ['surface', 'moderate', 'deep', 'profound'];
+  const depthDelta = depthOrder.indexOf(after.emotionalDepth) - depthOrder.indexOf(before.emotionalDepth);
 
   if (struggleDelta > 0.2 && growthDelta > 0.2) return 'struggle_to_growth';
   if (depthDelta >= 2) return 'surface_to_deep';
@@ -353,103 +278,54 @@ function determineContrastType(
   return 'confusion_to_clarity';
 }
 
-// ----------------------------------------------------------------------------
-// WORD ANALYSIS - Finding meaningful vocabulary
-// ----------------------------------------------------------------------------
-
-/**
- * Extracts meaningful words and their frequencies
- */
 export function analyzeWordFrequency(reflections: ReflectionForStory[]): WordData[] {
   const wordCounts = new Map<string, number>();
-
-  // Common words to exclude
-  const stopWords = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
-    'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been', 'be',
-    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-    'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those',
-    'it', 'its', 'my', 'your', 'his', 'her', 'their', 'our', 'me', 'him',
-    'them', 'us', 'what', 'which', 'who', 'whom', 'when', 'where', 'why',
-    'how', 'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other',
-    'some', 'such', 'no', 'not', 'only', 'same', 'so', 'than', 'too', 'very',
-    'just', 'also', 'now', 'here', 'there', 'then', 'if', 'about', 'into',
-    'through', 'during', 'before', 'after', 'above', 'below', 'between',
-    'under', 'again', 'further', 'once', 'i', 'i\'m', 'i\'ve', 'i\'ll', 'i\'d',
-    'don\'t', 'doesn\'t', 'didn\'t', 'won\'t', 'wouldn\'t', 'couldn\'t',
-    'shouldn\'t', 'haven\'t', 'hasn\'t', 'hadn\'t', 'isn\'t', 'aren\'t',
-    'wasn\'t', 'weren\'t', 'being', 'having', 'doing', 'going', 'get', 'got',
-    'think', 'know', 'see', 'come', 'go', 'make', 'take', 'want', 'use',
-    'find', 'give', 'tell', 'say', 'said', 'thing', 'things', 'way', 'even',
-    'new', 'because', 'good', 'much', 'really', 'like', 'felt', 'feel',
-    'feeling', 'thought', 'today', 'day', 'time', 'something', 'anything',
-    'everything', 'nothing', 'someone', 'anyone', 'everyone', 'one', 'two'
-  ]);
-
-  // Meaningful words we want to highlight
-  const meaningfulWords = new Set([
-    ...GROWTH_INDICATORS,
-    ...AGENCY_INDICATORS,
-    'journey', 'transformation', 'growth', 'peace', 'calm', 'strength',
-    'wisdom', 'courage', 'discipline', 'patience', 'gratitude', 'mindful',
-    'present', 'awareness', 'clarity', 'purpose', 'meaning', 'stoic',
-    'virtue', 'character', 'resilience', 'acceptance', 'perspective'
-  ]);
+  const stopWords = new Set(STOP_WORDS.map(normalizeText));
+  const meaningfulWords = new Set(MEANINGFUL_WORDS.map(normalizeText));
 
   for (const reflection of reflections) {
-    const words = reflection.text.toLowerCase()
-      .replace(/[^a-z\s']/g, '')
-      .split(/\s+/)
-      .filter(w => w.length > 3 && !stopWords.has(w));
+    const words = tokenize(reflection.text)
+      .map(normalizeText)
+      .filter((word) => word.length > 2 && !stopWords.has(word));
 
     for (const word of words) {
       wordCounts.set(word, (wordCounts.get(word) || 0) + 1);
     }
   }
 
-  // Convert to WordData array
+  if (wordCounts.size === 0) return [];
+
   const wordDataArray: WordData[] = [];
-  const maxCount = Math.max(...wordCounts.values());
+  const maxCount = Math.max(1, ...Array.from(wordCounts.values()));
+  const colors = ['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
 
-  // Color palette for words
-  const colors = [
-    '#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4', '#10B981',
-    '#F59E0B', '#EF4444', '#EC4899', '#8B5CF6'
-  ];
+  for (const [word, count] of wordCounts.entries()) {
+    if (count < 2 && !meaningfulWords.has(word)) continue;
 
-  for (const [word, count] of wordCounts) {
-    // Only include words that appear multiple times or are meaningful
-    if (count >= 2 || meaningfulWords.has(word)) {
-      const normalizedCount = count / maxCount;
-      let size: WordData['size'];
-      if (normalizedCount > 0.7) size = 'hero';
-      else if (normalizedCount > 0.4) size = 'large';
-      else if (normalizedCount > 0.2) size = 'medium';
-      else size = 'small';
+    const normalizedCount = count / maxCount;
+    let size: WordData['size'];
+    if (normalizedCount > 0.7) size = 'hero';
+    else if (normalizedCount > 0.4) size = 'large';
+    else if (normalizedCount > 0.2) size = 'medium';
+    else size = 'small';
 
-      // Boost size for meaningful words
-      if (meaningfulWords.has(word) && size === 'small') {
-        size = 'medium';
-      }
-
-      wordDataArray.push({
-        word,
-        count,
-        size,
-        color: colors[Math.floor(Math.random() * colors.length)]
-      });
+    if (meaningfulWords.has(word) && size === 'small') {
+      size = 'medium';
     }
+
+    wordDataArray.push({
+      word,
+      count,
+      size,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    });
   }
 
-  // Sort by count and return top words
   return wordDataArray
     .sort((a, b) => b.count - a.count)
     .slice(0, 30);
 }
 
-/**
- * Finds a breakthrough reflection - one that shows significant insight
- */
 export function findBreakthroughReflection(reflections: ReflectionForStory[]): ReflectionForStory | null {
   if (reflections.length === 0) return null;
 
@@ -458,16 +334,12 @@ export function findBreakthroughReflection(reflections: ReflectionForStory[]): R
 
   for (const reflection of reflections) {
     const analysis = analyzeReflection(reflection.text);
-
-    // Calculate breakthrough score
     const score =
       analysis.growthScore * 0.3 +
       analysis.introspectionScore * 0.3 +
       analysis.agencyScore * 0.2 +
-      (analysis.emotionalDepth === 'profound' ? 0.2 :
-       analysis.emotionalDepth === 'deep' ? 0.1 : 0);
+      (analysis.emotionalDepth === 'profound' ? 0.2 : analysis.emotionalDepth === 'deep' ? 0.1 : 0);
 
-    // Must be at least moderate length
     if (analysis.wordCount >= 30 && score > bestScore) {
       bestScore = score;
       bestReflection = reflection;
@@ -477,16 +349,10 @@ export function findBreakthroughReflection(reflections: ReflectionForStory[]): R
   return bestReflection;
 }
 
-/**
- * Calculates total words written across all reflections
- */
 export function calculateTotalWordsWritten(reflections: ReflectionForStory[]): number {
-  return reflections.reduce((total, r) => total + r.wordCount, 0);
+  return reflections.reduce((total, reflection) => total + reflection.wordCount, 0);
 }
 
-/**
- * Finds the longest reflection
- */
 export function findLongestReflection(reflections: ReflectionForStory[]): ReflectionForStory | null {
   if (reflections.length === 0) return null;
   return reflections.reduce((longest, current) =>
@@ -494,9 +360,6 @@ export function findLongestReflection(reflections: ReflectionForStory[]): Reflec
   );
 }
 
-/**
- * Gets reflection statistics
- */
 export function getReflectionStats(reflections: ReflectionForStory[]) {
   if (reflections.length === 0) {
     return {
@@ -504,18 +367,53 @@ export function getReflectionStats(reflections: ReflectionForStory[]) {
       totalWords: 0,
       averageLength: 0,
       longestLength: 0,
-      shortestLength: 0
+      shortestLength: 0,
     };
   }
 
   const totalWords = calculateTotalWordsWritten(reflections);
-  const lengths = reflections.map(r => r.wordCount);
+  const lengths = reflections.map((reflection) => reflection.wordCount);
 
   return {
     total: reflections.length,
     totalWords,
     averageLength: Math.round(totalWords / reflections.length),
     longestLength: Math.max(...lengths),
-    shortestLength: Math.min(...lengths)
+    shortestLength: Math.min(...lengths),
   };
+}
+
+function tokenize(text: string): string[] {
+  return text
+    .replace(/[^\p{L}\p{N}\s']/gu, ' ')
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/[.!?؟]+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s']/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function countOccurrences(text: string, indicator: string): number {
+  if (!indicator) return 0;
+  const pattern = new RegExp(escapeRegExp(indicator), 'gu');
+  return text.match(pattern)?.length || 0;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

@@ -1,7 +1,6 @@
-// ============================================================================
+﻿// ============================================================================
 // INSIGHT GENERATOR
-// The emotional intelligence of the story system.
-// Determines what insights matter most and how to present them.
+// Determines which transformation insights matter most and how to present them.
 // ============================================================================
 
 import {
@@ -9,115 +8,234 @@ import {
   TransformationInsight,
   InsightType,
   StoryMood,
-  SlideType
+  SlideType,
 } from '@/types/story';
 import {
   analyzeReflection,
   findBestContrast,
   findBreakthroughReflection,
-  getReflectionStats
+  getReflectionStats,
 } from './reflectionAnalyzer';
 import { analyzePatternEvolution } from './patternAnalyzer';
-
-// ----------------------------------------------------------------------------
-// INSIGHT PRIORITY & SCORING
-// ----------------------------------------------------------------------------
+import {
+  ASSESSMENT_DIMENSION_LABELS,
+  CONTRAST_TYPE_LABELS,
+  LEVEL_TITLES,
+  formatStory,
+  formatStoryDate,
+  formatStoryNumber,
+  resolveStoryLocale,
+  type StoryLocale,
+} from './storyLocale';
 
 interface ScoredInsight extends TransformationInsight {
   priority: number;
   impactScore: number;
 }
 
-/**
- * Generates all possible insights from the user's data
- */
+const COPY = {
+  en: {
+    transformation: 'Your Transformation',
+    contrastEvidence: '{days} days between these reflections',
+    contrastType: 'Contrast: {type}',
+    momentOfClarity: 'A Moment of Clarity',
+    profoundRealization: 'A profound realization emerged.',
+    reflectionOn: 'From your reflection on "{lesson}"',
+    whoBecoming: "Who You're Becoming",
+    createdOn: 'Created {date}',
+    identityCount: '{count} identity statements',
+    identityEvolution: 'Identity Evolution',
+    identityEvolutionDesc: 'From "{first}" to "{latest}"',
+    identityJourney: '{count} identity statements across your journey',
+    dayMilestone: '{count} Day Milestone',
+    consistencyTitle: 'Your Consistency',
+    currentStreak: 'Current streak: {count} days',
+    longestStreak: 'Longest streak: {count} days',
+    consistencyRate: '{count}% consistency rate',
+    consistency: {
+      d30: '{count} days of showing up. That is no longer luck. It is who you are now.',
+      d14: '{count} days strong. You are building something real.',
+      d7: 'A full week of consistency. The foundation is set.',
+      short: '{count} days and counting. Every day matters.',
+    },
+    assessmentGrowth: '{label} Growth',
+    assessmentDesc: 'Your {label} grew from {from}/10 to {to}/10.',
+    assessmentPoints: '+{count} points',
+    assessmentImprovement: '{count}% improvement',
+    assessmentCount: 'Across {count} assessments',
+    lessonsComplete: '{count} Lessons Complete',
+    lessonsCompleteDesc: 'You completed {count} lessons on your transformation journey.',
+    lessonsTotal: '{count} total lessons completed',
+    reflectionsWritten: '{count} Reflections Written',
+    reflectionsDesc: '{count} moments of honest self-reflection.',
+    totalWords: '{count} total words written',
+    smallBook: 'That is a small book about your growth.',
+    levelTitle: 'Level {level}: {title}',
+    levelDesc: 'You reached the {title} level.',
+    xpEarned: '{count} XP earned',
+    wisdomApplied: 'Wisdom Applied',
+    wisdomDesc: 'You applied {principle} in real life: "{situation}"',
+    wisdomOutcome: 'Outcome: {outcome}',
+    wisdomCount: '{count} wisdom applications',
+    advancedFallback: 'Advanced',
+  },
+  fr: {
+    transformation: 'Votre transformation',
+    contrastEvidence: '{days} jours entre ces deux reflexions',
+    contrastType: 'Contraste : {type}',
+    momentOfClarity: 'Un moment de clarte',
+    profoundRealization: 'Une prise de conscience profonde a emerge.',
+    reflectionOn: 'Depuis votre reflexion sur "{lesson}"',
+    whoBecoming: 'La personne que vous devenez',
+    createdOn: 'Cree le {date}',
+    identityCount: '{count} affirmations identitaires',
+    identityEvolution: 'Evolution identitaire',
+    identityEvolutionDesc: 'De "{first}" a "{latest}"',
+    identityJourney: '{count} affirmations identitaires sur votre parcours',
+    dayMilestone: 'Cap des {count} jours',
+    consistencyTitle: 'Votre constance',
+    currentStreak: 'Serie actuelle : {count} jours',
+    longestStreak: 'Meilleure serie : {count} jours',
+    consistencyRate: '{count}% de regularite',
+    consistency: {
+      d30: '{count} jours a vous presenter. Ce n est plus de la chance, c est devenu vous.',
+      d14: '{count} jours de suite. Vous construisez quelque chose de solide.',
+      d7: 'Une semaine complete de constance. La base est posee.',
+      short: '{count} jours et cela continue. Chaque jour compte.',
+    },
+    assessmentGrowth: 'Progression en {label}',
+    assessmentDesc: 'Votre {label} est passee de {from}/10 a {to}/10.',
+    assessmentPoints: '+{count} points',
+    assessmentImprovement: '{count}% de progression',
+    assessmentCount: 'Sur {count} evaluations',
+    lessonsComplete: '{count} lecons terminees',
+    lessonsCompleteDesc: 'Vous avez complete {count} lecons sur votre parcours de transformation.',
+    lessonsTotal: '{count} lecons terminees au total',
+    reflectionsWritten: '{count} reflexions ecrites',
+    reflectionsDesc: '{count} moments de reflexion sincere sur vous-meme.',
+    totalWords: '{count} mots ecrits au total',
+    smallBook: 'C est presque un petit livre sur votre progression.',
+    levelTitle: 'Niveau {level} : {title}',
+    levelDesc: 'Vous avez atteint le niveau {title}.',
+    xpEarned: '{count} XP gagnes',
+    wisdomApplied: 'Sagesse appliquee',
+    wisdomDesc: 'Vous avez applique {principle} dans la vraie vie : "{situation}"',
+    wisdomOutcome: 'Resultat : {outcome}',
+    wisdomCount: '{count} applications concretes de sagesse',
+    advancedFallback: 'avance',
+  },
+  ar: {
+    transformation: 'تحولك',
+    contrastEvidence: '{days} يوما بين هذين التأملين',
+    contrastType: 'نوع التحول: {type}',
+    momentOfClarity: 'لحظة وضوح',
+    profoundRealization: 'ظهرت قناعة عميقة في هذه اللحظة.',
+    reflectionOn: 'من تأملك حول "{lesson}"',
+    whoBecoming: 'الشخص الذي تصبحه',
+    createdOn: 'تمت كتابته في {date}',
+    identityCount: '{count} عبارة هوية',
+    identityEvolution: 'تطور الهوية',
+    identityEvolutionDesc: 'من "{first}" إلى "{latest}"',
+    identityJourney: '{count} عبارة هوية عبر رحلتك',
+    dayMilestone: 'إنجاز {count} يوم',
+    consistencyTitle: 'ثباتك',
+    currentStreak: 'السلسلة الحالية: {count} يوم',
+    longestStreak: 'أطول سلسلة: {count} يوم',
+    consistencyRate: 'معدل الثبات {count}%',
+    consistency: {
+      d30: '{count} يوما من الحضور المستمر. هذا لم يعد حظا، بل أصبح جزءا منك.',
+      d14: '{count} يوما بقوة. أنت تبني شيئا حقيقيا.',
+      d7: 'أسبوع كامل من الثبات. الأساس بدأ يترسخ.',
+      short: '{count} يوما وما زالت السلسلة مستمرة. كل يوم مهم.',
+    },
+    assessmentGrowth: 'نمو {label}',
+    assessmentDesc: 'ارتفع {label} لديك من {from}/10 إلى {to}/10.',
+    assessmentPoints: '+{count} نقاط',
+    assessmentImprovement: 'تحسن بنسبة {count}%',
+    assessmentCount: 'عبر {count} تقييمات',
+    lessonsComplete: 'إكمال {count} درسا',
+    lessonsCompleteDesc: 'أكملت {count} درسا في رحلة تحولك.',
+    lessonsTotal: '{count} درسا مكتملًا في المجموع',
+    reflectionsWritten: 'كتبت {count} تأملا',
+    reflectionsDesc: '{count} لحظة من التأمل الصادق مع الذات.',
+    totalWords: '{count} كلمة مكتوبة في المجموع',
+    smallBook: 'هذا يشبه كتابا صغيرا عن نموك.',
+    levelTitle: 'المستوى {level}: {title}',
+    levelDesc: 'وصلت إلى مستوى {title}.',
+    xpEarned: 'اكتسبت {count} XP',
+    wisdomApplied: 'حكمة مطبقة',
+    wisdomDesc: 'طبقت {principle} في الحياة الواقعية: "{situation}"',
+    wisdomOutcome: 'النتيجة: {outcome}',
+    wisdomCount: '{count} تطبيقات للحكمة',
+    advancedFallback: 'متقدم',
+  },
+} as const;
+
 export function generateInsights(context: StoryGenerationContext): TransformationInsight[] {
   const allInsights: ScoredInsight[] = [];
 
-  // 1. First vs Latest Contrast (highest emotional impact)
   const contrastInsight = generateContrastInsight(context);
   if (contrastInsight) allInsights.push(contrastInsight);
 
-  // 2. Pattern Evolution
   const patternInsights = generatePatternInsights(context);
   allInsights.push(...patternInsights);
 
-  // 3. Breakthrough Moment
   const breakthroughInsight = generateBreakthroughInsight(context);
   if (breakthroughInsight) allInsights.push(breakthroughInsight);
 
-  // 4. Identity Formation
   const identityInsights = generateIdentityInsights(context);
   allInsights.push(...identityInsights);
 
-  // 5. Consistency Story (streaks)
   const consistencyInsight = generateConsistencyInsight(context);
   if (consistencyInsight) allInsights.push(consistencyInsight);
 
-  // 6. Assessment Growth
   const assessmentInsights = generateAssessmentInsights(context);
   allInsights.push(...assessmentInsights);
 
-  // 7. Milestone Reached
   const milestoneInsights = generateMilestoneInsights(context);
   allInsights.push(...milestoneInsights);
 
-  // 8. Wisdom in Action
   const wisdomInsight = generateWisdomInsight(context);
   if (wisdomInsight) allInsights.push(wisdomInsight);
 
-  // Sort by priority and impact
   allInsights.sort((a, b) => {
-    // First by priority (lower is higher priority)
     if (a.priority !== b.priority) return a.priority - b.priority;
-    // Then by impact score (higher is better)
     return b.impactScore - a.impactScore;
   });
 
-  // Return top insights, ensuring variety
   return selectDiverseInsights(allInsights);
 }
 
-/**
- * Selects a diverse set of insights (not all the same type)
- */
 function selectDiverseInsights(insights: ScoredInsight[], maxCount: number = 8): TransformationInsight[] {
   const selected: TransformationInsight[] = [];
   const typeCount = new Map<InsightType, number>();
 
   for (const insight of insights) {
-    const currentTypeCount = typeCount.get(insight.type) || 0;
+    const currentCount = typeCount.get(insight.type) || 0;
+    if (currentCount >= 2) continue;
 
-    // Limit each type to 2 occurrences
-    if (currentTypeCount < 2) {
-      selected.push({
-        type: insight.type,
-        title: insight.title,
-        description: insight.description,
-        evidence: insight.evidence,
-        emotionalWeight: insight.emotionalWeight,
-        suggestedSlide: insight.suggestedSlide
-      });
-      typeCount.set(insight.type, currentTypeCount + 1);
+    selected.push({
+      type: insight.type,
+      title: insight.title,
+      description: insight.description,
+      evidence: insight.evidence,
+      emotionalWeight: insight.emotionalWeight,
+      suggestedSlide: insight.suggestedSlide,
+    });
 
-      if (selected.length >= maxCount) break;
-    }
+    typeCount.set(insight.type, currentCount + 1);
+    if (selected.length >= maxCount) break;
   }
 
   return selected;
 }
 
-// ----------------------------------------------------------------------------
-// SPECIFIC INSIGHT GENERATORS
-// ----------------------------------------------------------------------------
-
-/**
- * First vs Latest reflection contrast
- */
 function generateContrastInsight(context: StoryGenerationContext): ScoredInsight | null {
   if (context.reflections.length < 3) return null;
 
-  const contrast = findBestContrast(context.reflections);
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
+  const contrast = findBestContrast(context.reflections, locale);
   if (!contrast || contrast.contrastScore < 0.3) return null;
 
   const daysBetween = Math.floor(
@@ -127,52 +245,47 @@ function generateContrastInsight(context: StoryGenerationContext): ScoredInsight
 
   return {
     type: 'first_vs_latest',
-    title: 'Your Transformation',
+    title: copy.transformation,
     description: contrast.growthNarrative,
     evidence: [
-      `${daysBetween} days between these reflections`,
-      `Contrast type: ${contrast.contrastType.replace(/_/g, ' ')}`
+      formatStory(copy.contrastEvidence, { days: daysBetween }),
+      formatStory(copy.contrastType, { type: CONTRAST_TYPE_LABELS[locale][contrast.contrastType] }),
     ],
     emotionalWeight: contrast.contrastScore > 0.6 ? 'profound' : 'medium',
     suggestedSlide: 'contrast',
-    priority: 1, // Highest priority
-    impactScore: contrast.contrastScore
+    priority: 1,
+    impactScore: contrast.contrastScore,
   };
 }
 
-/**
- * Pattern evolution insights
- */
 function generatePatternInsights(context: StoryGenerationContext): ScoredInsight[] {
   if (context.patternHistory.length < 2) return [];
 
-  const evolution = analyzePatternEvolution(context.patternHistory);
+  const locale = resolveStoryLocale(context.locale);
+  const evolution = analyzePatternEvolution(context.patternHistory, locale);
   const insights: ScoredInsight[] = [];
 
   for (const shift of evolution.significantShifts) {
     insights.push({
       type: 'pattern_evolution',
-      title: `${shift.fromLabel} → ${shift.toLabel}`,
+      title: `${shift.fromLabel} -> ${shift.toLabel}`,
       description: shift.narrative,
       evidence: [shift.timespan],
-      emotionalWeight: shift.significance === 'major' ? 'profound' :
-                       shift.significance === 'moderate' ? 'medium' : 'light',
+      emotionalWeight: shift.significance === 'major' ? 'profound' : shift.significance === 'moderate' ? 'medium' : 'light',
       suggestedSlide: 'pattern_shift',
       priority: 2,
-      impactScore: shift.significance === 'major' ? 0.9 :
-                   shift.significance === 'moderate' ? 0.7 : 0.4
+      impactScore: shift.significance === 'major' ? 0.9 : shift.significance === 'moderate' ? 0.7 : 0.4,
     });
   }
 
   return insights;
 }
 
-/**
- * Breakthrough moment insight
- */
 function generateBreakthroughInsight(context: StoryGenerationContext): ScoredInsight | null {
   if (context.reflections.length < 5) return null;
 
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
   const breakthrough = findBreakthroughReflection(context.reflections);
   if (!breakthrough) return null;
 
@@ -181,318 +294,264 @@ function generateBreakthroughInsight(context: StoryGenerationContext): ScoredIns
 
   return {
     type: 'breakthrough_moment',
-    title: 'A Moment of Clarity',
-    description: analysis.keyPhrases[0] || 'A profound realization emerged.',
+    title: copy.momentOfClarity,
+    description: analysis.keyPhrases[0] || copy.profoundRealization,
     evidence: [
-      `From your reflection on "${breakthrough.lessonTitle}"`,
-      new Date(breakthrough.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+      formatStory(copy.reflectionOn, { lesson: breakthrough.lessonTitle }),
+      formatStoryDate(breakthrough.date, locale, { month: 'long', day: 'numeric' }),
     ],
     emotionalWeight: 'profound',
     suggestedSlide: 'reflection_now',
     priority: 3,
-    impactScore: analysis.introspectionScore + analysis.growthScore
+    impactScore: analysis.introspectionScore + analysis.growthScore,
   };
 }
 
-/**
- * Identity formation insights
- */
 function generateIdentityInsights(context: StoryGenerationContext): ScoredInsight[] {
   if (context.identityStatements.length === 0) return [];
 
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
   const insights: ScoredInsight[] = [];
-
-  // Most recent identity statement
-  const latestStatement = context.identityStatements[context.identityStatements.length - 1];
+  const latest = context.identityStatements[context.identityStatements.length - 1];
 
   insights.push({
     type: 'identity_formation',
-    title: 'Who You\'re Becoming',
-    description: latestStatement.statement,
+    title: copy.whoBecoming,
+    description: latest.statement,
     evidence: [
-      `Created ${new Date(latestStatement.date).toLocaleDateString()}`,
-      `You have ${context.identityStatements.length} identity statements`
+      formatStory(copy.createdOn, { date: formatStoryDate(latest.date, locale) }),
+      formatStory(copy.identityCount, { count: context.identityStatements.length }),
     ],
     emotionalWeight: context.identityStatements.length >= 5 ? 'profound' : 'medium',
     suggestedSlide: 'identity_moment',
     priority: 4,
-    impactScore: Math.min(context.identityStatements.length / 10, 1)
+    impactScore: Math.min(context.identityStatements.length / 10, 1),
   });
 
-  // If multiple statements, show evolution
   if (context.identityStatements.length >= 3) {
     const first = context.identityStatements[0];
     insights.push({
       type: 'identity_formation',
-      title: 'Identity Evolution',
-      description: `From "${first.statement}" to "${latestStatement.statement}"`,
-      evidence: [
-        `${context.identityStatements.length} identity statements over your journey`
-      ],
+      title: copy.identityEvolution,
+      description: formatStory(copy.identityEvolutionDesc, {
+        first: first.statement,
+        latest: latest.statement,
+      }),
+      evidence: [formatStory(copy.identityJourney, { count: context.identityStatements.length })],
       emotionalWeight: 'medium',
       suggestedSlide: 'identity_moment',
       priority: 5,
-      impactScore: context.identityStatements.length / 10
+      impactScore: context.identityStatements.length / 10,
     });
   }
 
   return insights;
 }
 
-/**
- * Consistency/streak insight
- */
 function generateConsistencyInsight(context: StoryGenerationContext): ScoredInsight | null {
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
   const { currentStreak, longestStreak, consistencyPercentage } = context.metrics;
 
   if (currentStreak < 3 && longestStreak < 7) return null;
 
   const isMilestone = [7, 14, 21, 30, 60, 90, 180, 365].includes(currentStreak);
-
   let description: string;
   let emotionalWeight: TransformationInsight['emotionalWeight'];
 
   if (currentStreak >= 30) {
-    description = `${currentStreak} days of showing up. That's not luck — that's who you are now.`;
+    description = formatStory(copy.consistency.d30, { count: currentStreak });
     emotionalWeight = 'profound';
   } else if (currentStreak >= 14) {
-    description = `${currentStreak} days strong. You're building something real.`;
+    description = formatStory(copy.consistency.d14, { count: currentStreak });
     emotionalWeight = 'medium';
   } else if (currentStreak >= 7) {
-    description = `A full week of consistency. The foundation is set.`;
+    description = copy.consistency.d7;
     emotionalWeight = 'medium';
   } else {
-    description = `${currentStreak} days and counting. Every day matters.`;
+    description = formatStory(copy.consistency.short, { count: currentStreak });
     emotionalWeight = 'light';
   }
 
   return {
     type: 'consistency_story',
-    title: isMilestone ? `${currentStreak} Day Milestone` : 'Your Consistency',
+    title: isMilestone ? formatStory(copy.dayMilestone, { count: currentStreak }) : copy.consistencyTitle,
     description,
     evidence: [
-      `Current streak: ${currentStreak} days`,
-      `Longest streak: ${longestStreak} days`,
-      `${Math.round(consistencyPercentage)}% consistency rate`
+      formatStory(copy.currentStreak, { count: currentStreak }),
+      formatStory(copy.longestStreak, { count: longestStreak }),
+      formatStory(copy.consistencyRate, { count: Math.round(consistencyPercentage) }),
     ],
     emotionalWeight,
     suggestedSlide: 'streak_highlight',
     priority: isMilestone ? 2 : 5,
-    impactScore: Math.min(currentStreak / 30, 1)
+    impactScore: Math.min(currentStreak / 30, 1),
   };
 }
 
-/**
- * Assessment growth insights
- */
 function generateAssessmentInsights(context: StoryGenerationContext): ScoredInsight[] {
   if (context.assessments.length < 2) return [];
 
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
+  const labels = ASSESSMENT_DIMENSION_LABELS[locale];
   const insights: ScoredInsight[] = [];
   const first = context.assessments[0];
   const last = context.assessments[context.assessments.length - 1];
-
-  // Find dimensions with most growth
   const dimensions = ['emotionalMastery', 'discipline', 'perspective', 'selfAwareness', 'growth'];
-  const dimensionLabels: Record<string, string> = {
-    emotionalMastery: 'Emotional Mastery',
-    discipline: 'Discipline',
-    perspective: 'Perspective',
-    selfAwareness: 'Self-Awareness',
-    growth: 'Growth Mindset'
-  };
 
-  for (const dim of dimensions) {
-    const firstScore = first.scores[dim] || 0;
-    const lastScore = last.scores[dim] || 0;
+  for (const dimension of dimensions) {
+    const firstScore = first.scores[dimension] || 0;
+    const lastScore = last.scores[dimension] || 0;
     const growth = lastScore - firstScore;
 
     if (growth >= 2) {
       const growthPercentage = Math.round((growth / Math.max(firstScore, 1)) * 100);
-
       insights.push({
         type: 'growth_dimension',
-        title: `${dimensionLabels[dim]} Growth`,
-        description: `Your ${dimensionLabels[dim].toLowerCase()} grew from ${firstScore}/10 to ${lastScore}/10.`,
+        title: formatStory(copy.assessmentGrowth, { label: labels[dimension] }),
+        description: formatStory(copy.assessmentDesc, {
+          label: labels[dimension].toLowerCase(),
+          from: firstScore,
+          to: lastScore,
+        }),
         evidence: [
-          `+${growth} points`,
-          `${growthPercentage}% improvement`,
-          `Over ${context.assessments.length} assessments`
+          formatStory(copy.assessmentPoints, { count: growth }),
+          formatStory(copy.assessmentImprovement, { count: growthPercentage }),
+          formatStory(copy.assessmentCount, { count: context.assessments.length }),
         ],
         emotionalWeight: growth >= 4 ? 'profound' : 'medium',
         suggestedSlide: 'assessment_growth',
         priority: 4,
-        impactScore: growth / 10
+        impactScore: growth / 10,
       });
     }
   }
 
-  return insights.slice(0, 2); // Max 2 assessment insights
+  return insights.slice(0, 2);
 }
 
-/**
- * Milestone insights
- */
 function generateMilestoneInsights(context: StoryGenerationContext): ScoredInsight[] {
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
+  const levelTitles = LEVEL_TITLES[locale];
   const insights: ScoredInsight[] = [];
   const { lessonsCompleted, totalReflections, totalXpEarned, currentLevel } = context.metrics;
 
-  // Lesson milestones
-  const lessonMilestones = [10, 25, 50, 100];
-  for (const milestone of lessonMilestones) {
+  for (const milestone of [10, 25, 50, 100]) {
     if (lessonsCompleted >= milestone && lessonsCompleted < milestone * 2) {
       insights.push({
         type: 'milestone_reached',
-        title: `${milestone} Lessons Complete`,
-        description: `You've completed ${milestone} lessons on your transformation journey.`,
-        evidence: [`${lessonsCompleted} total lessons completed`],
+        title: formatStory(copy.lessonsComplete, { count: milestone }),
+        description: formatStory(copy.lessonsCompleteDesc, { count: milestone }),
+        evidence: [formatStory(copy.lessonsTotal, { count: lessonsCompleted })],
         emotionalWeight: milestone >= 50 ? 'profound' : 'medium',
         suggestedSlide: 'milestone',
         priority: 6,
-        impactScore: milestone / 100
+        impactScore: milestone / 100,
       });
       break;
     }
   }
 
-  // Reflection milestones
-  const reflectionMilestones = [25, 50, 100, 250];
-  for (const milestone of reflectionMilestones) {
+  for (const milestone of [25, 50, 100, 250]) {
     if (totalReflections >= milestone && totalReflections < milestone * 2) {
       const totalWords = getReflectionStats(context.reflections).totalWords;
       insights.push({
         type: 'milestone_reached',
-        title: `${milestone} Reflections Written`,
-        description: `${milestone} moments of honest self-reflection.`,
+        title: formatStory(copy.reflectionsWritten, { count: milestone }),
+        description: formatStory(copy.reflectionsDesc, { count: milestone }),
         evidence: [
-          `${totalWords.toLocaleString()} total words written`,
-          `That's a small book about your growth`
+          formatStory(copy.totalWords, { count: formatStoryNumber(totalWords, locale) }),
+          copy.smallBook,
         ],
         emotionalWeight: milestone >= 100 ? 'profound' : 'medium',
         suggestedSlide: 'stat_reveal',
         priority: 6,
-        impactScore: milestone / 250
+        impactScore: milestone / 250,
       });
       break;
     }
   }
 
-  // Level milestone
   if (currentLevel >= 5) {
-    const levelTitles: Record<number, string> = {
-      5: 'Adept',
-      6: 'Journeyman',
-      7: 'Master',
-      8: 'Sage',
-      9: 'Elder',
-      10: 'Enlightened'
-    };
+    const title = levelTitles[currentLevel] || copy.advancedFallback;
     insights.push({
       type: 'milestone_reached',
-      title: `Level ${currentLevel}: ${levelTitles[currentLevel] || 'Advanced'}`,
-      description: `You've reached ${levelTitles[currentLevel] || 'an advanced'} level.`,
-      evidence: [`${totalXpEarned.toLocaleString()} XP earned`],
+      title: formatStory(copy.levelTitle, { level: currentLevel, title }),
+      description: formatStory(copy.levelDesc, { title }),
+      evidence: [formatStory(copy.xpEarned, { count: formatStoryNumber(totalXpEarned, locale) })],
       emotionalWeight: currentLevel >= 7 ? 'profound' : 'medium',
       suggestedSlide: 'milestone',
       priority: 7,
-      impactScore: currentLevel / 10
+      impactScore: currentLevel / 10,
     });
   }
 
   return insights;
 }
 
-/**
- * Wisdom in action insight
- */
 function generateWisdomInsight(context: StoryGenerationContext): ScoredInsight | null {
   if (context.wisdomLogs.length === 0) return null;
 
-  // Find the most impactful wisdom application
-  const best = context.wisdomLogs.reduce((best, current) => {
+  const locale = resolveStoryLocale(context.locale);
+  const copy = COPY[locale];
+
+  const best = context.wisdomLogs.reduce((selected, current) => {
     const currentScore = current.outcome.length + current.situation.length;
-    const bestScore = best ? best.outcome.length + best.situation.length : 0;
-    return currentScore > bestScore ? current : best;
+    const selectedScore = selected ? selected.outcome.length + selected.situation.length : 0;
+    return currentScore > selectedScore ? current : selected;
   }, context.wisdomLogs[0]);
 
   return {
     type: 'wisdom_in_action',
-    title: 'Wisdom Applied',
-    description: `You applied ${best.principle} in real life: "${best.situation}"`,
+    title: copy.wisdomApplied,
+    description: formatStory(copy.wisdomDesc, {
+      principle: best.principle,
+      situation: best.situation,
+    }),
     evidence: [
-      `Outcome: ${best.outcome}`,
-      `${context.wisdomLogs.length} total wisdom applications`
+      formatStory(copy.wisdomOutcome, { outcome: best.outcome }),
+      formatStory(copy.wisdomCount, { count: context.wisdomLogs.length }),
     ],
     emotionalWeight: context.wisdomLogs.length >= 5 ? 'profound' : 'medium',
     suggestedSlide: 'wisdom_applied',
     priority: 5,
-    impactScore: Math.min(context.wisdomLogs.length / 10, 1)
+    impactScore: Math.min(context.wisdomLogs.length / 10, 1),
   };
 }
 
-// ----------------------------------------------------------------------------
-// MOOD DETERMINATION
-// ----------------------------------------------------------------------------
-
-/**
- * Determines the overall mood/tone of the story based on insights
- */
 export function determineStoryMood(insights: TransformationInsight[]): StoryMood {
-  const profoundCount = insights.filter(i => i.emotionalWeight === 'profound').length;
-  const hasContrast = insights.some(i => i.type === 'first_vs_latest');
-  const hasPattern = insights.some(i => i.type === 'pattern_evolution');
-  const hasIdentity = insights.some(i => i.type === 'identity_formation');
+  const profoundCount = insights.filter((insight) => insight.emotionalWeight === 'profound').length;
+  const hasContrast = insights.some((insight) => insight.type === 'first_vs_latest');
+  const hasPattern = insights.some((insight) => insight.type === 'pattern_evolution');
+  const hasIdentity = insights.some((insight) => insight.type === 'identity_formation');
 
-  // Transformative: identity + pattern shifts
-  if (hasIdentity && hasPattern && profoundCount >= 2) {
-    return 'transformative';
-  }
-
-  // Triumphant: major milestones and high impact
-  if (profoundCount >= 3 || insights.some(i =>
-    i.type === 'milestone_reached' && i.emotionalWeight === 'profound'
-  )) {
+  if (hasIdentity && hasPattern && profoundCount >= 2) return 'transformative';
+  if (profoundCount >= 3 || insights.some((insight) => insight.type === 'milestone_reached' && insight.emotionalWeight === 'profound')) {
     return 'triumphant';
   }
-
-  // Resilient: consistency focus
-  if (insights.some(i => i.type === 'consistency_story' && i.emotionalWeight !== 'light')) {
-    return 'resilient';
-  }
-
-  // Awakening: early journey with contrast
-  if (hasContrast && insights.length <= 4) {
-    return 'awakening';
-  }
-
-  // Default: reflective
+  if (insights.some((insight) => insight.type === 'consistency_story' && insight.emotionalWeight !== 'light')) return 'resilient';
+  if (hasContrast && insights.length <= 4) return 'awakening';
   return 'reflective';
 }
 
-/**
- * Suggests which slide types to include based on available insights
- */
 export function suggestSlideTypes(insights: TransformationInsight[]): SlideType[] {
   const slides: SlideType[] = ['opening'];
-
-  // Always include journey start if we have data
   slides.push('journey_start');
 
-  // Add slides based on insights
   for (const insight of insights) {
     if (!slides.includes(insight.suggestedSlide)) {
       slides.push(insight.suggestedSlide);
     }
   }
 
-  // Always include stats
   if (!slides.includes('stat_reveal')) {
     slides.push('stat_reveal');
   }
 
-  // Always end with closing and CTA
   slides.push('closing');
   slides.push('call_to_action');
-
   return slides;
 }
