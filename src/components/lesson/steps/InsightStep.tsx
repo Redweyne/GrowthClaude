@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import type { InsightStep as InsightStepType } from '@/types/lessons';
 
 interface InsightStepProps {
@@ -29,39 +30,53 @@ const STYLE_CONFIG = {
     glowSubtle: 'rgba(167, 139, 250, 0.15)',
     gradientClass: 'gradient-text-wisdom',
     accent: 'text-purple-400',
-    label: 'Ancient Wisdom',
-    buttonText: 'I receive this wisdom',
   },
   principle: {
     glowStrong: 'rgba(251, 191, 36, 0.30)',
     glowSubtle: 'rgba(251, 191, 36, 0.15)',
     gradientClass: 'gradient-text-gold',
     accent: 'text-amber-400',
-    label: 'Core Principle',
-    buttonText: 'I understand',
   },
   revelation: {
     glowStrong: 'rgba(34, 211, 238, 0.25)',
     glowSubtle: 'rgba(34, 211, 238, 0.12)',
     gradientClass: 'gradient-text-insight',
     accent: 'text-cyan-400',
-    label: 'Insight',
-    buttonText: 'This lands',
   },
   reframe: {
     glowStrong: 'rgba(16, 185, 129, 0.30)',
     glowSubtle: 'rgba(16, 185, 129, 0.15)',
     gradientClass: 'gradient-text-growth',
     accent: 'text-emerald-400',
-    label: 'The Reframe',
-    buttonText: 'I see it now',
   },
 };
+
+const STYLE_TEXT_BY_LOCALE = {
+  en: {
+    quote: { label: 'Ancient Wisdom', buttonText: 'I receive this wisdom' },
+    principle: { label: 'Core Principle', buttonText: 'I understand' },
+    revelation: { label: 'Insight', buttonText: 'This lands' },
+    reframe: { label: 'The Reframe', buttonText: 'I see it now' },
+  },
+  fr: {
+    quote: { label: 'Sagesse ancienne', buttonText: 'Je reçois cette sagesse' },
+    principle: { label: 'Principe central', buttonText: 'Je comprends' },
+    revelation: { label: 'Révélation', buttonText: 'Cela me touche' },
+    reframe: { label: 'Reformulation', buttonText: 'Je le vois maintenant' },
+  },
+  ar: {
+    quote: { label: 'حكمة قديمة', buttonText: 'أتلقى هذه الحكمة' },
+    principle: { label: 'مبدأ أساسي', buttonText: 'أفهم' },
+    revelation: { label: 'بصيرة', buttonText: 'وصلتني' },
+    reframe: { label: 'إعادة الصياغة', buttonText: 'أراها الآن' },
+  },
+} as const;
 
 // Phases for sequenced reveal
 type Phase = 'text' | 'source' | 'followUp' | 'ready';
 
 export function InsightStep({ step, onComplete }: InsightStepProps) {
+  const { locale } = useTranslation();
   const [phase, setPhase] = useState<Phase>('text');
   const mountedRef = useRef(true);
   const soundPlayedRef = useRef(false);
@@ -70,6 +85,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
 
   const style = step.style || 'revelation';
   const config = STYLE_CONFIG[style];
+  const styleText = (STYLE_TEXT_BY_LOCALE[locale] ?? STYLE_TEXT_BY_LOCALE.en)[style];
 
   useEffect(() => {
     mountedRef.current = true;
@@ -156,7 +172,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
             transition={{ duration: 0.4, delay: 0.1 }}
             className={`text-sm ${config.accent} tracking-[0.2em] uppercase font-medium`}
           >
-            {config.label}
+            {styleText.label}
           </motion.p>
 
           {/* Quote marks for quote style */}
@@ -240,7 +256,7 @@ export function InsightStep({ step, onComplete }: InsightStepProps) {
                 className="w-full group"
                 data-testid="insight-continue-btn"
               >
-                {config.buttonText}
+                {styleText.buttonText}
                 <ChevronRight
                   size={18}
                   className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

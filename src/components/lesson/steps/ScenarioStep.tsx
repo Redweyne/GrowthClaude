@@ -47,23 +47,38 @@ const MOOD_COLORS = {
 };
 
 // Mood-specific fallback button text
-const MOOD_BUTTON_TEXT: Record<string, string> = {
-  tension: 'What would you do?',
-  curiosity: "Let's explore...",
-  hope: 'Step forward...',
-  struggle: 'Face this...',
-};
+const MOOD_BUTTON_TEXT_BY_LOCALE = {
+  en: {
+    tension: 'What would you do?',
+    curiosity: "Let's explore...",
+    hope: 'Step forward...',
+    struggle: 'Face this...',
+  },
+  fr: {
+    tension: 'Que feriez-vous ?',
+    curiosity: 'Explorons...',
+    hope: 'Avancez...',
+    struggle: 'Affrontez cela...',
+  },
+  ar: {
+    tension: 'ماذا ستفعل؟',
+    curiosity: 'لنستكشف...',
+    hope: 'تقدّم...',
+    struggle: 'واجه هذا...',
+  },
+} as const;
 
 // Phases for sequenced reveal
 type Phase = 'narrative' | 'subtext' | 'bridgeQuestion' | 'ready';
 
 export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [phase, setPhase] = useState<Phase>('narrative');
   const mountedRef = useRef(true);
 
   const mood = step.mood || 'tension';
   const colors = MOOD_COLORS[mood];
+  const moodButtonText = (MOOD_BUTTON_TEXT_BY_LOCALE[locale] ?? MOOD_BUTTON_TEXT_BY_LOCALE.en)[mood];
 
   useEffect(() => {
     mountedRef.current = true;
@@ -97,7 +112,7 @@ export function ScenarioStep({ step, onComplete }: ScenarioStepProps) {
   const showButton = phase === 'ready';
 
   // Button text: step's continueLabel > mood-specific > generic fallback
-  const buttonText = step.continueLabel || MOOD_BUTTON_TEXT[mood] || t('lessons.scenario.continue');
+  const buttonText = step.continueLabel || moodButtonText || t('lessons.scenario.continue');
 
   return (
     <div className="min-h-[70dvh] flex flex-col items-center justify-center px-4">

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Calendar, TrendingUp, Zap, ChevronRight, Sparkles } from 'lucide-react';
+import { useTranslation } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATUS BANNER
@@ -49,8 +50,44 @@ const bannerConfigs = {
   },
 };
 
+const BANNER_COPY_BY_LOCALE = {
+  en: {
+    checkin: {
+      title: 'Weekly Check-in',
+      subtitle: 'Reflect on your growth this week',
+    },
+    assessment: {
+      title: 'Monthly Assessment',
+      subtitle: 'Measure your transformation',
+    },
+  },
+  fr: {
+    checkin: {
+      title: 'Bilan hebdomadaire',
+      subtitle: 'Réfléchissez à votre progression cette semaine',
+    },
+    assessment: {
+      title: 'Évaluation mensuelle',
+      subtitle: 'Mesurez votre transformation',
+    },
+  },
+  ar: {
+    checkin: {
+      title: 'مراجعة أسبوعية',
+      subtitle: 'تأمل نموك هذا الأسبوع',
+    },
+    assessment: {
+      title: 'تقييم شهري',
+      subtitle: 'قم بقياس تحوّلك',
+    },
+  },
+} as const;
+
 export function StatusBanner({ variant, onClick }: StatusBannerProps) {
+  const { locale } = useTranslation();
+  const copy = BANNER_COPY_BY_LOCALE[locale] ?? BANNER_COPY_BY_LOCALE.en;
   const config = bannerConfigs[variant];
+  const localizedContent = copy[variant];
   const Icon = config.icon;
 
   return (
@@ -148,10 +185,10 @@ export function StatusBanner({ variant, onClick }: StatusBannerProps) {
           {/* Text */}
           <div className="text-left">
             <h3 className="text-base font-semibold text-stone-100 light:text-stone-900">
-              {config.title}
+              {localizedContent.title}
             </h3>
             <p className="text-sm text-stone-500 light:text-stone-600">
-              {config.subtitle}
+              {localizedContent.subtitle}
             </p>
           </div>
         </div>

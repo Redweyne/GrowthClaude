@@ -16,12 +16,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import type { TapFlowStep as TapFlowStepType } from '@/types/lessons';
 
 interface TapFlowStepProps {
   step: TapFlowStepType;
   onComplete: () => void;
 }
+
+const COPY_BY_LOCALE = {
+  en: {
+    tapAnywhere: 'Tap anywhere to continue',
+    iFeelThis: 'I feel this',
+  },
+  fr: {
+    tapAnywhere: 'Touchez n’importe où pour continuer',
+    iFeelThis: 'Je le ressens',
+  },
+  ar: {
+    tapAnywhere: 'اضغط في أي مكان للمتابعة',
+    iFeelThis: 'أشعر بهذا',
+  },
+} as const;
 
 const STYLE_CONFIG = {
   cosmic: {
@@ -51,12 +67,14 @@ const STYLE_CONFIG = {
 };
 
 export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
+  const { locale } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showComplete, setShowComplete] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const mountedRef = useRef(true);
 
   const { playChime, playSuccess } = useAudio();
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
 
   const style = step.style || 'cosmic';
   const config = STYLE_CONFIG[style];
@@ -223,7 +241,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
                   ))}
                 </div>
                 <p className={`text-sm ${config.accent} opacity-50`}>
-                  Tap anywhere to continue
+                  {copy.tapAnywhere}
                 </p>
               </motion.div>
             )}
@@ -245,7 +263,7 @@ export function TapFlowStep({ step, onComplete }: TapFlowStepProps) {
                   glow
                   className="w-full group"
                 >
-                  I feel this
+                  {copy.iFeelThis}
                   <ChevronRight
                     size={18}
                     className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

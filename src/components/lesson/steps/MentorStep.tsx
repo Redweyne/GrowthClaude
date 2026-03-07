@@ -328,7 +328,7 @@ export function MentorStep({ lesson, reflection, onComplete, onRetry }: MentorSt
                 >
                   <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
                   <span className="text-amber-400 font-medium text-lg">
-                    {nextStreak} Day Streak
+                    {t('lessons.mentor.dayStreak', { count: nextStreak })}
                   </span>
                   <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
                 </motion.div>

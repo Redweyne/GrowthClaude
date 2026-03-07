@@ -174,7 +174,7 @@ export function CoachModal({ step, onDismiss, userName = 'Friend' }: CoachModalP
               onClick={onDismiss}
               className="absolute top-4 right-4 p-2 text-stone-500 light:text-stone-400 hover:text-stone-300 light:hover:text-stone-900 transition-colors active:scale-95 z-10"
               data-testid="coach-modal-close-btn"
-              aria-label="Close"
+              aria-label={t('common.close')}
             >
               <X size={20} />
             </button>

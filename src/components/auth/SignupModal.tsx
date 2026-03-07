@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useKeyboardAware } from '@/hooks/useKeyboardAware';
+import { useTranslation } from '@/i18n';
 
 interface SignupModalProps {
   isOpen: boolean;
@@ -15,11 +16,55 @@ interface SignupModalProps {
 
 export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalProps) {
   const { signUpWithPassword, isConfigured } = useAuth();
+  const { locale } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const copy = {
+    en: {
+      title: 'Create account',
+      closeAria: 'Close signup modal',
+      notConfigured: 'Supabase is not configured yet. Add environment keys to enable signup.',
+      email: 'Email',
+      password: 'Password',
+      confirmPassword: 'Confirm password',
+      createAccount: 'Create account',
+      alreadyHaveAccount: 'Already have an account?',
+      signIn: 'Sign in',
+      passwordMin: 'Password must be at least 6 characters.',
+      passwordMismatch: 'Passwords do not match.',
+    },
+    fr: {
+      title: 'Créer un compte',
+      closeAria: "Fermer la fenêtre d'inscription",
+      notConfigured: "Supabase n'est pas encore configuré. Ajoutez les clés d'environnement pour activer l'inscription.",
+      email: 'E-mail',
+      password: 'Mot de passe',
+      confirmPassword: 'Confirmer le mot de passe',
+      createAccount: 'Créer un compte',
+      alreadyHaveAccount: 'Vous avez déjà un compte ?',
+      signIn: 'Se connecter',
+      passwordMin: 'Le mot de passe doit contenir au moins 6 caractères.',
+      passwordMismatch: 'Les mots de passe ne correspondent pas.',
+    },
+    ar: {
+      title: 'إنشاء حساب',
+      closeAria: 'إغلاق نافذة إنشاء الحساب',
+      notConfigured: 'لم يتم إعداد Supabase بعد. أضف مفاتيح البيئة لتفعيل إنشاء الحساب.',
+      email: 'البريد الإلكتروني',
+      password: 'كلمة المرور',
+      confirmPassword: 'تأكيد كلمة المرور',
+      createAccount: 'إنشاء حساب',
+      alreadyHaveAccount: 'هل لديك حساب بالفعل؟',
+      signIn: 'تسجيل الدخول',
+      passwordMin: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',
+      passwordMismatch: 'كلمتا المرور غير متطابقتين.',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   // Keyboard + focus trap hooks (called unconditionally before any early return)
   const containerRef = useFocusTrap(isOpen, onClose);
@@ -32,11 +77,11 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
   async function handleSignup() {
     setErrorMessage(null);
     if (password.length < 6) {
-      setErrorMessage('Password must be at least 6 characters.');
+      setErrorMessage(c.passwordMin);
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match.');
+      setErrorMessage(c.passwordMismatch);
       return;
     }
 
@@ -63,11 +108,11 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
         aria-labelledby="signup-modal-title"
       >
         <div className="flex items-center justify-between mb-5">
-          <h2 id="signup-modal-title" className="text-xl font-semibold text-white light:text-stone-900">Create account</h2>
+          <h2 id="signup-modal-title" className="text-xl font-semibold text-white light:text-stone-900">{c.title}</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg text-stone-400 light:text-stone-600 hover:text-white light:hover:text-stone-900 hover:bg-stone-800 light:hover:bg-stone-200 active:scale-95 transition-transform"
-            aria-label="Close signup modal"
+            aria-label={c.closeAria}
           >
             <X size={18} />
           </button>
@@ -75,7 +120,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
 
         {!isConfigured && (
           <p className="mb-4 text-sm text-amber-400 light:text-amber-700">
-            Supabase is not configured yet. Add environment keys to enable signup.
+            {c.notConfigured}
           </p>
         )}
 
@@ -88,7 +133,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               onFocus={(e) => scrollInputIntoView(e.currentTarget)}
-              placeholder="Email"
+              placeholder={c.email}
               className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500 focus:border-amber-500/60 focus:outline-none transition-colors"
             />
             <input
@@ -97,7 +142,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               onFocus={(e) => scrollInputIntoView(e.currentTarget)}
-              placeholder="Password"
+              placeholder={c.password}
               minLength={6}
               className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500 focus:border-amber-500/60 focus:outline-none transition-colors"
             />
@@ -107,7 +152,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               onFocus={(e) => scrollInputIntoView(e.currentTarget)}
-              placeholder="Confirm password"
+              placeholder={c.confirmPassword}
               className="w-full rounded-xl px-4 py-3 bg-stone-800 light:bg-stone-100 border border-stone-700 light:border-stone-300 text-white light:text-stone-900 placeholder-stone-500 light:placeholder-stone-500 focus:border-amber-500/60 focus:outline-none transition-colors"
             />
           </div>
@@ -121,19 +166,19 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
             className="w-full active:scale-95"
           >
             <UserPlus size={16} />
-            Create account
+            {c.createAccount}
           </Button>
         </form>
 
         {onSwitchToLogin && (
           <p className="mt-4 text-sm text-stone-400 light:text-stone-600 text-center">
-            Already have an account?{' '}
+            {c.alreadyHaveAccount}{' '}
             <button
               type="button"
               className="text-amber-400 light:text-amber-700 hover:underline active:scale-95"
               onClick={onSwitchToLogin}
             >
-              Sign in
+              {c.signIn}
             </button>
           </p>
         )}

@@ -5,24 +5,23 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui';
 import { useStore, type PatternTheme } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
-// Pattern theme display config
-const THEME_CONFIG: Record<PatternTheme, { label: string; color: string; emoji: string }> = {
-  control: { label: 'Control', color: '#8b5cf6', emoji: '🎯' },
-  acceptance: { label: 'Acceptance', color: '#10b981', emoji: '🙏' },
-  patience: { label: 'Patience', color: '#06b6d4', emoji: '⏳' },
-  courage: { label: 'Courage', color: '#f59e0b', emoji: '🦁' },
-  discipline: { label: 'Discipline', color: '#ef4444', emoji: '💪' },
-  gratitude: { label: 'Gratitude', color: '#ec4899', emoji: '✨' },
-  perspective: { label: 'Perspective', color: '#6366f1', emoji: '👁️' },
-  judgment: { label: 'Judgment', color: '#f97316', emoji: '⚖️' },
-  anger: { label: 'Anger', color: '#dc2626', emoji: '🔥' },
-  fear: { label: 'Fear', color: '#7c3aed', emoji: '😰' },
-  comparison: { label: 'Comparison', color: '#14b8a6', emoji: '👀' },
-  procrastination: { label: 'Procrastination', color: '#64748b', emoji: '⏰' },
+const THEME_CONFIG: Record<PatternTheme, { color: string; emoji: string }> = {
+  control: { color: '#8b5cf6', emoji: '🎯' },
+  acceptance: { color: '#10b981', emoji: '🙏' },
+  patience: { color: '#06b6d4', emoji: '⏳' },
+  courage: { color: '#f59e0b', emoji: '🦁' },
+  discipline: { color: '#ef4444', emoji: '💪' },
+  gratitude: { color: '#ec4899', emoji: '✨' },
+  perspective: { color: '#6366f1', emoji: '👁️' },
+  judgment: { color: '#f97316', emoji: '⚖️' },
+  anger: { color: '#dc2626', emoji: '🔥' },
+  fear: { color: '#7c3aed', emoji: '😰' },
+  comparison: { color: '#14b8a6', emoji: '👀' },
+  procrastination: { color: '#64748b', emoji: '⏰' },
 };
 
-// Categorize themes into growth vs challenge areas
 const GROWTH_THEMES: PatternTheme[] = ['acceptance', 'patience', 'courage', 'discipline', 'gratitude', 'perspective'];
 const CHALLENGE_THEMES: PatternTheme[] = ['control', 'judgment', 'anger', 'fear', 'comparison', 'procrastination'];
 
@@ -31,31 +30,115 @@ interface PatternAnalysisProps {
 }
 
 export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
+  const { locale } = useTranslation();
   const { analyzePatterns, getPatternTrends } = useStore();
+
+  const copy = {
+    en: {
+      noPatterns: 'No Patterns Yet',
+      noPatternsBody: 'Complete more lessons to see your transformation patterns emerge.',
+      yourPatterns: 'Your Patterns',
+      reflections: 'reflections',
+      title: 'Your Transformation Patterns',
+      basedOn: 'Based on {count} reflection{suffix} this month',
+      growthThemes: 'Growth Themes',
+      workingThrough: 'Working Through',
+      mentions: 'mentions',
+      obstacleQuote: '"The obstacle is the way." - Marcus Aurelius',
+      allDetectedPatterns: 'All Detected Patterns',
+      labels: {
+        control: 'Control',
+        acceptance: 'Acceptance',
+        patience: 'Patience',
+        courage: 'Courage',
+        discipline: 'Discipline',
+        gratitude: 'Gratitude',
+        perspective: 'Perspective',
+        judgment: 'Judgment',
+        anger: 'Anger',
+        fear: 'Fear',
+        comparison: 'Comparison',
+        procrastination: 'Procrastination',
+      },
+    },
+    fr: {
+      noPatterns: 'Aucun schéma pour le moment',
+      noPatternsBody: 'Terminez davantage de leçons pour voir apparaître vos schémas de transformation.',
+      yourPatterns: 'Vos schémas',
+      reflections: 'réflexions',
+      title: 'Vos schémas de transformation',
+      basedOn: 'Basé sur {count} réflexion{suffix} ce mois-ci',
+      growthThemes: 'Thèmes de progression',
+      workingThrough: 'En cours de travail',
+      mentions: 'mentions',
+      obstacleQuote: '"L obstacle est le chemin." - Marc Aurèle',
+      allDetectedPatterns: 'Tous les schémas détectés',
+      labels: {
+        control: 'Contrôle',
+        acceptance: 'Acceptation',
+        patience: 'Patience',
+        courage: 'Courage',
+        discipline: 'Discipline',
+        gratitude: 'Gratitude',
+        perspective: 'Perspective',
+        judgment: 'Jugement',
+        anger: 'Colère',
+        fear: 'Peur',
+        comparison: 'Comparaison',
+        procrastination: 'Procrastination',
+      },
+    },
+    ar: {
+      noPatterns: 'لا توجد أنماط بعد',
+      noPatternsBody: 'أكمل المزيد من الدروس لتظهر أنماط تحوّلك بوضوح.',
+      yourPatterns: 'أنماطك',
+      reflections: 'تأملات',
+      title: 'أنماط تحوّلك',
+      basedOn: 'استناداً إلى {count} تأمل{suffix} هذا الشهر',
+      growthThemes: 'مواضيع النمو',
+      workingThrough: 'ما تعمل عليه الآن',
+      mentions: 'مرات',
+      obstacleQuote: '"العقبة هي الطريق." - ماركوس أوريليوس',
+      allDetectedPatterns: 'كل الأنماط المكتشفة',
+      labels: {
+        control: 'التحكم',
+        acceptance: 'التقبّل',
+        patience: 'الصبر',
+        courage: 'الشجاعة',
+        discipline: 'الانضباط',
+        gratitude: 'الامتنان',
+        perspective: 'المنظور',
+        judgment: 'الحكم',
+        anger: 'الغضب',
+        fear: 'الخوف',
+        comparison: 'المقارنة',
+        procrastination: 'التسويف',
+      },
+    },
+  } as const;
+
+  const c = copy[locale] ?? copy.en;
 
   const currentPatterns = useMemo(() => analyzePatterns(), [analyzePatterns]);
   const trends = useMemo(() => getPatternTrends(), [getPatternTrends]);
 
-  // Sort themes by frequency
   const sortedThemes = useMemo(() => {
     const entries = Object.entries(currentPatterns.themes) as [PatternTheme, number][];
     return entries.sort((a, b) => b[1] - a[1]).filter(([, count]) => count > 0);
   }, [currentPatterns.themes]);
 
-  // Get top patterns for growth and challenges
-  const topGrowth = useMemo(() =>
-    sortedThemes.filter(([theme]) => GROWTH_THEMES.includes(theme)).slice(0, 3),
+  const topGrowth = useMemo(
+    () => sortedThemes.filter(([theme]) => GROWTH_THEMES.includes(theme)).slice(0, 3),
     [sortedThemes]
   );
 
-  const topChallenges = useMemo(() =>
-    sortedThemes.filter(([theme]) => CHALLENGE_THEMES.includes(theme)).slice(0, 3),
+  const topChallenges = useMemo(
+    () => sortedThemes.filter(([theme]) => CHALLENGE_THEMES.includes(theme)).slice(0, 3),
     [sortedThemes]
   );
 
-  // Get trend icon
   const getTrendIcon = (theme: PatternTheme) => {
-    const trend = trends.find(t => t.theme === theme);
+    const trend = trends.find((t) => t.theme === theme);
     if (!trend) return null;
 
     if (trend.trend === 'up') {
@@ -79,29 +162,27 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
     return <Minus size={14} className="text-stone-500" />;
   };
 
-  // No data state
   if (currentPatterns.totalReflections === 0) {
     return (
       <Card variant="glass" padding="lg" className="text-center">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-stone-800 light:bg-stone-200 flex items-center justify-center">
           <Sparkles size={28} className="text-stone-600 light:text-stone-500" />
         </div>
-        <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">No Patterns Yet</h3>
+        <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">{c.noPatterns}</h3>
         <p className="text-sm text-stone-500 light:text-stone-500">
-          Complete more lessons to see your transformation patterns emerge.
+          {c.noPatternsBody}
         </p>
       </Card>
     );
   }
 
-  // Compact view for dashboard
   if (compact) {
     return (
       <Card variant="glass" padding="md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-white light:text-stone-900">Your Patterns</h3>
+          <h3 className="text-sm font-medium text-white light:text-stone-900">{c.yourPatterns}</h3>
           <span className="text-xs text-stone-500 light:text-stone-500">
-            {currentPatterns.totalReflections} reflections
+            {currentPatterns.totalReflections} {c.reflections}
           </span>
         </div>
 
@@ -116,7 +197,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                 <span className="text-lg">{config.emoji}</span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-stone-400 light:text-stone-600">{config.label}</span>
+                    <span className="text-xs text-stone-400 light:text-stone-600">{c.labels[theme]}</span>
                     <div className="flex items-center gap-1">
                       {getTrendIcon(theme)}
                       <span className="text-xs text-stone-500 light:text-stone-500">{count}</span>
@@ -140,25 +221,24 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
     );
   }
 
-  // Full view
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">Your Transformation Patterns</h2>
+        <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">{c.title}</h2>
         <p className="text-stone-400 light:text-stone-600">
-          Based on {currentPatterns.totalReflections} reflection{currentPatterns.totalReflections !== 1 ? 's' : ''} this month
+          {c.basedOn
+            .replace('{count}', String(currentPatterns.totalReflections))
+            .replace('{suffix}', currentPatterns.totalReflections !== 1 ? 's' : '')}
         </p>
       </div>
 
-      {/* Growth Areas */}
       {topGrowth.length > 0 && (
         <Card variant="glass" padding="lg">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
               <TrendingUp size={16} className="text-emerald-400" />
             </div>
-            <h3 className="font-medium text-white light:text-stone-900">Growth Themes</h3>
+            <h3 className="font-medium text-white light:text-stone-900">{c.growthThemes}</h3>
           </div>
 
           <div className="space-y-4">
@@ -177,11 +257,11 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{config.emoji}</span>
-                      <span className="text-white light:text-stone-900 font-medium">{config.label}</span>
+                      <span className="text-white light:text-stone-900 font-medium">{c.labels[theme]}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {getTrendIcon(theme)}
-                      <span className="text-stone-400 light:text-stone-600">{count} mentions</span>
+                      <span className="text-stone-400 light:text-stone-600">{count} {c.mentions}</span>
                     </div>
                   </div>
                   <div className="h-3 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
@@ -200,14 +280,13 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
         </Card>
       )}
 
-      {/* Challenge Areas */}
       {topChallenges.length > 0 && (
         <Card variant="glass" padding="lg">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <Sparkles size={16} className="text-amber-400" />
             </div>
-            <h3 className="font-medium text-white light:text-stone-900">Working Through</h3>
+            <h3 className="font-medium text-white light:text-stone-900">{c.workingThrough}</h3>
           </div>
 
           <div className="space-y-4">
@@ -226,11 +305,11 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{config.emoji}</span>
-                      <span className="text-white light:text-stone-900 font-medium">{config.label}</span>
+                      <span className="text-white light:text-stone-900 font-medium">{c.labels[theme]}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {getTrendIcon(theme)}
-                      <span className="text-stone-400 light:text-stone-600">{count} mentions</span>
+                      <span className="text-stone-400 light:text-stone-600">{count} {c.mentions}</span>
                     </div>
                   </div>
                   <div className="h-3 bg-stone-800 light:bg-stone-200 rounded-full overflow-hidden">
@@ -248,14 +327,13 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
           </div>
 
           <p className="mt-4 text-sm text-stone-500 light:text-stone-500 italic">
-            &quot;The obstacle is the way.&quot; — Marcus Aurelius
+            {c.obstacleQuote}
           </p>
         </Card>
       )}
 
-      {/* All Patterns Grid */}
       <Card variant="glass" padding="lg">
-        <h3 className="font-medium text-white light:text-stone-900 mb-4">All Detected Patterns</h3>
+        <h3 className="font-medium text-white light:text-stone-900 mb-4">{c.allDetectedPatterns}</h3>
         <div className="grid grid-cols-3 gap-3">
           {(Object.keys(THEME_CONFIG) as PatternTheme[]).map((theme) => {
             const config = THEME_CONFIG[theme];
@@ -275,7 +353,7 @@ export function PatternAnalysis({ compact = false }: PatternAnalysisProps) {
               >
                 <span className="text-2xl mb-1 block">{config.emoji}</span>
                 <p className={`text-xs ${isActive ? 'text-white light:text-stone-900' : 'text-stone-600 light:text-stone-500'}`}>
-                  {config.label}
+                  {c.labels[theme]}
                 </p>
                 {isActive && (
                   <p className="text-xs text-stone-500 light:text-stone-500 mt-1">{count}x</p>

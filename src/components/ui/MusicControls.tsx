@@ -13,17 +13,56 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, VolumeX, SkipForward, Music } from 'lucide-react';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 interface MusicControlsProps {
   /** Whether to show the controls */
   show?: boolean;
 }
 
+const COPY_BY_LOCALE = {
+  en: {
+    unmuteMusic: 'Unmute music',
+    muteMusic: 'Mute music',
+    changeTrack: 'Change music track',
+    tracks: {
+      forest: 'Forest',
+      lessonDeep: 'Deep',
+      rain: 'Rain',
+      visualization: 'Cosmic',
+    },
+  },
+  fr: {
+    unmuteMusic: 'Réactiver la musique',
+    muteMusic: 'Couper la musique',
+    changeTrack: 'Changer de piste musicale',
+    tracks: {
+      forest: 'Forêt',
+      lessonDeep: 'Profonde',
+      rain: 'Pluie',
+      visualization: 'Cosmique',
+    },
+  },
+  ar: {
+    unmuteMusic: 'تشغيل الموسيقى',
+    muteMusic: 'كتم الموسيقى',
+    changeTrack: 'تغيير المقطع الموسيقي',
+    tracks: {
+      forest: 'غابة',
+      lessonDeep: 'عميق',
+      rain: 'مطر',
+      visualization: 'كوني',
+    },
+  },
+} as const;
+
 export function MusicControls({ show = true }: MusicControlsProps) {
   const { soundEnabled } = useStore();
+  const { locale } = useTranslation();
   const [isMuted, setIsMuted] = useState(backgroundMusic.isMuted());
   const [currentTrack, setCurrentTrack] = useState(backgroundMusic.getCurrentTrackName());
   const isOperatingRef = useRef(false);
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
   
   // Debounce to prevent double-firing on iOS
   const lastInteractionRef = useRef<number>(0);
@@ -100,13 +139,7 @@ export function MusicControls({ show = true }: MusicControlsProps) {
 
   // Format track name for display
   const getTrackDisplayName = (name: string) => {
-    const names: Record<string, string> = {
-      forest: 'Forest',
-      lessonDeep: 'Deep',
-      rain: 'Rain',
-      visualization: 'Cosmic',
-    };
-    return names[name] || name;
+    return copy.tracks[name as keyof typeof copy.tracks] || name;
   };
 
   return (
@@ -135,7 +168,7 @@ export function MusicControls({ show = true }: MusicControlsProps) {
                 : 'bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300'
               }
             `}
-            aria-label={isMuted ? 'Unmute music' : 'Mute music'}
+            aria-label={isMuted ? copy.unmuteMusic : copy.muteMusic}
           >
             {!isMuted ? (
               <Volume2 size={20} />
@@ -158,7 +191,7 @@ export function MusicControls({ show = true }: MusicControlsProps) {
               text-stone-400 light:text-stone-700 hover:text-amber-400 hover:border-amber-500/30
               transition-colors shadow-lg
             "
-            aria-label="Change music track"
+            aria-label={copy.changeTrack}
           >
             <Music size={16} />
             <span className="text-sm font-medium">{getTrackDisplayName(currentTrack)}</span>

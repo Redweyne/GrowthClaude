@@ -12,11 +12,29 @@ import { motion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useAudio } from '@/hooks/useAudio';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
+
+const COPY_BY_LOCALE = {
+  en: {
+    mute: 'Mute audio',
+    unmute: 'Unmute audio',
+  },
+  fr: {
+    mute: 'Couper le son',
+    unmute: 'Activer le son',
+  },
+  ar: {
+    mute: 'كتم الصوت',
+    unmute: 'إلغاء كتم الصوت',
+  },
+} as const;
 
 export function MuteButton() {
   const { soundEnabled, setSoundEnabled } = useStore();
   const { stopAllAudio } = useAudio();
+  const { locale } = useTranslation();
   const isOperatingRef = useRef(false);
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
   
   // Debounce to prevent double-firing on iOS
   const lastInteractionRef = useRef<number>(0);
@@ -76,7 +94,7 @@ export function MuteButton() {
           : 'bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300'
         }
       `}
-      aria-label={soundEnabled ? 'Mute audio' : 'Unmute audio'}
+      aria-label={soundEnabled ? copy.mute : copy.unmute}
     >
       {soundEnabled ? (
         <Volume2 size={20} />

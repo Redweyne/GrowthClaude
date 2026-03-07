@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import type { ActivityDay } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 interface StreakCalendarProps {
   compact?: boolean;
@@ -36,7 +37,35 @@ const LEVEL_COLORS: Record<number, string> = {
 };
 
 export function StreakCalendar({ compact = false }: StreakCalendarProps) {
+  const { locale } = useTranslation();
   const { getStreakCalendarData } = useStore();
+  const copy = {
+    en: {
+      activity: 'Activity',
+      activeDays: '{count} active day{suffix}',
+      activityTitleSingle: '{date}: {count} activity',
+      activityTitlePlural: '{date}: {count} activities',
+      less: 'Less',
+      more: 'More',
+    },
+    fr: {
+      activity: 'Activité',
+      activeDays: '{count} jour{suffix} actif',
+      activityTitleSingle: '{date} : {count} activité',
+      activityTitlePlural: '{date} : {count} activités',
+      less: 'Moins',
+      more: 'Plus',
+    },
+    ar: {
+      activity: 'النشاط',
+      activeDays: '{count} يوم{suffix} نشط',
+      activityTitleSingle: '{date}: {count} نشاط',
+      activityTitlePlural: '{date}: {count} أنشطة',
+      less: 'أقل',
+      more: 'أكثر',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const { weeks, activeDays } = useMemo(() => {
     const data = getStreakCalendarData(3);
@@ -97,10 +126,10 @@ export function StreakCalendar({ compact = false }: StreakCalendarProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-stone-300 light:text-stone-700">
-          Activity
+          {c.activity}
         </span>
         <span className="text-xs text-stone-500">
-          {activeDays} active day{activeDays !== 1 ? 's' : ''}
+          {c.activeDays.replace('{count}', String(activeDays)).replace('{suffix}', activeDays !== 1 ? 's' : '')}
         </span>
       </div>
 
@@ -141,7 +170,9 @@ export function StreakCalendar({ compact = false }: StreakCalendarProps) {
                 ? day.lessonsCompleted + day.reflectionsWritten
                 : 0;
               const titleText = day
-                ? `${day.date}: ${total} activit${total === 1 ? 'y' : 'ies'}`
+                ? (total === 1 ? c.activityTitleSingle : c.activityTitlePlural)
+                  .replace('{date}', day.date)
+                  .replace('{count}', String(total))
                 : '';
 
               return (
@@ -165,7 +196,7 @@ export function StreakCalendar({ compact = false }: StreakCalendarProps) {
 
       {/* Legend */}
       <div className="flex items-center justify-end gap-1 mt-2">
-        <span className="text-[10px] text-stone-600 mr-1">Less</span>
+        <span className="text-[10px] text-stone-600 mr-1">{c.less}</span>
         {[0, 1, 2, 3].map((level) => (
           <div
             key={level}
@@ -177,7 +208,7 @@ export function StreakCalendar({ compact = false }: StreakCalendarProps) {
             }}
           />
         ))}
-        <span className="text-[10px] text-stone-600 ml-1">More</span>
+        <span className="text-[10px] text-stone-600 ml-1">{c.more}</span>
       </div>
     </motion.div>
   );

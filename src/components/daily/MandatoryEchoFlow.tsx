@@ -235,7 +235,7 @@ export function MandatoryEchoFlow({
                     transition={{ delay: 0.2 }}
                     className="text-amber-400 text-sm mb-2"
                   >
-                    A fellow {genderLabel} reflected on &ldquo;{reflection.lessonTitle}&rdquo;:
+                    {t('echoes.mandatory.fellowReflectedOn', { gender: genderLabel, title: reflection.lessonTitle })}
                   </motion.p>
                 </div>
 
@@ -305,7 +305,7 @@ export function MandatoryEchoFlow({
                   className="p-4 rounded-xl bg-stone-900/50 light:bg-stone-200/50 border border-stone-800/50 light:border-stone-300/50"
                 >
                   <p className="text-stone-500 light:text-stone-600 text-sm mb-2">
-                    A fellow {genderLabel} wrote:
+                    {t('echoes.mandatory.fellowWrote', { gender: genderLabel })}
                   </p>
                   <p className="text-stone-400 light:text-stone-600 text-sm leading-relaxed line-clamp-3">
                     &ldquo;{reflection.content}&rdquo;

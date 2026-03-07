@@ -8,12 +8,14 @@ import { useSparkStore } from '@/store/useSparkStore';
 import { useStore } from '@/store/useStore';
 import { getShuffledSparkVideos, sparkVideos } from '@/content/sparkVideos';
 import { SPARK_XP_REWARDS } from '@/types/spark';
+import { useTranslation } from '@/i18n';
 
 interface SparkFeedProps {
   onExit: () => void;
 }
 
 export function SparkFeed({ onExit }: SparkFeedProps) {
+  const { locale } = useTranslation();
   const {
     watchedVideos,
     isFirstSparkSession,
@@ -30,6 +32,25 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       useStore.setState((state) => ({ totalXp: state.totalXp + amount }));
     }
   }, []);
+
+  const copy = {
+    en: {
+      noMore: 'No more sparks available',
+      comeBackTomorrow: 'Come back tomorrow for fresh inspiration',
+      backToHome: 'Back to Home',
+    },
+    fr: {
+      noMore: "Plus d'étincelles disponibles",
+      comeBackTomorrow: "Revenez demain pour une nouvelle inspiration",
+      backToHome: "Retour à l'accueil",
+    },
+    ar: {
+      noMore: 'لا توجد مقاطع شرارة أخرى متاحة',
+      comeBackTomorrow: 'عد غداً لإلهام جديد',
+      backToHome: 'العودة إلى الرئيسية',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const playlist = useMemo(() => {
     // TikTok-like: if every video in the catalog has been watched, reset history
@@ -235,14 +256,14 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
       <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
         <div className="text-center px-8">
           <Zap size={40} className="text-white/20 mx-auto mb-4" />
-          <p className="text-white/50 text-lg">No more sparks available</p>
-          <p className="text-white/30 text-sm mt-2">Come back tomorrow for fresh inspiration</p>
+          <p className="text-white/50 text-lg">{c.noMore}</p>
+          <p className="text-white/30 text-sm mt-2">{c.comeBackTomorrow}</p>
           <button
             type="button"
             onClick={onExit}
             className="mt-6 px-6 py-3 rounded-2xl bg-white/10 text-white/70 hover:bg-white/15 transition-colors"
           >
-            Back to Home
+            {c.backToHome}
           </button>
         </div>
       </div>

@@ -10,9 +10,10 @@ import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
 import { Confetti } from '@/components/effects/Confetti';
 import { GoldShimmer, GlowRing, LightSweep } from '@/components/effects/GoldShimmer';
+import { useTranslation } from '@/i18n';
 
-function getFormattedDate(): string {
-  return new Date().toLocaleDateString('en-US', {
+function getFormattedDate(localeTag: string): string {
+  return new Date().toLocaleDateString(localeTag, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -20,10 +21,55 @@ function getFormattedDate(): string {
 }
 
 export function DailyTasksView() {
+  const { locale } = useTranslation();
   const { addTask, completeTask, clearOldTasks } = useTasksStore();
   const tasks = useTasksStore(s => s.tasks);
   const audio = useAudio();
   const { customHaptic } = useHaptics();
+  const localeTag = locale === 'ar' ? 'ar' : locale === 'fr' ? 'fr-FR' : 'en-US';
+
+  const copy = {
+    en: {
+      title: 'Daily Tasks',
+      tapToBegin: 'Tap the golden button to begin',
+      allConquered: 'All {count} tasks conquered!',
+      remainingDone: '{remaining} remaining · {done} done',
+      emptyTitle: 'Your slate is clean',
+      emptyBody: 'Tap the golden button to add your first task',
+      allDoneTitle: 'You conquered everything',
+      crossedOffToday: '{count} task{suffix} crossed off today',
+      addTaskAria: 'Add task',
+      crushedIt: 'You crushed it!',
+      conqueredToday: '{count} task{suffix} conquered today',
+    },
+    fr: {
+      title: 'Tâches du jour',
+      tapToBegin: 'Touchez le bouton doré pour commencer',
+      allConquered: '{count} tâches terminées !',
+      remainingDone: '{remaining} restantes · {done} terminées',
+      emptyTitle: 'Votre liste est vide',
+      emptyBody: 'Touchez le bouton doré pour ajouter votre première tâche',
+      allDoneTitle: 'Vous avez tout conquis',
+      crossedOffToday: '{count} tâche{suffix} cochée aujourd hui',
+      addTaskAria: 'Ajouter une tâche',
+      crushedIt: 'Mission accomplie !',
+      conqueredToday: '{count} tâche{suffix} accomplie aujourd hui',
+    },
+    ar: {
+      title: 'مهام اليوم',
+      tapToBegin: 'اضغط الزر الذهبي للبدء',
+      allConquered: 'تم إنجاز كل {count} مهمة!',
+      remainingDone: '{remaining} متبقية · {done} مكتملة',
+      emptyTitle: 'قائمتك نظيفة',
+      emptyBody: 'اضغط الزر الذهبي لإضافة أول مهمة',
+      allDoneTitle: 'أنجزت كل شيء',
+      crossedOffToday: 'تم شطب {count} مهمة{suffix} اليوم',
+      addTaskAria: 'إضافة مهمة',
+      crushedIt: 'أبدعت!',
+      conqueredToday: 'تم إنجاز {count} مهمة{suffix} اليوم',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const [newTaskIds, setNewTaskIds] = useState<Set<string>>(new Set());
   const [showAddOverlay, setShowAddOverlay] = useState(false);
@@ -97,7 +143,7 @@ export function DailyTasksView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          {getFormattedDate()}
+          {getFormattedDate(localeTag)}
         </motion.p>
         <motion.h1
           className="text-2xl font-bold text-white light:text-stone-900 mt-1"
@@ -105,7 +151,7 @@ export function DailyTasksView() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          Daily Tasks
+          {c.title}
         </motion.h1>
         <motion.p
           className="text-xs text-stone-500 light:text-stone-400 mt-1"
@@ -114,10 +160,12 @@ export function DailyTasksView() {
           transition={{ delay: 0.2 }}
         >
           {todaysTasks.length === 0
-            ? 'Tap the golden button to begin'
+            ? c.tapToBegin
             : pendingTasks.length === 0
-              ? `All ${completedCount} tasks conquered!`
-              : `${pendingTasks.length} remaining \u00B7 ${completedCount} done`}
+              ? c.allConquered.replace('{count}', String(completedCount))
+              : c.remainingDone
+                .replace('{remaining}', String(pendingTasks.length))
+                .replace('{done}', String(completedCount))}
         </motion.p>
       </div>
 
@@ -146,10 +194,10 @@ export function DailyTasksView() {
                 <ListChecks size={64} className="text-stone-700 light:text-stone-300" strokeWidth={1.5} />
               </motion.div>
               <p className="mt-6 text-stone-400 light:text-stone-500 text-base font-semibold">
-                Your slate is clean
+                {c.emptyTitle}
               </p>
               <p className="mt-2 text-stone-600 light:text-stone-400 text-xs">
-                Tap the golden button to add your first task
+                {c.emptyBody}
               </p>
             </motion.div>
           ) : pendingTasks.length === 0 && completedCount > 0 ? (
@@ -170,10 +218,12 @@ export function DailyTasksView() {
                 <Sparkles size={64} className="text-amber-400" strokeWidth={1.5} />
               </motion.div>
               <p className="mt-6 text-amber-300 light:text-amber-600 text-base font-bold">
-                You conquered everything
+                {c.allDoneTitle}
               </p>
               <p className="mt-2 text-stone-500 light:text-stone-400 text-xs">
-                {completedCount} task{completedCount !== 1 ? 's' : ''} crossed off today
+                {c.crossedOffToday
+                  .replace('{count}', String(completedCount))
+                  .replace('{suffix}', completedCount !== 1 ? 's' : '')}
               </p>
             </motion.div>
           ) : (
@@ -203,7 +253,7 @@ export function DailyTasksView() {
         transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         whileTap={{ scale: 0.88 }}
         onClick={() => setShowAddOverlay(true)}
-        aria-label="Add task"
+        aria-label={c.addTaskAria}
       >
         <Plus size={28} className="text-stone-950" strokeWidth={3} />
       </motion.button>
@@ -256,7 +306,7 @@ export function DailyTasksView() {
               transition={{ type: 'spring', stiffness: 400, damping: 12 }}
             >
               <h2 className="text-5xl font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
-                You crushed it!
+                {c.crushedIt}
               </h2>
               <motion.p
                 className="mt-3 text-stone-300 text-base"
@@ -264,7 +314,9 @@ export function DailyTasksView() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                {completedCount} task{completedCount !== 1 ? 's' : ''} conquered today
+                {c.conqueredToday
+                  .replace('{count}', String(completedCount))
+                  .replace('{suffix}', completedCount !== 1 ? 's' : '')}
               </motion.p>
             </motion.div>
           </motion.div>

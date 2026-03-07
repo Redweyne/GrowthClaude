@@ -623,6 +623,7 @@ function StreakHighlightSlideContent({ slide }: { slide: StreakHighlightSlide })
 // ============================================================================
 
 function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="flex flex-col items-center justify-center h-full text-center px-4"
@@ -662,7 +663,7 @@ function IdentityMomentSlideContent({ slide }: { slide: IdentityMomentSlide }) {
         className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm"
       >
         <Sparkles className="w-4 h-4" />
-        <span>{slide.totalStatements} identity statements created</span>
+        <span>{t('story.slides.identityStatementsCreated', { count: slide.totalStatements })}</span>
       </motion.div>
 
       {/* Message */}
@@ -783,6 +784,7 @@ function AssessmentGrowthSlideContent({ slide }: { slide: AssessmentGrowthSlide 
 // ============================================================================
 
 function WordCloudSlideContent({ slide }: { slide: WordCloudSlide }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="flex flex-col items-center justify-center h-full"
@@ -836,7 +838,7 @@ function WordCloudSlideContent({ slide }: { slide: WordCloudSlide }) {
         variants={fadeInVariants}
         className="text-white/40 light:text-stone-500 text-sm"
       >
-        {slide.totalWordsWritten.toLocaleString()} words written in reflection
+        {t('story.slides.wordsWrittenInReflection', { count: slide.totalWordsWritten.toLocaleString() })}
       </motion.p>
     </motion.div>
   );

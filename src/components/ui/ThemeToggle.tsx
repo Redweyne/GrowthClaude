@@ -7,14 +7,37 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useTranslation } from '@/i18n';
 
 interface ThemeToggleProps {
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
 }
 
+const COPY_BY_LOCALE = {
+  en: {
+    switchToLight: 'Switch to light mode',
+    switchToDark: 'Switch to dark mode',
+    dark: 'Dark',
+    light: 'Light',
+  },
+  fr: {
+    switchToLight: 'Passer en mode clair',
+    switchToDark: 'Passer en mode sombre',
+    dark: 'Sombre',
+    light: 'Clair',
+  },
+  ar: {
+    switchToLight: 'التبديل إلى الوضع الفاتح',
+    switchToDark: 'التبديل إلى الوضع الداكن',
+    dark: 'داكن',
+    light: 'فاتح',
+  },
+} as const;
+
 export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps) {
   const { setTheme, resolvedTheme } = useTheme();
+  const { locale } = useTranslation();
 
   if (!resolvedTheme) {
     return (
@@ -28,6 +51,7 @@ export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps
   }
 
   const isDark = resolvedTheme === 'dark';
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
   const sizes = {
     sm: { button: 'w-10 h-10', icon: 18 },
     md: { button: 'w-12 h-12', icon: 20 },
@@ -59,7 +83,7 @@ export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps
         `}
         whileHover={{ scale: 1.05, rotate: isDark ? 0 : 180 }}
         whileTap={{ scale: 0.95 }}
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={isDark ? copy.switchToLight : copy.switchToDark}
       >
         {/* Glow effect */}
         <motion.div
@@ -136,7 +160,7 @@ export function ThemeToggle({ size = 'md', showLabel = false }: ThemeToggleProps
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          {isDark ? 'Dark' : 'Light'}
+          {isDark ? copy.dark : copy.light}
         </motion.span>
       )}
     </div>

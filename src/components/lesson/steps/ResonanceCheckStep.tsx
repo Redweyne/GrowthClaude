@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button, WisdomText } from '@/components/ui';
 import { useAudio } from '@/hooks/useAudio';
+import { useTranslation } from '@/i18n';
 import type { ResonanceCheckStep as ResonanceCheckStepType } from '@/types/lessons';
 
 interface ResonanceCheckStepProps {
@@ -22,13 +23,36 @@ interface ResonanceCheckStepProps {
   onComplete: (selections: string[]) => void;
 }
 
+const COPY_BY_LOCALE = {
+  en: {
+    tapAllResonate: (min: number) => `Tap all that resonate${min > 1 ? ` (at least ${min})` : ''}`,
+    chooseOne: 'Choose one',
+    thisIsMe: 'This is me',
+    theseResonate: 'These resonate',
+  },
+  fr: {
+    tapAllResonate: (min: number) => `Touchez tout ce qui résonne${min > 1 ? ` (au moins ${min})` : ''}`,
+    chooseOne: 'Choisissez-en un',
+    thisIsMe: "C'est moi",
+    theseResonate: 'Cela résonne',
+  },
+  ar: {
+    tapAllResonate: (min: number) => `اضغط على كل ما يلامسك${min > 1 ? ` (على الأقل ${min})` : ''}`,
+    chooseOne: 'اختر واحدًا',
+    thisIsMe: 'هذا أنا',
+    theseResonate: 'هذه تلامسني',
+  },
+} as const;
+
 export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps) {
+  const { locale } = useTranslation();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showOptions, setShowOptions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const mountedRef = useRef(true);
 
   const { playPop, playSuccess } = useAudio();
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
 
   const minSelections = step.minSelections ?? 1;
   const maxSelections = step.maxSelections ?? step.options.length;
@@ -106,8 +130,8 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
             {!step.instruction && (
               <p className="text-sm text-stone-500 light:text-stone-600">
                 {maxSelections > 1
-                  ? `Tap all that resonate${minSelections > 1 ? ` (at least ${minSelections})` : ''}`
-                  : 'Choose one'}
+                  ? copy.tapAllResonate(minSelections)
+                  : copy.chooseOne}
               </p>
             )}
           </div>
@@ -193,7 +217,7 @@ export function ResonanceCheckStep({ step, onComplete }: ResonanceCheckStepProps
                   glow
                   className="w-full group"
                 >
-                  {selected.size === 1 ? 'This is me' : 'These resonate'}
+                  {selected.size === 1 ? copy.thisIsMe : copy.theseResonate}
                   <ChevronRight
                     size={18}
                     className="ml-2 opacity-60 group-hover:translate-x-1 group-hover:opacity-100 transition-all"

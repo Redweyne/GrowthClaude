@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAudio } from '@/hooks/useAudio';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useTranslation } from '@/i18n';
 
 interface AddTaskOverlayProps {
   isOpen: boolean;
@@ -11,27 +12,61 @@ interface AddTaskOverlayProps {
   onAddTask: (text: string) => void;
 }
 
-const MOTIVATIONS = [
-  'What will you conquer today?',
-  'Name your next victory.',
-  'One task closer to greatness.',
-  'Write it. Own it. Crush it.',
-  "Today's mission:",
-  'Set your target.',
-  'Declare your intent.',
-];
-
 export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayProps) {
+  const { locale } = useTranslation();
   const [text, setText] = useState('');
   const [showSweep, setShowSweep] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const audio = useAudio();
-  const { hapticTap, hapticMedium } = useHaptics();
+  const { hapticMedium } = useHaptics();
+
+  const copy = {
+    en: {
+      motivations: [
+        'What will you conquer today?',
+        'Name your next victory.',
+        'One task closer to greatness.',
+        'Write it. Own it. Crush it.',
+        "Today's mission:",
+        'Set your target.',
+        'Declare your intent.',
+      ],
+      placeholder: 'Type your task...',
+      addTask: 'Add Task',
+    },
+    fr: {
+      motivations: [
+        'Que vas-tu conquérir aujourd hui ?',
+        'Nomme ta prochaine victoire.',
+        'Une tâche de plus vers la grandeur.',
+        'Écris-la. Assume-la. Réussis.',
+        'Mission du jour :',
+        'Fixe ta cible.',
+        'Déclare ton intention.',
+      ],
+      placeholder: 'Écris ta tâche...',
+      addTask: 'Ajouter la tâche',
+    },
+    ar: {
+      motivations: [
+        'ماذا ستتغلب عليه اليوم؟',
+        'سمِّ انتصارك القادم.',
+        'مهمة واحدة أقرب للعظمة.',
+        'اكتبها. امتلكها. أنجزها.',
+        'مهمة اليوم:',
+        'حدد هدفك.',
+        'أعلن نيتك.',
+      ],
+      placeholder: 'اكتب مهمتك...',
+      addTask: 'إضافة مهمة',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
 
   const motivation = useMemo(() => {
     if (!isOpen) return '';
-    return MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)];
-  }, [isOpen]);
+    return c.motivations[Math.floor(Math.random() * c.motivations.length)];
+  }, [c.motivations, isOpen]);
 
   // Auto-focus input + trigger sweep on open
   useEffect(() => {
@@ -146,7 +181,7 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your task..."
+                  placeholder={c.placeholder}
                   className="w-full text-xl text-center text-stone-100 light:text-stone-800 bg-transparent border-b-2 border-amber-500/30 focus:border-amber-400 outline-none py-4 px-4 placeholder:text-stone-600 transition-colors duration-200"
                   style={{
                     boxShadow: text.length > 0
@@ -171,7 +206,7 @@ export function AddTaskOverlay({ isOpen, onClose, onAddTask }: AddTaskOverlayPro
                     onClick={handleSubmit}
                     className="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-stone-950 font-bold text-lg shadow-lg shadow-amber-500/25"
                   >
-                    Add Task
+                    {c.addTask}
                   </motion.button>
                 )}
               </AnimatePresence>

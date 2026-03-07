@@ -1,21 +1,14 @@
 'use client';
 
-// ============================================================================
-// TRANSFORMATION SCORE - THE SINGLE TRUTH
-// Not just a number. A reflection of who they're becoming.
-// This is the visual centerpiece that tells users "this is real progress."
-// ============================================================================
-
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
 import {
   calculateTransformationScore,
-  GRADE_DESCRIPTIONS,
-  BREAKDOWN_LABELS,
   type ProgressContext,
   type TransformationScore as TransformationScoreType
 } from '@/lib/progressInsights';
+import { useTranslation } from '@/i18n';
 
 interface TransformationScoreProps {
   context: ProgressContext;
@@ -23,25 +16,22 @@ interface TransformationScoreProps {
   onExpand?: () => void;
 }
 
-// Circular progress ring
 function ScoreRing({
   score,
-  grade,
+  gradeColor,
   size = 180
 }: {
   score: number;
-  grade: TransformationScoreType['grade'];
+  gradeColor: string;
   size?: number;
 }) {
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const progress = (score / 100) * circumference;
-  const gradeColor = GRADE_DESCRIPTIONS[grade].color;
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
-      {/* Glow effect */}
       <motion.div
         className="absolute inset-0 rounded-full blur-xl"
         style={{ backgroundColor: gradeColor }}
@@ -51,7 +41,6 @@ function ScoreRing({
       />
 
       <svg width={size} height={size} className="transform -rotate-90">
-        {/* Background circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -61,7 +50,6 @@ function ScoreRing({
           strokeWidth={strokeWidth}
         />
 
-        {/* Progress circle */}
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -77,7 +65,6 @@ function ScoreRing({
         />
       </svg>
 
-      {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
           className="text-4xl font-bold text-white light:text-stone-900"
@@ -100,7 +87,6 @@ function ScoreRing({
   );
 }
 
-// Score breakdown bar
 function BreakdownBar({
   label,
   value,
@@ -142,10 +128,109 @@ export function TransformationScore({
   compact = false,
   onExpand
 }: TransformationScoreProps) {
+  const { locale } = useTranslation();
   const score = useMemo(() => calculateTransformationScore(context), [context]);
-  const gradeInfo = GRADE_DESCRIPTIONS[score.grade];
 
-  // Trend icon
+  const copy = {
+    en: {
+      trendRising: 'Rising',
+      trendNeedsAttention: 'Needs attention',
+      trendSteady: 'Steady',
+      title: 'Transformation Score',
+      subtitle: 'The measure of your journey',
+      scoreBreakdown: 'Score Breakdown',
+      grades: {
+        awakening: { title: 'Awakening', description: "You've opened your eyes to change. The journey has begun." },
+        emerging: { title: 'Emerging', description: "You're rising from who you were. The old patterns are loosening." },
+        growing: { title: 'Growing', description: "Real progress is happening. You're not the same person who started." },
+        flourishing: { title: 'Flourishing', description: 'Your transformation is undeniable. Others can see the change.' },
+        transcending: { title: 'Transcending', description: "You've become who you set out to be. Now you're reaching higher." },
+      },
+      breakdown: {
+        consistency: { label: 'Consistency', icon: '🔥' },
+        depth: { label: 'Depth', icon: '🌊' },
+        commitment: { label: 'Commitment', icon: '⚡' },
+        growth: { label: 'Growth', icon: '📈' },
+      },
+      lowestInsights: {
+        consistency: 'Focus on building your streak. Showing up daily, even for just one lesson, compounds over time.',
+        depth: 'Try writing longer, more honest reflections. The insights you gain from deep reflection are where real change happens.',
+        commitment: 'Complete more lessons to strengthen this area. Each lesson is a brick in the foundation of your transformation.',
+        growth: 'Complete a monthly assessment to track your measurable progress. Seeing your growth visualized is powerful motivation.',
+      },
+    },
+    fr: {
+      trendRising: 'En hausse',
+      trendNeedsAttention: 'À renforcer',
+      trendSteady: 'Stable',
+      title: 'Score de transformation',
+      subtitle: 'La mesure de votre parcours',
+      scoreBreakdown: 'Détail du score',
+      grades: {
+        awakening: { title: 'Éveil', description: 'Vous avez ouvert les yeux au changement. Le parcours commence.' },
+        emerging: { title: 'Émergence', description: 'Vous sortez de vos anciens schémas. Ils se relâchent déjà.' },
+        growing: { title: 'Croissance', description: 'La progression est réelle. Vous n êtes plus la même personne.' },
+        flourishing: { title: 'Épanouissement', description: 'Votre transformation est visible et concrète.' },
+        transcending: { title: 'Transcendance', description: 'Vous êtes devenu ce que vous visiez. Vous allez encore plus loin.' },
+      },
+      breakdown: {
+        consistency: { label: 'Régularité', icon: '🔥' },
+        depth: { label: 'Profondeur', icon: '🌊' },
+        commitment: { label: 'Engagement', icon: '⚡' },
+        growth: { label: 'Croissance', icon: '📈' },
+      },
+      lowestInsights: {
+        consistency: 'Concentrez-vous sur votre série. Venir chaque jour, même pour une seule leçon, produit un effet cumulatif.',
+        depth: 'Essayez des réflexions plus longues et plus honnêtes. La profondeur accélère le changement réel.',
+        commitment: 'Terminez davantage de leçons pour renforcer cette dimension.',
+        growth: 'Complétez une évaluation mensuelle pour suivre une progression mesurable.',
+      },
+    },
+    ar: {
+      trendRising: 'في تصاعد',
+      trendNeedsAttention: 'يحتاج انتباهاً',
+      trendSteady: 'مستقر',
+      title: 'درجة التحول',
+      subtitle: 'مقياس رحلتك',
+      scoreBreakdown: 'تفصيل الدرجة',
+      grades: {
+        awakening: { title: 'الاستيقاظ', description: 'لقد بدأت ترى التغيير بوضوح. الرحلة بدأت.' },
+        emerging: { title: 'الانبثاق', description: 'أنت تتجاوز ذاتك السابقة. الأنماط القديمة بدأت تضعف.' },
+        growing: { title: 'النمو', description: 'هناك تقدم حقيقي. لم تعد الشخص الذي بدأ.' },
+        flourishing: { title: 'الازدهار', description: 'تحوّلك واضح ويمكن ملاحظته.' },
+        transcending: { title: 'التجاوز', description: 'أصبحت ما كنت تسعى إليه. والآن تتقدم أكثر.' },
+      },
+      breakdown: {
+        consistency: { label: 'الاستمرارية', icon: '🔥' },
+        depth: { label: 'العمق', icon: '🌊' },
+        commitment: { label: 'الالتزام', icon: '⚡' },
+        growth: { label: 'النمو', icon: '📈' },
+      },
+      lowestInsights: {
+        consistency: 'ركز على بناء سلسلتك. الظهور يومياً، حتى لدرس واحد، يصنع أثراً تراكمياً.',
+        depth: 'جرّب كتابة تأملات أطول وأكثر صدقاً. العمق هو بوابة التغيير الحقيقي.',
+        commitment: 'أكمل المزيد من الدروس لتقوية هذا الجانب.',
+        growth: 'أكمل تقييماً شهرياً لمتابعة تقدمك بشكل قابل للقياس.',
+      },
+    },
+  } as const;
+
+  const c = copy[locale] ?? copy.en;
+
+  const gradeColors: Record<TransformationScoreType['grade'], string> = {
+    awakening: '#94a3b8',
+    emerging: '#22d3ee',
+    growing: '#10b981',
+    flourishing: '#8b5cf6',
+    transcending: '#f59e0b',
+  };
+
+  const gradeInfo = {
+    color: gradeColors[score.grade],
+    title: c.grades[score.grade].title,
+    description: c.grades[score.grade].description,
+  };
+
   const TrendIcon = score.trend === 'rising'
     ? TrendingUp
     : score.trend === 'needs-attention'
@@ -159,12 +244,11 @@ export function TransformationScore({
     : 'text-stone-500';
 
   const trendText = score.trend === 'rising'
-    ? 'Rising'
+    ? c.trendRising
     : score.trend === 'needs-attention'
-    ? 'Needs attention'
-    : 'Steady';
+    ? c.trendNeedsAttention
+    : c.trendSteady;
 
-  // Compact view
   if (compact) {
     return (
       <motion.button
@@ -174,7 +258,6 @@ export function TransformationScore({
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-4">
-          {/* Mini score ring */}
           <div className="relative w-16 h-16 flex-shrink-0">
             <svg width={64} height={64} className="transform -rotate-90">
               <circle
@@ -204,7 +287,6 @@ export function TransformationScore({
             </div>
           </div>
 
-          {/* Text content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-white light:text-stone-900 font-semibold truncate">{gradeInfo.title}</h3>
@@ -221,14 +303,12 @@ export function TransformationScore({
     );
   }
 
-  // Full view
   return (
     <motion.div
       className="bg-gradient-to-br from-stone-900/80 to-stone-950 light:from-white light:to-stone-50 border border-stone-800 light:border-stone-200 rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      {/* Header */}
       <div className="text-center mb-6">
         <motion.h2
           className="text-lg font-semibold text-white light:text-stone-900 mb-1"
@@ -236,7 +316,7 @@ export function TransformationScore({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          Transformation Score
+          {c.title}
         </motion.h2>
         <motion.p
           className="text-sm text-stone-500 light:text-stone-500"
@@ -244,16 +324,14 @@ export function TransformationScore({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          The measure of your journey
+          {c.subtitle}
         </motion.p>
       </div>
 
-      {/* Score ring */}
       <div className="flex justify-center mb-6">
-        <ScoreRing score={score.score} grade={score.grade} />
+        <ScoreRing score={score.score} gradeColor={gradeInfo.color} />
       </div>
 
-      {/* Grade badge */}
       <motion.div
         className="text-center mb-6"
         initial={{ opacity: 0, y: 10 }}
@@ -276,49 +354,47 @@ export function TransformationScore({
         <p className="text-sm text-stone-400 light:text-stone-600 mt-3">{gradeInfo.description}</p>
       </motion.div>
 
-      {/* Breakdown */}
       <motion.div
         className="space-y-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
       >
-        <h3 className="text-sm font-medium text-stone-400 light:text-stone-600">Score Breakdown</h3>
+        <h3 className="text-sm font-medium text-stone-400 light:text-stone-600">{c.scoreBreakdown}</h3>
 
         <BreakdownBar
-          label={BREAKDOWN_LABELS.consistency.label}
+          label={c.breakdown.consistency.label}
           value={score.breakdown.consistency}
           maxValue={25}
-          icon={BREAKDOWN_LABELS.consistency.icon}
+          icon={c.breakdown.consistency.icon}
           delay={0.9}
         />
 
         <BreakdownBar
-          label={BREAKDOWN_LABELS.depth.label}
+          label={c.breakdown.depth.label}
           value={score.breakdown.depth}
           maxValue={25}
-          icon={BREAKDOWN_LABELS.depth.icon}
+          icon={c.breakdown.depth.icon}
           delay={1.0}
         />
 
         <BreakdownBar
-          label={BREAKDOWN_LABELS.commitment.label}
+          label={c.breakdown.commitment.label}
           value={score.breakdown.commitment}
           maxValue={25}
-          icon={BREAKDOWN_LABELS.commitment.icon}
+          icon={c.breakdown.commitment.icon}
           delay={1.1}
         />
 
         <BreakdownBar
-          label={BREAKDOWN_LABELS.growth.label}
+          label={c.breakdown.growth.label}
           value={score.breakdown.growth}
           maxValue={25}
-          icon={BREAKDOWN_LABELS.growth.icon}
+          icon={c.breakdown.growth.icon}
           delay={1.2}
         />
       </motion.div>
 
-      {/* Insight based on lowest score */}
       <motion.div
         className="mt-6 p-4 bg-stone-800/30 light:bg-stone-200/30 rounded-xl border border-stone-700/50 light:border-stone-300/50"
         initial={{ opacity: 0 }}
@@ -332,14 +408,7 @@ export function TransformationScore({
               val < min.val ? { key, val } : min
             , { key: 'consistency', val: 25 });
 
-            const insights: Record<string, string> = {
-              consistency: 'Focus on building your streak. Showing up daily, even for just one lesson, compounds over time.',
-              depth: 'Try writing longer, more honest reflections. The insights you gain from deep reflection are where real change happens.',
-              commitment: 'Complete more lessons to strengthen this area. Each lesson is a brick in the foundation of your transformation.',
-              growth: 'Complete a monthly assessment to track your measurable progress. Seeing your growth visualized is powerful motivation.'
-            };
-
-            return insights[lowest.key];
+            return c.lowestInsights[lowest.key as keyof typeof c.lowestInsights];
           })()}
         </p>
       </motion.div>

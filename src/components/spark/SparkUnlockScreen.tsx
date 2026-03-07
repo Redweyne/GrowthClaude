@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from '@/i18n';
 
 interface SparkUnlockScreenProps {
   onEnterSpark: () => void;
@@ -21,6 +22,32 @@ const PARTICLES = [
 ] as const;
 
 export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenProps) {
+  const { locale } = useTranslation();
+  const copy = {
+    en: {
+      unlocked: "You've Unlocked",
+      description: 'Your daily feed of short, high-energy wisdom.',
+      subDescription: 'Swipe vertically, stay focused, and act on what resonates.',
+      enterSpark: 'Enter Spark',
+      maybeLater: 'Maybe later',
+    },
+    fr: {
+      unlocked: 'Vous avez débloqué',
+      description: "Votre flux quotidien de sagesse courte et puissante.",
+      subDescription: 'Glissez verticalement, restez concentré, puis passez à l’action.',
+      enterSpark: 'Entrer dans Spark',
+      maybeLater: 'Peut-être plus tard',
+    },
+    ar: {
+      unlocked: 'لقد فتحت',
+      description: 'خلاصتك اليومية من حكمة قصيرة وعالية الطاقة.',
+      subDescription: 'اسحب عمودياً، وابقَ مركزاً، وتصرف وفق ما يلامسك.',
+      enterSpark: 'الدخول إلى Spark',
+      maybeLater: 'ربما لاحقاً',
+    },
+  } as const;
+  const c = copy[locale] ?? copy.en;
+
   return (
     <div className="fixed inset-0 bg-black light:bg-stone-50 flex flex-col items-center justify-center overflow-hidden">
       <div
@@ -75,7 +102,7 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           transition={{ delay: 0.5 }}
         >
           <p className="text-amber-400/60 light:text-amber-600/60 text-xs font-medium tracking-[0.2em] uppercase mb-3">
-            You&apos;ve Unlocked
+            {c.unlocked}
           </p>
           <h1 className="text-6xl font-black text-white light:text-stone-900 mb-5 tracking-tight">
             SPARK
@@ -88,10 +115,10 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
           transition={{ delay: 0.7 }}
         >
           <p className="text-white/60 light:text-stone-700 text-base leading-relaxed mb-2">
-            Your daily feed of short, high-energy wisdom.
+            {c.description}
           </p>
           <p className="text-white/30 light:text-stone-500 text-sm leading-relaxed mb-10">
-            Swipe vertically, stay focused, and act on what resonates.
+            {c.subDescription}
           </p>
         </motion.div>
 
@@ -109,7 +136,7 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
             sound="celebrate"
           >
             <Zap size={20} className="mr-2" />
-            Enter Spark
+            {c.enterSpark}
             <ArrowRight size={18} className="ml-2" />
           </Button>
 
@@ -118,7 +145,7 @@ export function SparkUnlockScreen({ onEnterSpark, onSkip }: SparkUnlockScreenPro
             onClick={onSkip}
             className="text-white/20 light:text-stone-400 text-sm hover:text-white/40 light:hover:text-stone-600 transition-colors"
           >
-            Maybe later
+            {c.maybeLater}
           </button>
         </motion.div>
       </motion.div>

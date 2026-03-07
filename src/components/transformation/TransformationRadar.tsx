@@ -5,14 +5,14 @@ import { motion } from 'framer-motion';
 import { Heart, Target, Eye, Brain, TrendingUp, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { Card } from '@/components/ui';
 import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
-// Dimension configuration
 const DIMENSIONS = [
-  { key: 'emotionalMastery', label: 'Emotional Mastery', shortLabel: 'Emotions', icon: Heart, color: '#ec4899' },
-  { key: 'discipline', label: 'Discipline', shortLabel: 'Discipline', icon: Target, color: '#f59e0b' },
-  { key: 'perspective', label: 'Perspective', shortLabel: 'Perspective', icon: Eye, color: '#8b5cf6' },
-  { key: 'selfAwareness', label: 'Self-Awareness', shortLabel: 'Awareness', icon: Brain, color: '#06b6d4' },
-  { key: 'growth', label: 'Growth Mindset', shortLabel: 'Growth', icon: TrendingUp, color: '#10b981' },
+  { key: 'emotionalMastery', icon: Heart, color: '#ec4899' },
+  { key: 'discipline', icon: Target, color: '#f59e0b' },
+  { key: 'perspective', icon: Eye, color: '#8b5cf6' },
+  { key: 'selfAwareness', icon: Brain, color: '#06b6d4' },
+  { key: 'growth', icon: TrendingUp, color: '#10b981' },
 ] as const;
 
 type DimensionKey = typeof DIMENSIONS[number]['key'];
@@ -21,20 +21,20 @@ interface TransformationRadarProps {
   compact?: boolean;
 }
 
-// SVG Radar Chart Component
 function RadarChart({
   current,
   previous,
+  labels,
   size = 280
 }: {
   current: Record<DimensionKey, number> | null;
   previous: Record<DimensionKey, number> | null;
+  labels: Record<DimensionKey, string>;
   size?: number;
 }) {
   const center = size / 2;
   const radius = size / 2 - 40;
 
-  // Calculate point position on the radar
   const getPoint = (index: number, value: number, maxValue: number = 10) => {
     const angle = (Math.PI * 2 * index) / 5 - Math.PI / 2;
     const r = (value / maxValue) * radius;
@@ -44,7 +44,6 @@ function RadarChart({
     };
   };
 
-  // Generate polygon path
   const generatePath = (scores: Record<DimensionKey, number>) => {
     const points = DIMENSIONS.map((dim, i) => {
       const point = getPoint(i, scores[dim.key]);
@@ -53,18 +52,15 @@ function RadarChart({
     return `M${points.join(' L')} Z`;
   };
 
-  // Generate label positions
   const labelPositions = DIMENSIONS.map((dim, i) => {
-    const point = getPoint(i, 12); // Slightly outside the chart
+    const point = getPoint(i, 12);
     return { ...point, dim };
   });
 
-  // Generate grid circles
   const gridLevels = [2, 4, 6, 8, 10];
 
   return (
     <svg width={size} height={size} className="mx-auto">
-      {/* Grid circles */}
       {gridLevels.map((level) => (
         <circle
           key={level}
@@ -77,7 +73,6 @@ function RadarChart({
         />
       ))}
 
-      {/* Axis lines */}
       {DIMENSIONS.map((_, i) => {
         const point = getPoint(i, 10);
         return (
@@ -93,7 +88,6 @@ function RadarChart({
         );
       })}
 
-      {/* Previous assessment polygon (if exists) */}
       {previous && (
         <motion.path
           d={generatePath(previous)}
@@ -107,7 +101,6 @@ function RadarChart({
         />
       )}
 
-      {/* Current assessment polygon */}
       {current && (
         <motion.path
           d={generatePath(current)}
@@ -120,7 +113,6 @@ function RadarChart({
         />
       )}
 
-      {/* Dimension points */}
       {current && DIMENSIONS.map((dim, i) => {
         const point = getPoint(i, current[dim.key]);
         return (
@@ -139,7 +131,6 @@ function RadarChart({
         );
       })}
 
-      {/* Labels */}
       {labelPositions.map(({ x, y, dim }) => (
         <text
           key={dim.key}
@@ -149,11 +140,10 @@ function RadarChart({
           dominantBaseline="middle"
           className="text-[10px] fill-stone-400 light:fill-stone-600 font-medium"
         >
-          {dim.shortLabel}
+          {labels[dim.key]}
         </text>
       ))}
 
-      {/* Center score */}
       {current && (
         <motion.text
           x={center}
@@ -173,11 +163,89 @@ function RadarChart({
 }
 
 export function TransformationRadar({ compact = false }: TransformationRadarProps) {
+  const { locale } = useTranslation();
   const { getAssessmentComparison } = useStore();
+
+  const copy = {
+    en: {
+      labels: {
+        emotionalMastery: { full: 'Emotional Mastery', short: 'Emotions' },
+        discipline: { full: 'Discipline', short: 'Discipline' },
+        perspective: { full: 'Perspective', short: 'Perspective' },
+        selfAwareness: { full: 'Self-Awareness', short: 'Awareness' },
+        growth: { full: 'Growth Mindset', short: 'Growth' },
+      },
+      noAssessments: 'No Assessments Yet',
+      noAssessmentsBody: 'Complete your first monthly assessment to see your transformation visualized.',
+      noAssessmentsQuote: '"No man is free who is not master of himself." - Epictetus',
+      yourGrowth: 'Your Growth',
+      yourTransformation: 'Your Transformation',
+      visualProof: 'Visual proof of your growth journey',
+      currentMonth: 'Current Month',
+      lastMonth: 'Last Month',
+      dimensionBreakdown: 'Dimension Breakdown',
+      monthOverMonth: 'Month Over Month',
+      challengingMonth: 'This month was challenging. Remember: setbacks are part of growth. The Stoics teach us to learn from every experience.',
+      steadyMonth: 'You maintained steady progress this month. Consistency is the foundation of transformation.',
+      yourReflection: 'Your Reflection',
+      avgGrowth: "You've grown {avg} points on average. Your biggest improvement was in {label} (+{gain}).",
+    },
+    fr: {
+      labels: {
+        emotionalMastery: { full: 'Maîtrise émotionnelle', short: 'Émotions' },
+        discipline: { full: 'Discipline', short: 'Discipline' },
+        perspective: { full: 'Perspective', short: 'Perspective' },
+        selfAwareness: { full: 'Conscience de soi', short: 'Conscience' },
+        growth: { full: 'Mentalité de croissance', short: 'Croissance' },
+      },
+      noAssessments: 'Aucune évaluation pour le moment',
+      noAssessmentsBody: 'Complétez votre première évaluation mensuelle pour visualiser votre transformation.',
+      noAssessmentsQuote: '"Nul homme n est libre s il n est pas maître de lui-même." - Épictète',
+      yourGrowth: 'Votre progression',
+      yourTransformation: 'Votre transformation',
+      visualProof: 'Preuve visuelle de votre progression',
+      currentMonth: 'Mois actuel',
+      lastMonth: 'Mois précédent',
+      dimensionBreakdown: 'Détail des dimensions',
+      monthOverMonth: 'Mois après mois',
+      challengingMonth: 'Ce mois-ci a été difficile. Rappelez-vous: les revers font partie de la progression.',
+      steadyMonth: 'Vous avez maintenu une progression régulière ce mois-ci. La constance est la base de la transformation.',
+      yourReflection: 'Votre réflexion',
+      avgGrowth: 'Vous avez gagné en moyenne {avg} points. Votre plus forte progression est {label} (+{gain}).',
+    },
+    ar: {
+      labels: {
+        emotionalMastery: { full: 'التمكن العاطفي', short: 'العاطفة' },
+        discipline: { full: 'الانضباط', short: 'الانضباط' },
+        perspective: { full: 'المنظور', short: 'المنظور' },
+        selfAwareness: { full: 'الوعي الذاتي', short: 'الوعي' },
+        growth: { full: 'عقلية النمو', short: 'النمو' },
+      },
+      noAssessments: 'لا توجد تقييمات بعد',
+      noAssessmentsBody: 'أكمل أول تقييم شهري لرؤية تحوّلك بشكل مرئي.',
+      noAssessmentsQuote: '"لا يكون الإنسان حراً إن لم يكن سيد نفسه." - إبكتيتوس',
+      yourGrowth: 'نموك',
+      yourTransformation: 'تحوّلك',
+      visualProof: 'دليل بصري على رحلة نموك',
+      currentMonth: 'الشهر الحالي',
+      lastMonth: 'الشهر الماضي',
+      dimensionBreakdown: 'تفصيل الأبعاد',
+      monthOverMonth: 'مقارنة شهرية',
+      challengingMonth: 'كان هذا الشهر صعباً. تذكّر أن الانتكاسات جزء من النمو.',
+      steadyMonth: 'حافظت على تقدم ثابت هذا الشهر. الاستمرارية أساس التحول.',
+      yourReflection: 'تأملك',
+      avgGrowth: 'لقد تطورت بمعدل {avg} نقطة. أكبر تحسن كان في {label} (+{gain}).',
+    },
+  } as const;
+
+  const c = copy[locale] ?? copy.en;
+  const localeTag = locale === 'ar' ? 'ar' : locale === 'fr' ? 'fr-FR' : 'en-US';
+
+  const formatDate = (date: string | Date, options: Intl.DateTimeFormatOptions) =>
+    new Date(date).toLocaleDateString(localeTag, options);
 
   const { current, previous } = useMemo(() => getAssessmentComparison(), [getAssessmentComparison]);
 
-  // Calculate changes between current and previous
   const changes = useMemo(() => {
     if (!current || !previous) return null;
 
@@ -185,36 +253,33 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
       const change = current.scores[dim.key] - previous.scores[dim.key];
       return {
         key: dim.key,
-        label: dim.label,
+        label: c.labels[dim.key].full,
         icon: dim.icon,
         color: dim.color,
         current: current.scores[dim.key],
         previous: previous.scores[dim.key],
         change,
-        trend: change > 0 ? 'up' : change < 0 ? 'down' : 'stable',
       };
     });
-  }, [current, previous]);
+  }, [c.labels, current, previous]);
 
-  // No data state
   if (!current) {
     return (
       <Card variant="glass" padding="lg" className="text-center">
         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center">
           <TrendingUp size={32} className="text-stone-600 light:text-stone-500" />
         </div>
-        <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">No Assessments Yet</h3>
+        <h3 className="text-lg font-medium text-white light:text-stone-900 mb-2">{c.noAssessments}</h3>
         <p className="text-sm text-stone-500 light:text-stone-500 mb-4">
-          Complete your first monthly assessment to see your transformation visualized.
+          {c.noAssessmentsBody}
         </p>
         <p className="text-xs text-stone-600 light:text-stone-500 italic">
-          &quot;No man is free who is not master of himself.&quot; — Epictetus
+          {c.noAssessmentsQuote}
         </p>
       </Card>
     );
   }
 
-  // Compact view
   if (compact) {
     const averageScore = Object.values(current.scores).reduce((a, b) => a + b, 0) / 5;
     const averageChange = previous
@@ -224,9 +289,9 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
     return (
       <Card variant="glass" padding="md">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-white light:text-stone-900">Your Growth</h3>
+          <h3 className="text-sm font-medium text-white light:text-stone-900">{c.yourGrowth}</h3>
           <span className="text-xs text-stone-500 light:text-stone-500">
-            {new Date(current.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+            {formatDate(current.date, { month: 'short', year: 'numeric' })}
           </span>
         </div>
 
@@ -267,42 +332,44 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
     );
   }
 
-  // Full view
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">Your Transformation</h2>
+        <h2 className="text-2xl font-bold text-white light:text-stone-900 mb-2">{c.yourTransformation}</h2>
         <p className="text-stone-400 light:text-stone-600">
-          Visual proof of your growth journey
+          {c.visualProof}
         </p>
       </div>
 
-      {/* Radar Chart */}
       <Card variant="glass" padding="lg">
         <RadarChart
           current={current.scores}
           previous={previous?.scores || null}
+          labels={{
+            emotionalMastery: c.labels.emotionalMastery.short,
+            discipline: c.labels.discipline.short,
+            perspective: c.labels.perspective.short,
+            selfAwareness: c.labels.selfAwareness.short,
+            growth: c.labels.growth.short,
+          }}
         />
 
-        {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span className="text-xs text-stone-400 light:text-stone-600">Current Month</span>
+            <span className="text-xs text-stone-400 light:text-stone-600">{c.currentMonth}</span>
           </div>
           {previous && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-purple-500 opacity-50" />
-              <span className="text-xs text-stone-400 light:text-stone-600">Last Month</span>
+              <span className="text-xs text-stone-400 light:text-stone-600">{c.lastMonth}</span>
             </div>
           )}
         </div>
       </Card>
 
-      {/* Dimension Breakdown */}
       <Card variant="glass" padding="lg">
-        <h3 className="font-medium text-white light:text-stone-900 mb-4">Dimension Breakdown</h3>
+        <h3 className="font-medium text-white light:text-stone-900 mb-4">{c.dimensionBreakdown}</h3>
         <div className="space-y-4">
           {DIMENSIONS.map((dim, index) => {
             const Icon = dim.icon;
@@ -327,7 +394,7 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
 
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-white light:text-stone-900 font-medium">{dim.label}</span>
+                    <span className="text-white light:text-stone-900 font-medium">{c.labels[dim.key].full}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-white light:text-stone-900 font-bold">{score}</span>
                       {change !== null && change !== 0 && (
@@ -361,14 +428,13 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
         </div>
       </Card>
 
-      {/* Month Comparison */}
       {previous && (
         <Card variant="glass" padding="lg">
-          <h3 className="font-medium text-white light:text-stone-900 mb-4">Month Over Month</h3>
+          <h3 className="font-medium text-white light:text-stone-900 mb-4">{c.monthOverMonth}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 text-center">
               <p className="text-xs text-stone-500 light:text-stone-500 mb-1">
-                {new Date(previous.date).toLocaleDateString('en-US', { month: 'long' })}
+                {formatDate(previous.date, { month: 'long' })}
               </p>
               <p className="text-2xl font-bold text-purple-400">
                 {(Object.values(previous.scores).reduce((a, b) => a + b, 0) / 5).toFixed(1)}
@@ -376,7 +442,7 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
             </div>
             <div className="p-4 rounded-xl bg-stone-800/50 light:bg-stone-200/50 text-center">
               <p className="text-xs text-stone-500 light:text-stone-500 mb-1">
-                {new Date(current.date).toLocaleDateString('en-US', { month: 'long' })}
+                {formatDate(current.date, { month: 'long' })}
               </p>
               <p className="text-2xl font-bold text-emerald-400">
                 {(Object.values(current.scores).reduce((a, b) => a + b, 0) / 5).toFixed(1)}
@@ -384,21 +450,24 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
             </div>
           </div>
 
-          {/* Growth insight */}
           {changes && (
             <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-purple-500/10 border border-emerald-500/20">
               <p className="text-sm text-emerald-300">
                 {(() => {
-                  const totalChange = changes.reduce((sum, c) => sum + c.change, 0);
+                  const totalChange = changes.reduce((sum, item) => sum + item.change, 0);
                   const avgChange = totalChange / 5;
-                  const bestGain = changes.reduce((best, c) => c.change > best.change ? c : best);
+                  const bestGain = changes.reduce((best, item) => (item.change > best.change ? item : best));
 
                   if (avgChange > 0) {
-                    return `You've grown ${avgChange.toFixed(1)} points on average. Your biggest improvement was in ${bestGain.label} (+${bestGain.change}).`;
-                  } else if (avgChange < 0) {
-                    return `This month was challenging. Remember: setbacks are part of growth. The Stoics teach us to learn from every experience.`;
+                    return c.avgGrowth
+                      .replace('{avg}', avgChange.toFixed(1))
+                      .replace('{label}', bestGain.label)
+                      .replace('{gain}', String(bestGain.change));
                   }
-                  return `You maintained steady progress this month. Consistency is the foundation of transformation.`;
+                  if (avgChange < 0) {
+                    return c.challengingMonth;
+                  }
+                  return c.steadyMonth;
                 })()}
               </p>
             </div>
@@ -406,13 +475,12 @@ export function TransformationRadar({ compact = false }: TransformationRadarProp
         </Card>
       )}
 
-      {/* Reflection */}
       {current.reflection && (
         <Card variant="glass" padding="lg">
-          <h3 className="font-medium text-white light:text-stone-900 mb-3">Your Reflection</h3>
-          <p className="text-stone-300 light:text-stone-700 italic">&quot;{current.reflection}&quot;</p>
+          <h3 className="font-medium text-white light:text-stone-900 mb-3">{c.yourReflection}</h3>
+          <p className="text-stone-300 light:text-stone-700 italic">"{current.reflection}"</p>
           <p className="text-xs text-stone-500 light:text-stone-500 mt-2">
-            — {new Date(current.date).toLocaleDateString('en-US', {
+            - {formatDate(current.date, {
               month: 'long',
               day: 'numeric',
               year: 'numeric'

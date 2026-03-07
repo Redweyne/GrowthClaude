@@ -37,7 +37,7 @@ export function HeroGreeting({
   worldName,
   onOpenSettings,
 }: HeroGreetingProps) {
-  const { t, isRTL } = useTranslation();
+  const { t, isRTL, locale } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   const greetingResult = useMemo(() => {
@@ -50,8 +50,8 @@ export function HeroGreeting({
       lastLessonCoreTag,
       transformationGoal,
     };
-    return generateGreeting(ctx);
-  }, [name, streak, longestStreak, totalLessons, lastLessonDate, lastLessonCoreTag, transformationGoal, t]);
+    return generateGreeting(ctx, locale);
+  }, [locale, name, streak, longestStreak, totalLessons, lastLessonDate, lastLessonCoreTag, transformationGoal, t]);
 
   useEffect(() => {
     setMounted(true);

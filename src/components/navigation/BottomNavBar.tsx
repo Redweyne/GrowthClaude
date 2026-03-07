@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Home, Compass, Globe, Zap, ListChecks, MessageCircleHeart, User } from 'lucide-react';
 import { useSparkStore } from '@/store/useSparkStore';
+import { useTranslation } from '@/i18n';
 
 export type NavTab = 'home' | 'journey' | 'worlds' | 'spark' | 'tasks' | 'echoes' | 'profile';
 
@@ -13,15 +14,45 @@ interface BottomNavBarProps {
   unreadEchoCount?: number;
 }
 
-const TABS: { id: NavTab; label: string; icon: typeof Home }[] = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'journey', label: 'Journey', icon: Compass },
-  { id: 'worlds', label: 'Worlds', icon: Globe },
-  { id: 'spark', label: 'Spark', icon: Zap },
-  { id: 'tasks', label: 'Tasks', icon: ListChecks },
-  { id: 'echoes', label: 'Echoes', icon: MessageCircleHeart },
-  { id: 'profile', label: 'Profile', icon: User },
+const TABS: { id: NavTab; icon: typeof Home }[] = [
+  { id: 'home', icon: Home },
+  { id: 'journey', icon: Compass },
+  { id: 'worlds', icon: Globe },
+  { id: 'spark', icon: Zap },
+  { id: 'tasks', icon: ListChecks },
+  { id: 'echoes', icon: MessageCircleHeart },
+  { id: 'profile', icon: User },
 ];
+
+const COPY_BY_LOCALE = {
+  en: {
+    home: 'Home',
+    journey: 'Journey',
+    worlds: 'Worlds',
+    spark: 'Spark',
+    tasks: 'Tasks',
+    echoes: 'Echoes',
+    profile: 'Profile',
+  },
+  fr: {
+    home: 'Accueil',
+    journey: 'Parcours',
+    worlds: 'Mondes',
+    spark: 'Étincelle',
+    tasks: 'Tâches',
+    echoes: 'Échos',
+    profile: 'Profil',
+  },
+  ar: {
+    home: 'الرئيسية',
+    journey: 'الرحلة',
+    worlds: 'العوالم',
+    spark: 'الشرارة',
+    tasks: 'المهام',
+    echoes: 'الأصداء',
+    profile: 'الملف الشخصي',
+  },
+} as const;
 
 export function BottomNavBar({
   activeTab,
@@ -30,7 +61,9 @@ export function BottomNavBar({
   unreadEchoCount = 0,
 }: BottomNavBarProps) {
   const { isForcedClosedToday } = useSparkStore();
+  const { locale } = useTranslation();
   const sparkForcedClosed = isForcedClosedToday();
+  const copy = COPY_BY_LOCALE[locale] ?? COPY_BY_LOCALE.en;
 
   return (
     <nav
@@ -57,7 +90,7 @@ export function BottomNavBar({
                 type="button"
                 onClick={() => onTabChange(tab.id)}
                 className="relative flex flex-col items-center -mt-4"
-                aria-label="Spark"
+                aria-label={copy.spark}
               >
                 <motion.div
                   className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${
@@ -107,11 +140,13 @@ export function BottomNavBar({
                         : 'text-stone-400 light:text-stone-600'
                   }`}
                 >
-                  Spark
+                  {copy.spark}
                 </span>
               </button>
             );
           }
+
+          const label = copy[tab.id];
 
           return (
             <button
@@ -119,7 +154,7 @@ export function BottomNavBar({
               type="button"
               onClick={() => onTabChange(tab.id)}
               className="relative flex flex-col items-center py-2 px-1 min-w-[44px]"
-              aria-label={tab.label}
+              aria-label={label}
             >
               <motion.div
                 className="relative"
@@ -154,7 +189,7 @@ export function BottomNavBar({
                   isActive ? 'text-white light:text-stone-900' : 'text-stone-600 light:text-stone-700'
                 }`}
               >
-                {tab.label}
+                {label}
               </span>
 
               {isActive && (
