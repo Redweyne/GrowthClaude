@@ -14,7 +14,8 @@ import { CoachModal, CoachingStep } from '@/components/coaching';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { SignupModal } from '@/components/auth/SignupModal';
 import { ExerciseExperience } from '@/components/exercises/ExerciseExperience';
-import { WorldMap, WorldSwitcher } from '@/components/world';
+import { WorldSwitcher } from '@/components/world';
+import { JourneyPage } from '@/components/journey';
 import { FlexibleLessonExperience } from '@/components/lesson/FlexibleLessonExperience';
 import { LessonPreview } from '@/components/lesson/LessonPreview';
 import { PracticeMode } from '@/components/practice';
@@ -804,12 +805,12 @@ export default function Home() {
     );
   }
 
-  // World map - use active world
+  // Journey — immersive chapter-by-chapter map
   if (currentView === 'map') {
     return (
-      <div className="h-[100dvh] flex flex-col overflow-hidden">
+      <div className="h-[100dvh] flex flex-col overflow-hidden bg-[#020106]">
         <main className="flex-1 overflow-y-auto overscroll-contain">
-          <WorldMap world={activeWorld} onSelectLesson={handleSelectLesson} />
+          <JourneyPage world={activeWorld} onSelectLesson={handleSelectLesson} />
         </main>
         <BottomNavBar
           activeTab="journey"
