@@ -5,6 +5,8 @@ import { memo } from 'react';
 import { Lock } from 'lucide-react';
 import type { WorldDisplay } from '@/content/worldsData';
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 interface WorldOrbProps {
   world: WorldDisplay;
   locale: string;
@@ -112,7 +114,7 @@ export const WorldOrb = memo(function WorldOrb({
           {/* World illustration */}
           <div className={`relative ${imageSize} z-10`}>
             <img
-              src={world.imagePath}
+              src={`${basePath}${world.imagePath}`}
               alt={name}
               className={`w-full h-full object-contain drop-shadow-2xl ${
                 isLocked ? 'grayscale opacity-50' : isComingSoon ? 'opacity-80' : ''
