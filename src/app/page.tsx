@@ -39,6 +39,7 @@ import { useSparkStore } from '@/store/useSparkStore';
 import { BottomNavBar, type NavTab } from '@/components/navigation/BottomNavBar';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useActivityLog } from '@/providers/ActivityLoggerProvider';
+import { WorldsPage } from '@/components/worlds/WorldsPage';
 
 type AppView =
   | 'home'
@@ -133,28 +134,34 @@ export default function Home() {
   const { locale } = useTranslation();
   const copy = {
     en: {
-      worldsTitle: 'Wisdom Worlds',
-      worldsBody: 'Explore different worlds of wisdom, each with unique lessons and perspectives.',
+      worldsTitle: 'Your Journey',
+      worldsSubtitle: 'Choose the world you wish to grow in next',
+      continueJourney: 'Continue Journey',
       comingSoon: 'Coming Soon',
-      inDevelopment: 'This feature is currently under development',
+      locked: 'Locked',
+      lessons: 'Lessons',
       friend: 'Friend',
       practiceFallback: 'Practice',
       growthJourney: 'Growth Journey',
     },
     fr: {
-      worldsTitle: 'Mondes de sagesse',
-      worldsBody: 'Explorez différents mondes de sagesse, chacun avec ses leçons et perspectives uniques.',
+      worldsTitle: 'Votre Voyage',
+      worldsSubtitle: 'Choisissez le monde dans lequel vous souhaitez grandir',
+      continueJourney: 'Continuer le voyage',
       comingSoon: 'Bientôt disponible',
-      inDevelopment: 'Cette fonctionnalité est en cours de développement',
+      locked: 'Verrouillé',
+      lessons: 'Leçons',
       friend: 'Ami',
       practiceFallback: 'Pratique',
       growthJourney: 'Parcours de croissance',
     },
     ar: {
-      worldsTitle: 'عوالم الحكمة',
-      worldsBody: 'استكشف عوالم مختلفة من الحكمة، لكل عالم دروسه ورؤاه الخاصة.',
+      worldsTitle: 'رحلتك',
+      worldsSubtitle: 'اختر العالم الذي تريد أن تنمو فيه',
+      continueJourney: 'متابعة الرحلة',
       comingSoon: 'قريباً',
-      inDevelopment: 'هذه الميزة قيد التطوير حالياً',
+      locked: 'مقفل',
+      lessons: 'دروس',
       friend: 'صديق',
       practiceFallback: 'ممارسة',
       growthJourney: 'رحلة النمو',
@@ -696,23 +703,23 @@ export default function Home() {
     );
   }
 
-  // Worlds — wisdom worlds (coming soon)
+  // Worlds — world selection page
   if (currentView === 'worlds') {
     return (
-      <div className="h-[100dvh] flex flex-col overflow-hidden">
-        <main className="flex-1 min-h-0 flex flex-col items-center justify-center bg-stone-950 light:bg-stone-50 px-6 text-center"
-          style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}
-        >
-          <div className="text-6xl mb-6">🌍</div>
-          <h1 className="text-2xl font-bold text-white light:text-stone-900 mb-3">{c.worldsTitle}</h1>
-          <p className="text-stone-400 light:text-stone-500 text-base max-w-xs leading-relaxed">
-            {c.worldsBody}
-          </p>
-          <div className="mt-8 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-            <p className="text-amber-400 light:text-amber-600 text-sm font-semibold">{c.comingSoon}</p>
-            <p className="text-stone-500 light:text-stone-400 text-xs mt-1">{c.inDevelopment}</p>
-          </div>
-        </main>
+      <div className="h-[100dvh] flex flex-col overflow-hidden bg-[#020106]">
+        <WorldsPage
+          locale={locale}
+          completedLessons={completedLessons}
+          onContinueJourney={() => setCurrentView('map')}
+          copy={{
+            title: c.worldsTitle,
+            subtitle: c.worldsSubtitle,
+            continueJourney: c.continueJourney,
+            comingSoon: c.comingSoon,
+            locked: c.locked,
+            lessons: c.lessons,
+          }}
+        />
         <BottomNavBar
           activeTab="worlds"
           onTabChange={handleTabChange}
