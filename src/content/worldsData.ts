@@ -45,7 +45,7 @@ export const worldsDisplayData: WorldDisplay[] = [
       ar: 'معرفة خالدة لليوم',
     },
     status: 'active',
-    imagePath: '/images/worlds/modern wisdom.png',
+    imagePath: '/images/worlds/modern-wisdom.png',
     totalLessons: 15,
     themeColor: {
       primary: '#fbbf24',
@@ -93,7 +93,7 @@ export const worldsDisplayData: WorldDisplay[] = [
       ar: 'اعثر على سكينتك',
     },
     status: 'coming-soon',
-    imagePath: '/images/worlds/inner peace.png',
+    imagePath: '/images/worlds/inner-peace.png',
     totalLessons: 15,
     themeColor: {
       primary: '#c084fc',
