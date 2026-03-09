@@ -4,12 +4,13 @@ import { memo, useMemo } from 'react';
 import { CosmicBackground } from '@/components/effects/CosmicBackground';
 import { WorldHeader } from './WorldHeader';
 import { ChapterSection } from './ChapterSection';
-import { modernWisdomChapterThemes } from '@/lib/chapterThemes';
+import { getChapterThemesForWorld } from '@/lib/chapterThemes';
 import { useStore } from '@/store/useStore';
 import { useTranslation } from '@/i18n';
 
 // Same generic interface as the old WorldMap for compatibility
 interface MapWorld {
+  slug?: string;
   name: string;
   subtitle: string;
   chapters: Array<{
@@ -110,7 +111,8 @@ export const JourneyPage = memo(function JourneyPage({
 
         {/* Chapter sections */}
         {world.chapters.map((chapter, index) => {
-          const theme = modernWisdomChapterThemes[index] || modernWisdomChapterThemes[0];
+          const chapterThemes = getChapterThemesForWorld(world.slug || 'modern-wisdom');
+          const theme = chapterThemes[index] || chapterThemes[0];
           const accessible = isChapterAccessible(index);
           const globalOffset = getGlobalOffset(index);
 

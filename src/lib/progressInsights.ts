@@ -380,7 +380,7 @@ export function generateJourneyMilestones(ctx: ProgressContext, locale: string =
       type: 'first-lesson',
       title: copy.beginning.title,
       description: copy.beginning.description,
-      icon: 'ðŸŒ±',
+      icon: '🌱',
       significance: 'transformative'
     });
   }

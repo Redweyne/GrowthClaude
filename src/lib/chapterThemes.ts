@@ -78,3 +78,72 @@ export const modernWisdomChapterThemes: ChapterTheme[] = [
     backgroundImage: '/images/journey/ch-relationships.png',
   },
 ];
+
+// Chapter themes for Stoicism
+export const stoicismChapterThemes: ChapterTheme[] = [
+  {
+    // Chapter 1: Perception — deep indigo, temple of the mind
+    id: 'perception',
+    colors: {
+      primary: '#818cf8',
+      glow: 'rgba(129, 140, 248, 0.4)',
+      gradientFrom: 'rgba(49, 46, 129, 0.6)',
+      gradientVia: 'rgba(30, 27, 75, 0.4)',
+      gradientTo: 'rgba(5, 5, 20, 0.9)',
+      fog: 'rgba(129, 140, 248, 0.06)',
+      accent: '#6366f1',
+      text: '#e0e7ff',
+      mutedText: '#94a3b8',
+      nodeBg: 'rgba(129, 140, 248, 0.12)',
+      nodeActiveBorder: '#818cf8',
+    },
+    backgroundImage: '/images/journey/ch-foundations.png',
+  },
+  {
+    // Chapter 2: The Philosopher's Fire — ember orange-red
+    id: 'philosophers-fire',
+    colors: {
+      primary: '#f97316',
+      glow: 'rgba(249, 115, 22, 0.4)',
+      gradientFrom: 'rgba(124, 45, 18, 0.6)',
+      gradientVia: 'rgba(65, 25, 10, 0.4)',
+      gradientTo: 'rgba(10, 5, 3, 0.9)',
+      fog: 'rgba(249, 115, 22, 0.06)',
+      accent: '#ea580c',
+      text: '#ffedd5',
+      mutedText: '#a8a29e',
+      nodeBg: 'rgba(249, 115, 22, 0.12)',
+      nodeActiveBorder: '#f97316',
+    },
+    backgroundImage: '/images/journey/ch-resilience.png',
+  },
+  {
+    // Chapter 3: Citizen of the Cosmos — cosmic violet-blue
+    id: 'citizen-of-cosmos',
+    colors: {
+      primary: '#a78bfa',
+      glow: 'rgba(167, 139, 250, 0.35)',
+      gradientFrom: 'rgba(76, 29, 149, 0.5)',
+      gradientVia: 'rgba(40, 15, 80, 0.35)',
+      gradientTo: 'rgba(5, 3, 15, 0.9)',
+      fog: 'rgba(167, 139, 250, 0.05)',
+      accent: '#8b5cf6',
+      text: '#ede9fe',
+      mutedText: '#c4b5fd',
+      nodeBg: 'rgba(167, 139, 250, 0.12)',
+      nodeActiveBorder: '#a78bfa',
+    },
+    backgroundImage: '/images/journey/ch-relationships.png',
+  },
+];
+
+// Get chapter themes for a given world
+export function getChapterThemesForWorld(worldSlug: string): ChapterTheme[] {
+  switch (worldSlug) {
+    case 'stoicism':
+      return stoicismChapterThemes;
+    case 'modern-wisdom':
+    default:
+      return modernWisdomChapterThemes;
+  }
+}
