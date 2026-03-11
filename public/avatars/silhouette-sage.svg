@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Elder sage with staff and flowing robes -->
+  <path fill="#ffffff" d="M105 8c-13 0-24 11-24 24s11 24 24 24 24-11 24-24S118 8 105 8z"/>
+  <path fill="#ffffff" d="M105 62c-6 0-12 2-16 6L65 88c-5 4-6 10-4 16l14 42-12 34c-2 5 1 10 6 12 1 0 3 1 4 1 4 0 7-2 9-6l14-38c1-3 1-6 0-9l-8-26 18-14v92c0 5 4 9 9 9s9-4 9-9v-42h8v42c0 5 4 9 9 9s9-4 9-9V99l6 12c2 4 6 5 10 4 4-2 6-6 4-10l-14-30c-4-8-12-13-20-13h-18z"/>
+  <path fill="#ffffff" d="M42 42c-4 0-7 3-7 7v142c0 4 3 7 7 7s7-3 7-7V49c0-4-3-7-7-7z"/>
+  <path fill="#ffffff" d="M42 28c-5 0-9 4-9 9s4 9 9 9 9-4 9-9-4-9-9-9z"/>
+</svg>

@@ -636,6 +636,55 @@ const ar = {
     saving: 'جارٍ الحفظ...',
     chooseGradient: 'اختر تدرج لونى لصورتك الرمزية',
     choosePhilosophicalAvatar: 'اختر صورة رمزية فلسفية',
+    // Tabs
+    tabOverview: 'نظرة عامة',
+    tabFrames: 'الإطارات',
+    tabBadges: 'الشارات',
+    tabJourney: 'الرحلة',
+    // Frames
+    frames: 'الإطارات',
+    framesDesc: 'جهّز إطاراً لتخصيص حلقة صورتك الرمزية',
+    supporterExclusive: 'حصري للداعمين',
+    frameEquippedNote: 'انقر على إطارك مرة أخرى لاستخدام الإطار التلقائي',
+    frameAutoNote: 'يتم تعيين إطارك تلقائياً بناءً على مستواك',
+    // Badges
+    myBadges: 'شاراتي',
+    featuredBadge: 'الشارة المميزة',
+    setFeaturedBadge: 'تعيين كمميزة',
+    unfeaturedBadge: 'إزالة التمييز',
+    earnedOn: 'حصلت عليها في',
+    keepGoingToUnlock: 'استمر لفتح هذه الشارة',
+    badgeCatStreak: 'السلسلة',
+    badgeCatWorlds: 'العوالم',
+    badgeCatSocial: 'اجتماعي',
+    badgeCatMastery: 'إتقان',
+    badgeCatSpecial: 'خاص',
+    // Journey / Timeline
+    transformationTimeline: 'خط زمني للتحول',
+    noJourneyYet: 'ستظهر رحلتك هنا مع تقدمك',
+    showLess: 'عرض أقل',
+    showAllEvents: 'عرض جميع الأحداث ({count})',
+    myEvolution: 'تطوري',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TIMELINE
+  // ─────────────────────────────────────────────────────────────────────────
+  timeline: {
+    journeyBegan: 'بداية الرحلة',
+    journeyBeganDesc: 'خطوت أولى خطواتك على طريق التحول.',
+    firstLesson: 'أول درس مكتمل',
+    firstLessonDesc: 'أكملت درسك الأول.',
+    streakMilestone: 'سلسلة {days} يوم',
+    streakDesc: 'حافظت على سلسلة {days} يوم من الممارسة اليومية.',
+    streakDescApprox: 'حافظت على سلسلة {days} يوم من الممارسة اليومية. (تقريبي)',
+    levelUp: 'وصلت للمستوى {level}: {levelTitle}',
+    levelUpDesc: 'تقدمت إلى {levelTitle} بـ {minXp} XP.',
+    levelUpDescApprox: 'تقدمت إلى {levelTitle} بـ {minXp} XP. (تقريبي)',
+    identityStatement: 'بيان الهوية',
+    badgeUnlocked: 'شارة مفتوحة: {badgeName}',
+    firstCheckin: 'أول مراجعة أسبوعية',
+    firstCheckinDesc: 'تأملت في أسبوعك الأول من الممارسة.',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

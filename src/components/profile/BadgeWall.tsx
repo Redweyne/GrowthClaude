@@ -2,11 +2,13 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Lock } from 'lucide-react';
+import { X, Lock, Star } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { ALL_BADGES, type BadgeDefinition, type BadgeRarity } from '@/types/profile';
 import { getBadgeDisplayList, type BadgeCheckContext } from '@/lib/badgeEngine';
 import type { BadgeEarnedRecord } from '@/types/profile';
+import { useStore } from '@/store/useStore';
+import { useTranslation } from '@/i18n';
 
 interface BadgeWallProps {
   ctx: BadgeCheckContext;
@@ -19,6 +21,10 @@ export function BadgeWall({ ctx, earned }: BadgeWallProps) {
     isEarned: boolean;
     earnedAt: string | null;
   } | null>(null);
+
+  const featuredBadgeId = useStore(s => s.featuredBadgeId);
+  const setFeaturedBadge = useStore(s => s.setFeaturedBadge);
+  const { t } = useTranslation();
 
   const badges = useMemo(() => getBadgeDisplayList(ctx, earned), [ctx, earned]);
 
@@ -33,23 +39,35 @@ export function BadgeWall({ ctx, earned }: BadgeWallProps) {
   }, [badges]);
 
   const categoryLabels: Record<string, string> = {
-    streak: 'Streak',
-    world: 'Worlds',
-    social: 'Social',
-    mastery: 'Mastery',
-    special: 'Special',
+    streak: t('profilePage.badgeCatStreak'),
+    world: t('profilePage.badgeCatWorlds'),
+    social: t('profilePage.badgeCatSocial'),
+    mastery: t('profilePage.badgeCatMastery'),
+    special: t('profilePage.badgeCatSpecial'),
   };
+
+  const earnedCount = useMemo(() => badges.filter(b => b.isEarned).length, [badges]);
 
   return (
     <motion.div
-      className="px-5 mt-6"
+      className="px-5 mt-5"
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.45 }}
+      transition={{ delay: 0.1 }}
     >
-      <h3 className="text-sm font-medium uppercase tracking-wider text-stone-500 mb-3">
-        My Badges
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium uppercase tracking-wider text-stone-500">
+          {t('profilePage.myBadges')}
+        </h3>
+        <span className="text-xs text-stone-600">
+          {earnedCount}/{badges.length}
+        </span>
+      </div>
+
+      {/* Featured badge callout */}
+      {featuredBadgeId && (
+        <FeaturedBadgeDisplay badgeId={featuredBadgeId} earned={earned} />
+      )}
 
       {Array.from(categories.entries()).map(([cat, items]) => (
         <div key={cat} className="mb-4">
@@ -61,6 +79,7 @@ export function BadgeWall({ ctx, earned }: BadgeWallProps) {
                 badge={badge}
                 isEarned={isEarned}
                 earnedAt={earnedAt}
+                isFeatured={featuredBadgeId === badge.id}
                 onClick={() => setSelectedBadge({ badge, isEarned, earnedAt })}
               />
             ))}
@@ -75,11 +94,50 @@ export function BadgeWall({ ctx, earned }: BadgeWallProps) {
             badge={selectedBadge.badge}
             isEarned={selectedBadge.isEarned}
             earnedAt={selectedBadge.earnedAt}
+            isFeatured={featuredBadgeId === selectedBadge.badge.id}
+            onSetFeatured={() => {
+              if (selectedBadge.isEarned) {
+                setFeaturedBadge(
+                  featuredBadgeId === selectedBadge.badge.id ? null : selectedBadge.badge.id
+                );
+              }
+            }}
             onClose={() => setSelectedBadge(null)}
           />
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// FEATURED BADGE DISPLAY
+// ─────────────────────────────────────────────
+
+function FeaturedBadgeDisplay({ badgeId, earned }: { badgeId: string; earned: BadgeEarnedRecord[] }) {
+  const def = ALL_BADGES.find(b => b.id === badgeId);
+  const record = earned.find(b => b.badgeId === badgeId);
+  const { t } = useTranslation();
+  if (!def || !record) return null;
+
+  const IconComponent = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[def.icon] || Icons.Award;
+  const rarityColors = getRarityColors(def.rarity);
+
+  return (
+    <div className="mb-4 p-3 rounded-xl border border-amber-800/30 flex items-center gap-3" style={{ backgroundColor: 'var(--profile-bg, rgba(251,191,36,0.1))' }}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${rarityColors.bgFull}`}>
+        <IconComponent className={`w-5 h-5 ${rarityColors.icon}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5">
+          <Star className="w-3 h-3" style={{ color: 'var(--profile-accent, #fbbf24)' }} />
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--profile-accent, #fbbf24)' }}>
+            {t('profilePage.featuredBadge')}
+          </span>
+        </div>
+        <div className="text-sm font-medium text-stone-200 mt-0.5">{def.name}</div>
+      </div>
+    </div>
   );
 }
 
@@ -91,11 +149,13 @@ function BadgeItem({
   badge,
   isEarned,
   earnedAt,
+  isFeatured,
   onClick,
 }: {
   badge: BadgeDefinition;
   isEarned: boolean;
   earnedAt: string | null;
+  isFeatured: boolean;
   onClick: () => void;
 }) {
   const IconComponent = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[badge.icon] || Icons.Award;
@@ -129,6 +189,15 @@ function BadgeItem({
               transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             />
           )}
+          {/* Featured star indicator */}
+          {isFeatured && (
+            <div
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--profile-accent, #fbbf24)' }}
+            >
+              <Star className="w-2.5 h-2.5 text-stone-900 fill-stone-900" />
+            </div>
+          )}
         </>
       ) : (
         <>
@@ -148,15 +217,20 @@ function BadgeDetailModal({
   badge,
   isEarned,
   earnedAt,
+  isFeatured,
+  onSetFeatured,
   onClose,
 }: {
   badge: BadgeDefinition;
   isEarned: boolean;
   earnedAt: string | null;
+  isFeatured: boolean;
+  onSetFeatured: () => void;
   onClose: () => void;
 }) {
   const IconComponent = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[badge.icon] || Icons.Award;
   const rarityColors = getRarityColors(badge.rarity);
+  const { t } = useTranslation();
 
   return (
     <motion.div
@@ -199,12 +273,25 @@ function BadgeDetailModal({
         <p className="text-sm text-stone-400 mb-4">{badge.description}</p>
 
         {isEarned && earnedAt ? (
-          <p className="text-xs text-amber-500/60">
-            Earned on {new Date(earnedAt).toLocaleDateString()}
-          </p>
+          <>
+            <p className="text-xs text-amber-500/60 mb-3">
+              {t('profilePage.earnedOn')} {new Date(earnedAt).toLocaleDateString()}
+            </p>
+            {/* Feature badge button */}
+            <button
+              onClick={onSetFeatured}
+              className={`w-full py-2 rounded-lg text-xs font-medium transition-colors ${
+                isFeatured
+                  ? 'bg-amber-900/40 text-amber-300 border border-amber-700/40'
+                  : 'bg-stone-800 text-stone-300 hover:bg-stone-700 border border-stone-700'
+              }`}
+            >
+              {isFeatured ? t('profilePage.unfeaturedBadge') : t('profilePage.setFeaturedBadge')}
+            </button>
+          </>
         ) : (
           <p className="text-xs text-stone-600">
-            Keep going to unlock this badge
+            {t('profilePage.keepGoingToUnlock')}
           </p>
         )}
       </motion.div>
@@ -224,6 +311,7 @@ function getRarityColors(rarity: BadgeRarity) {
         icon: 'text-stone-300',
         tag: 'bg-stone-800 text-stone-400',
         glowColor: 'rgba(168,162,158,0.4)',
+        bgFull: 'bg-stone-800',
       };
     case 'rare':
       return {
@@ -231,6 +319,7 @@ function getRarityColors(rarity: BadgeRarity) {
         icon: 'text-purple-400',
         tag: 'bg-purple-900/40 text-purple-400',
         glowColor: 'rgba(167,139,250,0.4)',
+        bgFull: 'bg-purple-900/40',
       };
     case 'legendary':
       return {
@@ -238,6 +327,7 @@ function getRarityColors(rarity: BadgeRarity) {
         icon: 'text-amber-400',
         tag: 'bg-amber-900/40 text-amber-400',
         glowColor: 'rgba(251,191,36,0.5)',
+        bgFull: 'bg-amber-900/40',
       };
   }
 }

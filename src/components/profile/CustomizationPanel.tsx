@@ -164,11 +164,9 @@ export function CustomizationPanel({ completedWorldSlugs, totalEchoesSent }: Cus
                               : 'border-stone-700 hover:border-stone-600'
                         }`}
                       >
-                        <img
-                          src={preset.imagePath}
-                          alt={preset.label}
-                          className="w-full h-full object-cover"
-                          draggable={false}
+                        <div
+                          className="w-full h-full"
+                          style={{ background: preset.gradient }}
                         />
                         {locked && (
                           <div className="absolute inset-0 flex items-center justify-center bg-stone-950/60">

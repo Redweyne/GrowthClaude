@@ -3,12 +3,14 @@
 import { motion } from 'framer-motion';
 import { Fingerprint } from 'lucide-react';
 import type { IdentityStatement } from '@/types/identity';
+import { useTranslation } from '@/i18n';
 
 interface IdentityEvolutionProps {
   statements: IdentityStatement[];
 }
 
 export function IdentityEvolution({ statements }: IdentityEvolutionProps) {
+  const { t } = useTranslation();
   if (statements.length === 0) return null;
 
   // Most recent first
@@ -24,7 +26,7 @@ export function IdentityEvolution({ statements }: IdentityEvolutionProps) {
       transition={{ delay: 0.55 }}
     >
       <h3 className="text-sm font-medium uppercase tracking-wider text-stone-500 mb-4">
-        My Evolution
+        {t('profilePage.myEvolution')}
       </h3>
 
       <div className="relative">
@@ -34,7 +36,7 @@ export function IdentityEvolution({ statements }: IdentityEvolutionProps) {
         {sorted.map((stmt, i) => {
           const isLatest = i === 0;
           const date = new Date(stmt.createdAt);
-          const dayLabel = formatRelativeDate(date);
+          const dayLabel = formatRelativeDate(date, t);
 
           return (
             <motion.div
@@ -99,14 +101,12 @@ export function IdentityEvolution({ statements }: IdentityEvolutionProps) {
   );
 }
 
-function formatRelativeDate(date: Date): string {
+function formatRelativeDate(date: Date, t: (key: string) => string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays === 0) return t('common.today');
+  if (diffDays === 1) return t('common.yesterday');
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

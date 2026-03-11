@@ -4,15 +4,23 @@ import { useState, useMemo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { AvatarDisplay } from './AvatarDisplay';
 import { AvatarUploadModal } from './AvatarUploadModal';
-import { GOAL_TO_AURA, AURA_STYLES, BANNER_PRESETS, type ProfileAura } from '@/types/profile';
+import {
+  GOAL_TO_AURA, AURA_STYLES, BANNER_PRESETS,
+  ALL_BADGES, type ProfileAura, type EquippableFrameId,
+} from '@/types/profile';
 import type { TransformationGoal } from '@/types';
+import type { BadgeEarnedRecord } from '@/types/profile';
 
 interface HeroBannerProps {
   name: string;
   avatarUrl: string | null;
   level: number;
   isSupporter: boolean;
+  equippedFrameId: EquippableFrameId | null;
   equippedTitle: string | null;
+  motto: string | null;
+  featuredBadgeId: string | null;
+  badgesEarned: BadgeEarnedRecord[];
   identityStatement: string | null;
   transformationGoal: TransformationGoal | null;
   bannerKey: string | null;
@@ -25,7 +33,11 @@ export function HeroBanner({
   avatarUrl,
   level,
   isSupporter,
+  equippedFrameId,
   equippedTitle,
+  motto,
+  featuredBadgeId,
+  badgesEarned,
   identityStatement,
   transformationGoal,
   bannerKey,
@@ -42,36 +54,55 @@ export function HeroBanner({
   const aura: ProfileAura = transformationGoal ? GOAL_TO_AURA[transformationGoal] : 'wisdom';
   const auraStyle = AURA_STYLES[aura];
 
-  // Banner image (overrides aura if set)
+  // Banner gradient (overrides aura if set)
   const bannerPreset = useMemo(() => {
     if (!bannerKey) return null;
     return BANNER_PRESETS.find(b => b.key === bannerKey) ?? null;
   }, [bannerKey]);
 
+  // Featured badge resolution
+  const featuredBadge = useMemo(() => {
+    if (!featuredBadgeId) return null;
+    const earned = badgesEarned.find(b => b.badgeId === featuredBadgeId);
+    if (!earned) return null;
+    const def = ALL_BADGES.find(b => b.id === featuredBadgeId);
+    return def ?? null;
+  }, [featuredBadgeId, badgesEarned]);
+
   return (
     <>
-      <div className="relative overflow-hidden" style={{ minHeight: 340 }}>
+      <div className="relative overflow-hidden" style={{ minHeight: 360 }}>
         {/* Banner background */}
         <motion.div
           className="absolute inset-0"
           style={{ y: bannerY }}
         >
           {bannerPreset ? (
-            <img
-              src={bannerPreset.imagePath}
-              alt=""
-              className="w-full h-[400px] object-cover"
-              draggable={false}
+            <div
+              className="w-full h-[420px]"
+              style={{ background: bannerPreset.gradient }}
             />
           ) : (
-            <div className={`w-full h-[400px] bg-gradient-to-b ${auraStyle.gradient}`}>
-              {/* Floating aura particles */}
+            <div className={`w-full h-[420px] bg-gradient-to-b ${auraStyle.gradient}`}>
               <AuraParticles color={auraStyle.particleColor} />
             </div>
           )}
           {/* Gradient overlay fading to background */}
-          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[var(--color-bg-abyss)] to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[var(--color-bg-abyss,#0a0908)] to-transparent" />
         </motion.div>
+
+        {/* Sacred accent glow at top */}
+        <div
+          className="absolute top-0 left-0 right-0 h-1"
+          style={{ background: 'var(--profile-accent, #fbbf24)' }}
+        />
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-32 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse, var(--profile-glow, rgba(251,191,36,0.3)) 0%, transparent 70%)`,
+            opacity: 0.5,
+          }}
+        />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center pt-10 pb-6 px-4">
@@ -87,6 +118,7 @@ export function HeroBanner({
               name={name}
               level={level}
               isSupporter={isSupporter}
+              equippedFrameId={equippedFrameId}
               layoutId="profileAvatar"
               onClick={() => setShowAvatarModal(true)}
             />
@@ -110,13 +142,14 @@ export function HeroBanner({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <span className="text-xs text-amber-500/60">◆</span>
+              <span style={{ color: 'var(--profile-accent, #fbbf24)', opacity: 0.6 }} className="text-xs">&#9670;</span>
               <motion.span
-                className="text-sm font-medium text-amber-400/80"
+                className="text-sm font-medium"
+                style={{ color: 'var(--profile-accent, #fbbf24)', opacity: 0.8 }}
                 animate={{
                   textShadow: [
                     '0 0 8px rgba(251,191,36,0)',
-                    '0 0 12px rgba(251,191,36,0.3)',
+                    '0 0 12px var(--profile-glow, rgba(251,191,36,0.3))',
                     '0 0 8px rgba(251,191,36,0)',
                   ],
                 }}
@@ -124,12 +157,39 @@ export function HeroBanner({
               >
                 {equippedTitle}
               </motion.span>
-              <span className="text-xs text-amber-500/60">◆</span>
+              <span style={{ color: 'var(--profile-accent, #fbbf24)', opacity: 0.6 }} className="text-xs">&#9670;</span>
             </motion.div>
           )}
 
+          {/* Featured Badge */}
+          {featuredBadge && (
+            <motion.div
+              className="mt-2 flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-700/30"
+              style={{ backgroundColor: 'var(--profile-bg, rgba(251,191,36,0.1))' }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <span className="text-[11px] font-medium" style={{ color: 'var(--profile-accent, #fbbf24)' }}>
+                {featuredBadge.name}
+              </span>
+            </motion.div>
+          )}
+
+          {/* Motto */}
+          {motto && (
+            <motion.p
+              className="mt-3 text-xs text-stone-400 light:text-stone-500 italic max-w-xs text-center"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              &ldquo;{motto}&rdquo;
+            </motion.p>
+          )}
+
           {/* Identity Statement */}
-          {identityStatement && (
+          {!motto && identityStatement && (
             <motion.button
               className="mt-4 max-w-sm text-center px-4"
               onClick={onIdentityTap}
@@ -142,7 +202,7 @@ export function HeroBanner({
                 animate={{
                   textShadow: [
                     '0 0 10px rgba(251,191,36,0)',
-                    '0 0 20px rgba(251,191,36,0.15)',
+                    '0 0 20px var(--profile-glow, rgba(251,191,36,0.15))',
                     '0 0 10px rgba(251,191,36,0)',
                   ],
                 }}

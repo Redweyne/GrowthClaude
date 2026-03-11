@@ -3,7 +3,15 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
-import { getFrameTier, FRAME_COLORS, INITIAL_AVATAR_GRADIENTS, type AvatarFrameTier } from '@/types/profile';
+import {
+  getFrameTier,
+  getEffectiveFrameTier,
+  FRAME_COLORS,
+  FOUNDER_FRAME_COLORS,
+  INITIAL_AVATAR_GRADIENTS,
+  type AvatarFrameTier,
+  type EquippableFrameId,
+} from '@/types/profile';
 
 // ─────────────────────────────────────────────
 // SIZES
@@ -29,6 +37,7 @@ interface AvatarDisplayProps {
   name?: string | null;
   level: number;
   isSupporter?: boolean;
+  equippedFrameId?: EquippableFrameId | null;
   layoutId?: string;
   onClick?: () => void;
   className?: string;
@@ -44,13 +53,17 @@ export function AvatarDisplay({
   name,
   level,
   isSupporter = false,
+  equippedFrameId = null,
   layoutId,
   onClick,
   className = '',
 }: AvatarDisplayProps) {
   const { px, ring, font } = SIZES[size];
-  const tier = getFrameTier(level);
-  const colors = FRAME_COLORS[tier];
+
+  // Use equipped frame if set, otherwise derive from level
+  const isFounderFrame = equippedFrameId === 'founder';
+  const tier = getEffectiveFrameTier(equippedFrameId, level);
+  const colors = isFounderFrame ? FOUNDER_FRAME_COLORS : FRAME_COLORS[tier];
 
   const initial = useMemo(() => {
     if (!name) return '?';
@@ -78,7 +91,14 @@ export function AvatarDisplay({
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
     >
       {/* Frame ring */}
-      <FrameRing tier={tier} size={outerSize} ringWidth={ring} colors={colors} isSupporter={isSupporter} />
+      <FrameRing
+        tier={tier}
+        size={outerSize}
+        ringWidth={ring}
+        colors={colors}
+        isSupporter={isSupporter}
+        isFounderFrame={isFounderFrame}
+      />
 
       {/* Avatar image or initial */}
       <div
@@ -142,19 +162,21 @@ function FrameRing({
   ringWidth,
   colors,
   isSupporter,
+  isFounderFrame,
 }: {
   tier: AvatarFrameTier;
   size: number;
   ringWidth: number;
   colors: { primary: string; secondary: string; glow: string };
   isSupporter: boolean;
+  isFounderFrame: boolean;
 }) {
   const radius = size / 2;
 
   return (
     <>
-      {/* Glow aura (platinum+) */}
-      {(tier === 'platinum' || tier === 'diamond') && (
+      {/* Glow aura (platinum+ or founder) */}
+      {(tier === 'platinum' || tier === 'diamond' || isFounderFrame) && (
         <motion.div
           className="absolute inset-0 rounded-full"
           style={{
@@ -176,8 +198,7 @@ function FrameRing({
         className="absolute inset-0"
       >
         <defs>
-          {/* Conic gradient via SVG */}
-          <linearGradient id={`frame-grad-${tier}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={`frame-grad-${tier}${isFounderFrame ? '-founder' : ''}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={colors.primary} />
             <stop offset="50%" stopColor={colors.secondary} />
             <stop offset="100%" stopColor={colors.primary} />
@@ -188,18 +209,18 @@ function FrameRing({
           cy={radius}
           r={radius - ringWidth / 2 - 1}
           fill="none"
-          stroke={`url(#frame-grad-${tier})`}
+          stroke={`url(#frame-grad-${tier}${isFounderFrame ? '-founder' : ''})`}
           strokeWidth={ringWidth}
         />
       </svg>
 
-      {/* Rotating shimmer overlay (silver+) */}
-      {tier !== 'bronze' && (
+      {/* Rotating shimmer overlay (silver+ or founder) */}
+      {(tier !== 'bronze' || isFounderFrame) && (
         <motion.div
           className="absolute inset-0 rounded-full overflow-hidden"
           animate={{ rotate: 360 }}
           transition={{
-            duration: tier === 'diamond' ? 4 : tier === 'platinum' ? 6 : tier === 'gold' ? 8 : 10,
+            duration: isFounderFrame ? 5 : tier === 'diamond' ? 4 : tier === 'platinum' ? 6 : tier === 'gold' ? 8 : 10,
             repeat: Infinity,
             ease: 'linear',
           }}
@@ -230,8 +251,8 @@ function FrameRing({
         </motion.div>
       )}
 
-      {/* Supporter shimmer overlay */}
-      {isSupporter && (
+      {/* Supporter / Founder counter-rotating shimmer */}
+      {(isSupporter || isFounderFrame) && (
         <motion.div
           className="absolute inset-0 rounded-full overflow-hidden"
           animate={{ rotate: -360 }}
@@ -266,10 +287,10 @@ function FrameRing({
         </motion.div>
       )}
 
-      {/* Orbiting particles (gold+) */}
-      {(tier === 'gold' || tier === 'platinum' || tier === 'diamond') && (
+      {/* Orbiting particles (gold+ or founder) */}
+      {(tier === 'gold' || tier === 'platinum' || tier === 'diamond' || isFounderFrame) && (
         <OrbitingParticles
-          count={tier === 'diamond' ? 6 : tier === 'platinum' ? 4 : 2}
+          count={isFounderFrame ? 4 : tier === 'diamond' ? 6 : tier === 'platinum' ? 4 : 2}
           radius={radius}
           color={colors.primary}
           size={size}

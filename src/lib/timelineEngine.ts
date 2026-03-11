@@ -17,6 +17,10 @@ interface TimelineSourceData {
  * Generate timeline events from existing store data.
  * Fully derived — no separate persistence needed.
  * Returns sorted descending (most recent first).
+ *
+ * Events use i18n keys for title/description.
+ * Dates are exact when sourced from badge/checkin timestamps,
+ * or marked approximate via meta.isEstimated.
  */
 export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
   const events: TimelineEvent[] = [];
@@ -28,8 +32,8 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
       id: 'journey-start',
       type: 'journey_start',
       date: sorted[0].date,
-      title: 'Journey Began',
-      description: 'You took your first step on the path of transformation.',
+      title: 'timeline.journeyBegan',
+      description: 'timeline.journeyBeganDesc',
       icon: 'Sunrise',
     });
   }
@@ -44,17 +48,17 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
         id: 'first-lesson',
         type: 'first_lesson',
         date: firstLessonDay.date,
-        title: 'First Lesson Completed',
-        description: 'You completed your first lesson.',
+        title: 'timeline.firstLesson',
+        description: 'timeline.firstLessonDesc',
         icon: 'BookOpen',
       });
     }
   }
 
-  // Build a map of badge earnedAt dates for cross-referencing
+  // Badge earnedAt dates for cross-referencing
   const badgeEarnedMap = new Map(data.badgesEarned.map(b => [b.badgeId, b.earnedAt]));
 
-  // Streak milestones — use badge earnedAt when available for accuracy
+  // Streak milestones
   const streakBadgeMap: Record<number, string> = {
     7: 'week-warrior',
     30: 'iron-will',
@@ -70,14 +74,15 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
         id: `streak-${milestone}`,
         type: 'streak_milestone',
         date,
-        title: `${milestone}-Day Streak`,
-        description: `You maintained a ${milestone}-day streak of daily practice.${isEstimated ? ' (approx.)' : ''}`,
+        title: 'timeline.streakMilestone',
+        description: isEstimated ? 'timeline.streakDescApprox' : 'timeline.streakDesc',
         icon: 'Flame',
+        meta: { days: milestone, isEstimated },
       });
     }
   }
 
-  // Level ups — use badge earnedAt for level 10 (philosopher-king), estimate others
+  // Level ups
   for (const level of LEVELS) {
     if (level.level > 1 && data.totalXp >= level.minXp) {
       const levelBadgeDate = level.level >= 10 ? badgeEarnedMap.get('philosopher-king') : undefined;
@@ -87,9 +92,10 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
         id: `level-${level.level}`,
         type: 'level_up',
         date,
-        title: `Reached Level ${level.level}: ${level.title}`,
-        description: `You advanced to ${level.title} with ${level.minXp} XP.${isEstimated ? ' (approx.)' : ''}`,
+        title: 'timeline.levelUp',
+        description: isEstimated ? 'timeline.levelUpDescApprox' : 'timeline.levelUpDesc',
         icon: 'Star',
+        meta: { level: level.level, levelTitle: level.title, minXp: level.minXp, isEstimated },
       });
     }
   }
@@ -100,9 +106,10 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
       id: `identity-${stmt.id}`,
       type: 'identity_change',
       date: stmt.createdAt,
-      title: 'Identity Statement',
+      title: 'timeline.identityStatement',
       description: stmt.statement,
       icon: 'Fingerprint',
+      meta: { isRaw: true },
     });
   }
 
@@ -114,9 +121,10 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
         id: `badge-${earned.badgeId}`,
         type: 'badge_unlock',
         date: earned.earnedAt,
-        title: `Badge Unlocked: ${badge.name}`,
+        title: 'timeline.badgeUnlocked',
         description: badge.description,
         icon: badge.icon,
+        meta: { badgeName: badge.name, isRaw: true },
       });
     }
   }
@@ -128,8 +136,8 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
       id: 'first-checkin',
       type: 'first_checkin',
       date: sorted[0].date,
-      title: 'First Weekly Check-in',
-      description: 'You reflected on your first week of practice.',
+      title: 'timeline.firstCheckin',
+      description: 'timeline.firstCheckinDesc',
       icon: 'Calendar',
     });
   }
@@ -140,30 +148,20 @@ export function generateTimeline(data: TimelineSourceData): TimelineEvent[] {
   return events;
 }
 
-/**
- * Estimate the date a streak milestone was reached based on activity log.
- * If we can't determine precisely, use best approximation.
- */
 function estimateMilestoneDate(activityLog: Array<{ date: string }>, daysNeeded: number): string {
   if (activityLog.length === 0) return new Date().toISOString();
   const sorted = [...activityLog].sort((a, b) => a.date.localeCompare(b.date));
-  // The milestone was reached on approximately the Nth consecutive day
   const targetIndex = Math.min(daysNeeded - 1, sorted.length - 1);
   return sorted[targetIndex]?.date ?? sorted[sorted.length - 1].date;
 }
 
-/**
- * Estimate when a level-up XP threshold was crossed.
- */
 function estimateLevelUpDate(
   activityLog: Array<{ date: string; xpEarned?: number }>,
   _totalXp: number,
   _thresholdXp: number,
 ): string {
-  // Without cumulative XP tracking per day, estimate based on activity proportion
   if (activityLog.length === 0) return new Date().toISOString();
   const sorted = [...activityLog].sort((a, b) => a.date.localeCompare(b.date));
-  // Use midpoint as rough estimate
   const midIndex = Math.floor(sorted.length / 2);
   return sorted[midIndex]?.date ?? sorted[sorted.length - 1].date;
 }

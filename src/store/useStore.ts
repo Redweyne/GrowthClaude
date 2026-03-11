@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { TransformationGoal } from '@/types';
 import type { IdentityStatement, IdentityContext } from '@/types/identity';
-import type { ProfileAccentColor, BadgeEarnedRecord } from '@/types/profile';
+import type { ProfileAccentColor, BadgeEarnedRecord, EquippableFrameId } from '@/types/profile';
 
 interface CheckinResponseData {
   promptId: string;
@@ -121,6 +121,8 @@ interface UserState {
   accentColor: ProfileAccentColor;
   bannerKey: string | null;
   equippedTitleId: string | null;
+  equippedFrameId: EquippableFrameId | null;
+  featuredBadgeId: string | null;
   badgesEarned: BadgeEarnedRecord[];
   profileVisibleInEchoes: boolean;
 
@@ -285,6 +287,8 @@ interface UserActions {
   setAccentColor: (color: ProfileAccentColor) => void;
   setBannerKey: (key: string | null) => void;
   equipTitle: (titleId: string | null) => void;
+  equipFrame: (frameId: EquippableFrameId | null) => void;
+  setFeaturedBadge: (badgeId: string | null) => void;
   earnBadge: (badgeId: string) => void;
   setProfileVisibility: (visible: boolean) => void;
 
@@ -315,6 +319,8 @@ const initialState: UserState = {
   equippedTitleId: null,
   badgesEarned: [],
   profileVisibleInEchoes: false,
+  equippedFrameId: null,
+  featuredBadgeId: null,
 
   // Server-owned
   isSupporter: false,
@@ -948,6 +954,8 @@ export const useStore = create<UserState & UserActions>()(
         });
       },
       setProfileVisibility: (visible) => set({ profileVisibleInEchoes: visible }),
+      equipFrame: (frameId) => set({ equippedFrameId: frameId }),
+      setFeaturedBadge: (badgeId) => set({ featuredBadgeId: badgeId }),
 
       // ============================================
       // RESET

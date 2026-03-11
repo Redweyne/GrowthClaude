@@ -636,6 +636,55 @@ const fr = {
     saving: 'Enregistrement...',
     chooseGradient: 'Choisissez un dégradé pour votre avatar initiale',
     choosePhilosophicalAvatar: 'Choisissez un avatar philosophique',
+    // Tabs
+    tabOverview: 'Aperçu',
+    tabFrames: 'Cadres',
+    tabBadges: 'Badges',
+    tabJourney: 'Parcours',
+    // Frames
+    frames: 'Cadres',
+    framesDesc: 'Équipez un cadre pour personnaliser votre anneau d\'avatar',
+    supporterExclusive: 'Exclusif Supporter',
+    frameEquippedNote: 'Appuyez à nouveau sur votre cadre pour utiliser le cadre auto',
+    frameAutoNote: 'Votre cadre est défini automatiquement selon votre niveau',
+    // Badges
+    myBadges: 'Mes Badges',
+    featuredBadge: 'Badge en vedette',
+    setFeaturedBadge: 'Mettre en vedette',
+    unfeaturedBadge: 'Retirer la vedette',
+    earnedOn: 'Obtenu le',
+    keepGoingToUnlock: 'Continuez pour débloquer ce badge',
+    badgeCatStreak: 'Série',
+    badgeCatWorlds: 'Mondes',
+    badgeCatSocial: 'Social',
+    badgeCatMastery: 'Maîtrise',
+    badgeCatSpecial: 'Spécial',
+    // Journey / Timeline
+    transformationTimeline: 'Chronologie de transformation',
+    noJourneyYet: 'Votre parcours apparaîtra ici au fur et à mesure de votre progression',
+    showLess: 'Voir moins',
+    showAllEvents: 'Voir les {count} événements',
+    myEvolution: 'Mon Évolution',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TIMELINE
+  // ─────────────────────────────────────────────────────────────────────────
+  timeline: {
+    journeyBegan: 'Début du parcours',
+    journeyBeganDesc: 'Vous avez fait votre premier pas sur le chemin de la transformation.',
+    firstLesson: 'Première leçon terminée',
+    firstLessonDesc: 'Vous avez terminé votre première leçon.',
+    streakMilestone: 'Série de {days} jours',
+    streakDesc: 'Vous avez maintenu une série de {days} jours de pratique quotidienne.',
+    streakDescApprox: 'Vous avez maintenu une série de {days} jours de pratique quotidienne. (approx.)',
+    levelUp: 'Niveau {level} atteint : {levelTitle}',
+    levelUpDesc: 'Vous avez atteint {levelTitle} avec {minXp} XP.',
+    levelUpDescApprox: 'Vous avez atteint {levelTitle} avec {minXp} XP. (approx.)',
+    identityStatement: 'Déclaration d\'identité',
+    badgeUnlocked: 'Badge débloqué : {badgeName}',
+    firstCheckin: 'Premier bilan hebdomadaire',
+    firstCheckinDesc: 'Vous avez réfléchi à votre première semaine de pratique.',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

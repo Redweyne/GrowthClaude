@@ -1,9 +1,11 @@
 'use client';
 
 import { useRef, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { HeroBanner } from './HeroBanner';
 import { ProfileStatsRow } from './ProfileStatsRow';
 import { BadgeWall } from './BadgeWall';
+import { FramesTab } from './FramesTab';
 import { IdentityEvolution } from './IdentityEvolution';
 import { TransformationTimeline } from './TransformationTimeline';
 import { CustomizationPanel } from './CustomizationPanel';
@@ -15,24 +17,18 @@ import { getEquippedTitleLabel, buildTitleContext, getAutoTitle } from '@/lib/ti
 import { ACCENT_COLORS, ALL_BADGES } from '@/types/profile';
 import type { BadgeCheckContext, ShareableProfileData } from '@/types/profile';
 import type { TransformationGoal } from '@/types';
+import { useTranslation } from '@/i18n';
 
 interface ProfilePageProps {
-  // User info
   name: string;
   totalXp: number;
   currentStreak: number;
   longestStreak: number;
   level: { level: number; title: string };
   transformationGoal?: string;
-
-  // Due indicators
   isWeeklyCheckinDue: boolean;
   isMonthlyAssessmentDue: boolean;
-
-  // Echo counts
   unreadEchoCount: number;
-
-  // Navigation callbacks (same as DashboardNew)
   onClose: () => void;
   onOpenTodayPractice: () => void;
   onOpenWeeklyCheckin: () => void;
@@ -43,11 +39,11 @@ interface ProfilePageProps {
   onOpenIdentity: () => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
-
-  // World data for badge/title derivation
   completedWorldSlugs: string[];
   totalEchoesSent: number;
 }
+
+type ProfileTab = 'overview' | 'frames' | 'badges' | 'journey';
 
 export function ProfilePage({
   name,
@@ -71,15 +67,19 @@ export function ProfilePage({
   totalEchoesSent,
 }: ProfilePageProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [showIdentityEvolution, setShowIdentityEvolution] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
+  const { t } = useTranslation();
 
-  // Store reads for profile-specific data
+  // Store reads
   const avatarUrl = useStore(s => s.avatarUrl);
   const equippedTitleId = useStore(s => s.equippedTitleId);
+  const equippedFrameId = useStore(s => s.equippedFrameId);
+  const featuredBadgeId = useStore(s => s.featuredBadgeId);
   const isSupporter = useStore(s => s.isSupporter);
   const identityStatements = useStore(s => s.identityStatements);
   const bannerKey = useStore(s => s.bannerKey);
   const accentColor = useStore(s => s.accentColor);
+  const motto = useStore(s => s.motto);
   const badgesEarned = useStore(s => s.badgesEarned);
   const completedLessons = useStore(s => s.completedLessons);
   const weeklyCheckins = useStore(s => s.weeklyCheckins);
@@ -124,7 +124,7 @@ export function ProfilePage({
     isSupporter,
   }), [longestStreak, currentStreak, completedLessons, totalEchoesSent, identityStatements, completedWorldSlugs, level.level, isSupporter]);
 
-  // Compute top badge (highest rarity among earned)
+  // Top badge (highest rarity)
   const topBadgeName = useMemo(() => {
     if (badgesEarned.length === 0) return null;
     const rarityRank = { legendary: 3, rare: 2, common: 1 } as const;
@@ -140,6 +140,13 @@ export function ProfilePage({
     return best?.name ?? null;
   }, [badgesEarned]);
 
+  // Featured badge name
+  const featuredBadgeName = useMemo(() => {
+    if (!featuredBadgeId) return null;
+    const def = ALL_BADGES.find(b => b.id === featuredBadgeId);
+    return def?.name ?? null;
+  }, [featuredBadgeId]);
+
   // Shareable card data
   const shareData: ShareableProfileData = useMemo(() => ({
     name,
@@ -150,15 +157,24 @@ export function ProfilePage({
     levelTitle: level.title,
     currentStreak,
     topBadgeName,
+    featuredBadgeName,
+    motto,
     identityStatement: latestIdentity,
     isSupporter,
-  }), [name, effectiveAvatarUrl, totalXp, equippedTitle, level, currentStreak, topBadgeName, latestIdentity, isSupporter]);
+  }), [name, effectiveAvatarUrl, totalXp, equippedTitle, level, currentStreak, topBadgeName, featuredBadgeName, motto, latestIdentity, isSupporter]);
 
   // Accent color CSS variables
   const accentVars = ACCENT_COLORS[accentColor];
 
+  const tabs: { key: ProfileTab; label: string }[] = [
+    { key: 'overview', label: t('profilePage.tabOverview') },
+    { key: 'frames', label: t('profilePage.tabFrames') },
+    { key: 'badges', label: t('profilePage.tabBadges') },
+    { key: 'journey', label: t('profilePage.tabJourney') },
+  ];
+
   return (
-    <div
+    <motion.div
       ref={scrollRef}
       className="h-full overflow-y-auto overscroll-contain"
       style={{
@@ -166,6 +182,10 @@ export function ProfilePage({
         '--profile-glow': accentVars.glow,
         '--profile-bg': accentVars.bg,
       } as React.CSSProperties}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
     >
       {/* Hero Banner */}
       <HeroBanner
@@ -173,12 +193,16 @@ export function ProfilePage({
         avatarUrl={effectiveAvatarUrl}
         level={level.level}
         isSupporter={isSupporter}
+        equippedFrameId={equippedFrameId}
         equippedTitle={equippedTitle}
+        motto={motto}
+        featuredBadgeId={featuredBadgeId}
+        badgesEarned={badgesEarned}
         identityStatement={latestIdentity}
         transformationGoal={(transformationGoal as TransformationGoal) || null}
         bannerKey={bannerKey}
         scrollRef={scrollRef}
-        onIdentityTap={() => setShowIdentityEvolution(!showIdentityEvolution)}
+        onIdentityTap={() => setActiveTab('journey')}
       />
 
       {/* Stats Row */}
@@ -189,48 +213,121 @@ export function ProfilePage({
         level={level}
       />
 
-      {/* Badge Wall */}
-      <BadgeWall ctx={badgeCtx} earned={badgesEarned} />
+      {/* Tab Bar */}
+      <div className="px-5 mt-4">
+        <div className="flex gap-1 p-1 rounded-xl bg-stone-900/60 border border-stone-800/40">
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`relative flex-1 py-2 text-xs font-medium rounded-lg transition-colors ${
+                activeTab === tab.key
+                  ? 'text-amber-100'
+                  : 'text-stone-500 hover:text-stone-300'
+              }`}
+            >
+              {activeTab === tab.key && (
+                <motion.div
+                  className="absolute inset-0 rounded-lg"
+                  style={{ backgroundColor: 'var(--profile-bg, rgba(251,191,36,0.1))', border: '1px solid var(--profile-accent, #fbbf24)', borderColor: 'color-mix(in srgb, var(--profile-accent, #fbbf24) 30%, transparent)' }}
+                  layoutId="profileTab"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* Identity Evolution (toggleable from hero tap) */}
-      {(showIdentityEvolution || identityStatements.length > 0) && (
-        <IdentityEvolution statements={identityStatements} />
-      )}
+      {/* Tab Content */}
+      <AnimatePresence mode="wait">
+        {activeTab === 'overview' && (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Identity Evolution (if statements exist) */}
+            {identityStatements.length > 0 && (
+              <IdentityEvolution statements={identityStatements} />
+            )}
 
-      {/* Transformation Timeline */}
-      <TransformationTimeline
-        completedLessons={completedLessons}
-        identityStatements={identityStatements}
-        longestStreak={longestStreak}
-        totalXp={totalXp}
-        badgesEarned={badgesEarned}
-        weeklyCheckins={weeklyCheckins}
-        activityLog={activityLog}
-      />
+            {/* Shareable Card */}
+            <ShareableCard data={shareData} />
 
-      {/* Shareable Card */}
-      <ShareableCard data={shareData} />
+            {/* Customization Panel */}
+            <CustomizationPanel
+              completedWorldSlugs={completedWorldSlugs}
+              totalEchoesSent={totalEchoesSent}
+            />
 
-      {/* Customization Panel */}
-      <CustomizationPanel
-        completedWorldSlugs={completedWorldSlugs}
-        totalEchoesSent={totalEchoesSent}
-      />
+            {/* Quick Actions */}
+            <QuickActions
+              isWeeklyCheckinDue={isWeeklyCheckinDue}
+              isMonthlyAssessmentDue={isMonthlyAssessmentDue}
+              unreadEchoCount={unreadEchoCount}
+              onOpenTodayPractice={onOpenTodayPractice}
+              onOpenWeeklyCheckin={onOpenWeeklyCheckin}
+              onOpenMonthlyAssessment={onOpenMonthlyAssessment}
+              onOpenBrowseEchoes={onOpenBrowseEchoes}
+              onOpenPastLessons={onOpenPastLessons}
+              onOpenIdentity={onOpenIdentity}
+              onOpenStats={onOpenStats}
+              onOpenSettings={onOpenSettings}
+            />
+          </motion.div>
+        )}
 
-      {/* Quick Actions */}
-      <QuickActions
-        isWeeklyCheckinDue={isWeeklyCheckinDue}
-        isMonthlyAssessmentDue={isMonthlyAssessmentDue}
-        unreadEchoCount={unreadEchoCount}
-        onOpenTodayPractice={onOpenTodayPractice}
-        onOpenWeeklyCheckin={onOpenWeeklyCheckin}
-        onOpenMonthlyAssessment={onOpenMonthlyAssessment}
-        onOpenBrowseEchoes={onOpenBrowseEchoes}
-        onOpenPastLessons={onOpenPastLessons}
-        onOpenIdentity={onOpenIdentity}
-        onOpenStats={onOpenStats}
-        onOpenSettings={onOpenSettings}
-      />
-    </div>
+        {activeTab === 'frames' && (
+          <motion.div
+            key="frames"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <FramesTab level={level.level} isSupporter={isSupporter} />
+          </motion.div>
+        )}
+
+        {activeTab === 'badges' && (
+          <motion.div
+            key="badges"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <BadgeWall ctx={badgeCtx} earned={badgesEarned} />
+          </motion.div>
+        )}
+
+        {activeTab === 'journey' && (
+          <motion.div
+            key="journey"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <TransformationTimeline
+              completedLessons={completedLessons}
+              identityStatements={identityStatements}
+              longestStreak={longestStreak}
+              totalXp={totalXp}
+              badgesEarned={badgesEarned}
+              weeklyCheckins={weeklyCheckins}
+              activityLog={activityLog}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom spacing */}
+      <div className="h-8" />
+    </motion.div>
   );
 }

@@ -58,6 +58,7 @@ const VALID_TRANSFORMATION_GOALS: TransformationGoal[] = [
 
 const VALID_LANGUAGES: Array<StoreState['language']> = ['en', 'fr', 'ar'];
 const VALID_ACCENT_COLORS: Array<StoreState['accentColor']> = ['gold', 'rose', 'purple', 'emerald', 'indigo'];
+const VALID_FRAME_IDS: Array<NonNullable<StoreState['equippedFrameId']>> = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'founder'];
 const VALID_COMMUNITY_IDENTITIES: Array<NonNullable<StoreState['communityIdentity']>> = [
   'brother',
   'sister',
@@ -142,6 +143,8 @@ function profilePayloadFromStore(state: StoreState) {
     equipped_title_id: state.equippedTitleId,
     badges_earned: state.badgesEarned,
     profile_visible_in_echoes: state.profileVisibleInEchoes,
+    equipped_frame_id: state.equippedFrameId,
+    featured_badge_id: state.featuredBadgeId,
     // NEVER include: is_supporter, supporter_since
   };
 }
@@ -176,7 +179,9 @@ function profileFieldsChanged(prev: StoreState, next: StoreState): boolean {
     prev.bannerKey !== next.bannerKey ||
     prev.equippedTitleId !== next.equippedTitleId ||
     JSON.stringify(prev.badgesEarned) !== JSON.stringify(next.badgesEarned) ||
-    prev.profileVisibleInEchoes !== next.profileVisibleInEchoes
+    prev.profileVisibleInEchoes !== next.profileVisibleInEchoes ||
+    prev.equippedFrameId !== next.equippedFrameId ||
+    prev.featuredBadgeId !== next.featuredBadgeId
   );
 }
 
@@ -439,6 +444,10 @@ export function useSupabaseStoreSync() {
             ? (profile.badges_earned as StoreState['badgesEarned'])
             : state.badgesEarned,
           profileVisibleInEchoes: profile?.profile_visible_in_echoes ?? state.profileVisibleInEchoes,
+          equippedFrameId: profile?.equipped_frame_id && VALID_FRAME_IDS.includes(profile.equipped_frame_id as NonNullable<StoreState['equippedFrameId']>)
+            ? (profile.equipped_frame_id as StoreState['equippedFrameId'])
+            : state.equippedFrameId,
+          featuredBadgeId: (profile?.featured_badge_id as string | null) ?? state.featuredBadgeId,
           // Server-owned: ALWAYS trust server
           isSupporter: profile?.is_supporter ?? false,
           supporterSince: profile?.supporter_since ?? null,

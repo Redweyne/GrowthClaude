@@ -9,10 +9,57 @@
 import type { TransformationGoal } from './index';
 
 // ─────────────────────────────────────────────
-// AVATAR FRAME TIERS (derived from level, never stored)
+// AVATAR FRAME SYSTEM
 // ─────────────────────────────────────────────
+// Frames are unlockable by level. Users can equip
+// any unlocked frame. The "highest tier" is derived
+// for display contexts that don't allow selection.
 
 export type AvatarFrameTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+export type EquippableFrameId = AvatarFrameTier | 'founder';
+
+export interface FrameDefinition {
+  id: EquippableFrameId;
+  label: string;
+  tier: AvatarFrameTier; // visual tier for color lookup
+  minLevel: number;
+  isSupporterExclusive: boolean;
+}
+
+export const ALL_FRAMES: FrameDefinition[] = [
+  { id: 'bronze',   label: 'Bronze',   tier: 'bronze',   minLevel: 1, isSupporterExclusive: false },
+  { id: 'silver',   label: 'Silver',   tier: 'silver',   minLevel: 3, isSupporterExclusive: false },
+  { id: 'gold',     label: 'Gold',     tier: 'gold',     minLevel: 5, isSupporterExclusive: false },
+  { id: 'platinum', label: 'Platinum', tier: 'platinum', minLevel: 7, isSupporterExclusive: false },
+  { id: 'diamond',  label: 'Diamond',  tier: 'diamond',  minLevel: 9, isSupporterExclusive: false },
+  { id: 'founder',  label: 'Founder',  tier: 'gold',     minLevel: 1, isSupporterExclusive: true },
+];
+
+export function isFrameUnlocked(frame: FrameDefinition, level: number, isSupporter: boolean): boolean {
+  if (frame.isSupporterExclusive && !isSupporter) return false;
+  return level >= frame.minLevel;
+}
+
+export function getUnlockedFrames(level: number, isSupporter: boolean): FrameDefinition[] {
+  return ALL_FRAMES.filter(f => isFrameUnlocked(f, level, isSupporter));
+}
+
+// Highest earned tier (for contexts that don't use equipped frame)
+export function getFrameTier(level: number): AvatarFrameTier {
+  if (level >= 9) return 'diamond';
+  if (level >= 7) return 'platinum';
+  if (level >= 5) return 'gold';
+  if (level >= 3) return 'silver';
+  return 'bronze';
+}
+
+// Resolve equipped frame to a visual tier
+export function getEffectiveFrameTier(equippedFrameId: EquippableFrameId | null, level: number): AvatarFrameTier {
+  if (!equippedFrameId) return getFrameTier(level);
+  const frame = ALL_FRAMES.find(f => f.id === equippedFrameId);
+  if (!frame) return getFrameTier(level);
+  return frame.tier;
+}
 
 export const FRAME_TIER_THRESHOLDS: Record<AvatarFrameTier, { minLevel: number }> = {
   bronze:   { minLevel: 1 },
@@ -22,14 +69,6 @@ export const FRAME_TIER_THRESHOLDS: Record<AvatarFrameTier, { minLevel: number }
   diamond:  { minLevel: 9 },
 };
 
-export function getFrameTier(level: number): AvatarFrameTier {
-  if (level >= 9) return 'diamond';
-  if (level >= 7) return 'platinum';
-  if (level >= 5) return 'gold';
-  if (level >= 3) return 'silver';
-  return 'bronze';
-}
-
 // Frame color palettes for each tier
 export const FRAME_COLORS: Record<AvatarFrameTier, { primary: string; secondary: string; glow: string }> = {
   bronze:   { primary: '#cd7f32', secondary: '#b87333', glow: 'rgba(205,127,50,0.3)' },
@@ -37,6 +76,13 @@ export const FRAME_COLORS: Record<AvatarFrameTier, { primary: string; secondary:
   gold:     { primary: '#fbbf24', secondary: '#f59e0b', glow: 'rgba(251,191,36,0.4)' },
   platinum: { primary: '#e5e4e2', secondary: '#a78bfa', glow: 'rgba(167,139,250,0.4)' },
   diamond:  { primary: '#b9f2ff', secondary: '#818cf8', glow: 'rgba(185,242,255,0.5)' },
+};
+
+// Founder frame has its own palette (golden + supporter shimmer)
+export const FOUNDER_FRAME_COLORS = {
+  primary: '#f59e0b',
+  secondary: '#fbbf24',
+  glow: 'rgba(245,158,11,0.5)',
 };
 
 // ─────────────────────────────────────────────
@@ -84,19 +130,20 @@ export const AURA_STYLES: Record<ProfileAura, { gradient: string; particleColor:
 export interface BannerPreset {
   key: string;
   label: string;
-  imagePath: string;
+  /** CSS gradient string for the banner background */
+  gradient: string;
   isSupporterExclusive: boolean;
 }
 
 export const BANNER_PRESETS: BannerPreset[] = [
-  { key: 'stoic-columns',   label: 'Stoic Columns',      imagePath: '/banners/stoic-columns.jpg',   isSupporterExclusive: false },
-  { key: 'mountain-peak',   label: 'Mountain Peak',       imagePath: '/banners/mountain-peak.jpg',   isSupporterExclusive: false },
-  { key: 'ocean-horizon',   label: 'Ocean Horizon',       imagePath: '/banners/ocean-horizon.jpg',   isSupporterExclusive: false },
-  { key: 'forest-path',     label: 'Forest Path',         imagePath: '/banners/forest-path.jpg',     isSupporterExclusive: false },
-  { key: 'starfield',       label: 'Starfield',           imagePath: '/banners/starfield.jpg',       isSupporterExclusive: false },
-  { key: 'sunrise',         label: 'Sunrise',             imagePath: '/banners/sunrise.jpg',          isSupporterExclusive: false },
-  { key: 'golden-dawn',     label: 'Golden Dawn',         imagePath: '/banners/golden-dawn.jpg',     isSupporterExclusive: true },
-  { key: 'philosophers-garden', label: "Philosopher's Garden", imagePath: '/banners/philosophers-garden.jpg', isSupporterExclusive: true },
+  { key: 'stoic-columns',    label: 'Stoic Columns',      gradient: 'linear-gradient(135deg, #1a1510 0%, #2a1f14 30%, #1c1612 60%, #0f0c08 100%)',  isSupporterExclusive: false },
+  { key: 'mountain-peak',    label: 'Mountain Peak',      gradient: 'linear-gradient(180deg, #1a1e2e 0%, #2d3548 30%, #4a5568 60%, #1a1e2e 100%)',  isSupporterExclusive: false },
+  { key: 'ocean-horizon',    label: 'Ocean Horizon',      gradient: 'linear-gradient(180deg, #0c1929 0%, #1a3a5c 40%, #0e4d6e 70%, #0a2540 100%)',  isSupporterExclusive: false },
+  { key: 'forest-path',      label: 'Forest Path',        gradient: 'linear-gradient(180deg, #0d1a0d 0%, #1a2f1a 35%, #162816 65%, #0a140a 100%)',  isSupporterExclusive: false },
+  { key: 'starfield',        label: 'Starfield',          gradient: 'radial-gradient(ellipse at 30% 20%, #1a1040 0%, #0a0820 40%, #050410 80%, #020108 100%)', isSupporterExclusive: false },
+  { key: 'sunrise',          label: 'Sunrise',            gradient: 'linear-gradient(180deg, #1a0a1e 0%, #3d1a2a 25%, #6b3a20 50%, #2a1510 80%, #0f0a08 100%)', isSupporterExclusive: false },
+  { key: 'golden-dawn',      label: 'Golden Dawn',        gradient: 'linear-gradient(135deg, #1a1200 0%, #3d2a00 25%, #5c4000 45%, #3d2a00 70%, #1a1200 100%)', isSupporterExclusive: true },
+  { key: 'philosophers-garden', label: "Philosopher's Garden", gradient: 'linear-gradient(135deg, #0d1a14 0%, #1a2d22 30%, #2a3d30 55%, #1a2d22 80%, #0d1a14 100%)', isSupporterExclusive: true },
 ];
 
 // ─────────────────────────────────────────────
@@ -211,9 +258,10 @@ export interface TimelineEvent {
   id: string;
   type: TimelineEventType;
   date: string; // ISO date string
-  title: string;
-  description: string;
+  title: string; // i18n key or raw text
+  description: string; // i18n key or raw text
   icon: string; // Lucide icon name
+  meta?: Record<string, unknown>; // type-specific context for i18n interpolation
 }
 
 // ─────────────────────────────────────────────
@@ -251,7 +299,9 @@ export interface ShareableProfileData {
   levelTitle: string;
   currentStreak: number;
   topBadgeName: string | null;
+  featuredBadgeName: string | null;
   identityStatement: string | null;
+  motto: string | null;
   isSupporter: boolean;
 }
 

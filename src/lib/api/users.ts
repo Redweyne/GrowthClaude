@@ -32,6 +32,8 @@ export type UserProfile = {
   equipped_title_id?: string | null;
   badges_earned?: BadgeEarnedRecord[];
   profile_visible_in_echoes?: boolean;
+  equipped_frame_id?: string | null;
+  featured_badge_id?: string | null;
   // Server-owned (read-only from client)
   is_supporter?: boolean;
   supporter_since?: string | null;
