@@ -11,7 +11,8 @@ interface EchoAuthorProfile {
   profile_visible: boolean;
 }
 
-const profileCache = new Map<string, EchoAuthorProfile | null>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const profileCache = new Map<string, { data: EchoAuthorProfile | null; ts: number }>();
 
 /**
  * Fetches an echo author's public profile using the privacy-safe RPC.
@@ -33,9 +34,10 @@ export function useEchoAuthorProfile(authorId: string | null) {
     if (fetchedRef.current === authorId) return;
     fetchedRef.current = authorId;
 
-    // Check cache first
-    if (profileCache.has(authorId)) {
-      setProfile(profileCache.get(authorId) ?? null);
+    // Check cache first (with TTL)
+    const cached = profileCache.get(authorId);
+    if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+      setProfile(cached.data);
       return;
     }
 
@@ -51,15 +53,15 @@ export function useEchoAuthorProfile(authorId: string | null) {
       try {
         const { data, error } = await client.rpc('get_echo_author_profile', { author_id: authorId });
         if (error || !data || (Array.isArray(data) && data.length === 0)) {
-          profileCache.set(authorId, null);
+          profileCache.set(authorId, { data: null, ts: Date.now() });
           setProfile(null);
         } else {
           const p = (Array.isArray(data) ? data[0] : data) as EchoAuthorProfile;
-          profileCache.set(authorId, p);
+          profileCache.set(authorId, { data: p, ts: Date.now() });
           setProfile(p);
         }
       } catch {
-        profileCache.set(authorId, null);
+        profileCache.set(authorId, { data: null, ts: Date.now() });
         setProfile(null);
       } finally {
         setLoading(false);

@@ -8,6 +8,7 @@ import { INITIAL_AVATAR_GRADIENTS, SILHOUETTE_AVATARS } from '@/types/profile';
 import { cropAndCompressImage, uploadAvatarToStorage, blobToBase64, setLocalAvatar } from '@/lib/avatarStorage';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/i18n';
 
 type Tab = 'upload' | 'initials' | 'silhouettes';
 
@@ -27,6 +28,7 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
   const selectedFileRef = useRef<File | null>(null);
 
   const { user } = useAuth();
+  const { t } = useTranslation();
   const setAvatarUrl = useStore(s => s.setAvatarUrl);
   const userName = useStore(s => s.name);
 
@@ -84,9 +86,9 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
   }, [setAvatarUrl, onClose]);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'upload', label: 'Upload', icon: <Upload className="w-4 h-4" /> },
-    { id: 'initials', label: 'Initials', icon: <Type className="w-4 h-4" /> },
-    { id: 'silhouettes', label: 'Avatars', icon: <User className="w-4 h-4" /> },
+    { id: 'upload', label: t('profilePage.avatarUpload'), icon: <Upload className="w-4 h-4" /> },
+    { id: 'initials', label: t('profilePage.avatarInitials'), icon: <Type className="w-4 h-4" /> },
+    { id: 'silhouettes', label: t('profilePage.avatarSilhouettes'), icon: <User className="w-4 h-4" /> },
   ];
 
   return (
@@ -117,7 +119,7 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
-              <h2 className="text-lg font-display text-amber-100">Choose Your Avatar</h2>
+              <h2 className="text-lg font-display text-amber-100">{t('profilePage.chooseAvatar')}</h2>
               <button
                 onClick={onClose}
                 className="p-1.5 rounded-full hover:bg-stone-800 text-stone-400 hover:text-stone-200 transition-colors"
@@ -164,7 +166,7 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
                         className="w-36 h-36 rounded-full border-2 border-dashed border-stone-700 hover:border-amber-600/50 flex flex-col items-center justify-center gap-2 text-stone-500 hover:text-amber-400 transition-colors"
                       >
                         <Upload className="w-8 h-8" />
-                        <span className="text-xs">Tap to upload</span>
+                        <span className="text-xs">{t('profilePage.tapToUpload')}</span>
                       </button>
                     )}
                   </div>
@@ -187,14 +189,14 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
                         }}
                         className="flex-1 py-2.5 rounded-xl bg-stone-800 text-stone-300 text-sm font-medium hover:bg-stone-700 transition-colors"
                       >
-                        Choose Different
+                        {t('profilePage.chooseDifferent')}
                       </button>
                       <button
                         onClick={handleUploadConfirm}
                         disabled={isUploading}
                         className="flex-1 py-2.5 rounded-xl bg-amber-600 text-white text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50"
                       >
-                        {isUploading ? 'Saving...' : 'Save Avatar'}
+                        {isUploading ? t('profilePage.saving') : t('profilePage.saveAvatar')}
                       </button>
                     </div>
                   )}
@@ -204,7 +206,7 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
               {activeTab === 'initials' && (
                 <div className="flex flex-col items-center gap-5">
                   <p className="text-sm text-stone-400 text-center">
-                    Choose a gradient for your initial letter avatar
+                    {t('profilePage.chooseGradient')}
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     {INITIAL_AVATAR_GRADIENTS.map((gradient, i) => (
@@ -227,7 +229,7 @@ export function AvatarUploadModal({ isOpen, onClose, level, isSupporter }: Avata
               {activeTab === 'silhouettes' && (
                 <div className="flex flex-col items-center gap-5">
                   <p className="text-sm text-stone-400 text-center">
-                    Choose a philosophical avatar
+                    {t('profilePage.choosePhilosophicalAvatar')}
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     {SILHOUETTE_AVATARS.map((avatar) => (

@@ -897,29 +897,32 @@ export default function Home() {
     return (
       <div className="h-[100dvh] flex flex-col overflow-hidden">
         <main className="flex-1 min-h-0">
-          <ProfilePage
-            name={userName || c.friend}
-            totalXp={totalXp}
-            currentStreak={currentStreak}
-            longestStreak={longestStreak}
-            level={level}
-            transformationGoal={transformationGoal || undefined}
-            isWeeklyCheckinDue={isCheckinDue()}
-            isMonthlyAssessmentDue={isAssessmentDue()}
-            unreadEchoCount={totalUnreadCount}
-            onClose={() => setCurrentView('home')}
-            onOpenTodayPractice={() => setCurrentView('home')}
-            onOpenWeeklyCheckin={() => setCurrentView('checkin')}
-            onOpenMonthlyAssessment={() => setCurrentView('assessment')}
-            onOpenBrowseEchoes={() => setCurrentView('echoes')}
-            onOpenYourEchoes={() => setCurrentView('echoes')}
-            onOpenPastLessons={() => setCurrentView('map')}
-            onOpenIdentity={() => setCurrentView('identity')}
-            onOpenStats={() => setCurrentView('progress')}
-            onOpenSettings={() => setCurrentView('settings')}
-            completedWorldSlugs={completedWorldSlugs}
-            totalEchoesSent={sentEchos.length}
-          />
+          <AnimatePresence mode="wait">
+            <ProfilePage
+              key="profile-page"
+              name={userName || c.friend}
+              totalXp={totalXp}
+              currentStreak={currentStreak}
+              longestStreak={longestStreak}
+              level={level}
+              transformationGoal={transformationGoal || undefined}
+              isWeeklyCheckinDue={isCheckinDue()}
+              isMonthlyAssessmentDue={isAssessmentDue()}
+              unreadEchoCount={totalUnreadCount}
+              onClose={() => setCurrentView('home')}
+              onOpenTodayPractice={() => setCurrentView('home')}
+              onOpenWeeklyCheckin={() => setCurrentView('checkin')}
+              onOpenMonthlyAssessment={() => setCurrentView('assessment')}
+              onOpenBrowseEchoes={() => setCurrentView('echoes')}
+              onOpenYourEchoes={() => setCurrentView('echoes')}
+              onOpenPastLessons={() => setCurrentView('map')}
+              onOpenIdentity={() => setCurrentView('identity')}
+              onOpenStats={() => setCurrentView('progress')}
+              onOpenSettings={() => setCurrentView('settings')}
+              completedWorldSlugs={completedWorldSlugs}
+              totalEchoesSent={sentEchos.length}
+            />
+          </AnimatePresence>
         </main>
         <BottomNavBar
           activeTab="profile"

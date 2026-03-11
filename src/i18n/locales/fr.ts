@@ -619,6 +619,23 @@ const fr = {
     share: 'Partager',
     copied: 'Copié !',
     due: 'Dû',
+    // Stats
+    level: 'Niveau',
+    streak: 'Série',
+    xp: 'XP',
+    best: 'Meilleur',
+    toNext: 'vers suivant',
+    // Avatar modal
+    chooseAvatar: 'Choisir votre avatar',
+    avatarUpload: 'Téléverser',
+    avatarInitials: 'Initiales',
+    avatarSilhouettes: 'Avatars',
+    tapToUpload: 'Appuyez pour téléverser',
+    chooseDifferent: 'Choisir un autre',
+    saveAvatar: 'Enregistrer l\'avatar',
+    saving: 'Enregistrement...',
+    chooseGradient: 'Choisissez un dégradé pour votre avatar initiale',
+    choosePhilosophicalAvatar: 'Choisissez un avatar philosophique',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

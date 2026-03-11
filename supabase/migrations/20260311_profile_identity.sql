@@ -45,7 +45,7 @@ DECLARE
     'onboarding_complete', 'language', 'community_identity',
     'last_checkin_date', 'last_assessment_month',
     'motto', 'accent_color', 'banner_key', 'equipped_title_id',
-    'badges_earned', 'profile_visible_in_echoes'
+    'profile_visible_in_echoes'
   ];
   filtered jsonb;
   k text;
@@ -79,7 +79,6 @@ BEGIN
       accent_color             = CASE WHEN filtered ? 'accent_color' THEN filtered->>'accent_color' ELSE users.accent_color END,
       banner_key               = CASE WHEN filtered ? 'banner_key' THEN filtered->>'banner_key' ELSE users.banner_key END,
       equipped_title_id        = CASE WHEN filtered ? 'equipped_title_id' THEN filtered->>'equipped_title_id' ELSE users.equipped_title_id END,
-      badges_earned            = CASE WHEN filtered ? 'badges_earned' THEN (filtered->'badges_earned') ELSE users.badges_earned END,
       profile_visible_in_echoes = CASE WHEN filtered ? 'profile_visible_in_echoes' THEN (filtered->>'profile_visible_in_echoes')::boolean ELSE users.profile_visible_in_echoes END,
       updated_at               = now();
   -- is_supporter and supporter_since are NEVER modified by this function
@@ -141,19 +140,49 @@ BEGIN
     longest_streak = COALESCE(p_longest_streak, longest_streak),
     grace_days     = COALESCE(p_grace_days, grace_days),
     -- Derive current_level from total_xp for echo mini-cards
+    -- Thresholds aligned with client LEVELS in src/types/index.ts
     current_level  = CASE
-      WHEN COALESCE(p_total_xp, total_xp) >= 5000 THEN 10
-      WHEN COALESCE(p_total_xp, total_xp) >= 4000 THEN 9
-      WHEN COALESCE(p_total_xp, total_xp) >= 3000 THEN 8
-      WHEN COALESCE(p_total_xp, total_xp) >= 2200 THEN 7
-      WHEN COALESCE(p_total_xp, total_xp) >= 1600 THEN 6
-      WHEN COALESCE(p_total_xp, total_xp) >= 1100 THEN 5
-      WHEN COALESCE(p_total_xp, total_xp) >= 700 THEN 4
-      WHEN COALESCE(p_total_xp, total_xp) >= 400 THEN 3
-      WHEN COALESCE(p_total_xp, total_xp) >= 150 THEN 2
+      WHEN COALESCE(p_total_xp, total_xp) >= 5200 THEN 10
+      WHEN COALESCE(p_total_xp, total_xp) >= 3800 THEN 9
+      WHEN COALESCE(p_total_xp, total_xp) >= 2700 THEN 8
+      WHEN COALESCE(p_total_xp, total_xp) >= 1900 THEN 7
+      WHEN COALESCE(p_total_xp, total_xp) >= 1300 THEN 6
+      WHEN COALESCE(p_total_xp, total_xp) >= 850 THEN 5
+      WHEN COALESCE(p_total_xp, total_xp) >= 500 THEN 4
+      WHEN COALESCE(p_total_xp, total_xp) >= 250 THEN 3
+      WHEN COALESCE(p_total_xp, total_xp) >= 100 THEN 2
       ELSE 1
     END,
     updated_at     = now()
+  WHERE id = auth.uid();
+END;
+$$;
+
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 3c. BADGES RPC: SERVER-VALIDATED BADGE EARNING
+-- ─────────────────────────────────────────────────────────────────────────
+-- Clients send badge_id; server appends only if not already earned.
+-- badges_earned is no longer client-writable via update_profile_safe.
+
+CREATE OR REPLACE FUNCTION public.earn_badge(p_badge_id text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  UPDATE public.users SET
+    badges_earned = CASE
+      -- Only append if badge not already in the array
+      WHEN NOT EXISTS (
+        SELECT 1 FROM jsonb_array_elements(COALESCE(badges_earned, '[]'::jsonb)) elem
+        WHERE elem->>'badgeId' = p_badge_id
+      )
+      THEN COALESCE(badges_earned, '[]'::jsonb) || jsonb_build_object('badgeId', p_badge_id, 'earnedAt', to_char(now(), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'))
+      ELSE badges_earned
+    END,
+    updated_at = now()
   WHERE id = auth.uid();
 END;
 $$;
@@ -191,3 +220,48 @@ CREATE POLICY "avatar_read_authenticated" ON storage.objects
 CREATE POLICY "avatar_read_anon" ON storage.objects
   FOR SELECT TO anon
   USING (bucket_id = 'avatars');
+
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 5. GM / TEST ACCOUNT SEED
+-- ─────────────────────────────────────────────────────────────────────────
+-- Grants aposlash2021@gmail.com full supporter status, all 9 badges,
+-- and high XP (level 10) for testing all features.
+-- Safe to re-run: only updates if the user already exists in auth.users.
+
+DO $$
+DECLARE
+  gm_uid uuid;
+BEGIN
+  -- Resolve uid from auth.users by email
+  SELECT id INTO gm_uid FROM auth.users WHERE email = 'aposlash2021@gmail.com' LIMIT 1;
+
+  IF gm_uid IS NOT NULL THEN
+    UPDATE public.users SET
+      is_supporter    = true,
+      supporter_since = '2026-01-01T00:00:00Z',
+      total_xp        = 6000,
+      current_streak  = 100,
+      longest_streak  = 100,
+      current_level   = 10,
+      badges_earned   = '[
+        {"badgeId":"first-flame","earnedAt":"2026-01-01T00:00:00Z"},
+        {"badgeId":"week-warrior","earnedAt":"2026-01-08T00:00:00Z"},
+        {"badgeId":"iron-will","earnedAt":"2026-02-01T00:00:00Z"},
+        {"badgeId":"century","earnedAt":"2026-03-01T00:00:00Z"},
+        {"badgeId":"world-walker","earnedAt":"2026-01-15T00:00:00Z"},
+        {"badgeId":"echo-sender","earnedAt":"2026-01-20T00:00:00Z"},
+        {"badgeId":"deep-diver","earnedAt":"2026-02-10T00:00:00Z"},
+        {"badgeId":"identity-forger","earnedAt":"2026-01-25T00:00:00Z"},
+        {"badgeId":"philosopher-king","earnedAt":"2026-03-01T00:00:00Z"},
+        {"badgeId":"founding-member","earnedAt":"2026-01-01T00:00:00Z"}
+      ]'::jsonb,
+      updated_at      = now()
+    WHERE id = gm_uid;
+
+    RAISE NOTICE 'GM account seeded for aposlash2021@gmail.com (uid: %)', gm_uid;
+  ELSE
+    RAISE NOTICE 'GM account aposlash2021@gmail.com not found in auth.users — skipping seed';
+  END IF;
+END;
+$$;

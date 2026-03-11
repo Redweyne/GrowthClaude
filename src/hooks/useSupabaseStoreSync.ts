@@ -57,6 +57,7 @@ const VALID_TRANSFORMATION_GOALS: TransformationGoal[] = [
 ];
 
 const VALID_LANGUAGES: Array<StoreState['language']> = ['en', 'fr', 'ar'];
+const VALID_ACCENT_COLORS: Array<StoreState['accentColor']> = ['gold', 'rose', 'purple', 'emerald', 'indigo'];
 const VALID_COMMUNITY_IDENTITIES: Array<NonNullable<StoreState['communityIdentity']>> = [
   'brother',
   'sister',
@@ -406,9 +407,9 @@ export function useSupabaseStoreSync() {
               : state.transformationGoal,
           whyStatement: profile?.why_statement ?? state.whyStatement,
           dailyCommitmentMinutes: profile?.daily_commitment_minutes ?? state.dailyCommitmentMinutes,
-          totalXp: Math.max(state.totalXp, profile?.total_xp ?? 0),
-          currentStreak: Math.max(state.currentStreak, profile?.current_streak ?? 0),
-          longestStreak: Math.max(state.longestStreak, profile?.longest_streak ?? 0),
+          totalXp: profile?.total_xp ?? state.totalXp,
+          currentStreak: profile?.current_streak ?? state.currentStreak,
+          longestStreak: profile?.longest_streak ?? state.longestStreak,
           graceDays: profile?.grace_days ?? state.graceDays,
           lastLessonDate: profile?.last_lesson_at ? profile.last_lesson_at.split('T')[0] : state.lastLessonDate,
           soundEnabled: profile?.sound_enabled ?? state.soundEnabled,
@@ -428,10 +429,15 @@ export function useSupabaseStoreSync() {
           // Profile identity fields
           avatarUrl: profile?.avatar_url ?? state.avatarUrl,
           motto: profile?.motto ?? state.motto,
-          accentColor: (profile?.accent_color as StoreState['accentColor']) ?? state.accentColor,
+          accentColor: profile?.accent_color && VALID_ACCENT_COLORS.includes(profile.accent_color as StoreState['accentColor'])
+            ? (profile.accent_color as StoreState['accentColor'])
+            : state.accentColor,
           bannerKey: profile?.banner_key ?? state.bannerKey,
           equippedTitleId: profile?.equipped_title_id ?? state.equippedTitleId,
-          badgesEarned: (profile?.badges_earned as StoreState['badgesEarned']) ?? state.badgesEarned,
+          badgesEarned: Array.isArray(profile?.badges_earned)
+            && profile.badges_earned.every((b: unknown) => typeof b === 'object' && b !== null && 'badgeId' in b && 'earnedAt' in b)
+            ? (profile.badges_earned as StoreState['badgesEarned'])
+            : state.badgesEarned,
           profileVisibleInEchoes: profile?.profile_visible_in_echoes ?? state.profileVisibleInEchoes,
           // Server-owned: ALWAYS trust server
           isSupporter: profile?.is_supporter ?? false,

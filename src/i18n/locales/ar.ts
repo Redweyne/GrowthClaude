@@ -619,6 +619,23 @@ const ar = {
     share: 'مشاركة',
     copied: 'تم النسخ!',
     due: 'مستحق',
+    // Stats
+    level: 'المستوى',
+    streak: 'السلسلة',
+    xp: 'XP',
+    best: 'الأفضل',
+    toNext: 'للتالي',
+    // Avatar modal
+    chooseAvatar: 'اختر صورتك الرمزية',
+    avatarUpload: 'رفع',
+    avatarInitials: 'الأحرف الأولى',
+    avatarSilhouettes: 'صور رمزية',
+    tapToUpload: 'انقر للرفع',
+    chooseDifferent: 'اختر آخر',
+    saveAvatar: 'حفظ الصورة',
+    saving: 'جارٍ الحفظ...',
+    chooseGradient: 'اختر تدرج لونى لصورتك الرمزية',
+    choosePhilosophicalAvatar: 'اختر صورة رمزية فلسفية',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

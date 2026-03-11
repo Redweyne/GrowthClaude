@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Flame, Zap, Trophy } from 'lucide-react';
 import { getXpProgress } from '@/types';
+import { useTranslation } from '@/i18n';
 
 interface ProfileStatsRowProps {
   totalXp: number;
@@ -12,6 +13,7 @@ interface ProfileStatsRowProps {
 }
 
 export function ProfileStatsRow({ totalXp, currentStreak, longestStreak, level }: ProfileStatsRowProps) {
+  const { t } = useTranslation();
   const xpProgress = getXpProgress(totalXp);
 
   return (
@@ -24,7 +26,7 @@ export function ProfileStatsRow({ totalXp, currentStreak, longestStreak, level }
       {/* Level */}
       <StatCard
         icon={<Trophy className="w-4 h-4 text-amber-400" />}
-        label="Level"
+        label={t('profilePage.level')}
         value={`${level.level}`}
         subtitle={level.title}
         accentColor="amber"
@@ -34,9 +36,9 @@ export function ProfileStatsRow({ totalXp, currentStreak, longestStreak, level }
       {/* Streak */}
       <StatCard
         icon={<Flame className="w-4 h-4 text-orange-400" />}
-        label="Streak"
+        label={t('profilePage.streak')}
         value={`${currentStreak}d`}
-        subtitle={`Best: ${longestStreak}d`}
+        subtitle={`${t('profilePage.best')}: ${longestStreak}d`}
         accentColor="orange"
         delay={0.05}
       />
@@ -44,15 +46,21 @@ export function ProfileStatsRow({ totalXp, currentStreak, longestStreak, level }
       {/* XP */}
       <StatCard
         icon={<Zap className="w-4 h-4 text-yellow-400" />}
-        label="XP"
+        label={t('profilePage.xp')}
         value={`${totalXp}`}
-        subtitle={`${Math.round(xpProgress.percentage)}% to next`}
+        subtitle={`${Math.round(xpProgress.percentage)}% ${t('profilePage.toNext')}`}
         accentColor="yellow"
         delay={0.1}
       />
     </motion.div>
   );
 }
+
+const STAT_ACCENT_CLASSES: Record<string, string> = {
+  amber: 'text-amber-300 light:text-amber-600',
+  orange: 'text-orange-300 light:text-orange-600',
+  yellow: 'text-yellow-300 light:text-yellow-600',
+};
 
 function StatCard({
   icon,
@@ -69,6 +77,8 @@ function StatCard({
   accentColor: string;
   delay: number;
 }) {
+  const colorClass = STAT_ACCENT_CLASSES[accentColor] ?? STAT_ACCENT_CLASSES.amber;
+
   return (
     <motion.div
       className="flex-1 bg-stone-900/60 light:bg-stone-200/60 backdrop-blur-sm rounded-xl border border-stone-800/50 light:border-stone-300/50 p-3"
@@ -80,7 +90,7 @@ function StatCard({
         {icon}
         <span className="text-[10px] uppercase tracking-wider text-stone-500 light:text-stone-500 font-medium">{label}</span>
       </div>
-      <div className={`text-xl font-bold text-${accentColor}-300 light:text-${accentColor}-600`}>
+      <div className={`text-xl font-bold ${colorClass}`}>
         {value}
       </div>
       <div className="text-[10px] text-stone-500 mt-0.5">{subtitle}</div>

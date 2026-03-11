@@ -619,6 +619,23 @@ const en = {
     share: 'Share',
     copied: 'Copied!',
     due: 'Due',
+    // Stats
+    level: 'Level',
+    streak: 'Streak',
+    xp: 'XP',
+    best: 'Best',
+    toNext: 'to next',
+    // Avatar modal
+    chooseAvatar: 'Choose Your Avatar',
+    avatarUpload: 'Upload',
+    avatarInitials: 'Initials',
+    avatarSilhouettes: 'Avatars',
+    tapToUpload: 'Tap to upload',
+    chooseDifferent: 'Choose Different',
+    saveAvatar: 'Save Avatar',
+    saving: 'Saving...',
+    chooseGradient: 'Choose a gradient for your initial letter avatar',
+    choosePhilosophicalAvatar: 'Choose a philosophical avatar',
   },
 
   // ─────────────────────────────────────────────────────────────────────────

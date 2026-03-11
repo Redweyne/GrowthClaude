@@ -939,6 +939,13 @@ export const useStore = create<UserState & UserActions>()(
             { badgeId, earnedAt: new Date().toISOString() },
           ],
         });
+        // Sync badge to server via dedicated RPC
+        import('@/lib/supabase').then(({ getSupabaseBrowserClient }) => {
+          const client = getSupabaseBrowserClient();
+          if (client) {
+            void client.rpc('earn_badge', { p_badge_id: badgeId });
+          }
+        });
       },
       setProfileVisibility: (visible) => set({ profileVisibleInEchoes: visible }),
 
