@@ -42,6 +42,7 @@ import { useSparkStore } from '@/store/useSparkStore';
 import { BottomNavBar, type NavTab } from '@/components/navigation/BottomNavBar';
 import { backgroundMusic } from '@/lib/backgroundMusic';
 import { useActivityLog } from '@/providers/ActivityLoggerProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { WorldsPage } from '@/components/worlds/WorldsPage';
 
 type AppView =
@@ -114,6 +115,10 @@ export default function Home() {
     getUnreadMessageCount
   } = useEchoesStore();
   const sentEchos = useEchoesStore(s => s.sentEchos);
+
+  // Auth — detect post-logout state to skip onboarding re-run
+  const { isAuthenticated, isConfigured: authConfigured, isLoading: authLoading } = useAuth();
+  const [showSignupFromLogin, setShowSignupFromLogin] = useState(false);
 
   // Daily practice store
   const {
@@ -639,8 +644,27 @@ export default function Home() {
     return <LanguageSelector />;
   }
 
-  // Onboarding flow
+  // Onboarding flow — but if Supabase is configured and user just signed out,
+  // show login screen instead of forcing them through onboarding again.
   if (!onboardingComplete) {
+    // Auth configured + not loading + no session = user signed out → show login
+    if (authConfigured && !authLoading && !isAuthenticated) {
+      return (
+        <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6" style={{ background: '#050403' }}>
+          <LoginModal
+            isOpen={!showSignupFromLogin}
+            onClose={() => {}} // No close — must log in
+            onSwitchToSignup={() => setShowSignupFromLogin(true)}
+          />
+          <SignupModal
+            isOpen={showSignupFromLogin}
+            onClose={() => setShowSignupFromLogin(false)}
+            onSwitchToLogin={() => setShowSignupFromLogin(false)}
+          />
+        </div>
+      );
+    }
+    // First time ever (no Supabase, or still loading auth, or authenticated but fresh) → onboarding
     return <OnboardingFlow />;
   }
 
