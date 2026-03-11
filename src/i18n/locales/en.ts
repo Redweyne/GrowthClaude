@@ -589,6 +589,39 @@ const en = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PROFILE PAGE
+  // ─────────────────────────────────────────────────────────────────────────
+  profilePage: {
+    quickAccess: 'Quick Access',
+    todaysPractice: "Today's Practice",
+    weeklyCheckin: 'Weekly Check-in',
+    monthlyAssessment: 'Monthly Assessment',
+    browseEchoes: 'Browse Echoes',
+    pastLessons: 'Past Lessons',
+    identity: 'Identity',
+    statsDashboard: 'Stats Dashboard',
+    settings: 'Settings',
+    customize: 'Customize',
+    accentColor: 'Accent Color',
+    title: 'Title',
+    banner: 'Banner',
+    autoAura: 'Auto Aura',
+    motto: 'Motto',
+    mottoPlaceholder: 'Your personal motto...',
+    echoVisibility: 'Echo Visibility',
+    visibleInEchoes: 'Visible in Echoes',
+    hiddenInEchoes: 'Hidden in Echoes',
+    visibleDesc: 'Others can see your name and title on your echoes',
+    hiddenDesc: 'Your echoes appear anonymously',
+    shareProfileCard: 'Share Profile Card',
+    shareYourJourney: 'Share Your Journey',
+    download: 'Download',
+    share: 'Share',
+    copied: 'Copied!',
+    due: 'Due',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // ECHOES / REFLECTIONS
   // ─────────────────────────────────────────────────────────────────────────
   echoes: {

@@ -589,6 +589,39 @@ const ar = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PROFILE PAGE
+  // ─────────────────────────────────────────────────────────────────────────
+  profilePage: {
+    quickAccess: 'وصول سريع',
+    todaysPractice: 'تمرين اليوم',
+    weeklyCheckin: 'المراجعة الأسبوعية',
+    monthlyAssessment: 'التقييم الشهري',
+    browseEchoes: 'تصفح الأصداء',
+    pastLessons: 'الدروس السابقة',
+    identity: 'الهوية',
+    statsDashboard: 'لوحة الإحصائيات',
+    settings: 'الإعدادات',
+    customize: 'تخصيص',
+    accentColor: 'لون التمييز',
+    title: 'اللقب',
+    banner: 'البانر',
+    autoAura: 'هالة تلقائية',
+    motto: 'الشعار',
+    mottoPlaceholder: 'شعارك الشخصي...',
+    echoVisibility: 'ظهور الأصداء',
+    visibleInEchoes: 'مرئي في الأصداء',
+    hiddenInEchoes: 'مخفي في الأصداء',
+    visibleDesc: 'يمكن للآخرين رؤية اسمك ولقبك على أصدائك',
+    hiddenDesc: 'تظهر أصداؤك بشكل مجهول',
+    shareProfileCard: 'مشاركة بطاقة الملف الشخصي',
+    shareYourJourney: 'شارك رحلتك',
+    download: 'تحميل',
+    share: 'مشاركة',
+    copied: 'تم النسخ!',
+    due: 'مستحق',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // ECHOES / REFLECTIONS
   // ─────────────────────────────────────────────────────────────────────────
   echoes: {

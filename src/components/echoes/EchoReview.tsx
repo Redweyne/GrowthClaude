@@ -19,6 +19,8 @@ import { Button } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
 import { useHaptics } from '@/hooks/useHaptics';
+import { useEchoAuthorProfile } from '@/hooks/useEchoAuthorProfile';
+import { MiniProfileCard } from '@/components/profile/MiniProfileCard';
 import { getGenderLabel } from '@/types/echoes';
 import type { PublicReflection } from '@/types/echoes';
 import { useTranslation } from '@/i18n';
@@ -53,6 +55,9 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
 
   // Determine if this is a seed reflection (can't connect)
   const isSeedReflection = reflection.id.startsWith('seed-');
+
+  // Attempt to fetch the author's public profile (opt-in only)
+  const { profile: authorProfile } = useEchoAuthorProfile(reflection.authorId);
 
   // Get pronoun info
   const genderLabel = getGenderLabel(reflection.authorGender).toLowerCase();
@@ -141,17 +146,32 @@ export function EchoReview({ reflection, onComplete, onSkip }: EchoReviewProps) 
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6"
               >
-                {/* Header */}
-                <div className="text-center">
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className={`text-amber-400 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}
-                  >
-                    {t('echoes.fellowReflectedOn').replace('{gender}', genderLabel).replace('{title}', reflection.lessonTitle)}
-                  </motion.p>
-                </div>
+                {/* Header — show mini profile card if author opted in */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-center"
+                >
+                  {authorProfile ? (
+                    <div className="flex flex-col items-center gap-2 mb-2">
+                      <MiniProfileCard
+                        name={authorProfile.name}
+                        avatarUrl={authorProfile.avatar_url}
+                        equippedTitleId={authorProfile.equipped_title_id}
+                        level={authorProfile.current_level}
+                        fallbackLabel={`A ${genderLabel}`}
+                      />
+                      <p className={`text-amber-400 text-sm ${isRTL ? 'text-right' : ''}`}>
+                        {t('echoes.fellowReflectedOn').replace('{gender}', authorProfile.name || genderLabel).replace('{title}', reflection.lessonTitle)}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className={`text-amber-400 text-sm mb-2 ${isRTL ? 'text-right' : ''}`}>
+                      {t('echoes.fellowReflectedOn').replace('{gender}', genderLabel).replace('{title}', reflection.lessonTitle)}
+                    </p>
+                  )}
+                </motion.div>
 
                 {/* Their reflection - breathable typography */}
                 <motion.div

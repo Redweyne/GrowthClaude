@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { TransformationGoal } from '@/types';
 import type { IdentityStatement, IdentityContext } from '@/types/identity';
+import type { ProfileAccentColor, BadgeEarnedRecord } from '@/types/profile';
 
 interface CheckinResponseData {
   promptId: string;
@@ -113,6 +114,19 @@ interface UserState {
   whyStatement: string | null;
   dailyCommitmentMinutes: number;
   communityIdentity: 'brother' | 'sister' | 'traveler' | null;
+
+  // Profile identity (synced via RPC whitelist)
+  avatarUrl: string | null;
+  motto: string | null;
+  accentColor: ProfileAccentColor;
+  bannerKey: string | null;
+  equippedTitleId: string | null;
+  badgesEarned: BadgeEarnedRecord[];
+  profileVisibleInEchoes: boolean;
+
+  // Server-owned (read-only, populated on hydration only)
+  isSupporter: boolean;
+  supporterSince: string | null;
 
   // Onboarding
   onboardingComplete: boolean;
@@ -265,6 +279,15 @@ interface UserActions {
   toggleHaptic: () => void;
   setSoundEnabled: (enabled: boolean) => void;
 
+  // Profile identity
+  setAvatarUrl: (url: string | null) => void;
+  setMotto: (motto: string | null) => void;
+  setAccentColor: (color: ProfileAccentColor) => void;
+  setBannerKey: (key: string | null) => void;
+  equipTitle: (titleId: string | null) => void;
+  earnBadge: (badgeId: string) => void;
+  setProfileVisibility: (visible: boolean) => void;
+
   // Reset
   resetUser: () => void;
 
@@ -283,6 +306,19 @@ const initialState: UserState = {
   whyStatement: null,
   dailyCommitmentMinutes: 5,
   communityIdentity: null,
+
+  // Profile identity
+  avatarUrl: null,
+  motto: null,
+  accentColor: 'gold' as ProfileAccentColor,
+  bannerKey: null,
+  equippedTitleId: null,
+  badgesEarned: [],
+  profileVisibleInEchoes: false,
+
+  // Server-owned
+  isSupporter: false,
+  supporterSince: null,
   onboardingComplete: false,
   onboardingStep: 0,
   // First session coaching
@@ -884,6 +920,27 @@ export const useStore = create<UserState & UserActions>()(
       toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
       toggleHaptic: () => set((state) => ({ hapticEnabled: !state.hapticEnabled })),
       setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
+
+      // ============================================
+      // PROFILE IDENTITY
+      // ============================================
+      setAvatarUrl: (url) => set({ avatarUrl: url }),
+      setMotto: (motto) => set({ motto: motto ? motto.slice(0, 120) : null }),
+      setAccentColor: (color) => set({ accentColor: color }),
+      setBannerKey: (key) => set({ bannerKey: key }),
+      equipTitle: (titleId) => set({ equippedTitleId: titleId }),
+      earnBadge: (badgeId) => {
+        const state = get();
+        // Don't earn the same badge twice
+        if (state.badgesEarned.some(b => b.badgeId === badgeId)) return;
+        set({
+          badgesEarned: [
+            ...state.badgesEarned,
+            { badgeId, earnedAt: new Date().toISOString() },
+          ],
+        });
+      },
+      setProfileVisibility: (visible) => set({ profileVisibleInEchoes: visible }),
 
       // ============================================
       // RESET

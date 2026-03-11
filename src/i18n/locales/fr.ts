@@ -589,6 +589,39 @@ const fr = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // PROFILE PAGE
+  // ─────────────────────────────────────────────────────────────────────────
+  profilePage: {
+    quickAccess: 'Accès rapide',
+    todaysPractice: 'Pratique du jour',
+    weeklyCheckin: 'Bilan hebdomadaire',
+    monthlyAssessment: 'Évaluation mensuelle',
+    browseEchoes: 'Parcourir les échos',
+    pastLessons: 'Leçons passées',
+    identity: 'Identité',
+    statsDashboard: 'Tableau de bord',
+    settings: 'Paramètres',
+    customize: 'Personnaliser',
+    accentColor: 'Couleur d\'accent',
+    title: 'Titre',
+    banner: 'Bannière',
+    autoAura: 'Aura auto',
+    motto: 'Devise',
+    mottoPlaceholder: 'Votre devise personnelle...',
+    echoVisibility: 'Visibilité des échos',
+    visibleInEchoes: 'Visible dans les échos',
+    hiddenInEchoes: 'Caché dans les échos',
+    visibleDesc: 'Les autres peuvent voir votre nom et titre sur vos échos',
+    hiddenDesc: 'Vos échos apparaissent anonymement',
+    shareProfileCard: 'Partager la carte de profil',
+    shareYourJourney: 'Partagez votre parcours',
+    download: 'Télécharger',
+    share: 'Partager',
+    copied: 'Copié !',
+    due: 'Dû',
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // ECHOES / REFLECTIONS
   // ─────────────────────────────────────────────────────────────────────────
   echoes: {

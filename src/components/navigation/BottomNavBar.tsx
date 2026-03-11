@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Home, Compass, Globe, Zap, ListChecks, MessageCircleHeart, User } from 'lucide-react';
+import { Home, Compass, Globe, Zap, ListChecks, MessageCircleHeart } from 'lucide-react';
 import { useSparkStore } from '@/store/useSparkStore';
 import { useTranslation } from '@/i18n';
+import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
 
 export type NavTab = 'home' | 'journey' | 'worlds' | 'spark' | 'tasks' | 'echoes' | 'profile';
 
@@ -12,16 +13,21 @@ interface BottomNavBarProps {
   onTabChange: (tab: NavTab) => void;
   isSparkUnlocked: boolean;
   unreadEchoCount?: number;
+  // Profile avatar props
+  avatarUrl?: string | null;
+  userName?: string | null;
+  userLevel?: number;
+  isSupporter?: boolean;
 }
 
-const TABS: { id: NavTab; icon: typeof Home }[] = [
+const TABS: { id: NavTab; icon: typeof Home | null }[] = [
   { id: 'home', icon: Home },
   { id: 'journey', icon: Compass },
   { id: 'worlds', icon: Globe },
   { id: 'spark', icon: Zap },
   { id: 'tasks', icon: ListChecks },
   { id: 'echoes', icon: MessageCircleHeart },
-  { id: 'profile', icon: User },
+  { id: 'profile', icon: null }, // Uses AvatarDisplay instead
 ];
 
 const COPY_BY_LOCALE = {
@@ -59,6 +65,10 @@ export function BottomNavBar({
   onTabChange,
   isSparkUnlocked,
   unreadEchoCount = 0,
+  avatarUrl,
+  userName,
+  userLevel = 1,
+  isSupporter = false,
 }: BottomNavBarProps) {
   const { isForcedClosedToday } = useSparkStore();
   const { locale } = useTranslation();
@@ -78,7 +88,6 @@ export function BottomNavBar({
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const isSpark = tab.id === 'spark';
-          const Icon = tab.icon;
 
           if (isSpark) {
             const isLocked = !isSparkUnlocked;
@@ -147,6 +156,8 @@ export function BottomNavBar({
           }
 
           const label = copy[tab.id];
+          const isProfileTab = tab.id === 'profile';
+          const Icon = tab.icon;
 
           return (
             <button
@@ -161,14 +172,30 @@ export function BottomNavBar({
                 whileTap={{ scale: 0.85 }}
                 transition={{ duration: 0.1 }}
               >
-                <Icon
-                  size={22}
-                  className={`transition-colors duration-200 ${
-                    isActive ? 'text-white light:text-stone-900' : 'text-stone-500 light:text-stone-700'
-                  }`}
-                  fill={isActive ? 'currentColor' : 'none'}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
+                {isProfileTab ? (
+                  <motion.div
+                    animate={{ scale: isActive ? 1.1 : 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  >
+                    <AvatarDisplay
+                      size="nav"
+                      avatarUrl={avatarUrl}
+                      name={userName}
+                      level={userLevel}
+                      isSupporter={isSupporter}
+                      layoutId="profileAvatar"
+                    />
+                  </motion.div>
+                ) : Icon ? (
+                  <Icon
+                    size={22}
+                    className={`transition-colors duration-200 ${
+                      isActive ? 'text-white light:text-stone-900' : 'text-stone-500 light:text-stone-700'
+                    }`}
+                    fill={isActive ? 'currentColor' : 'none'}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                ) : null}
 
                 {tab.id === 'echoes' && unreadEchoCount > 0 && (
                   <motion.div

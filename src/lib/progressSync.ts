@@ -155,6 +155,8 @@ export function clearAllStores(): void {
     localStorage.removeItem('echoes-storage');
     localStorage.removeItem('daily-practice-storage');
     localStorage.removeItem('spark-storage');
+    // Clean up anonymous avatar fallback
+    localStorage.removeItem('avatar-local');
   }
 }
 

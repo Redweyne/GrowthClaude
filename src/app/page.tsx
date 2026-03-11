@@ -9,7 +9,8 @@ import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { LanguageSelector } from '@/components/language';
 import { DailyFlowHome } from '@/components/daily/DailyFlowHome';
 import { MandatoryEchoFlow } from '@/components/daily/MandatoryEchoFlow';
-import { DashboardNew } from '@/components/dashboard/DashboardNew';
+import { ProfilePage } from '@/components/profile/ProfilePage';
+import { useBadgeWatcher } from '@/hooks/useBadgeWatcher';
 import { CoachModal, CoachingStep } from '@/components/coaching';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { SignupModal } from '@/components/auth/SignupModal';
@@ -101,6 +102,8 @@ export default function Home() {
     isCoachingStepSeen,
     markCoachingStepSeen,
     completeFirstSession,
+    avatarUrl,
+    isSupporter,
   } = useStore();
   const {
     shouldShowEchoPrompt,
@@ -110,6 +113,7 @@ export default function Home() {
     getUnreadInvitationCount,
     getUnreadMessageCount
   } = useEchoesStore();
+  const sentEchos = useEchoesStore(s => s.sentEchos);
 
   // Daily practice store
   const {
@@ -255,6 +259,28 @@ export default function Home() {
   const modernWisdomWorld = useMemo(() => getModernWisdomWorld(locale), [locale]);
   const stoicismWorldData = useMemo(() => getStoicismWorld(), []);
   const allWorlds: FlexibleWorld[] = [modernWisdomWorld, stoicismWorldData];
+
+  // Compute which worlds have ALL lessons completed (for badge/title derivation)
+  const completedWorldSlugs = useMemo(() => {
+    return allWorlds
+      .filter(world => {
+        const allLessons = world.chapters.flatMap(ch => ch.lessons);
+        return allLessons.length > 0 && allLessons.every(l => completedLessons[l.id]);
+      })
+      .map(w => w.slug);
+  }, [allWorlds, completedLessons]);
+
+  // Effective avatar URL: falls back to anonymous localStorage avatar
+  const effectiveAvatarUrl = useMemo(() => {
+    if (avatarUrl) return avatarUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('avatar-local');
+    }
+    return null;
+  }, [avatarUrl]);
+
+  // Wire badge watcher — reacts to store changes and earns badges at the moment conditions are met
+  useBadgeWatcher(completedWorldSlugs, sentEchos.length);
 
   // Check for in-progress lesson on mount (page refresh resilience)
   // This runs once on mount to restore lesson progress if the user refreshed the page
@@ -728,6 +754,10 @@ export default function Home() {
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
+          avatarUrl={effectiveAvatarUrl}
+          userName={userName}
+          userLevel={level.level}
+          isSupporter={isSupporter}
         />
       </div>
     );
@@ -745,6 +775,10 @@ export default function Home() {
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
+          avatarUrl={effectiveAvatarUrl}
+          userName={userName}
+          userLevel={level.level}
+          isSupporter={isSupporter}
         />
       </div>
     );
@@ -762,6 +796,10 @@ export default function Home() {
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
+          avatarUrl={effectiveAvatarUrl}
+          userName={userName}
+          userLevel={level.level}
+          isSupporter={isSupporter}
         />
       </div>
     );
@@ -819,6 +857,10 @@ export default function Home() {
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
+          avatarUrl={effectiveAvatarUrl}
+          userName={userName}
+          userLevel={level.level}
+          isSupporter={isSupporter}
         />
       </div>
     );
@@ -850,38 +892,21 @@ export default function Home() {
     );
   }
 
-  // Dashboard - navigation hub (NEW REDESIGNED VERSION)
+  // Profile — identity-first profile page (replaces old DashboardNew)
   if (currentView === 'dashboard') {
-    const progressStats = getProgressStats();
-    const latestIdentity = userIdentityStatements.length > 0
-      ? userIdentityStatements[userIdentityStatements.length - 1]?.statement
-      : undefined;
-
     return (
       <div className="h-[100dvh] flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto overscroll-contain">
-          <DashboardNew
+        <main className="flex-1 min-h-0">
+          <ProfilePage
             name={userName || c.friend}
             totalXp={totalXp}
             currentStreak={currentStreak}
             longestStreak={longestStreak}
             level={level}
             transformationGoal={transformationGoal || undefined}
-            latestIdentityStatement={latestIdentity}
-            todayLessonCompleted={dailyFlowState.canAccessEcho}
-            todayEchoCompleted={dailyFlowState.canAccessPractice}
-            exercisesCompleted={exercisesCompletedToday.length}
-            totalExercises={todaysLesson?.exercises?.length || 5}
-            todaysLessonTitle={todaysLesson?.title}
-            currentWorld={activeWorld.name}
-            dayInWorld={dayNumber}
-            totalDaysInWorld={totalDaysInWorld}
             isWeeklyCheckinDue={isCheckinDue()}
             isMonthlyAssessmentDue={isAssessmentDue()}
             unreadEchoCount={totalUnreadCount}
-            totalLessons={Object.keys(completedLessons).length}
-            identityStatements={progressStats.totalIdentityStatements}
-            daysSinceStart={progressStats.daysSinceStart}
             onClose={() => setCurrentView('home')}
             onOpenTodayPractice={() => setCurrentView('home')}
             onOpenWeeklyCheckin={() => setCurrentView('checkin')}
@@ -892,9 +917,8 @@ export default function Home() {
             onOpenIdentity={() => setCurrentView('identity')}
             onOpenStats={() => setCurrentView('progress')}
             onOpenSettings={() => setCurrentView('settings')}
-            onOpenSpark={() => setCurrentView('spark')}
-            isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
-            isSparkForcedClosed={isSparkForcedClosed()}
+            completedWorldSlugs={completedWorldSlugs}
+            totalEchoesSent={sentEchos.length}
           />
         </main>
         <BottomNavBar
@@ -902,6 +926,10 @@ export default function Home() {
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
+          avatarUrl={effectiveAvatarUrl}
+          userName={userName}
+          userLevel={level.level}
+          isSupporter={isSupporter}
         />
       </div>
     );
@@ -1010,6 +1038,10 @@ export default function Home() {
           onTabChange={handleTabChange}
           isSparkUnlocked={dailyFlowState.currentPhase === 'complete'}
           unreadEchoCount={totalUnreadCount}
+          avatarUrl={effectiveAvatarUrl}
+          userName={userName}
+          userLevel={level.level}
+          isSupporter={isSupporter}
         />
       </div>
 

@@ -19,6 +19,8 @@ import { X, MessageCircle, Heart, UserPlus, Check, XIcon, ChevronRight, ChevronL
 import { Button, EmptyState } from '@/components/ui';
 import { AmbientBackground } from '@/components/ambient';
 import { useEchoesStore } from '@/store/useEchoesStore';
+import { useEchoAuthorProfile } from '@/hooks/useEchoAuthorProfile';
+import { MiniProfileCard } from '@/components/profile/MiniProfileCard';
 import { useTranslation } from '@/i18n';
 import type { EchoResponse, ConnectionInvitation, Connection, GenderIdentity } from '@/types/echoes';
 
@@ -51,6 +53,10 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
     genderIdentity,
     publicReflections,
   } = useEchoesStore();
+
+  // Fetch public profile for selected echo responder or invitation inviter (opt-in only)
+  const { profile: selectedResponderProfile } = useEchoAuthorProfile(selectedEcho?.responderId ?? null);
+  const { profile: selectedInviterProfile } = useEchoAuthorProfile(selectedInvitation?.inviterId ?? null);
 
   const getGenderLabelLocalized = (gender: GenderIdentity) => t(`onboarding.identity.${gender}` as const);
   const getGenderLabelLower = (gender: GenderIdentity) => getGenderLabelLocalized(gender).toLowerCase();
@@ -295,14 +301,31 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               </button>
 
               <div className="space-y-6">
-                {/* Header */}
+                {/* Header — with mini profile card if responder opted in */}
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
-                    <Heart size={28} className="text-amber-400" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
-                    {t('echoes.fellowReflectedOnYourWords', { gender: getGenderLabelLower(selectedEcho.responderGender) })}
-                  </h2>
+                  {selectedResponderProfile ? (
+                    <div className="flex flex-col items-center gap-3 mb-2">
+                      <MiniProfileCard
+                        name={selectedResponderProfile.name}
+                        avatarUrl={selectedResponderProfile.avatar_url}
+                        equippedTitleId={selectedResponderProfile.equipped_title_id}
+                        level={selectedResponderProfile.current_level}
+                        fallbackLabel={`A ${getGenderLabelLower(selectedEcho.responderGender)}`}
+                      />
+                      <h2 className="text-lg font-semibold text-stone-100 light:text-stone-900">
+                        {t('echoes.fellowReflectedOnYourWords', { gender: selectedResponderProfile.name || getGenderLabelLower(selectedEcho.responderGender) })}
+                      </h2>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
+                        <Heart size={28} className="text-amber-400" />
+                      </div>
+                      <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
+                        {t('echoes.fellowReflectedOnYourWords', { gender: getGenderLabelLower(selectedEcho.responderGender) })}
+                      </h2>
+                    </>
+                  )}
                 </div>
 
                 {/* Your original reflection */}
@@ -438,17 +461,37 @@ export function EchoInbox({ onClose }: EchoInboxProps) {
               </button>
 
               <div className="space-y-6">
-                {/* Header */}
+                {/* Header — with mini profile card if inviter opted in */}
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
-                    <UserPlus size={28} className="text-amber-400" />
-                  </div>
-                  <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
-                    {t('echoes.connectionRequest')}
-                  </h2>
-                  <p className="text-stone-500 light:text-stone-600 mt-2">
-                    {t('echoes.wantsToConnect', { gender: getGenderLabelLower(selectedInvitation.inviterGender) })}
-                  </p>
+                  {selectedInviterProfile ? (
+                    <div className="flex flex-col items-center gap-3 mb-2">
+                      <MiniProfileCard
+                        name={selectedInviterProfile.name}
+                        avatarUrl={selectedInviterProfile.avatar_url}
+                        equippedTitleId={selectedInviterProfile.equipped_title_id}
+                        level={selectedInviterProfile.current_level}
+                        fallbackLabel={`A ${getGenderLabelLower(selectedInvitation.inviterGender)}`}
+                      />
+                      <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
+                        {t('echoes.connectionRequest')}
+                      </h2>
+                      <p className="text-stone-500 light:text-stone-600">
+                        {t('echoes.wantsToConnect', { gender: selectedInviterProfile.name || getGenderLabelLower(selectedInvitation.inviterGender) })}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mx-auto mb-4">
+                        <UserPlus size={28} className="text-amber-400" />
+                      </div>
+                      <h2 className="text-xl font-semibold text-stone-100 light:text-stone-900">
+                        {t('echoes.connectionRequest')}
+                      </h2>
+                      <p className="text-stone-500 light:text-stone-600 mt-2">
+                        {t('echoes.wantsToConnect', { gender: getGenderLabelLower(selectedInvitation.inviterGender) })}
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {/* Context */}

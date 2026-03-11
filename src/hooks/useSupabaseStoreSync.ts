@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   getCurrentUserProfile,
   upsertCurrentUserProfile,
+  syncProgression,
   listLessonProgress,
   upsertLessonProgress,
   listReflections,
@@ -119,13 +120,12 @@ function normalizeGender(value?: string | null): GenderIdentity {
 function profilePayloadFromStore(state: StoreState) {
   return {
     name: state.name,
+    avatar_url: state.avatarUrl,
     transformation_goal: state.transformationGoal,
     why_statement: state.whyStatement,
     daily_commitment_minutes: state.dailyCommitmentMinutes,
-    total_xp: state.totalXp,
-    current_streak: state.currentStreak,
-    longest_streak: state.longestStreak,
-    grace_days: state.graceDays,
+    // Progression fields (total_xp, current_streak, longest_streak, grace_days)
+    // are synced via the separate update_profile_progression RPC.
     last_lesson_at: state.lastLessonDate ? new Date(state.lastLessonDate).toISOString() : null,
     sound_enabled: state.soundEnabled,
     haptic_enabled: state.hapticEnabled,
@@ -134,19 +134,33 @@ function profilePayloadFromStore(state: StoreState) {
     community_identity: state.communityIdentity,
     last_checkin_date: state.lastCheckinDate,
     last_assessment_month: state.lastAssessmentMonth,
+    // Profile identity fields
+    motto: state.motto,
+    accent_color: state.accentColor,
+    banner_key: state.bannerKey,
+    equipped_title_id: state.equippedTitleId,
+    badges_earned: state.badgesEarned,
+    profile_visible_in_echoes: state.profileVisibleInEchoes,
+    // NEVER include: is_supporter, supporter_since
   };
+}
+
+function progressionFieldsChanged(prev: StoreState, next: StoreState): boolean {
+  return (
+    prev.totalXp !== next.totalXp ||
+    prev.currentStreak !== next.currentStreak ||
+    prev.longestStreak !== next.longestStreak ||
+    prev.graceDays !== next.graceDays
+  );
 }
 
 function profileFieldsChanged(prev: StoreState, next: StoreState): boolean {
   return (
     prev.name !== next.name ||
+    prev.avatarUrl !== next.avatarUrl ||
     prev.transformationGoal !== next.transformationGoal ||
     prev.whyStatement !== next.whyStatement ||
     prev.dailyCommitmentMinutes !== next.dailyCommitmentMinutes ||
-    prev.totalXp !== next.totalXp ||
-    prev.currentStreak !== next.currentStreak ||
-    prev.longestStreak !== next.longestStreak ||
-    prev.graceDays !== next.graceDays ||
     prev.lastLessonDate !== next.lastLessonDate ||
     prev.soundEnabled !== next.soundEnabled ||
     prev.hapticEnabled !== next.hapticEnabled ||
@@ -154,7 +168,14 @@ function profileFieldsChanged(prev: StoreState, next: StoreState): boolean {
     prev.language !== next.language ||
     prev.communityIdentity !== next.communityIdentity ||
     prev.lastCheckinDate !== next.lastCheckinDate ||
-    prev.lastAssessmentMonth !== next.lastAssessmentMonth
+    prev.lastAssessmentMonth !== next.lastAssessmentMonth ||
+    // Profile identity fields
+    prev.motto !== next.motto ||
+    prev.accentColor !== next.accentColor ||
+    prev.bannerKey !== next.bannerKey ||
+    prev.equippedTitleId !== next.equippedTitleId ||
+    JSON.stringify(prev.badgesEarned) !== JSON.stringify(next.badgesEarned) ||
+    prev.profileVisibleInEchoes !== next.profileVisibleInEchoes
   );
 }
 
@@ -295,6 +316,7 @@ export function useSupabaseStoreSync() {
   const hydratingEchoesRef = useRef(false);
   const activeUserIdRef = useRef<string | null>(null);
   const profileTimerRef = useRef<number | null>(null);
+  const progressionTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isConfigured || !isAuthenticated || !user) {
@@ -403,6 +425,17 @@ export function useSupabaseStoreSync() {
               : state.communityIdentity,
           lastCheckinDate: profile?.last_checkin_date ?? state.lastCheckinDate,
           lastAssessmentMonth: profile?.last_assessment_month ?? state.lastAssessmentMonth,
+          // Profile identity fields
+          avatarUrl: profile?.avatar_url ?? state.avatarUrl,
+          motto: profile?.motto ?? state.motto,
+          accentColor: (profile?.accent_color as StoreState['accentColor']) ?? state.accentColor,
+          bannerKey: profile?.banner_key ?? state.bannerKey,
+          equippedTitleId: profile?.equipped_title_id ?? state.equippedTitleId,
+          badgesEarned: (profile?.badges_earned as StoreState['badgesEarned']) ?? state.badgesEarned,
+          profileVisibleInEchoes: profile?.profile_visible_in_echoes ?? state.profileVisibleInEchoes,
+          // Server-owned: ALWAYS trust server
+          isSupporter: profile?.is_supporter ?? false,
+          supporterSince: profile?.supporter_since ?? null,
           completedLessons: mergedCompletedLessons,
           allReflections: mergedAllReflections,
           reflections: mergedAllReflections.slice(-14),
@@ -452,6 +485,24 @@ export function useSupabaseStoreSync() {
         profileTimerRef.current = window.setTimeout(() => {
           void upsertCurrentUserProfile(profilePayloadFromStore(useStore.getState())).catch((error) => {
             console.error('Failed to sync profile to Supabase', error);
+          });
+        }, PROFILE_SYNC_DEBOUNCE_MS);
+      }
+
+      if (progressionFieldsChanged(prev, state)) {
+        if (progressionTimerRef.current !== null) {
+          window.clearTimeout(progressionTimerRef.current);
+        }
+
+        progressionTimerRef.current = window.setTimeout(() => {
+          const s = useStore.getState();
+          void syncProgression({
+            total_xp: s.totalXp,
+            current_streak: s.currentStreak,
+            longest_streak: s.longestStreak,
+            grace_days: s.graceDays,
+          }).catch((error) => {
+            console.error('Failed to sync progression to Supabase', error);
           });
         }, PROFILE_SYNC_DEBOUNCE_MS);
       }
@@ -553,6 +604,10 @@ export function useSupabaseStoreSync() {
       if (profileTimerRef.current !== null) {
         window.clearTimeout(profileTimerRef.current);
         profileTimerRef.current = null;
+      }
+      if (progressionTimerRef.current !== null) {
+        window.clearTimeout(progressionTimerRef.current);
+        progressionTimerRef.current = null;
       }
     };
   }, [isAuthenticated, isConfigured, user?.id]);
