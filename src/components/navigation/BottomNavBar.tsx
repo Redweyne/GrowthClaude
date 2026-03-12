@@ -5,6 +5,7 @@ import { Home, Compass, Globe, Zap, ListChecks, MessageCircleHeart } from 'lucid
 import { useSparkStore } from '@/store/useSparkStore';
 import { useTranslation } from '@/i18n';
 import { AvatarDisplay } from '@/components/profile/AvatarDisplay';
+import type { EquippableFrameId } from '@/types/profile';
 
 export type NavTab = 'home' | 'journey' | 'worlds' | 'spark' | 'tasks' | 'echoes' | 'profile';
 
@@ -18,6 +19,7 @@ interface BottomNavBarProps {
   userName?: string | null;
   userLevel?: number;
   isSupporter?: boolean;
+  equippedFrameId?: EquippableFrameId | null;
 }
 
 const TABS: { id: NavTab; icon: typeof Home | null }[] = [
@@ -69,6 +71,7 @@ export function BottomNavBar({
   userName,
   userLevel = 1,
   isSupporter = false,
+  equippedFrameId = null,
 }: BottomNavBarProps) {
   const { isForcedClosedToday } = useSparkStore();
   const { locale } = useTranslation();
@@ -183,6 +186,7 @@ export function BottomNavBar({
                       name={userName}
                       level={userLevel}
                       isSupporter={isSupporter}
+                      equippedFrameId={equippedFrameId}
                       layoutId="profileAvatar"
                     />
                   </motion.div>

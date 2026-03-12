@@ -105,6 +105,7 @@ export default function Home() {
     completeFirstSession,
     avatarUrl,
     isSupporter,
+    equippedFrameId,
   } = useStore();
   const {
     shouldShowEchoPrompt,
@@ -782,6 +783,7 @@ export default function Home() {
           userName={userName}
           userLevel={level.level}
           isSupporter={isSupporter}
+          equippedFrameId={equippedFrameId}
         />
       </div>
     );
@@ -803,6 +805,7 @@ export default function Home() {
           userName={userName}
           userLevel={level.level}
           isSupporter={isSupporter}
+          equippedFrameId={equippedFrameId}
         />
       </div>
     );
@@ -824,6 +827,7 @@ export default function Home() {
           userName={userName}
           userLevel={level.level}
           isSupporter={isSupporter}
+          equippedFrameId={equippedFrameId}
         />
       </div>
     );
@@ -885,6 +889,7 @@ export default function Home() {
           userName={userName}
           userLevel={level.level}
           isSupporter={isSupporter}
+          equippedFrameId={equippedFrameId}
         />
       </div>
     );
@@ -957,6 +962,7 @@ export default function Home() {
           userName={userName}
           userLevel={level.level}
           isSupporter={isSupporter}
+          equippedFrameId={equippedFrameId}
         />
       </div>
     );
@@ -1069,6 +1075,7 @@ export default function Home() {
           userName={userName}
           userLevel={level.level}
           isSupporter={isSupporter}
+          equippedFrameId={equippedFrameId}
         />
       </div>
 

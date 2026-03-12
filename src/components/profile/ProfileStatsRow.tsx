@@ -25,11 +25,10 @@ export function ProfileStatsRow({ totalXp, currentStreak, longestStreak, level }
     >
       {/* Level */}
       <StatCard
-        icon={<Trophy className="w-4 h-4 text-amber-400" />}
+        icon={<Trophy className="w-4 h-4" style={{ color: 'var(--profile-accent, #fbbf24)' }} />}
         label={t('profilePage.level')}
         value={`${level.level}`}
         subtitle={level.title}
-        accentColor="amber"
         delay={0}
       />
 
@@ -39,46 +38,34 @@ export function ProfileStatsRow({ totalXp, currentStreak, longestStreak, level }
         label={t('profilePage.streak')}
         value={`${currentStreak}d`}
         subtitle={`${t('profilePage.best')}: ${longestStreak}d`}
-        accentColor="orange"
         delay={0.05}
       />
 
       {/* XP */}
       <StatCard
-        icon={<Zap className="w-4 h-4 text-yellow-400" />}
+        icon={<Zap className="w-4 h-4" style={{ color: 'var(--profile-accent, #fbbf24)' }} />}
         label={t('profilePage.xp')}
         value={`${totalXp}`}
         subtitle={`${Math.round(xpProgress.percentage)}% ${t('profilePage.toNext')}`}
-        accentColor="yellow"
         delay={0.1}
       />
     </motion.div>
   );
 }
 
-const STAT_ACCENT_CLASSES: Record<string, string> = {
-  amber: 'text-amber-300 light:text-amber-600',
-  orange: 'text-orange-300 light:text-orange-600',
-  yellow: 'text-yellow-300 light:text-yellow-600',
-};
-
 function StatCard({
   icon,
   label,
   value,
   subtitle,
-  accentColor,
   delay,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   subtitle: string;
-  accentColor: string;
   delay: number;
 }) {
-  const colorClass = STAT_ACCENT_CLASSES[accentColor] ?? STAT_ACCENT_CLASSES.amber;
-
   return (
     <motion.div
       className="flex-1 bg-stone-900/60 light:bg-stone-200/60 backdrop-blur-sm rounded-xl border border-stone-800/50 light:border-stone-300/50 p-3"
@@ -88,9 +75,9 @@ function StatCard({
     >
       <div className="flex items-center gap-1.5 mb-1">
         {icon}
-        <span className="text-[10px] uppercase tracking-wider text-stone-500 light:text-stone-500 font-medium">{label}</span>
+        <span className="text-[10px] uppercase tracking-wider text-stone-500 font-medium">{label}</span>
       </div>
-      <div className={`text-xl font-bold ${colorClass}`}>
+      <div className="text-xl font-bold" style={{ color: 'var(--profile-accent, #fbbf24)' }}>
         {value}
       </div>
       <div className="text-[10px] text-stone-500 mt-0.5">{subtitle}</div>

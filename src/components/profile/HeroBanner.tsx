@@ -188,17 +188,17 @@ export function HeroBanner({
             </motion.p>
           )}
 
-          {/* Identity Statement */}
-          {!motto && identityStatement && (
+          {/* Identity Statement (always shown if exists) */}
+          {identityStatement && (
             <motion.button
-              className="mt-4 max-w-sm text-center px-4"
+              className={`${motto ? 'mt-2' : 'mt-4'} max-w-sm text-center px-4`}
               onClick={onIdentityTap}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: motto ? 0.4 : 0.3 }}
             >
               <motion.p
-                className="text-sm italic text-amber-200/70 light:text-stone-600 leading-relaxed"
+                className={`italic leading-relaxed ${motto ? 'text-xs text-amber-200/50 light:text-stone-500' : 'text-sm text-amber-200/70 light:text-stone-600'}`}
                 animate={{
                   textShadow: [
                     '0 0 10px rgba(251,191,36,0)',

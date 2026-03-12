@@ -81,12 +81,21 @@ export function ShareableCard({ data }: ShareableCardProps) {
       ctx.fillText(`◆ ${data.equippedTitle} ◆`, W / 2, 180);
     }
 
+    // Featured badge pill (below title)
+    let nextY = data.equippedTitle ? 195 : 175;
+    if (data.featuredBadgeName) {
+      ctx.fillStyle = frameColors.primary + '60';
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.fillText(`★ ${data.featuredBadgeName}`, W / 2, nextY);
+      nextY += 20;
+    }
+
     // Stats row
-    const statsY = 220;
+    const statsY = nextY + 10;
     const statsItems = [
-      { label: 'Level', value: `${data.level}` },
-      { label: 'Streak', value: `${data.currentStreak}d` },
-      { label: data.topBadgeName ? 'Top Badge' : 'Title', value: data.topBadgeName || data.levelTitle },
+      { label: t('profilePage.level'), value: `${data.level}` },
+      { label: t('profilePage.streak'), value: `${data.currentStreak}d` },
+      { label: data.topBadgeName ? t('profilePage.tabBadges') : t('profilePage.level'), value: data.topBadgeName || data.levelTitle },
     ];
 
     statsItems.forEach((item, i) => {
@@ -99,12 +108,22 @@ export function ShareableCard({ data }: ShareableCardProps) {
       ctx.fillText(item.value, x, statsY + 22);
     });
 
-    // Identity statement
-    if (data.identityStatement) {
-      ctx.fillStyle = '#d6d3d180';
+    // Motto
+    const contentY = statsY + 55;
+    if (data.motto) {
+      ctx.fillStyle = '#d6d3d1a0';
       ctx.font = 'italic 13px Georgia, serif';
       const maxWidth = W - 80;
-      wrapText(ctx, `"${data.identityStatement}"`, W / 2, 285, maxWidth, 18);
+      wrapText(ctx, `"${data.motto}"`, W / 2, contentY, maxWidth, 18);
+    }
+
+    // Identity statement (shown below motto, or in its place)
+    if (data.identityStatement) {
+      const idY = data.motto ? contentY + 30 : contentY;
+      ctx.fillStyle = '#d6d3d180';
+      ctx.font = 'italic 12px Georgia, serif';
+      const maxWidth = W - 80;
+      wrapText(ctx, `"${data.identityStatement}"`, W / 2, idY, maxWidth, 18);
     }
 
     // Supporter badge
@@ -122,7 +141,7 @@ export function ShareableCard({ data }: ShareableCardProps) {
     ctx.fillText('Transformation Hub', W / 2, H - 20);
 
     return canvas;
-  }, [data]);
+  }, [data, t]);
 
   const handleShare = useCallback(async () => {
     const canvas = await generateCard();
@@ -136,7 +155,7 @@ export function ShareableCard({ data }: ShareableCardProps) {
       if (navigator.share && navigator.canShare) {
         const file = new File([blob], 'profile-card.png', { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'My Transformation Journey' });
+          await navigator.share({ files: [file], title: t('profilePage.shareYourJourney') });
           return;
         }
       }
@@ -211,11 +230,11 @@ export function ShareableCard({ data }: ShareableCardProps) {
                 )}
                 <div className="flex justify-center gap-6 mt-3 text-xs">
                   <div>
-                    <div className="text-stone-500">Level</div>
+                    <div className="text-stone-500">{t('profilePage.level')}</div>
                     <div className="text-amber-200 font-bold">{data.level}</div>
                   </div>
                   <div>
-                    <div className="text-stone-500">Streak</div>
+                    <div className="text-stone-500">{t('profilePage.streak')}</div>
                     <div className="text-amber-200 font-bold">{data.currentStreak}d</div>
                   </div>
                 </div>

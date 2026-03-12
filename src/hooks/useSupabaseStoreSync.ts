@@ -58,7 +58,7 @@ const VALID_TRANSFORMATION_GOALS: TransformationGoal[] = [
 
 const VALID_LANGUAGES: Array<StoreState['language']> = ['en', 'fr', 'ar'];
 const VALID_ACCENT_COLORS: Array<StoreState['accentColor']> = ['gold', 'rose', 'purple', 'emerald', 'indigo'];
-const VALID_FRAME_IDS: Array<NonNullable<StoreState['equippedFrameId']>> = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'founder'];
+const VALID_FRAME_IDS: Array<NonNullable<StoreState['equippedFrameId']>> = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'founder', 'aurora', 'inferno', 'void', 'celestial', 'sakura'];
 const VALID_COMMUNITY_IDENTITIES: Array<NonNullable<StoreState['communityIdentity']>> = [
   'brother',
   'sister',

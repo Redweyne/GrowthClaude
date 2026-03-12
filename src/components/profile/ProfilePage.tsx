@@ -12,9 +12,8 @@ import { CustomizationPanel } from './CustomizationPanel';
 import { QuickActions } from './QuickActions';
 import { ShareableCard } from './ShareableCard';
 import { useStore } from '@/store/useStore';
-import { getLevelFromXp } from '@/types';
 import { getEquippedTitleLabel, buildTitleContext, getAutoTitle } from '@/lib/titleEngine';
-import { ACCENT_COLORS, ALL_BADGES } from '@/types/profile';
+import { ACCENT_COLORS, ALL_BADGES, getEffectiveFrameTier } from '@/types/profile';
 import type { BadgeCheckContext, ShareableProfileData } from '@/types/profile';
 import type { TransformationGoal } from '@/types';
 import { useTranslation } from '@/i18n';
@@ -151,7 +150,7 @@ export function ProfilePage({
   const shareData: ShareableProfileData = useMemo(() => ({
     name,
     avatarUrl: effectiveAvatarUrl,
-    frameTier: getLevelFromXp(totalXp).level >= 9 ? 'diamond' : getLevelFromXp(totalXp).level >= 7 ? 'platinum' : getLevelFromXp(totalXp).level >= 5 ? 'gold' : getLevelFromXp(totalXp).level >= 3 ? 'silver' : 'bronze',
+    frameTier: getEffectiveFrameTier(equippedFrameId, level.level),
     equippedTitle,
     level: level.level,
     levelTitle: level.title,
@@ -161,7 +160,7 @@ export function ProfilePage({
     motto,
     identityStatement: latestIdentity,
     isSupporter,
-  }), [name, effectiveAvatarUrl, totalXp, equippedTitle, level, currentStreak, topBadgeName, featuredBadgeName, motto, latestIdentity, isSupporter]);
+  }), [name, effectiveAvatarUrl, equippedFrameId, level, equippedTitle, currentStreak, topBadgeName, featuredBadgeName, motto, latestIdentity, isSupporter]);
 
   // Accent color CSS variables
   const accentVars = ACCENT_COLORS[accentColor];

@@ -16,7 +16,21 @@ import type { TransformationGoal } from './index';
 // for display contexts that don't allow selection.
 
 export type AvatarFrameTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
-export type EquippableFrameId = AvatarFrameTier | 'founder';
+
+// GM-exclusive frame IDs — breathtaking, Discord-level animated frames
+export type GmFrameId = 'aurora' | 'inferno' | 'void' | 'celestial' | 'sakura';
+
+export type EquippableFrameId = AvatarFrameTier | 'founder' | GmFrameId;
+
+// GM account email — the only account that can use GM-exclusive frames
+export const GM_EMAIL = 'aposlash2021@gmail.com';
+
+// All GM frame IDs for validation
+export const GM_FRAME_IDS: GmFrameId[] = ['aurora', 'inferno', 'void', 'celestial', 'sakura'];
+
+export function isGmFrame(id: string): id is GmFrameId {
+  return GM_FRAME_IDS.includes(id as GmFrameId);
+}
 
 export interface FrameDefinition {
   id: EquippableFrameId;
@@ -24,24 +38,32 @@ export interface FrameDefinition {
   tier: AvatarFrameTier; // visual tier for color lookup
   minLevel: number;
   isSupporterExclusive: boolean;
+  isGmExclusive: boolean;
 }
 
 export const ALL_FRAMES: FrameDefinition[] = [
-  { id: 'bronze',   label: 'Bronze',   tier: 'bronze',   minLevel: 1, isSupporterExclusive: false },
-  { id: 'silver',   label: 'Silver',   tier: 'silver',   minLevel: 3, isSupporterExclusive: false },
-  { id: 'gold',     label: 'Gold',     tier: 'gold',     minLevel: 5, isSupporterExclusive: false },
-  { id: 'platinum', label: 'Platinum', tier: 'platinum', minLevel: 7, isSupporterExclusive: false },
-  { id: 'diamond',  label: 'Diamond',  tier: 'diamond',  minLevel: 9, isSupporterExclusive: false },
-  { id: 'founder',  label: 'Founder',  tier: 'gold',     minLevel: 1, isSupporterExclusive: true },
+  { id: 'bronze',   label: 'Bronze',          tier: 'bronze',   minLevel: 1, isSupporterExclusive: false, isGmExclusive: false },
+  { id: 'silver',   label: 'Silver',          tier: 'silver',   minLevel: 3, isSupporterExclusive: false, isGmExclusive: false },
+  { id: 'gold',     label: 'Gold',            tier: 'gold',     minLevel: 5, isSupporterExclusive: false, isGmExclusive: false },
+  { id: 'platinum', label: 'Platinum',        tier: 'platinum', minLevel: 7, isSupporterExclusive: false, isGmExclusive: false },
+  { id: 'diamond',  label: 'Diamond',         tier: 'diamond',  minLevel: 9, isSupporterExclusive: false, isGmExclusive: false },
+  { id: 'founder',  label: 'Founder',         tier: 'gold',     minLevel: 1, isSupporterExclusive: true,  isGmExclusive: false },
+  // GM-exclusive frames — breathtaking animated prestige frames
+  { id: 'aurora',    label: 'Aurora Borealis', tier: 'diamond',  minLevel: 1, isSupporterExclusive: false, isGmExclusive: true },
+  { id: 'inferno',   label: 'Inferno',         tier: 'diamond',  minLevel: 1, isSupporterExclusive: false, isGmExclusive: true },
+  { id: 'void',      label: 'Void',            tier: 'diamond',  minLevel: 1, isSupporterExclusive: false, isGmExclusive: true },
+  { id: 'celestial', label: 'Celestial',       tier: 'diamond',  minLevel: 1, isSupporterExclusive: false, isGmExclusive: true },
+  { id: 'sakura',    label: 'Sakura',          tier: 'platinum', minLevel: 1, isSupporterExclusive: false, isGmExclusive: true },
 ];
 
-export function isFrameUnlocked(frame: FrameDefinition, level: number, isSupporter: boolean): boolean {
+export function isFrameUnlocked(frame: FrameDefinition, level: number, isSupporter: boolean, userEmail?: string | null): boolean {
+  if (frame.isGmExclusive) return userEmail === GM_EMAIL;
   if (frame.isSupporterExclusive && !isSupporter) return false;
   return level >= frame.minLevel;
 }
 
-export function getUnlockedFrames(level: number, isSupporter: boolean): FrameDefinition[] {
-  return ALL_FRAMES.filter(f => isFrameUnlocked(f, level, isSupporter));
+export function getUnlockedFrames(level: number, isSupporter: boolean, userEmail?: string | null): FrameDefinition[] {
+  return ALL_FRAMES.filter(f => isFrameUnlocked(f, level, isSupporter, userEmail));
 }
 
 // Highest earned tier (for contexts that don't use equipped frame)
@@ -83,6 +105,51 @@ export const FOUNDER_FRAME_COLORS = {
   primary: '#f59e0b',
   secondary: '#fbbf24',
   glow: 'rgba(245,158,11,0.5)',
+};
+
+// GM-exclusive frame color palettes — each has a unique breathtaking aesthetic
+export const GM_FRAME_COLORS: Record<GmFrameId, {
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  glow: string;
+  gradient: string; // multi-stop conic gradient for the ring
+}> = {
+  aurora: {
+    primary: '#00ff88',
+    secondary: '#00ccff',
+    tertiary: '#cc00ff',
+    glow: 'rgba(0,255,136,0.5)',
+    gradient: 'conic-gradient(#00ff88, #00ccff, #cc00ff, #ff00aa, #00ff88)',
+  },
+  inferno: {
+    primary: '#ff4500',
+    secondary: '#ff8c00',
+    tertiary: '#ffdd00',
+    glow: 'rgba(255,69,0,0.6)',
+    gradient: 'conic-gradient(#ff4500, #ff8c00, #ffdd00, #ff4500, #ff1a00, #ff8c00)',
+  },
+  void: {
+    primary: '#7c3aed',
+    secondary: '#1e1b4b',
+    tertiary: '#c084fc',
+    glow: 'rgba(124,58,237,0.5)',
+    gradient: 'conic-gradient(#7c3aed, #1e1b4b, #c084fc, #4c1d95, #7c3aed)',
+  },
+  celestial: {
+    primary: '#fcd34d',
+    secondary: '#f9fafb',
+    tertiary: '#60a5fa',
+    glow: 'rgba(252,211,77,0.5)',
+    gradient: 'conic-gradient(#fcd34d, #f9fafb, #60a5fa, #fcd34d, #f9fafb)',
+  },
+  sakura: {
+    primary: '#f9a8d4',
+    secondary: '#fbcfe8',
+    tertiary: '#f472b6',
+    glow: 'rgba(249,168,212,0.5)',
+    gradient: 'conic-gradient(#f9a8d4, #fbcfe8, #f472b6, #fce7f3, #f9a8d4)',
+  },
 };
 
 // ─────────────────────────────────────────────
