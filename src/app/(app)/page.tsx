@@ -382,6 +382,22 @@ function HomeInner() {
   const exercisesCompletedToday = getExercisesCompletedToday();
   const level = getLevelFromXp(totalXp);
 
+  // Look up exercises by the persisted lessonId in todayProgress.
+  // This survives page refresh, unlike exercisesForSession (ephemeral React state).
+  // Must be declared here (before conditional returns) to satisfy Rules of Hooks.
+  const persistedLessonExercises = useMemo(() => {
+    const lessonId = todayProgress?.lessonId;
+    if (!lessonId) return null;
+    for (const world of allWorlds) {
+      for (const chapter of world.chapters) {
+        for (const lesson of chapter.lessons) {
+          if (lesson.id === lessonId) return lesson.exercises;
+        }
+      }
+    }
+    return null;
+  }, [todayProgress?.lessonId, allWorlds]);
+
   // Safety net: redirect away from exercises view if no exercises are available.
   // exercisesForSession is ephemeral React state lost on refresh; todaysLesson is null
   // when dayNumber > world size. The persisted lessonId fallback handles most cases,
@@ -409,6 +425,22 @@ function HomeInner() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView]);
+
+  // Recover mandatory-echo view when reflectionForReview is lost (e.g. page refresh).
+  // Tries to find a new reflection; if none exist, auto-skips echo to unblock the flow.
+  useEffect(() => {
+    if (currentView !== 'mandatory-echo' || reflectionForReview) return;
+    const lessonId = completedLessonInfo?.id || todayProgress?.lessonId || 'any';
+    const lessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.growthJourney;
+    const recovered = getReflectionToReview(lessonId, lessonTitle);
+    if (recovered) {
+      setReflectionForReview(recovered);
+    } else {
+      completeMandatoryEcho('auto-skipped-no-reflections');
+      setCurrentView('exercises');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView, reflectionForReview]);
 
   // Current active world state (from store, default to modern-wisdom)
   const currentWorldSlug = storedWorldSlug || 'modern-wisdom';
@@ -1029,40 +1061,17 @@ function HomeInner() {
           )}
         </>
       );
-    } else {
-      // reflectionForReview lost (page refresh) — try to recover it
-      const lessonId = completedLessonInfo?.id || todayProgress?.lessonId || 'any';
-      const lessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.growthJourney;
-      const recovered = getReflectionToReview(lessonId, lessonTitle);
-      if (recovered) {
-        setReflectionForReview(recovered);
-        // Will re-render and hit the branch above
-      } else {
-        // No reflections available at all — auto-complete echo to unblock the user
-        completeMandatoryEcho('auto-skipped-no-reflections');
-        setCurrentView('exercises');
-      }
-      return null;
     }
+    // reflectionForReview is null — recovery is handled by the useEffect above
+    // (recoverMandatoryEcho). Render a loading state while waiting.
+    return (
+      <div className="min-h-screen bg-stone-950 light:bg-stone-50 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-amber-500/30 border-t-amber-500 animate-spin" />
+      </div>
+    );
   }
 
-  // Exercise experience - 5 exercises after echo
-  // Use exercisesForSession (saved from completed lesson) as primary source,
-  // fallback 1: look up exercises by persisted lessonId (survives page refresh),
-  // fallback 2: todaysLesson.exercises (works when day <= world size)
-  const persistedLessonExercises = useMemo(() => {
-    const lessonId = todayProgress?.lessonId;
-    if (!lessonId) return null;
-    for (const world of allWorlds) {
-      for (const chapter of world.chapters) {
-        for (const lesson of chapter.lessons) {
-          if (lesson.id === lessonId) return lesson.exercises;
-        }
-      }
-    }
-    return null;
-  }, [todayProgress?.lessonId, allWorlds]);
-
+  // Exercise fallbacks computed above (persistedLessonExercises via useMemo, before conditional returns)
   const availableExercises = exercisesForSession || persistedLessonExercises || todaysLesson?.exercises;
   const exerciseLessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.practiceFallback;
 
