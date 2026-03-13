@@ -1,17 +1,19 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import { fontBody } from '@/lib/fonts';
-import { Providers } from './providers';
+import { getLocaleFromCookieHeader } from '@/i18n/localeCookie';
+import { languageConfig } from '@/i18n/config';
 import './globals.css';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// ROOT LAYOUT
-// The foundation that wraps every page with our design system
+// ROOT LAYOUT — Bare shell shared by (app) and (marketing) route groups
+// Providers and noise overlay live in (app)/layout.tsx
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const metadata: Metadata = {
-  title: 'GrowthClaude',
+  title: 'SolonsWay — Daily Self-Transformation',
   description:
-    'Guided self-transformation journey | Parcours guide de transformation personnelle | رحلة موجهة للتحول الذاتي',
+    'A guided self-transformation app. Daily lessons from Stoicism, modern philosophy, and more. Anonymous reflections. Visible proof of growth.',
   keywords: [
     'self-improvement',
     'personal growth',
@@ -26,18 +28,19 @@ export const metadata: Metadata = {
     'wisdom',
     'transformation',
   ],
-  authors: [{ name: 'GrowthClaude' }],
+  authors: [{ name: 'SolonsWay' }],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'GrowthClaude',
+    title: 'SolonsWay',
     startupImage: [],
   },
   openGraph: {
-    title: 'GrowthClaude',
-    description: 'Guided self-transformation journey | Parcours guide de transformation personnelle | رحلة موجهة للتحول الذاتي',
+    title: 'SolonsWay',
+    description: 'Turn wisdom into daily change. Join the open beta — free.',
     type: 'website',
+    siteName: 'SolonsWay',
   },
 };
 
@@ -54,15 +57,19 @@ export const viewport: Viewport = {
   colorScheme: 'dark light',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headerStore = await headers();
+  const cookieHeader = headerStore.get('cookie');
+  const locale = getLocaleFromCookieHeader(cookieHeader);
+  const dir = languageConfig[locale].dir;
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <head>
-        {/* Apple touch icon for iOS home screen */}
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
@@ -72,19 +79,7 @@ export default function RootLayout({
         className="antialiased selection:bg-amber-500/30 selection:text-amber-50"
         style={fontBody.style}
       >
-        {/* Subtle noise texture overlay for depth */}
-        <div
-          className="fixed inset-0 pointer-events-none z-50 opacity-[0.015] light:opacity-[0.008]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          }}
-          aria-hidden="true"
-        />
-
-        {/* Main content */}
-        <Providers>
-          {children}
-        </Providers>
+        {children}
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { useEchoesStore } from '@/store/useEchoesStore';
@@ -69,6 +70,14 @@ type AppView =
   | 'spark-unlock';
 
 export default function Home() {
+  return (
+    <Suspense>
+      <HomeInner />
+    </Suspense>
+  );
+}
+
+function HomeInner() {
   // Hydration guard: Zustand persist middleware loads state from localStorage
   // asynchronously. Before hydration completes, store values are defaults
   // (e.g., languageSelected=false), causing a flash of the wrong screen.
@@ -185,6 +194,17 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+
+  // Consume ?signup=1 from /site CTA — open modal once, then strip param
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  useEffect(() => {
+    if (searchParams.get('signup') === '1') {
+      setShowSignup(true);
+      router.replace('/', { scroll: false });
+    }
+  }, [searchParams, router]);
+
   const [selectedFlexibleLesson, setSelectedFlexibleLesson] = useState<FlexibleLesson | null>(null);
   const [flexibleLessonProgress, setFlexibleLessonProgress] = useState<LessonProgress | null>(null);
 

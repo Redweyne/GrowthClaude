@@ -1432,6 +1432,218 @@ const en = {
     notFound: 'Content not found.',
     loadingFailed: 'Failed to load content.',
   },
+  // ─────────────────────────────────────────────────────────────────────────
+  // SITE / LANDING PAGE
+  // ─────────────────────────────────────────────────────────────────────────
+  site: {
+    nav: {
+      features: 'Features',
+      howItWorks: 'How It Works',
+      pricing: 'Pricing',
+      faq: 'FAQ',
+      joinBeta: 'Join the Beta',
+    },
+    hero: {
+      overline: 'Open Beta — Free to Join',
+      headline: 'Turn wisdom into daily change.',
+      subhead: 'A guided self-transformation app. Daily lessons from Stoicism, modern philosophy, and more. Anonymous reflections. Visible proof of growth. 10 minutes a day.',
+      cta: 'Start the Open Beta',
+      secondary: 'See how it works',
+    },
+    proof: {
+      daily: 'Daily guided practice',
+      worlds: '2 Worlds live',
+      exercises: '5 daily exercises',
+      anonymous: 'Fully anonymous',
+      free: 'Free to start',
+    },
+    howItWorks: {
+      title: 'How It Works',
+      subtitle: 'Three steps. Ten minutes. Real change.',
+      step1: {
+        title: 'Learn',
+        desc: 'A wisdom lesson opens for everyone — drawn from Stoicism, modern philosophy, and more. Absorb, highlight, reflect.',
+      },
+      step2: {
+        title: 'Reflect',
+        desc: 'Share your anonymous echo. Read what others feel. No profiles, no judgement — just raw human insight.',
+      },
+      step3: {
+        title: 'Transform',
+        desc: 'Complete exercises that rewire your thinking. Watch your identity evolve. See the proof in your timeline.',
+      },
+    },
+    showcase: {
+      title: 'See It In Action',
+      subtitle: 'Real screens from the app. No mockups.',
+      screens: {
+        home: 'Daily Practice',
+        lesson: 'Wisdom Lessons',
+        echo: 'Anonymous Echoes',
+        exercises: 'Daily Exercises',
+        sparks: 'Motivational Sparks',
+      },
+    },
+    arc: {
+      title: 'Your First 30 Days',
+      subtitle: 'Here\'s what the journey actually looks like.',
+      day1: {
+        label: 'Day 1-3',
+        desc: 'Find your rhythm. First lesson, first echo, first exercises.',
+      },
+      day7: {
+        label: 'Day 7',
+        desc: '7-day streak. Week Warrior badge unlocked.',
+      },
+      day14: {
+        label: 'Day 14',
+        desc: 'Your identity statements show real evolution. Transformation timeline growing.',
+      },
+      day30: {
+        label: 'Day 30',
+        desc: 'Level 5+. Multiple badges earned. A daily practice that stuck.',
+      },
+    },
+    sticks: {
+      title: 'Why It Sticks',
+      subtitle: 'Most self-improvement apps are abandoned within a week. Here\'s why this one isn\'t.',
+      headers: {
+        feature: 'Feature',
+        others: 'Other Apps',
+        solonsway: 'SolonsWay',
+      },
+      rows: {
+        content: {
+          label: 'Daily Content',
+          others: 'Repeat same advice',
+          ours: 'Fresh philosophy daily',
+        },
+        social: {
+          label: 'Social Layer',
+          others: 'Public, performative',
+          ours: 'Anonymous, authentic',
+        },
+        progress: {
+          label: 'Progress Tracking',
+          others: 'Streaks only',
+          ours: 'Identity evolution + timeline',
+        },
+        time: {
+          label: 'Time Required',
+          others: '30-60 min',
+          ours: '10 minutes',
+        },
+        gamification: {
+          label: 'Motivation',
+          others: 'Guilt & reminders',
+          ours: 'Badges, frames, levels',
+        },
+      },
+    },
+    pricing: {
+      title: 'Choose Your Path',
+      subtitle: 'Start free. Support the mission if it resonates.',
+      free: {
+        name: 'Free Beta',
+        price: '$0',
+        period: 'forever during beta',
+        cta: 'Join Free',
+        features: {
+          f1: 'Full daily practice',
+          f2: 'Lessons + echoes + exercises',
+          f3: 'Sparks (motivational videos)',
+          f4: '2 Worlds (Stoicism, Modern Wisdom)',
+          f5: 'Identity evolution & timeline',
+          f6: 'Profile with frames & badges',
+        },
+      },
+      supporter: {
+        name: 'Supporter',
+        price: '$4.99',
+        period: '/month',
+        cta: 'Become a Supporter',
+        features: {
+          f1: 'Everything in Free',
+          f2: 'No ads on launch',
+          f3: '1 free month of paid ($20 value)',
+          f4: 'Exclusive avatar frames & banners',
+          f5: 'Supporter badge + title',
+          f6: 'More perks coming',
+        },
+      },
+      founder: {
+        name: 'Founding Member',
+        badge: 'Best Value',
+        price: '$9.99',
+        period: '/month',
+        cta: 'Become a Founder',
+        features: {
+          f1: 'Everything in Supporter',
+          f2: '3 free months of paid ($60 value)',
+          f3: 'Founding Member badge (permanent)',
+          f4: 'Early access to new Worlds',
+          f5: 'Name in credits',
+          f6: 'Permanent recognition',
+        },
+      },
+      checkout: {
+        desc: 'Enter your email to start checkout. You can create your account later — your benefits will be waiting.',
+        placeholder: 'your@email.com',
+        submit: 'Continue to Checkout',
+        cancel: 'Cancel',
+      },
+      success: {
+        title: 'Payment Successful!',
+        desc: 'Thank you for your support. Create your account now to activate your benefits, or come back later — they\'ll be waiting.',
+        cta: 'Create Your Account',
+        later: 'I\'ll do it later',
+      },
+      cancelled: {
+        title: 'Payment Cancelled',
+        desc: 'No worries — you can try again anytime, or start with the free plan.',
+        cta: 'Try Again',
+        free: 'Join Free Instead',
+      },
+    },
+    faq: {
+      title: 'Questions & Answers',
+      q1: {
+        q: 'What is SolonsWay?',
+        a: 'A daily self-transformation app built around philosophy, anonymous community reflection, and structured exercises. Think of it as a gym for your mind — 10 minutes a day.',
+      },
+      q2: {
+        q: 'Will it always be free?',
+        a: 'The Free tier includes the full daily practice. We believe the core experience should always be accessible. Paid plans unlock exclusives and perks.',
+      },
+      q3: {
+        q: 'What are Sparks?',
+        a: 'Short-form motivational videos curated to inspire your daily practice. New sparks added regularly.',
+      },
+      q4: {
+        q: 'Is my data private?',
+        a: 'Echoes (reflections) are fully anonymous. No names, no profiles attached. Your transformation journey is yours alone.',
+      },
+      q5: {
+        q: 'What do Supporters and Founders get?',
+        a: 'Exclusive cosmetics (frames, badges, banners), no ads, free months of the future paid tier, and recognition as someone who believed in this from the start.',
+      },
+      q6: {
+        q: 'Can I cancel anytime?',
+        a: 'Yes. No contracts, no lock-in. Cancel from your Stripe dashboard at any time.',
+      },
+    },
+    final: {
+      headline: 'Your transformation starts today.',
+      subhead: 'Join thousands building a daily practice that actually sticks.',
+      cta: 'Start the Open Beta — Free',
+    },
+    sticky: {
+      cta: 'Join Free',
+    },
+    footer: {
+      copy: '© 2026 SolonsWay. All rights reserved.',
+    },
+  },
 } as const;
 
 export default en;

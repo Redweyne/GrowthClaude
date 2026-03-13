@@ -1432,6 +1432,215 @@ const fr = {
     notFound: 'Contenu introuvable.',
     loadingFailed: 'Échec du chargement du contenu.',
   },
+  site: {
+    nav: {
+      features: 'Fonctionnalités',
+      howItWorks: 'Comment ça marche',
+      pricing: 'Tarifs',
+      faq: 'FAQ',
+      joinBeta: 'Rejoindre la bêta',
+    },
+    hero: {
+      overline: 'Bêta ouverte — Gratuit',
+      headline: 'Transforme ta sagesse en changement quotidien.',
+      subhead: 'Une appli de transformation personnelle guidée. Des leçons quotidiennes de stoïcisme, philosophie moderne et plus. Réflexions anonymes. Preuve visible de croissance. 10 minutes par jour.',
+      cta: 'Commencer la bêta',
+      secondary: 'Voir comment ça marche',
+    },
+    proof: {
+      daily: 'Pratique quotidienne guidée',
+      worlds: '2 Mondes disponibles',
+      exercises: '5 exercices quotidiens',
+      anonymous: 'Totalement anonyme',
+      free: 'Gratuit pour commencer',
+    },
+    howItWorks: {
+      title: 'Comment ça marche',
+      subtitle: 'Trois étapes. Dix minutes. Du vrai changement.',
+      step1: {
+        title: 'Apprendre',
+        desc: 'Une leçon de sagesse s\'ouvre pour tous — tirée du stoïcisme, de la philosophie moderne et plus. Absorbe, surligne, réfléchis.',
+      },
+      step2: {
+        title: 'Réfléchir',
+        desc: 'Partage ton écho anonyme. Lis ce que les autres ressentent. Pas de profils, pas de jugement — juste de la perspicacité humaine brute.',
+      },
+      step3: {
+        title: 'Transformer',
+        desc: 'Complète des exercices qui reprogramment ta pensée. Regarde ton identité évoluer. Vois la preuve dans ta chronologie.',
+      },
+    },
+    showcase: {
+      title: 'Voyez-le en action',
+      subtitle: 'Vrais écrans de l\'appli. Pas de maquettes.',
+      screens: {
+        home: 'Pratique quotidienne',
+        lesson: 'Leçons de sagesse',
+        echo: 'Échos anonymes',
+        exercises: 'Exercices quotidiens',
+        sparks: 'Vidéos motivantes',
+      },
+    },
+    arc: {
+      title: 'Tes 30 premiers jours',
+      subtitle: 'Voilà à quoi ressemble vraiment le parcours.',
+      day1: {
+        label: 'Jour 1-3',
+        desc: 'Trouve ton rythme. Première leçon, premier écho, premiers exercices.',
+      },
+      day7: {
+        label: 'Jour 7',
+        desc: 'Série de 7 jours. Badge Guerrier de la semaine débloqué.',
+      },
+      day14: {
+        label: 'Jour 14',
+        desc: 'Tes déclarations d\'identité montrent une vraie évolution. La chronologie de transformation grandit.',
+      },
+      day30: {
+        label: 'Jour 30',
+        desc: 'Niveau 5+. Plusieurs badges gagnés. Une pratique quotidienne qui a tenu.',
+      },
+    },
+    sticks: {
+      title: 'Pourquoi ça tient',
+      subtitle: 'La plupart des applis de développement personnel sont abandonnées en une semaine. Voici pourquoi celle-ci est différente.',
+      headers: {
+        feature: 'Fonctionnalité',
+        others: 'Autres applis',
+        solonsway: 'SolonsWay',
+      },
+      rows: {
+        content: {
+          label: 'Contenu quotidien',
+          others: 'Répètent les mêmes conseils',
+          ours: 'Philosophie fraîche chaque jour',
+        },
+        social: {
+          label: 'Couche sociale',
+          others: 'Public, performatif',
+          ours: 'Anonyme, authentique',
+        },
+        progress: {
+          label: 'Suivi du progrès',
+          others: 'Séries seulement',
+          ours: 'Évolution d\'identité + chronologie',
+        },
+        time: {
+          label: 'Temps requis',
+          others: '30-60 min',
+          ours: '10 minutes',
+        },
+        gamification: {
+          label: 'Motivation',
+          others: 'Culpabilité & rappels',
+          ours: 'Badges, cadres, niveaux',
+        },
+      },
+    },
+    pricing: {
+      title: 'Choisis ton chemin',
+      subtitle: 'Commence gratuitement. Soutiens la mission si ça résonne.',
+      free: {
+        name: 'Bêta gratuite',
+        price: '0$',
+        period: 'gratuit pendant la bêta',
+        cta: 'Rejoindre gratuitement',
+        features: {
+          f1: 'Pratique quotidienne complète',
+          f2: 'Leçons + échos + exercices',
+          f3: 'Sparks (vidéos motivantes)',
+          f4: '2 Mondes (Stoïcisme, Sagesse moderne)',
+          f5: 'Évolution d\'identité & chronologie',
+          f6: 'Profil avec cadres & badges',
+        },
+      },
+      supporter: {
+        name: 'Supporter',
+        price: '4,99$',
+        period: '/mois',
+        cta: 'Devenir Supporter',
+        features: {
+          f1: 'Tout du plan gratuit',
+          f2: 'Pas de pubs au lancement',
+          f3: '1 mois gratuit du plan payant (20$ de valeur)',
+          f4: 'Cadres & bannières exclusifs',
+          f5: 'Badge + titre Supporter',
+          f6: 'Plus d\'avantages à venir',
+        },
+      },
+      founder: {
+        name: 'Membre Fondateur',
+        badge: 'Meilleure valeur',
+        price: '9,99$',
+        period: '/mois',
+        cta: 'Devenir Fondateur',
+        features: {
+          f1: 'Tout du plan Supporter',
+          f2: '3 mois gratuits du plan payant (60$ de valeur)',
+          f3: 'Badge Membre Fondateur (permanent)',
+          f4: 'Accès anticipé aux nouveaux Mondes',
+          f5: 'Nom dans les crédits',
+          f6: 'Reconnaissance permanente',
+        },
+      },
+      checkout: {
+        desc: 'Entre ton email pour commencer le paiement. Tu peux créer ton compte plus tard — tes avantages t\'attendront.',
+        placeholder: 'ton@email.com',
+        submit: 'Continuer vers le paiement',
+        cancel: 'Annuler',
+      },
+      success: {
+        title: 'Paiement réussi !',
+        desc: 'Merci pour ton soutien. Crée ton compte maintenant pour activer tes avantages, ou reviens plus tard — ils t\'attendront.',
+        cta: 'Créer mon compte',
+        later: 'Je le ferai plus tard',
+      },
+      cancelled: {
+        title: 'Paiement annulé',
+        desc: 'Pas de souci — tu peux réessayer quand tu veux, ou commencer avec le plan gratuit.',
+        cta: 'Réessayer',
+        free: 'Rejoindre gratuitement',
+      },
+    },
+    faq: {
+      title: 'Questions & Réponses',
+      q1: {
+        q: 'Qu\'est-ce que SolonsWay ?',
+        a: 'Une appli de transformation quotidienne basée sur la philosophie, la réflexion communautaire anonyme et des exercices structurés. Pense à une salle de gym pour ton esprit — 10 minutes par jour.',
+      },
+      q2: {
+        q: 'Sera-t-il toujours gratuit ?',
+        a: 'Le plan gratuit inclut la pratique quotidienne complète. Nous croyons que l\'expérience principale devrait toujours être accessible. Les plans payants débloquent des exclusivités.',
+      },
+      q3: {
+        q: 'Que sont les Sparks ?',
+        a: 'Des courtes vidéos motivantes sélectionnées pour inspirer ta pratique quotidienne. De nouveaux sparks ajoutés régulièrement.',
+      },
+      q4: {
+        q: 'Mes données sont-elles privées ?',
+        a: 'Les échos (réflexions) sont entièrement anonymes. Pas de noms, pas de profils attachés. Ton parcours de transformation n\'appartient qu\'à toi.',
+      },
+      q5: {
+        q: 'Qu\'obtiennent les Supporters et Fondateurs ?',
+        a: 'Des cosmétiques exclusifs (cadres, badges, bannières), pas de pubs, des mois gratuits du futur plan payant, et la reconnaissance d\'avoir cru en ça dès le début.',
+      },
+      q6: {
+        q: 'Puis-je annuler à tout moment ?',
+        a: 'Oui. Pas de contrats, pas d\'engagement. Annule depuis ton tableau de bord Stripe à tout moment.',
+      },
+    },
+    final: {
+      headline: 'Ta transformation commence aujourd\'hui.',
+      subhead: 'Rejoins des milliers de personnes qui construisent une pratique quotidienne qui tient vraiment.',
+      cta: 'Commencer la bêta — Gratuit',
+    },
+    sticky: {
+      cta: 'Rejoindre gratuitement',
+    },
+    footer: {
+      copy: '© 2026 SolonsWay. Tous droits réservés.',
+    },
+  },
 } as const;
 
 export default fr;
