@@ -59,7 +59,7 @@ interface DailyPracticeActions {
   getTotalDaysInWorld: () => number;
 
   // Phase completion
-  completeLesson: (xpEarned: number) => void;
+  completeLesson: (xpEarned: number, lessonId?: string) => void;
   completeMandatoryEcho: (reflectionId: string) => void;
   completeExercise: (exerciseId: string, response?: string) => number; // Returns XP earned
   markDailyComplete: () => number; // Returns bonus XP
@@ -247,7 +247,7 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
       // PHASE COMPLETION
       // ═══════════════════════════════════════════════════════════════════════
 
-      completeLesson: (xpEarned: number) => {
+      completeLesson: (xpEarned: number, lessonId?: string) => {
         const state = get();
         if (!state.todayProgress) return;
 
@@ -256,6 +256,9 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
             ...state.todayProgress,
             lessonCompleted: true,
             lessonCompletedAt: new Date().toISOString(),
+            // Persist the actual completed lesson ID so exercises can be
+            // recovered after a page refresh (exercisesForSession is ephemeral React state)
+            ...(lessonId ? { lessonId } : {}),
           },
         });
       },

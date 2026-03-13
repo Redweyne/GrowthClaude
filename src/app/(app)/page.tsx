@@ -143,6 +143,7 @@ function HomeInner() {
     completeMandatoryEcho,
     completeExercise,
     markDailyComplete,
+    todayProgress,
   } = useDailyPracticeStore();
 
   // Spark store
@@ -347,15 +348,6 @@ function HomeInner() {
     initializeToday(allWorlds);
   }, []);
 
-  // Handle missing reflection for mandatory echo
-  // (must be declared here with all other hooks, before any conditional returns)
-  useEffect(() => {
-    if (currentView === 'mandatory-echo' && !reflectionForReview) {
-      completeMandatoryEcho('no-reflection-available');
-      setCurrentView('exercises');
-    }
-  }, [currentView, reflectionForReview, completeMandatoryEcho]);
-
   // ─── Activity Logging: track view transitions ─────────────────────────
   useEffect(() => {
     // Compute the logical view (including pre-app states)
@@ -389,6 +381,34 @@ function HomeInner() {
   const dailyFlowState = getDailyFlowState();
   const exercisesCompletedToday = getExercisesCompletedToday();
   const level = getLevelFromXp(totalXp);
+
+  // Safety net: redirect away from exercises view if no exercises are available.
+  // exercisesForSession is ephemeral React state lost on refresh; todaysLesson is null
+  // when dayNumber > world size. The persisted lessonId fallback handles most cases,
+  // but this catches anything that slips through.
+  useEffect(() => {
+    if (currentView !== 'exercises') return;
+    const hasSession = exercisesForSession && exercisesForSession.length > 0;
+    const hasToday = todaysLesson?.exercises && todaysLesson.exercises.length > 0;
+    let hasPersisted = false;
+    const lid = todayProgress?.lessonId;
+    if (lid) {
+      for (const world of allWorlds) {
+        for (const chapter of world.chapters) {
+          for (const lesson of chapter.lessons) {
+            if (lesson.id === lid && lesson.exercises?.length) {
+              hasPersisted = true;
+            }
+          }
+        }
+      }
+    }
+    if (!hasSession && !hasToday && !hasPersisted) {
+      markDailyComplete();
+      setCurrentView('home');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView]);
 
   // Current active world state (from store, default to modern-wisdom)
   const currentWorldSlug = storedWorldSlug || 'modern-wisdom';
@@ -534,8 +554,8 @@ function HomeInner() {
         setExercisesForSession(todaysLesson.exercises);
       }
 
-      // Mark lesson complete in daily practice store
-      completeLesson(selectedFlexibleLesson.xpReward || 50);
+      // Mark lesson complete in daily practice store (pass lesson ID for exercise recovery after refresh)
+      completeLesson(selectedFlexibleLesson.xpReward || 50, selectedFlexibleLesson.id);
 
       // Get a reflection to review for mandatory echo
       const reflection = getReflectionToReview(selectedFlexibleLesson.id, selectedFlexibleLesson.title);
@@ -989,31 +1009,61 @@ function HomeInner() {
   }
 
   // Mandatory Echo - after lesson completion, cannot skip
-  if (currentView === 'mandatory-echo' && reflectionForReview) {
-    return (
-      <>
-        <MandatoryEchoFlow
-          reflection={reflectionForReview}
-          todaysLessonTitle={completedLessonInfo?.title || todaysLesson?.title || ''}
-          onComplete={handleMandatoryEchoComplete}
-          skipIntroPhase={skipEchoIntro}
-        />
-        {/* Coaching modal must render in all views */}
-        {coachingModal && (
-          <CoachModal
-            step={coachingModal}
-            onDismiss={dismissCoaching}
-            userName={userName || c.friend}
+  if (currentView === 'mandatory-echo') {
+    if (reflectionForReview) {
+      return (
+        <>
+          <MandatoryEchoFlow
+            reflection={reflectionForReview}
+            todaysLessonTitle={completedLessonInfo?.title || todaysLesson?.title || ''}
+            onComplete={handleMandatoryEchoComplete}
+            skipIntroPhase={skipEchoIntro}
           />
-        )}
-      </>
-    );
+          {/* Coaching modal must render in all views */}
+          {coachingModal && (
+            <CoachModal
+              step={coachingModal}
+              onDismiss={dismissCoaching}
+              userName={userName || c.friend}
+            />
+          )}
+        </>
+      );
+    } else {
+      // reflectionForReview lost (page refresh) — try to recover it
+      const lessonId = completedLessonInfo?.id || todayProgress?.lessonId || 'any';
+      const lessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.growthJourney;
+      const recovered = getReflectionToReview(lessonId, lessonTitle);
+      if (recovered) {
+        setReflectionForReview(recovered);
+        // Will re-render and hit the branch above
+      } else {
+        // No reflections available at all — auto-complete echo to unblock the user
+        completeMandatoryEcho('auto-skipped-no-reflections');
+        setCurrentView('exercises');
+      }
+      return null;
+    }
   }
 
   // Exercise experience - 5 exercises after echo
   // Use exercisesForSession (saved from completed lesson) as primary source,
-  // fallback to todaysLesson.exercises
-  const availableExercises = exercisesForSession || todaysLesson?.exercises;
+  // fallback 1: look up exercises by persisted lessonId (survives page refresh),
+  // fallback 2: todaysLesson.exercises (works when day <= world size)
+  const persistedLessonExercises = useMemo(() => {
+    const lessonId = todayProgress?.lessonId;
+    if (!lessonId) return null;
+    for (const world of allWorlds) {
+      for (const chapter of world.chapters) {
+        for (const lesson of chapter.lessons) {
+          if (lesson.id === lessonId) return lesson.exercises;
+        }
+      }
+    }
+    return null;
+  }, [todayProgress?.lessonId, allWorlds]);
+
+  const availableExercises = exercisesForSession || persistedLessonExercises || todaysLesson?.exercises;
   const exerciseLessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.practiceFallback;
 
   if (currentView === 'exercises') {
@@ -1040,10 +1090,7 @@ function HomeInner() {
         </>
       );
     } else {
-      // No exercises available - mark complete and go home
-      // This handles edge cases where exercises view is accessed without available exercises
-      markDailyComplete();
-      setCurrentView('home');
+      // No exercises available — render nothing; the useEffect below will redirect
       return null;
     }
   }
