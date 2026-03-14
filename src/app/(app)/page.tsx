@@ -115,6 +115,7 @@ function HomeInner() {
     avatarUrl,
     isSupporter,
     equippedFrameId,
+    userId,
   } = useStore();
   const {
     shouldShowEchoPrompt,
@@ -717,11 +718,11 @@ function HomeInner() {
     return <LanguageSelector />;
   }
 
-  // Onboarding flow — but if Supabase is configured and user just signed out,
-  // show login screen instead of forcing them through onboarding again.
+  // Onboarding flow — new users ALWAYS get onboarding first.
+  // Only show login for RETURNING users who completed onboarding before but signed out.
   if (!onboardingComplete) {
-    // Auth configured + not loading + no session = user signed out → show login
-    if (authConfigured && !authLoading && !isAuthenticated) {
+    // Returning user: has userId (completed onboarding before) + auth configured + signed out → login
+    if (userId && authConfigured && !authLoading && !isAuthenticated) {
       return (
         <div className="min-h-[100dvh] flex flex-col items-center justify-center px-6" style={{ background: '#050403' }}>
           <LoginModal
