@@ -99,8 +99,8 @@ export default function PricingSection() {
     setEmailModal(tier);
   };
 
-  const features = (prefix: string) =>
-    ['f1', 'f2', 'f3', 'f4', 'f5', 'f6'].map(f => t(`${prefix}.${f}`));
+  const features = (prefix: string, count: number) =>
+    Array.from({ length: count }, (_, i) => t(`${prefix}.f${i + 1}`));
 
   return (
     <section id="pricing" className="relative py-20 sm:py-28 bg-[#0a0908]">
@@ -138,7 +138,7 @@ export default function PricingSection() {
               </div>
             </div>
             <ul className="space-y-2.5 mb-6 flex-1">
-              {features('site.pricing.free.features').map((f, i) => (
+              {features('site.pricing.free.features', 6).map((f, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-amber-200/60">
                   <CheckIcon />
                   <span>{f}</span>
@@ -170,7 +170,7 @@ export default function PricingSection() {
               </div>
             </div>
             <ul className="space-y-2.5 mb-6 flex-1">
-              {features('site.pricing.supporter.features').map((f, i) => (
+              {features('site.pricing.supporter.features', 7).map((f, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-amber-200/60">
                   <CheckIcon />
                   <span>{f}</span>
@@ -209,7 +209,7 @@ export default function PricingSection() {
               </div>
             </div>
             <ul className="space-y-2.5 mb-6 flex-1">
-              {features('site.pricing.founder.features').map((f, i) => (
+              {features('site.pricing.founder.features', 7).map((f, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-amber-200/70">
                   <CheckIcon />
                   <span>{f}</span>
