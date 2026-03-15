@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin') ?? '';
 
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: { tier },
       ...(email ? { customer_email: email } : {}),

@@ -1562,7 +1562,7 @@ const fr = {
         features: {
           f1: 'Tout du plan gratuit',
           f2: 'Pas de pubs au lancement',
-          f3: '1 mois gratuit du plan payant (20$ de valeur)',
+          f3: '1 mois gratuit du plan payant (19,99$ de valeur)',
           f4: 'Cadres & bannières animés exclusifs',
           f5: 'Exercices coopératifs',
           f6: 'Badge + titre Supporter',
@@ -1572,12 +1572,12 @@ const fr = {
       founder: {
         name: 'Membre Fondateur',
         badge: 'Meilleure valeur',
-        price: '20$',
+        price: '19,99$',
         period: '/mois',
         cta: 'Devenir Fondateur',
         features: {
           f1: 'Tout du plan Supporter',
-          f2: '3 mois gratuits du plan payant (60$ de valeur)',
+          f2: '3 mois gratuits du plan payant (59,97$ de valeur)',
           f3: 'Badge Membre Fondateur animé (permanent)',
           f4: 'Cadre & bannière animés exclusifs',
           f5: 'Accès anticipé aux nouveaux Mondes',

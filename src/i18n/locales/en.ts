@@ -1565,7 +1565,7 @@ const en = {
         features: {
           f1: 'Everything in Free',
           f2: 'No ads on launch',
-          f3: '1 free month of paid ($20 value)',
+          f3: '1 free month of paid ($19.99 value)',
           f4: 'Exclusive animated avatar frames & banners',
           f5: 'Co-op exercises',
           f6: 'Supporter badge + title',
@@ -1575,12 +1575,12 @@ const en = {
       founder: {
         name: 'Founding Member',
         badge: 'Best Value',
-        price: '$20',
+        price: '$19.99',
         period: '/month',
         cta: 'Become a Founder',
         features: {
           f1: 'Everything in Supporter',
-          f2: '3 free months of paid ($60 value)',
+          f2: '3 free months of paid ($59.97 value)',
           f3: 'Animated Founding Member badge (permanent)',
           f4: 'Exclusive animated avatar frame & banner',
           f5: 'Early access to new Worlds',
