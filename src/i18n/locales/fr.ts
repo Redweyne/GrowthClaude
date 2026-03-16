@@ -314,6 +314,14 @@ const fr = {
     days: 'jours',
     bestStreak: 'Meilleure série',
 
+    // World completion
+    worldComplete: {
+      label: 'Monde terminé',
+      message: "Vous avez parcouru chaque étape de ce monde. La sagesse est désormais vôtre.",
+      daysCompleted: 'Jours',
+      exploreWorlds: 'Explorer de nouveaux mondes',
+    },
+
     // Phases
     phases: {
       lesson: {

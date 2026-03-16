@@ -14,6 +14,7 @@ import { useTranslation } from '@/i18n';
 import type { FlexibleLesson } from '@/types/lessons';
 import type { DailyFlowState } from '@/types/dailyPractice';
 import { useStore } from '@/store/useStore';
+import { Globe } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // THE SANCTUM — A Daily Transformation Portal
@@ -62,6 +63,7 @@ interface DailyFlowHomeProps {
   onRedoPastLesson?: () => void;
   onWeeklyReflection?: () => void;
   onOpenDashboard?: () => void;
+  onExploreWorlds?: () => void;
 
   // Spark
   onOpenSpark?: () => void;
@@ -94,6 +96,7 @@ export function DailyFlowHome({
   onBrowseMoreEchoes,
   onRedoPastLesson,
   onOpenDashboard,
+  onExploreWorlds,
   onOpenSpark,
   isSparkForcedClosed,
 }: DailyFlowHomeProps) {
@@ -103,6 +106,7 @@ export function DailyFlowHome({
   const level = getLevelFromXp(totalXp);
   const xpProgress = getXpProgress(totalXp);
   const isComplete = flowState.currentPhase === 'complete';
+  const isWorldFinished = !todaysLesson && dayNumber > totalDays;
 
   // Determine which phase index is active (0=lesson, 1=echo, 2=practice, 3=complete)
   const phaseIndex = isComplete ? 3
@@ -145,7 +149,18 @@ export function DailyFlowHome({
           transition={{ delay: 0.15, duration: 0.5 }}
         >
           <AnimatePresence mode="wait">
-            {isComplete ? (
+            {isWorldFinished ? (
+              <WorldCompleteCard
+                key="world-complete"
+                worldName={worldName}
+                totalDays={totalDays}
+                totalXp={totalXp}
+                totalLessonsCompleted={totalLessonsCompleted}
+                onExploreWorlds={onExploreWorlds}
+                isRTL={isRTL}
+                t={t}
+              />
+            ) : isComplete ? (
               <CompletionCard
                 key="complete"
                 latestIdentityStatement={latestIdentityStatement}
@@ -536,6 +551,145 @@ function CompletionCard({
                 &ldquo;{latestIdentityStatement}&rdquo;
               </p>
             </div>
+          )}
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WORLD COMPLETE CARD — The world has been conquered
+// ═══════════════════════════════════════════════════════════════════════════
+
+function WorldCompleteCard({
+  worldName,
+  totalDays,
+  totalXp,
+  totalLessonsCompleted,
+  onExploreWorlds,
+  isRTL,
+  t,
+}: {
+  worldName: string;
+  totalDays: number;
+  totalXp: number;
+  totalLessonsCompleted: number;
+  onExploreWorlds?: () => void;
+  isRTL: boolean;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
+      <Card variant="glow" padding="none" className="overflow-hidden relative">
+        {/* Animated gradient border shimmer */}
+        <motion.div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(168,85,247,0.15), rgba(251,191,36,0.15))',
+            backgroundSize: '200% 200%',
+          }}
+          animate={{
+            backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        <div className="relative p-8 text-center">
+          {/* Crown / Achievement icon with particle burst */}
+          <motion.div
+            className="relative inline-block mb-5"
+            initial={{ scale: 0, rotate: -30 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
+          >
+            {/* Glow ring */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(251,191,36,0.3) 0%, transparent 70%)',
+                transform: 'scale(2.5)',
+              }}
+              animate={{
+                opacity: [0.4, 0.8, 0.4],
+                scale: [2.2, 2.8, 2.2],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 via-amber-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-amber-500/30">
+              <motion.span
+                className="text-4xl"
+                animate={{ rotate: [0, -5, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                👑
+              </motion.span>
+            </div>
+          </motion.div>
+
+          {/* Title */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <p className="text-xs uppercase tracking-[0.2em] text-amber-400/70 mb-2 font-medium">
+              {t('dailyFlow.worldComplete.label')}
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-100 light:text-stone-900 mb-2">
+              {worldName}
+            </h2>
+            <p className="text-stone-400 light:text-stone-600 text-sm leading-relaxed max-w-[280px] mx-auto">
+              {t('dailyFlow.worldComplete.message')}
+            </p>
+          </motion.div>
+
+          {/* Stats row */}
+          <motion.div
+            className={`flex justify-center gap-6 mt-6 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="text-center">
+              <p className="text-2xl font-bold text-amber-400">{totalDays}</p>
+              <p className="text-[10px] uppercase tracking-wider text-stone-500">{t('dailyFlow.worldComplete.daysCompleted')}</p>
+            </div>
+            <div className="w-px bg-stone-700/50" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-amber-400">{totalLessonsCompleted}</p>
+              <p className="text-[10px] uppercase tracking-wider text-stone-500">{t('dailyFlow.lessons')}</p>
+            </div>
+            <div className="w-px bg-stone-700/50" />
+            <div className="text-center">
+              <p className="text-2xl font-bold text-amber-400">{totalXp.toLocaleString()}</p>
+              <p className="text-[10px] uppercase tracking-wider text-stone-500">{t('common.xp')}</p>
+            </div>
+          </motion.div>
+
+          {/* CTA */}
+          {onExploreWorlds && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+            >
+              <Button
+                onClick={onExploreWorlds}
+                variant="primary"
+                className={`w-full ${isRTL ? 'flex-row-reverse' : ''}`}
+                glow
+                sound="celebrate"
+              >
+                <Globe size={18} className={isRTL ? 'ml-2' : 'mr-2'} />
+                {t('dailyFlow.worldComplete.exploreWorlds')}
+              </Button>
+            </motion.div>
           )}
         </div>
       </Card>

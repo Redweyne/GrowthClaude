@@ -314,6 +314,14 @@ const ar = {
     days: '\أ\ي\ا\م',
     bestStreak: '\أ\ف\ض\ل \س\ل\س\ل\ة',
 
+    // World completion
+    worldComplete: {
+      label: 'اكتمل العالم',
+      message: 'لقد مشيت كل خطوة في هذا العالم. الحكمة ملكك الآن.',
+      daysCompleted: 'أيام',
+      exploreWorlds: 'استكشف عوالم جديدة',
+    },
+
     // Phases
     phases: {
       lesson: {

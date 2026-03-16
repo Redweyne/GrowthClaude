@@ -314,6 +314,14 @@ const en = {
     days: 'days',
     bestStreak: 'Best streak',
 
+    // World completion
+    worldComplete: {
+      label: 'World Complete',
+      message: "You've walked every step of this world. The wisdom is yours now.",
+      daysCompleted: 'Days',
+      exploreWorlds: 'Explore New Worlds',
+    },
+
     // Phases
     phases: {
       lesson: {

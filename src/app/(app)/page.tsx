@@ -1139,6 +1139,7 @@ function HomeInner() {
             onBrowseMoreEchoes={() => setCurrentView('echoes')}
             onRedoPastLesson={() => setCurrentView('map')}
             onOpenDashboard={() => setCurrentView('dashboard')}
+            onExploreWorlds={() => setCurrentView('worlds')}
             onOpenSpark={() => setCurrentView('spark')}
             isSparkForcedClosed={isSparkForcedClosed()}
           />
