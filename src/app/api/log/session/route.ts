@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { activityDb, isLegacyActivityDbEnabled } from '@/lib/activityDb';
+import { getServiceClient } from '@/lib/supabaseService';
 import { parseUserAgent, resolveGeo, getClientIp } from '@/lib/activityLogger.server';
 
 export async function POST(request: Request) {
   try {
-    if (!isLegacyActivityDbEnabled) {
+    const supabase = getServiceClient();
+    if (!supabase) {
       return NextResponse.json({ sessionId: null }, { status: 200 });
     }
 
@@ -18,42 +19,42 @@ export async function POST(request: Request) {
       referrer,
     } = body;
 
-    // Extract IP and User-Agent from the request
     const ip = getClientIp(request);
     const userAgentString = request.headers.get('user-agent') || '';
-
-    // Parse user agent for browser/OS/device info
     const ua = parseUserAgent(userAgentString);
-
-    // Resolve geolocation from IP (non-blocking, best-effort)
     const geo = await resolveGeo(ip);
 
-    // Create session record
-    const session = await activityDb.activitySession.create({
-      data: {
-        userId: userId || null,
-        userName: userName || null,
-        ipAddress: ip,
-        userAgent: userAgentString,
+    const { data, error } = await supabase
+      .from('activity_sessions')
+      .insert({
+        user_id: userId || null,
+        user_name: userName || null,
+        ip_address: ip,
+        user_agent: userAgentString,
         browser: ua.browser,
-        browserVersion: ua.browserVersion,
+        browser_version: ua.browserVersion,
         os: ua.os,
-        osVersion: ua.osVersion,
-        deviceType: ua.deviceType,
+        os_version: ua.osVersion,
+        device_type: ua.deviceType,
         country: geo?.country || null,
         city: geo?.city || null,
         region: geo?.region || null,
-        screenWidth: screenWidth ? parseInt(screenWidth, 10) : null,
-        screenHeight: screenHeight ? parseInt(screenHeight, 10) : null,
-        appLanguage: appLanguage || null,
+        screen_width: screenWidth ? parseInt(screenWidth, 10) : null,
+        screen_height: screenHeight ? parseInt(screenHeight, 10) : null,
+        app_language: appLanguage || null,
         referrer: referrer || null,
-      },
-    });
+      })
+      .select('id')
+      .single();
 
-    return NextResponse.json({ sessionId: session.id });
+    if (error) {
+      console.error('[Activity Log] Session insert error:', error.message);
+      return NextResponse.json({ sessionId: null }, { status: 200 });
+    }
+
+    return NextResponse.json({ sessionId: data.id });
   } catch (error) {
     console.error('[Activity Log] Session creation failed:', error);
-    // Never block the app — return a placeholder so the client can still queue events
     return NextResponse.json({ sessionId: null }, { status: 200 });
   }
 }

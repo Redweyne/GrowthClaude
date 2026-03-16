@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { activityDb, isLegacyActivityDbEnabled } from '@/lib/activityDb';
+import { getServiceClient } from '@/lib/supabaseService';
 
 interface IncomingEvent {
   eventType: string;
@@ -16,7 +16,8 @@ interface IncomingPageView {
 
 export async function POST(request: Request) {
   try {
-    if (!isLegacyActivityDbEnabled) {
+    const supabase = getServiceClient();
+    if (!supabase) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
@@ -29,51 +30,50 @@ export async function POST(request: Request) {
     };
 
     if (!sessionId) {
-      return NextResponse.json({ ok: true }); // Silently skip if no session
+      return NextResponse.json({ ok: true });
     }
 
-    const promises: Promise<unknown>[] = [];
+    const promises: PromiseLike<unknown>[] = [];
 
     // Batch insert events
     if (events && events.length > 0) {
       promises.push(
-        activityDb.activityEvent.createMany({
-          data: events.map((e) => ({
-            sessionId,
-            userId: userId || null,
-            eventType: e.eventType,
-            eventData: e.eventData || null,
+        supabase.from('activity_events').insert(
+          events.map((e) => ({
+            session_id: sessionId,
+            user_id: userId || null,
+            event_type: e.eventType,
+            event_data: e.eventData ? safeParseJSON(e.eventData) : null,
             view: e.view || null,
-            timestamp: e.timestamp ? new Date(e.timestamp) : new Date(),
-          })),
-        })
+            timestamp: e.timestamp || new Date().toISOString(),
+          }))
+        ).then(() => {})
       );
     }
 
     // Batch insert page views
     if (pageViews && pageViews.length > 0) {
       promises.push(
-        activityDb.activityPageView.createMany({
-          data: pageViews.map((pv) => ({
-            sessionId,
-            userId: userId || null,
-            viewName: pv.viewName,
-            enteredAt: new Date(pv.enteredAt),
+        supabase.from('activity_page_views').insert(
+          pageViews.map((pv) => ({
+            session_id: sessionId,
+            user_id: userId || null,
+            view_name: pv.viewName,
+            entered_at: pv.enteredAt,
             duration: pv.duration ?? null,
-          })),
-        })
+          }))
+        ).then(() => {})
       );
     }
 
     // Update session's userId if provided (covers onboarding-to-logged-in transition)
     if (userId) {
       promises.push(
-        activityDb.activitySession.update({
-          where: { id: sessionId },
-          data: { userId },
-        }).catch(() => {
-          // Session may not exist if initial creation failed
-        })
+        supabase
+          .from('activity_sessions')
+          .update({ user_id: userId })
+          .eq('id', sessionId)
+          .then(() => {})
       );
     }
 
@@ -82,7 +82,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[Activity Log] Event logging failed:', error);
-    // Never block the app
     return NextResponse.json({ ok: true }, { status: 200 });
+  }
+}
+
+function safeParseJSON(str: string): unknown {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return str;
   }
 }

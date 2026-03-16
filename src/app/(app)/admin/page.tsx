@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/i18n';
+import { describeEvent } from '@/lib/eventDescriptions';
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
@@ -570,9 +571,9 @@ export default function AdminPage() {
             {data.events.map((e) => (
               <div key={e.id} className="flex items-start gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded">
                 <span className="text-zinc-500 w-40 shrink-0">{formatDate(e.timestamp, localeTag)}</span>
-                <span className="font-mono text-emerald-400 w-48 shrink-0">{e.eventType}</span>
-                <span className="text-zinc-400 font-mono text-xs">
-                  {e.eventData ? truncate(JSON.stringify(e.eventData), 100) : ''}
+                <span className="text-emerald-400 w-56 shrink-0">{describeEvent(e.eventType, e.eventData as Record<string, unknown> | null)}</span>
+                <span className="text-zinc-600 font-mono text-xs">
+                  {e.eventType}
                 </span>
                 {e.view && <span className="text-zinc-600 ml-auto text-xs">@ {e.view}</span>}
               </div>
@@ -738,9 +739,9 @@ function OverviewTab({ data, copy, localeTag }: { data: OverviewData; copy: Admi
             <div key={e.id} className="flex items-center gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded hover:bg-zinc-900 transition-colors">
               <span className="text-zinc-500 w-16 shrink-0">{timeAgo(e.timestamp, localeTag)}</span>
               <span className="text-zinc-300 w-24 shrink-0 truncate">{e.userName || e.userId?.slice(0, 8) || copy.anon}</span>
-              <span className="font-mono text-emerald-400 w-48 shrink-0">{e.eventType}</span>
-              <span className="text-zinc-500 text-xs font-mono truncate">
-                {e.eventData ? truncate(JSON.stringify(e.eventData), 60) : ''}
+              <span className="text-emerald-400 w-56 shrink-0">{describeEvent(e.eventType, e.eventData as Record<string, unknown> | null)}</span>
+              <span className="text-zinc-600 text-xs font-mono truncate">
+                {e.eventType}
               </span>
               {e.country && <span className="text-zinc-600 text-xs ml-auto shrink-0">{e.country}</span>}
             </div>
@@ -915,9 +916,9 @@ function EventsTab({
           <div key={e.id} className="flex items-start gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded hover:bg-zinc-900 transition-colors">
             <span className="text-zinc-500 w-36 shrink-0">{formatDate(e.timestamp, localeTag)}</span>
             <span className="text-zinc-300 w-24 shrink-0 truncate">{e.userName || (e.userId ? e.userId.slice(0, 8) : copy.anon)}</span>
-            <span className="font-mono text-emerald-400 w-52 shrink-0">{e.eventType}</span>
-            <span className="text-zinc-400 font-mono text-xs flex-1 truncate">
-              {e.eventData ? truncate(JSON.stringify(e.eventData), 80) : ''}
+            <span className="text-emerald-400 w-56 shrink-0">{describeEvent(e.eventType, e.eventData as Record<string, unknown> | null)}</span>
+            <span className="text-zinc-600 font-mono text-xs flex-1 truncate">
+              {e.eventType}
             </span>
             {e.view && <span className="text-zinc-600 text-xs shrink-0">@ {e.view}</span>}
           </div>
@@ -1017,7 +1018,7 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
               return (
                 <div key={e.eventType} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-mono text-emerald-400">{e.eventType}</span>
+                    <span className="text-emerald-400">{describeEvent(e.eventType)}</span>
                     <span className="text-zinc-500">{e.count}</span>
                   </div>
                   <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">

@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
-import { createClient } from '@supabase/supabase-js';
-
-function getServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Supabase service role env vars not set');
-  return createClient(url, key);
-}
+import { getServiceClient } from '@/lib/supabaseService';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -41,6 +34,10 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = getServiceClient();
+    if (!supabase) {
+      console.error('Supabase service client not configured');
+      return NextResponse.json({ received: true });
+    }
 
     // Check if user already exists
     const { data: existingUser } = await supabase

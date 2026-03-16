@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { activityDb, isLegacyActivityDbEnabled } from '@/lib/activityDb';
+import { getServiceClient } from '@/lib/supabaseService';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN API - Protected endpoint for the admin dashboard
@@ -33,9 +33,10 @@ export async function GET(request: NextRequest) {
   const auth = validateAuth(request);
   if (!auth.valid) return unauthorized(auth.reason);
 
-  if (!isLegacyActivityDbEnabled) {
+  const supabase = getServiceClient();
+  if (!supabase) {
     return NextResponse.json(
-      { error: 'Legacy activity database is disabled', reason: 'Set ENABLE_LEGACY_ACTIVITY_DB=true to re-enable admin analytics' },
+      { error: 'Supabase not configured', reason: 'SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL missing' },
       { status: 503 }
     );
   }
@@ -78,79 +79,82 @@ export async function GET(request: NextRequest) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function getOverview() {
+  const supabase = getServiceClient()!;
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const [
-    totalSessions,
-    totalEvents,
-    totalPageViews,
-    todaySessions,
-    todayEvents,
-    weekSessions,
-    recentEvents,
-    uniqueUsers,
-    topCountries,
-    topDevices,
+    totalSessionsRes,
+    totalEventsRes,
+    totalPageViewsRes,
+    todaySessionsRes,
+    todayEventsRes,
+    weekSessionsRes,
+    recentEventsRes,
+    uniqueUsersRes,
+    topCountriesRes,
+    topDevicesRes,
   ] = await Promise.all([
-    activityDb.activitySession.count(),
-    activityDb.activityEvent.count(),
-    activityDb.activityPageView.count(),
-    activityDb.activitySession.count({ where: { createdAt: { gte: todayStart } } }),
-    activityDb.activityEvent.count({ where: { timestamp: { gte: todayStart } } }),
-    activityDb.activitySession.count({ where: { createdAt: { gte: weekAgo } } }),
-    activityDb.activityEvent.findMany({
-      orderBy: { timestamp: 'desc' },
-      take: 20,
-      include: { session: { select: { userName: true, country: true, deviceType: true } } },
-    }),
-    activityDb.activitySession.groupBy({
-      by: ['userId'],
-      where: { userId: { not: null } },
-      _count: true,
-    }),
-    activityDb.activitySession.groupBy({
-      by: ['country'],
-      where: { country: { not: null } },
-      _count: true,
-      orderBy: { _count: { country: 'desc' } },
-      take: 10,
-    }),
-    activityDb.activitySession.groupBy({
-      by: ['deviceType'],
-      where: { deviceType: { not: null } },
-      _count: true,
-      orderBy: { _count: { deviceType: 'desc' } },
-    }),
+    supabase.from('activity_sessions').select('id', { count: 'exact', head: true }),
+    supabase.from('activity_events').select('id', { count: 'exact', head: true }),
+    supabase.from('activity_page_views').select('id', { count: 'exact', head: true }),
+    supabase.from('activity_sessions').select('id', { count: 'exact', head: true }).gte('created_at', todayStart),
+    supabase.from('activity_events').select('id', { count: 'exact', head: true }).gte('timestamp', todayStart),
+    supabase.from('activity_sessions').select('id', { count: 'exact', head: true }).gte('created_at', weekAgo),
+    supabase
+      .from('activity_events')
+      .select('id, event_type, event_data, view, user_id, timestamp, session_id')
+      .order('timestamp', { ascending: false })
+      .limit(20),
+    supabase.rpc('get_unique_user_count'),
+    supabase.rpc('get_top_countries', { max_results: 10 }),
+    supabase.rpc('get_device_breakdown'),
   ]);
 
+  // For recent events, fetch session info separately
+  const recentEvents = recentEventsRes.data || [];
+  const sessionIds = [...new Set(recentEvents.map((e: { session_id: string }) => e.session_id).filter(Boolean))];
+  let sessionMap: Record<string, { user_name: string | null; country: string | null; device_type: string | null }> = {};
+  if (sessionIds.length > 0) {
+    const { data: sessions } = await supabase
+      .from('activity_sessions')
+      .select('id, user_name, country, device_type')
+      .in('id', sessionIds);
+    if (sessions) {
+      sessionMap = Object.fromEntries(sessions.map((s: { id: string; user_name: string | null; country: string | null; device_type: string | null }) => [s.id, s]));
+    }
+  }
+
   return {
-    totalUsers: uniqueUsers.length,
-    totalSessions,
-    totalEvents,
-    totalPageViews,
-    todaySessions,
-    todayEvents,
-    weekSessions,
-    recentEvents: recentEvents.map((e) => ({
-      id: e.id,
-      eventType: e.eventType,
-      eventData: e.eventData ? safeParseJSON(e.eventData) : null,
-      view: e.view,
-      userId: e.userId,
-      userName: e.session?.userName,
-      country: e.session?.country,
-      deviceType: e.session?.deviceType,
-      timestamp: e.timestamp,
-    })),
-    topCountries: topCountries.map((c) => ({
+    totalUsers: uniqueUsersRes.data ?? 0,
+    totalSessions: totalSessionsRes.count ?? 0,
+    totalEvents: totalEventsRes.count ?? 0,
+    totalPageViews: totalPageViewsRes.count ?? 0,
+    todaySessions: todaySessionsRes.count ?? 0,
+    todayEvents: todayEventsRes.count ?? 0,
+    weekSessions: weekSessionsRes.count ?? 0,
+    recentEvents: recentEvents.map((e: { id: string; event_type: string; event_data: unknown; view: string | null; user_id: string | null; timestamp: string; session_id: string }) => {
+      const session = sessionMap[e.session_id];
+      return {
+        id: e.id,
+        eventType: e.event_type,
+        eventData: e.event_data,
+        view: e.view,
+        userId: e.user_id,
+        userName: session?.user_name ?? null,
+        country: session?.country ?? null,
+        deviceType: session?.device_type ?? null,
+        timestamp: e.timestamp,
+      };
+    }),
+    topCountries: (topCountriesRes.data || []).map((c: { country: string; count: number }) => ({
       country: c.country || 'Unknown',
-      count: c._count,
+      count: c.count,
     })),
-    topDevices: topDevices.map((d) => ({
-      deviceType: d.deviceType || 'Unknown',
-      count: d._count,
+    topDevices: (topDevicesRes.data || []).map((d: { device_type: string; count: number }) => ({
+      deviceType: d.device_type || 'Unknown',
+      count: d.count,
     })),
   };
 }
@@ -160,23 +164,29 @@ async function getOverview() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function getUsers() {
-  // Get all sessions grouped by userId with aggregated info
-  const sessions = await activityDb.activitySession.findMany({
-    where: { userId: { not: null } },
-    orderBy: { createdAt: 'desc' },
-    select: {
-      userId: true,
-      userName: true,
-      country: true,
-      city: true,
-      deviceType: true,
-      browser: true,
-      os: true,
-      appLanguage: true,
-      createdAt: true,
-      _count: { select: { events: true } },
-    },
-  });
+  const supabase = getServiceClient()!;
+
+  const { data: sessions } = await supabase
+    .from('activity_sessions')
+    .select('id, user_id, user_name, country, city, device_type, browser, os, app_language, created_at')
+    .not('user_id', 'is', null)
+    .order('created_at', { ascending: false });
+
+  if (!sessions || sessions.length === 0) return { users: [] };
+
+  // Get event counts per session
+  const sessionIds = sessions.map((s: { id: string }) => s.id);
+  const { data: eventCounts } = await supabase
+    .from('activity_events')
+    .select('session_id')
+    .in('session_id', sessionIds);
+
+  const eventCountBySession = new Map<string, number>();
+  if (eventCounts) {
+    for (const e of eventCounts) {
+      eventCountBySession.set(e.session_id, (eventCountBySession.get(e.session_id) || 0) + 1);
+    }
+  }
 
   // Aggregate by userId
   const userMap = new Map<string, {
@@ -188,51 +198,51 @@ async function getUsers() {
     browser: string | null;
     os: string | null;
     appLanguage: string | null;
-    firstSeen: Date;
-    lastSeen: Date;
+    firstSeen: string;
+    lastSeen: string;
     sessionCount: number;
     eventCount: number;
   }>();
 
   for (const s of sessions) {
-    if (!s.userId) continue;
-    const existing = userMap.get(s.userId);
+    if (!s.user_id) continue;
+    const sessionEventCount = eventCountBySession.get(s.id) || 0;
+    const existing = userMap.get(s.user_id);
     if (existing) {
       existing.sessionCount++;
-      existing.eventCount += s._count.events;
-      if (s.createdAt > existing.lastSeen) {
-        existing.lastSeen = s.createdAt;
-        // Update to latest info
-        if (s.userName) existing.userName = s.userName;
+      existing.eventCount += sessionEventCount;
+      if (s.created_at > existing.lastSeen) {
+        existing.lastSeen = s.created_at;
+        if (s.user_name) existing.userName = s.user_name;
         if (s.country) existing.country = s.country;
         if (s.city) existing.city = s.city;
-        if (s.deviceType) existing.deviceType = s.deviceType;
+        if (s.device_type) existing.deviceType = s.device_type;
         if (s.browser) existing.browser = s.browser;
         if (s.os) existing.os = s.os;
       }
-      if (s.createdAt < existing.firstSeen) {
-        existing.firstSeen = s.createdAt;
+      if (s.created_at < existing.firstSeen) {
+        existing.firstSeen = s.created_at;
       }
     } else {
-      userMap.set(s.userId, {
-        userId: s.userId,
-        userName: s.userName,
+      userMap.set(s.user_id, {
+        userId: s.user_id,
+        userName: s.user_name,
         country: s.country,
         city: s.city,
-        deviceType: s.deviceType,
+        deviceType: s.device_type,
         browser: s.browser,
         os: s.os,
-        appLanguage: s.appLanguage,
-        firstSeen: s.createdAt,
-        lastSeen: s.createdAt,
+        appLanguage: s.app_language,
+        firstSeen: s.created_at,
+        lastSeen: s.created_at,
         sessionCount: 1,
-        eventCount: s._count.events,
+        eventCount: sessionEventCount,
       });
     }
   }
 
   const users = Array.from(userMap.values()).sort(
-    (a, b) => b.lastSeen.getTime() - a.lastSeen.getTime()
+    (a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
   );
 
   return { users };
@@ -243,58 +253,56 @@ async function getUsers() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function getUserDetail(userId: string) {
-  const [sessions, recentEvents, pageViews] = await Promise.all([
-    activityDb.activitySession.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-      select: {
-        id: true,
-        createdAt: true,
-        endedAt: true,
-        ipAddress: true,
-        country: true,
-        city: true,
-        browser: true,
-        os: true,
-        deviceType: true,
-        screenWidth: true,
-        screenHeight: true,
-        appLanguage: true,
-      },
-    }),
-    activityDb.activityEvent.findMany({
-      where: { userId },
-      orderBy: { timestamp: 'desc' },
-      take: 100,
-      select: {
-        id: true,
-        eventType: true,
-        eventData: true,
-        view: true,
-        timestamp: true,
-        sessionId: true,
-      },
-    }),
-    activityDb.activityPageView.findMany({
-      where: { userId },
-      orderBy: { enteredAt: 'desc' },
-      take: 50,
-      select: {
-        viewName: true,
-        enteredAt: true,
-        duration: true,
-      },
-    }),
+  const supabase = getServiceClient()!;
+
+  const [sessionsRes, eventsRes, pageViewsRes] = await Promise.all([
+    supabase
+      .from('activity_sessions')
+      .select('id, created_at, ended_at, ip_address, country, city, browser, os, device_type, screen_width, screen_height, app_language')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('activity_events')
+      .select('id, event_type, event_data, view, timestamp, session_id')
+      .eq('user_id', userId)
+      .order('timestamp', { ascending: false })
+      .limit(100),
+    supabase
+      .from('activity_page_views')
+      .select('view_name, entered_at, duration')
+      .eq('user_id', userId)
+      .order('entered_at', { ascending: false })
+      .limit(50),
   ]);
 
   return {
-    sessions,
-    events: recentEvents.map((e) => ({
-      ...e,
-      eventData: e.eventData ? safeParseJSON(e.eventData) : null,
+    sessions: (sessionsRes.data || []).map((s: Record<string, unknown>) => ({
+      id: s.id,
+      createdAt: s.created_at,
+      endedAt: s.ended_at,
+      country: s.country,
+      city: s.city,
+      browser: s.browser,
+      os: s.os,
+      deviceType: s.device_type,
+      screenWidth: s.screen_width,
+      screenHeight: s.screen_height,
+      appLanguage: s.app_language,
     })),
-    pageViews,
+    events: (eventsRes.data || []).map((e: Record<string, unknown>) => ({
+      id: e.id,
+      eventType: e.event_type,
+      eventData: e.event_data,
+      view: e.view,
+      timestamp: e.timestamp,
+      sessionId: e.session_id,
+    })),
+    pageViews: (pageViewsRes.data || []).map((pv: Record<string, unknown>) => ({
+      viewName: pv.view_name,
+      enteredAt: pv.entered_at,
+      duration: pv.duration,
+    })),
   };
 }
 
@@ -308,51 +316,62 @@ async function getEvents(
   eventType?: string,
   userId?: string
 ) {
-  const where: Record<string, unknown> = {};
-  if (eventType) where.eventType = eventType;
-  if (userId) where.userId = userId;
+  const supabase = getServiceClient()!;
+  const offset = (page - 1) * limit;
 
-  const [events, total] = await Promise.all([
-    activityDb.activityEvent.findMany({
-      where,
-      orderBy: { timestamp: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        session: {
-          select: { userName: true, country: true, deviceType: true, browser: true },
-        },
-      },
-    }),
-    activityDb.activityEvent.count({ where }),
+  // Build query
+  let query = supabase
+    .from('activity_events')
+    .select('id, event_type, event_data, view, user_id, timestamp, session_id', { count: 'exact' })
+    .order('timestamp', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (eventType) query = query.eq('event_type', eventType);
+  if (userId) query = query.eq('user_id', userId);
+
+  const [eventsRes, eventTypesRes] = await Promise.all([
+    query,
+    supabase.rpc('get_event_type_counts', { days_back: 9999 }),
   ]);
 
-  // Get unique event types for filter dropdown
-  const eventTypes = await activityDb.activityEvent.groupBy({
-    by: ['eventType'],
-    _count: true,
-    orderBy: { _count: { eventType: 'desc' } },
-  });
+  const events = eventsRes.data || [];
+  const total = eventsRes.count ?? 0;
+
+  // Fetch session info for these events
+  const sessionIds = [...new Set(events.map((e: { session_id: string }) => e.session_id).filter(Boolean))];
+  let sessionMap: Record<string, { user_name: string | null; country: string | null; device_type: string | null; browser: string | null }> = {};
+  if (sessionIds.length > 0) {
+    const { data: sessions } = await supabase
+      .from('activity_sessions')
+      .select('id, user_name, country, device_type, browser')
+      .in('id', sessionIds);
+    if (sessions) {
+      sessionMap = Object.fromEntries(sessions.map((s: { id: string; user_name: string | null; country: string | null; device_type: string | null; browser: string | null }) => [s.id, s]));
+    }
+  }
 
   return {
-    events: events.map((e) => ({
-      id: e.id,
-      eventType: e.eventType,
-      eventData: e.eventData ? safeParseJSON(e.eventData) : null,
-      view: e.view,
-      userId: e.userId,
-      userName: e.session?.userName,
-      country: e.session?.country,
-      deviceType: e.session?.deviceType,
-      browser: e.session?.browser,
-      timestamp: e.timestamp,
-    })),
+    events: events.map((e: { id: string; event_type: string; event_data: unknown; view: string | null; user_id: string | null; timestamp: string; session_id: string }) => {
+      const session = sessionMap[e.session_id];
+      return {
+        id: e.id,
+        eventType: e.event_type,
+        eventData: e.event_data,
+        view: e.view,
+        userId: e.user_id,
+        userName: session?.user_name ?? null,
+        country: session?.country ?? null,
+        deviceType: session?.device_type ?? null,
+        browser: session?.browser ?? null,
+        timestamp: e.timestamp,
+      };
+    }),
     total,
     page,
     totalPages: Math.ceil(total / limit),
-    eventTypes: eventTypes.map((t) => ({
-      type: t.eventType,
-      count: t._count,
+    eventTypes: (eventTypesRes.data || []).map((t: { event_type: string; count: number }) => ({
+      type: t.event_type,
+      count: t.count,
     })),
   };
 }
@@ -362,118 +381,64 @@ async function getEvents(
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function getAnalytics() {
+  const supabase = getServiceClient()!;
+
   const [
-    screenViews,
-    topEvents,
-    sessionsPerDay,
-    browserBreakdown,
-    osBreakdown,
-    languageBreakdown,
+    screenViewsRes,
+    topEventsRes,
+    sessionsPerDayRes,
+    browserRes,
+    osRes,
+    languageRes,
   ] = await Promise.all([
-    // Most visited screens
-    activityDb.activityPageView.groupBy({
-      by: ['viewName'],
-      _count: true,
-      _avg: { duration: true },
-      orderBy: { _count: { viewName: 'desc' } },
-    }),
-    // Most common events
-    activityDb.activityEvent.groupBy({
-      by: ['eventType'],
-      _count: true,
-      orderBy: { _count: { eventType: 'desc' } },
-      take: 20,
-    }),
-    // Sessions per day (last 30 days)
-    getSessionsPerDay(30),
-    // Browser breakdown
-    activityDb.activitySession.groupBy({
-      by: ['browser'],
-      where: { browser: { not: null } },
-      _count: true,
-      orderBy: { _count: { browser: 'desc' } },
-      take: 10,
-    }),
-    // OS breakdown
-    activityDb.activitySession.groupBy({
-      by: ['os'],
-      where: { os: { not: null } },
-      _count: true,
-      orderBy: { _count: { os: 'desc' } },
-      take: 10,
-    }),
-    // Language breakdown
-    activityDb.activitySession.groupBy({
-      by: ['appLanguage'],
-      where: { appLanguage: { not: null } },
-      _count: true,
-      orderBy: { _count: { appLanguage: 'desc' } },
-    }),
+    supabase.rpc('get_screen_analytics'),
+    supabase.rpc('get_event_type_counts', { days_back: 9999 }),
+    supabase.rpc('get_sessions_per_day', { days_back: 30 }),
+    supabase.rpc('get_browser_breakdown', { max_results: 10 }),
+    supabase.rpc('get_os_breakdown', { max_results: 10 }),
+    supabase.rpc('get_language_breakdown'),
   ]);
 
-  return {
-    screenViews: screenViews.map((s) => ({
-      viewName: s.viewName,
-      count: s._count,
-      avgDuration: Math.round(s._avg.duration || 0),
-    })),
-    topEvents: topEvents.map((e) => ({
-      eventType: e.eventType,
-      count: e._count,
-    })),
-    sessionsPerDay,
-    browserBreakdown: browserBreakdown.map((b) => ({
-      browser: b.browser || 'Unknown',
-      count: b._count,
-    })),
-    osBreakdown: osBreakdown.map((o) => ({
-      os: o.os || 'Unknown',
-      count: o._count,
-    })),
-    languageBreakdown: languageBreakdown.map((l) => ({
-      language: l.appLanguage || 'Unknown',
-      count: l._count,
-    })),
-  };
-}
-
-async function getSessionsPerDay(days: number) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-
-  const sessions = await activityDb.activitySession.findMany({
-    where: { createdAt: { gte: cutoff } },
-    select: { createdAt: true },
-  });
-
-  // Group by date string
-  const byDay = new Map<string, number>();
-  for (const s of sessions) {
-    const day = s.createdAt.toISOString().split('T')[0];
-    byDay.set(day, (byDay.get(day) || 0) + 1);
+  // Fill in missing days for sessionsPerDay
+  const rawDays = sessionsPerDayRes.data || [];
+  const dayMap = new Map<string, number>();
+  for (const d of rawDays) {
+    dayMap.set(d.day, d.count);
   }
 
-  // Fill in missing days with 0
-  const result: { date: string; count: number }[] = [];
+  const sessionsPerDay: { date: string; count: number }[] = [];
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
   const current = new Date(cutoff);
   const today = new Date();
   while (current <= today) {
     const day = current.toISOString().split('T')[0];
-    result.push({ date: day, count: byDay.get(day) || 0 });
+    sessionsPerDay.push({ date: day, count: dayMap.get(day) || 0 });
     current.setDate(current.getDate() + 1);
   }
 
-  return result;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// UTILS
-// ─────────────────────────────────────────────────────────────────────────────
-
-function safeParseJSON(str: string): unknown {
-  try {
-    return JSON.parse(str);
-  } catch {
-    return str;
-  }
+  return {
+    screenViews: (screenViewsRes.data || []).map((s: { view_name: string; count: number; avg_duration: number }) => ({
+      viewName: s.view_name,
+      count: s.count,
+      avgDuration: Math.round(s.avg_duration || 0),
+    })),
+    topEvents: (topEventsRes.data || []).slice(0, 20).map((e: { event_type: string; count: number }) => ({
+      eventType: e.event_type,
+      count: e.count,
+    })),
+    sessionsPerDay,
+    browserBreakdown: (browserRes.data || []).map((b: { browser: string; count: number }) => ({
+      browser: b.browser || 'Unknown',
+      count: b.count,
+    })),
+    osBreakdown: (osRes.data || []).map((o: { os: string; count: number }) => ({
+      os: o.os || 'Unknown',
+      count: o.count,
+    })),
+    languageBreakdown: (languageRes.data || []).map((l: { language: string; count: number }) => ({
+      language: l.language || 'Unknown',
+      count: l.count,
+    })),
+  };
 }
