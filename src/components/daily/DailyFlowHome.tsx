@@ -115,7 +115,7 @@ export function DailyFlowHome({
       <AmbientBackground intensity="normal" particleCount={15} orbCount={3} />
 
       <motion.div
-        className="relative z-10 flex-1 flex flex-col p-6 pb-6 max-w-lg mx-auto w-full"
+        className="relative z-10 flex-1 flex flex-col p-6 pb-20 max-w-lg mx-auto w-full"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}

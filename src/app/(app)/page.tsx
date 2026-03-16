@@ -587,8 +587,9 @@ function HomeInner() {
         setExercisesForSession(todaysLesson.exercises);
       }
 
-      // Mark lesson complete in daily practice store (pass lesson ID for exercise recovery after refresh)
-      completeLesson(selectedFlexibleLesson.xpReward || 50, selectedFlexibleLesson.id);
+      // Mark lesson complete in daily practice store (pass lesson ID + exercise count for recovery after refresh)
+      const exerciseCount = selectedFlexibleLesson.exercises?.length || todaysLesson?.exercises?.length || 5;
+      completeLesson(selectedFlexibleLesson.xpReward || 50, selectedFlexibleLesson.id, exerciseCount);
 
       // Get a reflection to review for mandatory echo
       const reflection = getReflectionToReview(selectedFlexibleLesson.id, selectedFlexibleLesson.title);
@@ -1123,7 +1124,7 @@ function HomeInner() {
             tomorrowsLesson={tomorrowsLesson}
             flowState={dailyFlowState}
             exercisesCompleted={exercisesCompletedToday.length}
-            totalExercises={todaysLesson?.exercises?.length || 5}
+            totalExercises={todayProgress?.totalExercises || todaysLesson?.exercises?.length || 5}
             hasPendingAction={hasPendingAction}
             pendingCommitment={undefined}
             latestIdentityStatement={userIdentityStatements.length > 0 ? userIdentityStatements[userIdentityStatements.length - 1]?.statement : undefined}

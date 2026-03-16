@@ -59,7 +59,7 @@ interface DailyPracticeActions {
   getTotalDaysInWorld: () => number;
 
   // Phase completion
-  completeLesson: (xpEarned: number, lessonId?: string) => void;
+  completeLesson: (xpEarned: number, lessonId?: string, totalExercises?: number) => void;
   completeMandatoryEcho: (reflectionId: string) => void;
   completeExercise: (exerciseId: string, response?: string) => number; // Returns XP earned
   markDailyComplete: () => number; // Returns bonus XP
@@ -247,7 +247,7 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
       // PHASE COMPLETION
       // ═══════════════════════════════════════════════════════════════════════
 
-      completeLesson: (xpEarned: number, lessonId?: string) => {
+      completeLesson: (xpEarned: number, lessonId?: string, totalExercises?: number) => {
         const state = get();
         if (!state.todayProgress) return;
 
@@ -259,6 +259,8 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
             // Persist the actual completed lesson ID so exercises can be
             // recovered after a page refresh (exercisesForSession is ephemeral React state)
             ...(lessonId ? { lessonId } : {}),
+            // Persist total exercise count so getDailyFlowState uses the correct number
+            ...(totalExercises != null ? { totalExercises } : {}),
           },
         });
       },
@@ -316,7 +318,7 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
         if (state.todayProgress.allPhasesComplete) return 0;
 
         // Check if all phases are actually complete
-        const flowState = getDailyFlowState(state.todayProgress);
+        const flowState = getDailyFlowState(state.todayProgress, state.todayProgress.totalExercises);
         if (flowState.currentPhase !== 'complete') {
           return 0;
         }
@@ -337,7 +339,7 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
 
       getDailyFlowState: () => {
         const state = get();
-        return getDailyFlowState(state.todayProgress);
+        return getDailyFlowState(state.todayProgress, state.todayProgress?.totalExercises);
       },
 
       isLessonCompletedToday: () => {

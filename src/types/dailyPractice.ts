@@ -179,6 +179,7 @@ export interface DailyProgress {
 
   exercisesCompleted: string[];    // Exercise IDs completed
   exerciseResponses: Record<string, string>; // exerciseId -> response
+  totalExercises?: number;         // Total exercises for this lesson (persisted for accurate flow state)
 
   // Overall completion
   allPhasesComplete: boolean;
@@ -290,7 +291,7 @@ export function canDoPastWorldExercise(lastExerciseDate: string | null): boolean
 /**
  * Get the daily flow state based on progress
  */
-export function getDailyFlowState(progress: DailyProgress | null, totalExercises: number = 3): DailyFlowState {
+export function getDailyFlowState(progress: DailyProgress | null, totalExercises: number = 5): DailyFlowState {
   if (!progress) {
     return {
       currentPhase: 'lesson',

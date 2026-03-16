@@ -62,40 +62,49 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         if (disabled || isLoading) return;
 
         // Play sound AND haptic based on sound prop
-        if (sound !== 'none') {
-          if (sound === 'celebrate') {
-            audio.playCelebrate();
-            hapticCelebration();
-          } else if (sound === 'success') {
-            audio.playSuccess();
-            hapticSuccess();
-          } else if (sound === 'tapConfirm' || variant === 'primary' || glow) {
-            audio.playTapConfirm();
-            hapticMedium();
-          } else {
-            audio.playTap();
-            hapticTap();
+        // Wrapped in try-catch: audio/haptic failures must never block the click handler
+        try {
+          if (sound !== 'none') {
+            if (sound === 'celebrate') {
+              audio.playCelebrate();
+              hapticCelebration();
+            } else if (sound === 'success') {
+              audio.playSuccess();
+              hapticSuccess();
+            } else if (sound === 'tapConfirm' || variant === 'primary' || glow) {
+              audio.playTapConfirm();
+              hapticMedium();
+            } else {
+              audio.playTap();
+              hapticTap();
+            }
           }
+        } catch {
+          // Audio/haptic not available on this device — continue with click
         }
 
-        const rect = e.currentTarget.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height) * 2;
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
+        try {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height) * 2;
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
 
-        const newRipple: Ripple = {
-          id: Date.now(),
-          x,
-          y,
-          size,
-        };
+          const newRipple: Ripple = {
+            id: Date.now(),
+            x,
+            y,
+            size,
+          };
 
-        setRipples((prev) => [...prev, newRipple]);
+          setRipples((prev) => [...prev, newRipple]);
 
-        // Clean up ripple after animation
-        setTimeout(() => {
-          setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
-        }, 600);
+          // Clean up ripple after animation
+          setTimeout(() => {
+            setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
+          }, 600);
+        } catch {
+          // Ripple animation failure should not block click
+        }
 
         onClick?.(e);
       },
