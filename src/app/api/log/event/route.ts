@@ -35,11 +35,15 @@ export async function POST(request: Request) {
 
     const promises: PromiseLike<unknown>[] = [];
 
+    // Cap batch sizes to prevent abuse
+    const cappedEvents = events?.slice(0, 100);
+    const cappedPageViews = pageViews?.slice(0, 100);
+
     // Batch insert events
-    if (events && events.length > 0) {
+    if (cappedEvents && cappedEvents.length > 0) {
       promises.push(
         supabase.from('activity_events').insert(
-          events.map((e) => ({
+          cappedEvents.map((e) => ({
             session_id: sessionId,
             user_id: userId || null,
             event_type: e.eventType,
@@ -52,10 +56,10 @@ export async function POST(request: Request) {
     }
 
     // Batch insert page views
-    if (pageViews && pageViews.length > 0) {
+    if (cappedPageViews && cappedPageViews.length > 0) {
       promises.push(
         supabase.from('activity_page_views').insert(
-          pageViews.map((pv) => ({
+          cappedPageViews.map((pv) => ({
             session_id: sessionId,
             user_id: userId || null,
             view_name: pv.viewName,
