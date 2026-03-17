@@ -1,8 +1,8 @@
 'use client';
 
 // ============================================================================
-// ADMIN DASHBOARD
-// Protected by ADMIN_SECRET. Access at /growthmvp/admin
+// ADMIN DASHBOARD — Sophisticated analytics with session timelines, date
+// filtering, marketing site tracking, and step-by-step user journey views.
 // ============================================================================
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,12 +18,68 @@ interface OverviewData {
   totalSessions: number;
   totalEvents: number;
   totalPageViews: number;
+  totalMarketingEvents: number;
   todaySessions: number;
   todayEvents: number;
   weekSessions: number;
   recentEvents: EventRow[];
   topCountries: { country: string; count: number }[];
   topDevices: { deviceType: string; count: number }[];
+}
+
+interface SessionRow {
+  id: string;
+  userId: string | null;
+  userName: string | null;
+  country: string | null;
+  city: string | null;
+  deviceType: string | null;
+  browser: string | null;
+  os: string | null;
+  appLanguage: string | null;
+  createdAt: string;
+  endedAt: string | null;
+  eventCount: number;
+}
+
+interface SessionsData {
+  sessions: SessionRow[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+interface TimelineEntry {
+  time: string;
+  type: 'event' | 'pageview';
+  description: string;
+  detail: string | null;
+  screen: string | null;
+  raw: string | null;
+  eventData?: Record<string, unknown> | null;
+}
+
+interface SessionDetailData {
+  session: {
+    id: string;
+    userId: string | null;
+    userName: string | null;
+    country: string | null;
+    city: string | null;
+    region: string | null;
+    browser: string | null;
+    browserVersion: string | null;
+    os: string | null;
+    osVersion: string | null;
+    deviceType: string | null;
+    screenWidth: number | null;
+    screenHeight: number | null;
+    appLanguage: string | null;
+    referrer: string | null;
+    createdAt: string;
+    endedAt: string | null;
+  } | null;
+  timeline: TimelineEntry[];
 }
 
 interface UserRow {
@@ -71,6 +127,23 @@ interface AnalyticsData {
   languageBreakdown: { language: string; count: number }[];
 }
 
+interface MarketingData {
+  totalEvents: number;
+  pageViews: number;
+  uniqueVisitors: number;
+  ctaClicks: number;
+  scrollFunnel: { 25: number; 50: number; 75: number; 100: number };
+  ctaBreakdown: { label: string; count: number }[];
+  recentEvents: {
+    id: string;
+    sessionId: string;
+    eventType: string;
+    eventData: Record<string, unknown> | null;
+    page: string | null;
+    createdAt: string;
+  }[];
+}
+
 interface UserDetailData {
   sessions: {
     id: string;
@@ -89,239 +162,59 @@ interface UserDetailData {
   pageViews: { viewName: string; enteredAt: string; duration: number | null }[];
 }
 
-type Tab = 'overview' | 'users' | 'events' | 'analytics';
-
-const LOCALE_TAG_BY_LOCALE = {
-  en: 'en-US',
-  fr: 'fr-FR',
-  ar: 'ar',
-} as const;
-
-const ADMIN_COPY_BY_LOCALE = {
-  en: {
-    unknownError: 'Unknown error',
-    loginTitle: 'Admin Dashboard',
-    loginSubtitle: 'Enter your admin secret to continue',
-    loginPlaceholder: 'Admin secret key',
-    loginButton: 'Access Dashboard',
-    backToUsers: 'Back to Users',
-    userLabel: 'User',
-    sessions: 'Sessions',
-    date: 'Date',
-    country: 'Country',
-    device: 'Device',
-    browser: 'Browser',
-    os: 'OS',
-    screen: 'Screen',
-    language: 'Language',
-    screenFlow: 'Screen Flow',
-    eventTimeline: 'Event Timeline',
-    adminLabel: 'Admin',
-    loading: 'Loading...',
-    refresh: 'Refresh',
-    logout: 'Logout',
-    tabs: {
-      overview: 'Overview',
-      users: 'Users',
-      events: 'Events',
-      analytics: 'Analytics',
-    },
-    totalUsers: 'Total Users',
-    totalSessions: 'Total Sessions',
-    totalEvents: 'Total Events',
-    thisWeek: 'This Week',
-    today: 'today',
-    sessionsLower: 'sessions',
-    topCountries: 'Top Countries',
-    devices: 'Devices',
-    recentEvents: 'Recent Events',
-    noDataYet: 'No data yet',
-    anon: 'anon',
-    searchPlaceholder: 'Search by name, ID, or country...',
-    usersSuffix: 'users',
-    name: 'Name',
-    firstSeen: 'First Seen',
-    lastSeen: 'Last Seen',
-    actions: 'Actions',
-    anonymous: 'Anonymous',
-    detail: 'Detail',
-    eventsButton: 'Events',
-    noUsersFound: 'No users found',
-    allEventTypes: 'All event types',
-    user: 'User',
-    eventsTotal: (total: string, page: number, totalPages: number) => `${total} events total | Page ${page}/${totalPages}`,
-    prev: 'Prev',
-    next: 'Next',
-    sessionsPerDayLast30: 'Sessions Per Day (last 30 days)',
-    mostVisitedScreens: 'Most Visited Screens',
-    mostCommonEvents: 'Most Common Events',
-    browsers: 'Browsers',
-    operatingSystems: 'Operating Systems',
-    appLanguages: 'App Languages',
-    views: 'views',
-    avg: 'avg',
-    usersCount: (count: number) => `${count} users`,
-    sessionsCount: (count: number) => `${count} sessions`,
-    sessionTooltip: (date: string, count: number) => `${date}: ${count} sessions`,
-  },
-  fr: {
-    unknownError: 'Erreur inconnue',
-    loginTitle: "Tableau de bord d'administration",
-    loginSubtitle: "Entrez votre secret administrateur pour continuer",
-    loginPlaceholder: 'Clé secrète administrateur',
-    loginButton: 'Accéder au tableau de bord',
-    backToUsers: 'Retour aux utilisateurs',
-    userLabel: 'Utilisateur',
-    sessions: 'Sessions',
-    date: 'Date',
-    country: 'Pays',
-    device: 'Appareil',
-    browser: 'Navigateur',
-    os: 'OS',
-    screen: 'Écran',
-    language: 'Langue',
-    screenFlow: "Flux d'écrans",
-    eventTimeline: "Chronologie des événements",
-    adminLabel: 'Admin',
-    loading: 'Chargement...',
-    refresh: 'Actualiser',
-    logout: 'Déconnexion',
-    tabs: {
-      overview: 'Vue générale',
-      users: 'Utilisateurs',
-      events: 'Événements',
-      analytics: 'Analytique',
-    },
-    totalUsers: 'Utilisateurs totaux',
-    totalSessions: 'Sessions totales',
-    totalEvents: 'Événements totaux',
-    thisWeek: 'Cette semaine',
-    today: "aujourd'hui",
-    sessionsLower: 'sessions',
-    topCountries: 'Principaux pays',
-    devices: 'Appareils',
-    recentEvents: 'Événements récents',
-    noDataYet: 'Pas encore de données',
-    anon: 'anonyme',
-    searchPlaceholder: 'Rechercher par nom, ID ou pays...',
-    usersSuffix: 'utilisateurs',
-    name: 'Nom',
-    firstSeen: 'Première visite',
-    lastSeen: 'Dernière visite',
-    actions: 'Actions',
-    anonymous: 'Anonyme',
-    detail: 'Détail',
-    eventsButton: 'Événements',
-    noUsersFound: 'Aucun utilisateur trouvé',
-    allEventTypes: "Tous les types d'événements",
-    user: 'Utilisateur',
-    eventsTotal: (total: string, page: number, totalPages: number) => `${total} événements au total | Page ${page}/${totalPages}`,
-    prev: 'Précédent',
-    next: 'Suivant',
-    sessionsPerDayLast30: 'Sessions par jour (30 derniers jours)',
-    mostVisitedScreens: 'Écrans les plus visités',
-    mostCommonEvents: 'Événements les plus fréquents',
-    browsers: 'Navigateurs',
-    operatingSystems: "Systèmes d'exploitation",
-    appLanguages: "Langues de l'application",
-    views: 'vues',
-    avg: 'moy',
-    usersCount: (count: number) => `${count} utilisateurs`,
-    sessionsCount: (count: number) => `${count} sessions`,
-    sessionTooltip: (date: string, count: number) => `${date}: ${count} sessions`,
-  },
-  ar: {
-    unknownError: 'خطأ غير معروف',
-    loginTitle: 'لوحة تحكم المشرف',
-    loginSubtitle: 'أدخل السر الإداري للمتابعة',
-    loginPlaceholder: 'مفتاح سر المشرف',
-    loginButton: 'الدخول إلى لوحة التحكم',
-    backToUsers: 'العودة إلى المستخدمين',
-    userLabel: 'المستخدم',
-    sessions: 'الجلسات',
-    date: 'التاريخ',
-    country: 'الدولة',
-    device: 'الجهاز',
-    browser: 'المتصفح',
-    os: 'النظام',
-    screen: 'الشاشة',
-    language: 'اللغة',
-    screenFlow: 'تدفق الشاشات',
-    eventTimeline: 'الجدول الزمني للأحداث',
-    adminLabel: 'المشرف',
-    loading: 'جار التحميل...',
-    refresh: 'تحديث',
-    logout: 'تسجيل الخروج',
-    tabs: {
-      overview: 'نظرة عامة',
-      users: 'المستخدمون',
-      events: 'الأحداث',
-      analytics: 'التحليلات',
-    },
-    totalUsers: 'إجمالي المستخدمين',
-    totalSessions: 'إجمالي الجلسات',
-    totalEvents: 'إجمالي الأحداث',
-    thisWeek: 'هذا الأسبوع',
-    today: 'اليوم',
-    sessionsLower: 'جلسات',
-    topCountries: 'أهم الدول',
-    devices: 'الأجهزة',
-    recentEvents: 'الأحداث الأخيرة',
-    noDataYet: 'لا توجد بيانات بعد',
-    anon: 'مجهول',
-    searchPlaceholder: 'ابحث بالاسم أو المعرّف أو الدولة...',
-    usersSuffix: 'مستخدم',
-    name: 'الاسم',
-    firstSeen: 'أول ظهور',
-    lastSeen: 'آخر ظهور',
-    actions: 'الإجراءات',
-    anonymous: 'مجهول',
-    detail: 'تفاصيل',
-    eventsButton: 'الأحداث',
-    noUsersFound: 'لم يتم العثور على مستخدمين',
-    allEventTypes: 'كل أنواع الأحداث',
-    user: 'المستخدم',
-    eventsTotal: (total: string, page: number, totalPages: number) => `${total} حدث | الصفحة ${page}/${totalPages}`,
-    prev: 'السابق',
-    next: 'التالي',
-    sessionsPerDayLast30: 'الجلسات اليومية (آخر 30 يومًا)',
-    mostVisitedScreens: 'أكثر الشاشات زيارة',
-    mostCommonEvents: 'أكثر الأحداث شيوعًا',
-    browsers: 'المتصفحات',
-    operatingSystems: 'أنظمة التشغيل',
-    appLanguages: 'لغات التطبيق',
-    views: 'مشاهدات',
-    avg: 'متوسط',
-    usersCount: (count: number) => `${count} مستخدم`,
-    sessionsCount: (count: number) => `${count} جلسة`,
-    sessionTooltip: (date: string, count: number) => `${date}: ${count} جلسة`,
-  },
-} as const;
-
-type AdminCopy = (typeof ADMIN_COPY_BY_LOCALE)[keyof typeof ADMIN_COPY_BY_LOCALE];
+type Tab = 'overview' | 'sessions' | 'users' | 'events' | 'site' | 'analytics';
+type DatePreset = 'today' | '7d' | '30d' | 'all';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function timeAgo(dateStr: string, localeTag: string): string {
+function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const seconds = Math.floor(diff / 1000);
-  const rtf = new Intl.RelativeTimeFormat(localeTag, { numeric: 'auto' });
-  if (seconds < 60) return rtf.format(-seconds, 'second');
+  if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return rtf.format(-minutes, 'minute');
+  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return rtf.format(-hours, 'hour');
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return rtf.format(-days, 'day');
-  return new Date(dateStr).toLocaleDateString(localeTag);
+  if (days < 30) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString();
 }
 
-function formatDate(dateStr: string, localeTag: string): string {
-  return new Date(dateStr).toLocaleString(localeTag);
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleString();
 }
 
-function truncate(str: string, len: number): string {
-  return str.length > len ? str.slice(0, len) + '...' : str;
+function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function toDateInputValue(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+function getDateRange(preset: DatePreset): { from: string; to: string } | null {
+  if (preset === 'all') return null;
+  const now = new Date();
+  const to = toDateInputValue(now);
+  if (preset === 'today') return { from: to, to };
+  if (preset === '7d') {
+    const d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return { from: toDateInputValue(d), to };
+  }
+  const d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  return { from: toDateInputValue(d), to };
+}
+
+function describeMarketingEvent(e: { eventType: string; eventData: Record<string, unknown> | null }): string {
+  switch (e.eventType) {
+    case 'page_view': return 'Visited the landing page';
+    case 'scroll_depth': return `Scrolled to ${(e.eventData as { percent?: number })?.percent ?? '?'}%`;
+    case 'cta_click': {
+      const d = e.eventData as { type?: string; location?: string } | null;
+      return `Clicked "${d?.type || 'CTA'}" in ${d?.location || 'page'}`;
+    }
+    default: return e.eventType;
+  }
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
@@ -333,17 +226,24 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [tab, setTab] = useState<Tab>('overview');
   const [loading, setLoading] = useState(false);
-  const copy = ADMIN_COPY_BY_LOCALE[locale] ?? ADMIN_COPY_BY_LOCALE.en;
-  const localeTag = LOCALE_TAG_BY_LOCALE[locale] ?? LOCALE_TAG_BY_LOCALE.en;
+
+  // Date filter
+  const [datePreset, setDatePreset] = useState<DatePreset>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   // Data
   const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [sessionsData, setSessionsData] = useState<SessionsData | null>(null);
+  const [sessionDetail, setSessionDetail] = useState<SessionDetailData | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [eventsData, setEventsData] = useState<EventsData | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [marketing, setMarketing] = useState<MarketingData | null>(null);
   const [userDetail, setUserDetail] = useState<{ userId: string; data: UserDetailData } | null>(null);
 
-  // Events filters
+  // Pagination & filters
+  const [sessionsPage, setSessionsPage] = useState(1);
   const [eventsPage, setEventsPage] = useState(1);
   const [eventsTypeFilter, setEventsTypeFilter] = useState('');
   const [eventsUserFilter, setEventsUserFilter] = useState('');
@@ -357,6 +257,27 @@ export default function AdminPage() {
     }
   }, []);
 
+  // ─── Date filter helpers ──────────────────────────────────────────────
+
+  const handlePresetChange = (p: DatePreset) => {
+    setDatePreset(p);
+    const range = getDateRange(p);
+    if (range) {
+      setDateFrom(range.from);
+      setDateTo(range.to);
+    } else {
+      setDateFrom('');
+      setDateTo('');
+    }
+  };
+
+  const dateParams = useCallback((): Record<string, string> => {
+    const p: Record<string, string> = {};
+    if (dateFrom) p.dateFrom = dateFrom;
+    if (dateTo) p.dateTo = dateTo;
+    return p;
+  }, [dateFrom, dateTo]);
+
   // ─── API fetch helper ─────────────────────────────────────────────────
 
   const apiFetch = useCallback(
@@ -367,7 +288,6 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        // Pass the server's reason through so the UI can show it
         const reason = data.reason || data.error || `HTTP ${res.status}`;
         if (res.status === 401) {
           setAuthenticated(false);
@@ -390,7 +310,7 @@ export default function AdminPage() {
       sessionStorage.setItem('admin_secret', secret);
       setOverview(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : copy.unknownError);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
 
@@ -402,8 +322,13 @@ export default function AdminPage() {
       try {
         switch (t) {
           case 'overview': {
-            const data = await apiFetch('overview');
+            const data = await apiFetch('overview', dateParams());
             setOverview(data);
+            break;
+          }
+          case 'sessions': {
+            const data = await apiFetch('sessions', { page: String(sessionsPage), limit: '30', ...dateParams() });
+            setSessionsData(data);
             break;
           }
           case 'users': {
@@ -412,18 +337,20 @@ export default function AdminPage() {
             break;
           }
           case 'events': {
-            const params: Record<string, string> = {
-              page: String(eventsPage),
-              limit: '50',
-            };
+            const params: Record<string, string> = { page: String(eventsPage), limit: '50', ...dateParams() };
             if (eventsTypeFilter) params.type = eventsTypeFilter;
             if (eventsUserFilter) params.userId = eventsUserFilter;
             const data = await apiFetch('events', params);
             setEventsData(data);
             break;
           }
+          case 'site': {
+            const data = await apiFetch('marketing', dateParams());
+            setMarketing(data);
+            break;
+          }
           case 'analytics': {
-            const data = await apiFetch('analytics');
+            const data = await apiFetch('analytics', dateParams());
             setAnalytics(data);
             break;
           }
@@ -434,12 +361,26 @@ export default function AdminPage() {
         setLoading(false);
       }
     },
-    [apiFetch, eventsPage, eventsTypeFilter, eventsUserFilter]
+    [apiFetch, dateParams, sessionsPage, eventsPage, eventsTypeFilter, eventsUserFilter]
   );
 
   useEffect(() => {
     if (authenticated) loadTab(tab);
   }, [authenticated, tab, loadTab]);
+
+  // ─── Load session detail ──────────────────────────────────────────────
+
+  const loadSessionDetail = async (sessionId: string) => {
+    setLoading(true);
+    try {
+      const data = await apiFetch('session-detail', { sessionId });
+      setSessionDetail(data);
+    } catch {
+      // handled
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ─── Load user detail ─────────────────────────────────────────────────
 
@@ -462,6 +403,19 @@ export default function AdminPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventsPage, eventsTypeFilter, eventsUserFilter]);
 
+  useEffect(() => {
+    if (authenticated && tab === 'sessions') loadTab('sessions');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionsPage]);
+
+  // Reload current tab when date range changes
+  useEffect(() => {
+    if (authenticated && ['overview', 'sessions', 'events', 'site', 'analytics'].includes(tab)) {
+      loadTab(tab);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFrom, dateTo]);
+
   // ═══════════════════════════════════════════════════════════════════════
   // RENDER: LOGIN SCREEN
   // ═══════════════════════════════════════════════════════════════════════
@@ -471,8 +425,8 @@ export default function AdminPage() {
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-zinc-100">{copy.loginTitle}</h1>
-            <p className="text-sm text-zinc-500">{copy.loginSubtitle}</p>
+            <h1 className="text-2xl font-bold text-zinc-100">Admin Dashboard</h1>
+            <p className="text-sm text-zinc-500">Enter your admin secret to continue</p>
           </div>
           <div className="space-y-4">
             <input
@@ -480,7 +434,7 @@ export default function AdminPage() {
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              placeholder={copy.loginPlaceholder}
+              placeholder="Admin secret key"
               className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50"
             />
             {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -488,10 +442,111 @@ export default function AdminPage() {
               onClick={handleLogin}
               className="w-full px-4 py-3 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-xl transition-colors"
             >
-              {copy.loginButton}
+              Access Dashboard
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: SESSION DETAIL VIEW
+  // ═══════════════════════════════════════════════════════════════════════
+
+  if (sessionDetail?.session) {
+    const { session, timeline } = sessionDetail;
+    const duration = session.endedAt
+      ? Math.round((new Date(session.endedAt).getTime() - new Date(session.createdAt).getTime()) / 1000)
+      : null;
+
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
+        <button
+          onClick={() => setSessionDetail(null)}
+          className="mb-6 px-4 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors"
+        >
+          &larr; Back to Sessions
+        </button>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-1">
+            Session: <span className="text-amber-400">{session.userName || session.userId?.slice(0, 12) || 'Anonymous'}</span>
+          </h2>
+          <p className="text-sm text-zinc-500">{formatDate(session.createdAt)}</p>
+        </div>
+
+        {/* Session Info Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          <InfoCard label="Device" value={session.deviceType || '-'} />
+          <InfoCard label="Browser" value={`${session.browser || '-'}${session.browserVersion ? ` ${session.browserVersion}` : ''}`} />
+          <InfoCard label="OS" value={`${session.os || '-'}${session.osVersion ? ` ${session.osVersion}` : ''}`} />
+          <InfoCard label="Location" value={[session.city, session.country].filter(Boolean).join(', ') || '-'} />
+          <InfoCard label="Screen" value={session.screenWidth && session.screenHeight ? `${session.screenWidth}x${session.screenHeight}` : '-'} />
+          <InfoCard label="Language" value={session.appLanguage?.toUpperCase() || '-'} />
+          <InfoCard label="Duration" value={duration ? `${Math.floor(duration / 60)}m ${duration % 60}s` : 'Active'} />
+          <InfoCard label="Events" value={String(timeline.filter(t => t.type === 'event').length)} />
+        </div>
+
+        {session.referrer && (
+          <div className="mb-6 px-4 py-2 bg-zinc-900/50 rounded-lg text-sm">
+            <span className="text-zinc-500">Referrer: </span>
+            <span className="text-zinc-300">{session.referrer}</span>
+          </div>
+        )}
+
+        {/* Chronological Timeline */}
+        <h3 className="text-lg font-semibold text-zinc-300 mb-4">
+          Step-by-Step Timeline ({timeline.length} entries)
+        </h3>
+        <div className="relative">
+          {/* Vertical line */}
+          <div className="absolute left-4 top-0 bottom-0 w-px bg-zinc-800" />
+
+          <div className="space-y-0">
+            {timeline.map((entry, i) => {
+              const isEvent = entry.type === 'event';
+              const desc = isEvent && entry.raw
+                ? describeEvent(entry.raw, entry.eventData as Record<string, unknown> | null)
+                : entry.description;
+
+              return (
+                <div key={i} className="relative pl-10 py-2 group hover:bg-zinc-900/30 rounded transition-colors">
+                  {/* Dot */}
+                  <div className={`absolute left-2.5 top-3.5 w-3 h-3 rounded-full border-2 ${
+                    isEvent
+                      ? 'border-emerald-500 bg-emerald-500/20'
+                      : 'border-blue-500 bg-blue-500/20'
+                  }`} />
+
+                  <div className="flex items-start gap-3">
+                    <span className="text-zinc-600 text-xs font-mono w-20 shrink-0 pt-0.5">
+                      {formatTime(entry.time)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <span className={`text-sm ${isEvent ? 'text-emerald-400' : 'text-blue-400'}`}>
+                        {desc}
+                      </span>
+                      {entry.detail && (
+                        <span className="text-zinc-600 text-xs ml-2">{entry.detail}</span>
+                      )}
+                      {isEvent && entry.raw && (
+                        <div className="text-zinc-700 text-xs font-mono mt-0.5">{entry.raw}</div>
+                      )}
+                    </div>
+                    {entry.screen && (
+                      <span className="text-zinc-700 text-xs shrink-0">@ {entry.screen}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {timeline.length === 0 && (
+          <p className="text-center text-zinc-600 py-8">No activity recorded for this session</p>
+        )}
       </div>
     );
   }
@@ -508,53 +563,40 @@ export default function AdminPage() {
           onClick={() => setUserDetail(null)}
           className="mb-6 px-4 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors"
         >
-          &larr; {copy.backToUsers}
+          &larr; Back to Users
         </button>
 
         <h2 className="text-xl font-bold mb-6">
-          {copy.userLabel}: <span className="text-amber-400">{userId}</span>
+          User: <span className="text-amber-400">{userId}</span>
         </h2>
 
-        {/* Sessions */}
+        {/* Sessions — clickable to view timeline */}
         <section className="mb-8">
-          <h3 className="text-lg font-semibold text-zinc-300 mb-3">{copy.sessions} ({data.sessions.length})</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-zinc-500 border-b border-zinc-800">
-                  <th className="pb-2 pr-4">{copy.date}</th>
-                  <th className="pb-2 pr-4">{copy.country}</th>
-                  <th className="pb-2 pr-4">{copy.device}</th>
-                  <th className="pb-2 pr-4">{copy.browser}</th>
-                  <th className="pb-2 pr-4">{copy.os}</th>
-                  <th className="pb-2 pr-4">{copy.screen}</th>
-                  <th className="pb-2">{copy.language}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.sessions.map((s) => (
-                  <tr key={s.id} className="border-b border-zinc-900 hover:bg-zinc-900/50">
-                    <td className="py-2 pr-4 text-zinc-300">{formatDate(s.createdAt, localeTag)}</td>
-                    <td className="py-2 pr-4">{s.country || '-'}{s.city ? `, ${s.city}` : ''}</td>
-                    <td className="py-2 pr-4">{s.deviceType || '-'}</td>
-                    <td className="py-2 pr-4">{s.browser || '-'}</td>
-                    <td className="py-2 pr-4">{s.os || '-'}</td>
-                    <td className="py-2 pr-4">{s.screenWidth && s.screenHeight ? `${s.screenWidth}x${s.screenHeight}` : '-'}</td>
-                    <td className="py-2">{s.appLanguage || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h3 className="text-lg font-semibold text-zinc-300 mb-3">Sessions ({data.sessions.length})</h3>
+          <div className="space-y-1">
+            {data.sessions.map((s) => (
+              <div
+                key={s.id}
+                onClick={() => loadSessionDetail(s.id)}
+                className="flex items-center gap-4 text-sm py-2.5 px-4 bg-zinc-900/50 rounded hover:bg-zinc-800/70 cursor-pointer transition-colors"
+              >
+                <span className="text-zinc-300 w-44 shrink-0">{formatDate(s.createdAt)}</span>
+                <span className="text-zinc-500">{s.country || '-'}{s.city ? `, ${s.city}` : ''}</span>
+                <span className="text-zinc-500">{s.deviceType || '-'}</span>
+                <span className="text-zinc-500">{s.browser || '-'}</span>
+                <span className="text-amber-400/60 ml-auto text-xs">View Timeline &rarr;</span>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Page Views */}
+        {/* Screen Flow */}
         <section className="mb-8">
-          <h3 className="text-lg font-semibold text-zinc-300 mb-3">{copy.screenFlow} ({data.pageViews.length})</h3>
+          <h3 className="text-lg font-semibold text-zinc-300 mb-3">Screen Flow ({data.pageViews.length})</h3>
           <div className="space-y-1 max-h-[400px] overflow-y-auto">
             {data.pageViews.map((pv, i) => (
               <div key={i} className="flex items-center gap-3 text-sm py-1.5 px-3 bg-zinc-900/50 rounded">
-                <span className="text-zinc-500 w-40 shrink-0">{formatDate(pv.enteredAt, localeTag)}</span>
+                <span className="text-zinc-500 w-40 shrink-0">{formatDate(pv.enteredAt)}</span>
                 <span className="font-mono text-amber-400">{pv.viewName}</span>
                 {pv.duration != null && (
                   <span className="text-zinc-600 ml-auto">{pv.duration}s</span>
@@ -566,15 +608,13 @@ export default function AdminPage() {
 
         {/* Event Timeline */}
         <section>
-          <h3 className="text-lg font-semibold text-zinc-300 mb-3">{copy.eventTimeline} ({data.events.length})</h3>
+          <h3 className="text-lg font-semibold text-zinc-300 mb-3">Event Timeline ({data.events.length})</h3>
           <div className="space-y-1 max-h-[600px] overflow-y-auto">
             {data.events.map((e) => (
               <div key={e.id} className="flex items-start gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded">
-                <span className="text-zinc-500 w-40 shrink-0">{formatDate(e.timestamp, localeTag)}</span>
+                <span className="text-zinc-500 w-40 shrink-0">{formatDate(e.timestamp)}</span>
                 <span className="text-emerald-400 w-56 shrink-0">{describeEvent(e.eventType, e.eventData as Record<string, unknown> | null)}</span>
-                <span className="text-zinc-600 font-mono text-xs">
-                  {e.eventType}
-                </span>
+                <span className="text-zinc-600 font-mono text-xs">{e.eventType}</span>
                 {e.view && <span className="text-zinc-600 ml-auto text-xs">@ {e.view}</span>}
               </div>
             ))}
@@ -593,15 +633,15 @@ export default function AdminPage() {
       {/* Header */}
       <header className="border-b border-zinc-800 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-bold">
-          <span className="text-amber-400">GrowthMVP</span> {copy.adminLabel}
+          <span className="text-amber-400">SolonsWay</span> Admin
         </h1>
         <div className="flex items-center gap-4">
-          {loading && <span className="text-xs text-zinc-500 animate-pulse">{copy.loading}</span>}
+          {loading && <span className="text-xs text-zinc-500 animate-pulse">Loading...</span>}
           <button
             onClick={() => loadTab(tab)}
             className="text-xs px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors"
           >
-            {copy.refresh}
+            Refresh
           </button>
           <button
             onClick={() => {
@@ -610,36 +650,89 @@ export default function AdminPage() {
             }}
             className="text-xs px-3 py-1.5 text-zinc-500 hover:text-zinc-300 transition-colors"
           >
-            {copy.logout}
+            Logout
           </button>
         </div>
       </header>
 
+      {/* Date Filter Bar */}
+      <div className="border-b border-zinc-800 px-4 md:px-8 py-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-zinc-500 mr-1">Period:</span>
+        {(['today', '7d', '30d', 'all'] as DatePreset[]).map((p) => (
+          <button
+            key={p}
+            onClick={() => handlePresetChange(p)}
+            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+              datePreset === p
+                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:border-zinc-700'
+            }`}
+          >
+            {p === 'today' ? 'Today' : p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : 'All Time'}
+          </button>
+        ))}
+        <div className="flex items-center gap-1.5 ml-2">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setDatePreset('all'); }}
+            className="px-2 py-1 text-xs bg-zinc-900 border border-zinc-800 rounded text-zinc-300 focus:outline-none focus:border-amber-500/50"
+          />
+          <span className="text-zinc-600 text-xs">to</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setDatePreset('all'); }}
+            className="px-2 py-1 text-xs bg-zinc-900 border border-zinc-800 rounded text-zinc-300 focus:outline-none focus:border-amber-500/50"
+          />
+        </div>
+        {(dateFrom || dateTo) && (
+          <button
+            onClick={() => handlePresetChange('all')}
+            className="text-xs text-zinc-600 hover:text-zinc-400 ml-1"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {/* Tabs */}
-      <nav className="border-b border-zinc-800 px-4 md:px-8 flex gap-1">
-        {(['overview', 'users', 'events', 'analytics'] as Tab[]).map((t) => (
+      <nav className="border-b border-zinc-800 px-4 md:px-8 flex gap-1 overflow-x-auto">
+        {(['overview', 'sessions', 'users', 'events', 'site', 'analytics'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-3 text-sm font-medium capitalize transition-colors border-b-2 ${
+            className={`px-4 py-3 text-sm font-medium capitalize transition-colors border-b-2 whitespace-nowrap ${
               tab === t
                 ? 'border-amber-500 text-amber-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
             }`}
           >
-            {copy.tabs[t]}
+            {t === 'site' ? 'Site' : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </nav>
 
       {/* Content */}
       <main className="p-4 md:p-8">
-        {tab === 'overview' && overview && <OverviewTab data={overview} copy={copy} localeTag={localeTag} />}
+        {tab === 'overview' && overview && (
+          <OverviewTab
+            data={overview}
+            onViewSessions={() => setTab('sessions')}
+            onViewSite={() => setTab('site')}
+          />
+        )}
+        {tab === 'sessions' && sessionsData && (
+          <SessionsTab
+            data={sessionsData}
+            page={sessionsPage}
+            onPageChange={setSessionsPage}
+            onSelectSession={loadSessionDetail}
+          />
+        )}
         {tab === 'users' && (
           <UsersTab
             users={users}
-            copy={copy}
-            localeTag={localeTag}
             onSelectUser={loadUserDetail}
             onFilterEvents={(userId: string) => {
               setEventsUserFilter(userId);
@@ -650,8 +743,6 @@ export default function AdminPage() {
         {tab === 'events' && eventsData && (
           <EventsTab
             data={eventsData}
-            copy={copy}
-            localeTag={localeTag}
             page={eventsPage}
             typeFilter={eventsTypeFilter}
             userFilter={eventsUserFilter}
@@ -660,21 +751,38 @@ export default function AdminPage() {
             onUserFilterChange={setEventsUserFilter}
           />
         )}
-        {tab === 'analytics' && analytics && <AnalyticsTab data={analytics} copy={copy} />}
+        {tab === 'site' && marketing && <SiteTab data={marketing} />}
+        {tab === 'analytics' && analytics && <AnalyticsTab data={analytics} />}
       </main>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TAB COMPONENTS
+// SHARED COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ─── Stat Card ──────────────────────────────────────────────────────────
+function StatCard({
+  label, value, sub, onClick, accent,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  onClick?: () => void;
+  accent?: 'amber' | 'emerald' | 'blue' | 'purple';
+}) {
+  const accentClass = accent === 'emerald' ? 'group-hover:border-emerald-500/40' :
+    accent === 'blue' ? 'group-hover:border-blue-500/40' :
+    accent === 'purple' ? 'group-hover:border-purple-500/40' :
+    'group-hover:border-amber-500/40';
 
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+    <div
+      onClick={onClick}
+      className={`bg-zinc-900 border border-zinc-800 rounded-xl p-4 group transition-colors ${
+        onClick ? `cursor-pointer ${accentClass}` : ''
+      }`}
+    >
       <div className="text-2xl font-bold text-zinc-100">{value}</div>
       <div className="text-sm text-zinc-500 mt-1">{label}</div>
       {sub && <div className="text-xs text-zinc-600 mt-0.5">{sub}</div>}
@@ -682,48 +790,75 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   );
 }
 
-// ─── Overview Tab ───────────────────────────────────────────────────────
+function InfoCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-zinc-900/60 border border-zinc-800/50 rounded-lg px-3 py-2">
+      <div className="text-xs text-zinc-600">{label}</div>
+      <div className="text-sm text-zinc-300 capitalize">{value}</div>
+    </div>
+  );
+}
 
-function OverviewTab({ data, copy, localeTag }: { data: OverviewData; copy: AdminCopy; localeTag: string }) {
+// ═══════════════════════════════════════════════════════════════════════════
+// OVERVIEW TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+function OverviewTab({
+  data, onViewSessions, onViewSite,
+}: {
+  data: OverviewData;
+  onViewSessions: () => void;
+  onViewSite: () => void;
+}) {
   return (
     <div className="space-y-8">
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label={copy.totalUsers} value={data.totalUsers.toLocaleString(localeTag)} />
-        <StatCard label={copy.totalSessions} value={data.totalSessions.toLocaleString(localeTag)} sub={`${data.todaySessions.toLocaleString(localeTag)} ${copy.today}`} />
-        <StatCard label={copy.totalEvents} value={data.totalEvents.toLocaleString(localeTag)} sub={`${data.todayEvents.toLocaleString(localeTag)} ${copy.today}`} />
-        <StatCard label={copy.thisWeek} value={data.weekSessions.toLocaleString(localeTag)} sub={copy.sessionsLower} />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <StatCard label="Total Users" value={data.totalUsers.toLocaleString()} />
+        <StatCard
+          label="Total Sessions"
+          value={data.totalSessions.toLocaleString()}
+          sub={`${data.todaySessions} today`}
+          onClick={onViewSessions}
+          accent="amber"
+        />
+        <StatCard label="Total Events" value={data.totalEvents.toLocaleString()} sub={`${data.todayEvents} today`} />
+        <StatCard label="This Week" value={data.weekSessions.toLocaleString()} sub="sessions" />
+        <StatCard
+          label="Site Visits"
+          value={data.totalMarketingEvents.toLocaleString()}
+          sub="landing page events"
+          onClick={onViewSite}
+          accent="purple"
+        />
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Top Countries */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.topCountries}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Top Countries</h3>
           {data.topCountries.length === 0 ? (
-            <p className="text-sm text-zinc-600">{copy.noDataYet}</p>
+            <p className="text-sm text-zinc-600">No data yet</p>
           ) : (
             <div className="space-y-2">
               {data.topCountries.map((c) => (
                 <div key={c.country} className="flex items-center justify-between text-sm py-1.5 px-3 bg-zinc-900/50 rounded">
                   <span className="text-zinc-300">{c.country}</span>
-                  <span className="text-zinc-500">{copy.sessionsCount(c.count)}</span>
+                  <span className="text-zinc-500">{c.count} sessions</span>
                 </div>
               ))}
             </div>
           )}
         </section>
 
-        {/* Devices */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.devices}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Devices</h3>
           {data.topDevices.length === 0 ? (
-            <p className="text-sm text-zinc-600">{copy.noDataYet}</p>
+            <p className="text-sm text-zinc-600">No data yet</p>
           ) : (
             <div className="space-y-2">
               {data.topDevices.map((d) => (
                 <div key={d.deviceType} className="flex items-center justify-between text-sm py-1.5 px-3 bg-zinc-900/50 rounded">
                   <span className="text-zinc-300 capitalize">{d.deviceType}</span>
-                  <span className="text-zinc-500">{copy.sessionsCount(d.count)}</span>
+                  <span className="text-zinc-500">{d.count} sessions</span>
                 </div>
               ))}
             </div>
@@ -731,18 +866,15 @@ function OverviewTab({ data, copy, localeTag }: { data: OverviewData; copy: Admi
         </section>
       </div>
 
-      {/* Recent Events */}
       <section>
-        <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.recentEvents}</h3>
+        <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Recent Events</h3>
         <div className="space-y-1 max-h-[500px] overflow-y-auto">
           {data.recentEvents.map((e) => (
             <div key={e.id} className="flex items-center gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded hover:bg-zinc-900 transition-colors">
-              <span className="text-zinc-500 w-16 shrink-0">{timeAgo(e.timestamp, localeTag)}</span>
-              <span className="text-zinc-300 w-24 shrink-0 truncate">{e.userName || e.userId?.slice(0, 8) || copy.anon}</span>
+              <span className="text-zinc-500 w-16 shrink-0">{timeAgo(e.timestamp)}</span>
+              <span className="text-zinc-300 w-24 shrink-0 truncate">{e.userName || e.userId?.slice(0, 8) || 'anon'}</span>
               <span className="text-emerald-400 w-56 shrink-0">{describeEvent(e.eventType, e.eventData as Record<string, unknown> | null)}</span>
-              <span className="text-zinc-600 text-xs font-mono truncate">
-                {e.eventType}
-              </span>
+              <span className="text-zinc-600 text-xs font-mono truncate">{e.eventType}</span>
               {e.country && <span className="text-zinc-600 text-xs ml-auto shrink-0">{e.country}</span>}
             </div>
           ))}
@@ -752,18 +884,89 @@ function OverviewTab({ data, copy, localeTag }: { data: OverviewData; copy: Admi
   );
 }
 
-// ─── Users Tab ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// SESSIONS TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+function SessionsTab({
+  data, page, onPageChange, onSelectSession,
+}: {
+  data: SessionsData;
+  page: number;
+  onPageChange: (p: number) => void;
+  onSelectSession: (sessionId: string) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm text-zinc-400">
+          {data.total.toLocaleString()} sessions total | Page {data.page}/{data.totalPages}
+        </h3>
+      </div>
+
+      <div className="space-y-1">
+        {data.sessions.map((s) => (
+          <div
+            key={s.id}
+            onClick={() => onSelectSession(s.id)}
+            className="flex items-center gap-4 text-sm py-3 px-4 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/70 cursor-pointer transition-colors group"
+          >
+            <div className="w-44 shrink-0">
+              <div className="text-zinc-300">{formatDate(s.createdAt)}</div>
+              <div className="text-xs text-zinc-600">{timeAgo(s.createdAt)}</div>
+            </div>
+            <div className="w-28 shrink-0">
+              <span className="text-zinc-300">{s.userName || 'Anonymous'}</span>
+              {s.userId && <div className="text-xs text-zinc-700 font-mono">{s.userId.slice(0, 10)}...</div>}
+            </div>
+            <span className="text-zinc-500 w-20 shrink-0">{s.country || '-'}</span>
+            <span className="text-zinc-500 w-16 shrink-0 capitalize">{s.deviceType || '-'}</span>
+            <span className="text-zinc-500 w-16 shrink-0">{s.browser || '-'}</span>
+            <div className="ml-auto flex items-center gap-3">
+              <span className="text-zinc-600 text-xs">{s.eventCount} events</span>
+              <span className="text-amber-400/60 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                View Timeline &rarr;
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {data.sessions.length === 0 && (
+        <p className="text-center text-zinc-600 py-8">No sessions found for this period</p>
+      )}
+
+      {data.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <button
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="px-3 py-1.5 text-sm bg-zinc-900 border border-zinc-800 rounded-lg disabled:opacity-30 hover:border-zinc-700 transition-colors"
+          >
+            Prev
+          </button>
+          <span className="text-sm text-zinc-500 px-4">{page} / {data.totalPages}</span>
+          <button
+            onClick={() => onPageChange(Math.min(data.totalPages, page + 1))}
+            disabled={page >= data.totalPages}
+            className="px-3 py-1.5 text-sm bg-zinc-900 border border-zinc-800 rounded-lg disabled:opacity-30 hover:border-zinc-700 transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// USERS TAB
+// ═══════════════════════════════════════════════════════════════════════════
 
 function UsersTab({
-  users,
-  copy,
-  localeTag,
-  onSelectUser,
-  onFilterEvents,
+  users, onSelectUser, onFilterEvents,
 }: {
   users: UserRow[];
-  copy: AdminCopy;
-  localeTag: string;
   onSelectUser: (userId: string) => void;
   onFilterEvents: (userId: string) => void;
 }) {
@@ -781,35 +984,35 @@ function UsersTab({
       <div className="flex items-center gap-4">
         <input
           type="text"
-          placeholder={copy.searchPlaceholder}
+          placeholder="Search by name, ID, or country..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 max-w-md px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 text-sm"
         />
-        <span className="text-sm text-zinc-500">{copy.usersCount(filtered.length)}</span>
+        <span className="text-sm text-zinc-500">{filtered.length} users</span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-zinc-500 border-b border-zinc-800">
-              <th className="pb-2 pr-4">{copy.name}</th>
-              <th className="pb-2 pr-4">{copy.country}</th>
-              <th className="pb-2 pr-4">{copy.device}</th>
-              <th className="pb-2 pr-4">{copy.browser}</th>
-              <th className="pb-2 pr-4">{copy.language}</th>
-              <th className="pb-2 pr-4">{copy.sessions}</th>
-              <th className="pb-2 pr-4">{copy.eventsButton}</th>
-              <th className="pb-2 pr-4">{copy.firstSeen}</th>
-              <th className="pb-2 pr-4">{copy.lastSeen}</th>
-              <th className="pb-2">{copy.actions}</th>
+              <th className="pb-2 pr-4">Name</th>
+              <th className="pb-2 pr-4">Country</th>
+              <th className="pb-2 pr-4">Device</th>
+              <th className="pb-2 pr-4">Browser</th>
+              <th className="pb-2 pr-4">Lang</th>
+              <th className="pb-2 pr-4">Sessions</th>
+              <th className="pb-2 pr-4">Events</th>
+              <th className="pb-2 pr-4">First Seen</th>
+              <th className="pb-2 pr-4">Last Seen</th>
+              <th className="pb-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((u) => (
               <tr key={u.userId} className="border-b border-zinc-900 hover:bg-zinc-900/50 transition-colors">
                 <td className="py-2.5 pr-4">
-                  <span className="text-zinc-200">{u.userName || copy.anonymous}</span>
+                  <span className="text-zinc-200">{u.userName || 'Anonymous'}</span>
                   <div className="text-xs text-zinc-600 font-mono mt-0.5">{u.userId.slice(0, 12)}...</div>
                 </td>
                 <td className="py-2.5 pr-4">{u.country || '-'}{u.city ? `, ${u.city}` : ''}</td>
@@ -818,21 +1021,21 @@ function UsersTab({
                 <td className="py-2.5 pr-4 uppercase">{u.appLanguage || '-'}</td>
                 <td className="py-2.5 pr-4 text-zinc-300">{u.sessionCount}</td>
                 <td className="py-2.5 pr-4 text-zinc-300">{u.eventCount}</td>
-                <td className="py-2.5 pr-4 text-zinc-500">{timeAgo(u.firstSeen, localeTag)}</td>
-                <td className="py-2.5 pr-4 text-zinc-500">{timeAgo(u.lastSeen, localeTag)}</td>
+                <td className="py-2.5 pr-4 text-zinc-500">{timeAgo(u.firstSeen)}</td>
+                <td className="py-2.5 pr-4 text-zinc-500">{timeAgo(u.lastSeen)}</td>
                 <td className="py-2.5">
                   <div className="flex gap-2">
                     <button
                       onClick={() => onSelectUser(u.userId)}
                       className="text-xs px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors text-amber-400"
                     >
-                      {copy.detail}
+                      Detail
                     </button>
                     <button
                       onClick={() => onFilterEvents(u.userId)}
                       className="text-xs px-2 py-1 bg-zinc-800 hover:bg-zinc-700 rounded transition-colors text-zinc-400"
                     >
-                      {copy.eventsButton}
+                      Events
                     </button>
                   </div>
                 </td>
@@ -843,28 +1046,21 @@ function UsersTab({
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-center text-zinc-600 py-8">{copy.noUsersFound}</p>
+        <p className="text-center text-zinc-600 py-8">No users found</p>
       )}
     </div>
   );
 }
 
-// ─── Events Tab ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// EVENTS TAB
+// ═══════════════════════════════════════════════════════════════════════════
 
 function EventsTab({
-  data,
-  copy,
-  localeTag,
-  page,
-  typeFilter,
-  userFilter,
-  onPageChange,
-  onTypeFilterChange,
-  onUserFilterChange,
+  data, page, typeFilter, userFilter,
+  onPageChange, onTypeFilterChange, onUserFilterChange,
 }: {
   data: EventsData;
-  copy: AdminCopy;
-  localeTag: string;
   page: number;
   typeFilter: string;
   userFilter: string;
@@ -874,58 +1070,43 @@ function EventsTab({
 }) {
   return (
     <div className="space-y-4">
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <select
           value={typeFilter}
-          onChange={(e) => {
-            onTypeFilterChange(e.target.value);
-            onPageChange(1);
-          }}
+          onChange={(e) => { onTypeFilterChange(e.target.value); onPageChange(1); }}
           className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-amber-500/50"
         >
-          <option value="">{copy.allEventTypes}</option>
+          <option value="">All event types</option>
           {data.eventTypes.map((t) => (
-            <option key={t.type} value={t.type}>
-              {t.type} ({t.count})
-            </option>
+            <option key={t.type} value={t.type}>{t.type} ({t.count})</option>
           ))}
         </select>
 
         {userFilter && (
           <div className="flex items-center gap-2 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm">
-            <span className="text-zinc-500">{copy.user}:</span>
+            <span className="text-zinc-500">User:</span>
             <span className="text-zinc-300 font-mono">{userFilter.slice(0, 12)}...</span>
-            <button
-              onClick={() => onUserFilterChange('')}
-              className="text-zinc-500 hover:text-zinc-300 ml-1"
-            >
-              x
-            </button>
+            <button onClick={() => onUserFilterChange('')} className="text-zinc-500 hover:text-zinc-300 ml-1">x</button>
           </div>
         )}
 
         <span className="text-sm text-zinc-500 ml-auto">
-          {copy.eventsTotal(data.total.toLocaleString(localeTag), data.page, data.totalPages)}
+          {data.total.toLocaleString()} events | Page {data.page}/{data.totalPages}
         </span>
       </div>
 
-      {/* Event List */}
       <div className="space-y-1 max-h-[600px] overflow-y-auto">
         {data.events.map((e) => (
           <div key={e.id} className="flex items-start gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded hover:bg-zinc-900 transition-colors">
-            <span className="text-zinc-500 w-36 shrink-0">{formatDate(e.timestamp, localeTag)}</span>
-            <span className="text-zinc-300 w-24 shrink-0 truncate">{e.userName || (e.userId ? e.userId.slice(0, 8) : copy.anon)}</span>
+            <span className="text-zinc-500 w-36 shrink-0">{formatDate(e.timestamp)}</span>
+            <span className="text-zinc-300 w-24 shrink-0 truncate">{e.userName || (e.userId ? e.userId.slice(0, 8) : 'anon')}</span>
             <span className="text-emerald-400 w-56 shrink-0">{describeEvent(e.eventType, e.eventData as Record<string, unknown> | null)}</span>
-            <span className="text-zinc-600 font-mono text-xs flex-1 truncate">
-              {e.eventType}
-            </span>
+            <span className="text-zinc-600 font-mono text-xs flex-1 truncate">{e.eventType}</span>
             {e.view && <span className="text-zinc-600 text-xs shrink-0">@ {e.view}</span>}
           </div>
         ))}
       </div>
 
-      {/* Pagination */}
       {data.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-4">
           <button
@@ -933,17 +1114,15 @@ function EventsTab({
             disabled={page <= 1}
             className="px-3 py-1.5 text-sm bg-zinc-900 border border-zinc-800 rounded-lg disabled:opacity-30 hover:border-zinc-700 transition-colors"
           >
-            {copy.prev}
+            Prev
           </button>
-          <span className="text-sm text-zinc-500 px-4">
-            {page} / {data.totalPages}
-          </span>
+          <span className="text-sm text-zinc-500 px-4">{page} / {data.totalPages}</span>
           <button
             onClick={() => onPageChange(Math.min(data.totalPages, page + 1))}
             disabled={page >= data.totalPages}
             className="px-3 py-1.5 text-sm bg-zinc-900 border border-zinc-800 rounded-lg disabled:opacity-30 hover:border-zinc-700 transition-colors"
           >
-            {copy.next}
+            Next
           </button>
         </div>
       )}
@@ -951,16 +1130,109 @@ function EventsTab({
   );
 }
 
-// ─── Analytics Tab ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// SITE TAB (Landing Page / Marketing Analytics)
+// ═══════════════════════════════════════════════════════════════════════════
 
-function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) {
+function SiteTab({ data }: { data: MarketingData }) {
   return (
     <div className="space-y-8">
-      {/* Sessions Per Day (simple bar chart) */}
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Page Views" value={data.pageViews.toLocaleString()} accent="purple" />
+        <StatCard label="Unique Visitors" value={data.uniqueVisitors.toLocaleString()} accent="blue" />
+        <StatCard label="CTA Clicks" value={data.ctaClicks.toLocaleString()} accent="emerald" />
+        <StatCard label="Total Events" value={data.totalEvents.toLocaleString()} />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Scroll Depth Funnel */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Scroll Depth Funnel</h3>
+          <div className="space-y-2">
+            {([25, 50, 75, 100] as const).map((pct) => {
+              const count = data.scrollFunnel[pct];
+              const max = Math.max(data.scrollFunnel[25], 1);
+              const pctWidth = (count / max) * 100;
+              return (
+                <div key={pct} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-zinc-300">{pct}% scrolled</span>
+                    <span className="text-zinc-500">{count} visitors</span>
+                  </div>
+                  <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-purple-500/60 rounded-full transition-all"
+                      style={{ width: `${Math.max(pctWidth, 2)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* CTA Breakdown */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">CTA Clicks Breakdown</h3>
+          {data.ctaBreakdown.length === 0 ? (
+            <p className="text-sm text-zinc-600">No CTA clicks yet</p>
+          ) : (
+            <div className="space-y-2">
+              {data.ctaBreakdown.map((cta) => {
+                const max = data.ctaBreakdown[0]?.count || 1;
+                return (
+                  <div key={cta.label} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-emerald-400">{cta.label}</span>
+                      <span className="text-zinc-500">{cta.count}</span>
+                    </div>
+                    <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500/40 rounded-full"
+                        style={{ width: `${(cta.count / max) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* Recent Marketing Events */}
       <section>
-        <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.sessionsPerDayLast30}</h3>
+        <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Recent Site Events</h3>
+        <div className="space-y-1 max-h-[400px] overflow-y-auto">
+          {data.recentEvents.map((e) => (
+            <div key={e.id} className="flex items-center gap-3 text-sm py-2 px-3 bg-zinc-900/50 rounded hover:bg-zinc-900 transition-colors">
+              <span className="text-zinc-500 w-16 shrink-0">{timeAgo(e.createdAt)}</span>
+              <span className="text-zinc-600 font-mono text-xs w-20 shrink-0">{e.sessionId.slice(0, 8)}...</span>
+              <span className="text-purple-400">
+                {describeMarketingEvent(e)}
+              </span>
+              {e.page && <span className="text-zinc-600 text-xs ml-auto">{e.page}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ANALYTICS TAB
+// ═══════════════════════════════════════════════════════════════════════════
+
+function AnalyticsTab({ data }: { data: AnalyticsData }) {
+  return (
+    <div className="space-y-8">
+      {/* Sessions Per Day */}
+      <section>
+        <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Sessions Per Day</h3>
         {data.sessionsPerDay.length === 0 ? (
-          <p className="text-sm text-zinc-600">{copy.noDataYet}</p>
+          <p className="text-sm text-zinc-600">No data yet</p>
         ) : (
           <div className="flex items-end gap-1 h-32 bg-zinc-900/50 rounded-xl p-4">
             {(() => {
@@ -970,9 +1242,9 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
                   key={d.date}
                   className="flex-1 bg-amber-500/60 hover:bg-amber-500 rounded-t transition-colors cursor-default group relative"
                   style={{ height: `${Math.max((d.count / max) * 100, 2)}%` }}
-                  title={copy.sessionTooltip(d.date, d.count)}
+                  title={`${d.date}: ${d.count} sessions`}
                 >
-                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:block bg-zinc-800 text-xs text-zinc-300 px-2 py-1 rounded whitespace-nowrap">
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:block bg-zinc-800 text-xs text-zinc-300 px-2 py-1 rounded whitespace-nowrap z-10">
                     {d.date.slice(5)}: {d.count}
                   </div>
                 </div>
@@ -985,7 +1257,7 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Screen Views */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.mostVisitedScreens}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Most Visited Screens</h3>
           <div className="space-y-2">
             {data.screenViews.map((s) => {
               const max = data.screenViews[0]?.count || 1;
@@ -994,14 +1266,11 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-mono text-amber-400">{s.viewName}</span>
                     <span className="text-zinc-500">
-                      {s.count} {copy.views}{s.avgDuration > 0 ? ` | ${copy.avg} ${s.avgDuration}s` : ''}
+                      {s.count} views{s.avgDuration > 0 ? ` | avg ${s.avgDuration}s` : ''}
                     </span>
                   </div>
                   <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-amber-500/60 rounded-full"
-                      style={{ width: `${(s.count / max) * 100}%` }}
-                    />
+                    <div className="h-full bg-amber-500/60 rounded-full" style={{ width: `${(s.count / max) * 100}%` }} />
                   </div>
                 </div>
               );
@@ -1011,7 +1280,7 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
 
         {/* Top Events */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.mostCommonEvents}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Most Common Events</h3>
           <div className="space-y-2">
             {data.topEvents.slice(0, 15).map((e) => {
               const max = data.topEvents[0]?.count || 1;
@@ -1022,10 +1291,7 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
                     <span className="text-zinc-500">{e.count}</span>
                   </div>
                   <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500/40 rounded-full"
-                      style={{ width: `${(e.count / max) * 100}%` }}
-                    />
+                    <div className="h-full bg-emerald-500/40 rounded-full" style={{ width: `${(e.count / max) * 100}%` }} />
                   </div>
                 </div>
               );
@@ -1035,9 +1301,8 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {/* Browser Breakdown */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.browsers}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Browsers</h3>
           <div className="space-y-1.5">
             {data.browserBreakdown.map((b) => (
               <div key={b.browser} className="flex items-center justify-between text-sm py-1 px-3 bg-zinc-900/50 rounded">
@@ -1048,9 +1313,8 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
           </div>
         </section>
 
-        {/* OS Breakdown */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.operatingSystems}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Operating Systems</h3>
           <div className="space-y-1.5">
             {data.osBreakdown.map((o) => (
               <div key={o.os} className="flex items-center justify-between text-sm py-1 px-3 bg-zinc-900/50 rounded">
@@ -1061,9 +1325,8 @@ function AnalyticsTab({ data, copy }: { data: AnalyticsData; copy: AdminCopy }) 
           </div>
         </section>
 
-        {/* Language Breakdown */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{copy.appLanguages}</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">App Languages</h3>
           <div className="space-y-1.5">
             {data.languageBreakdown.map((l) => (
               <div key={l.language} className="flex items-center justify-between text-sm py-1 px-3 bg-zinc-900/50 rounded">

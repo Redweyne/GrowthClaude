@@ -43,11 +43,13 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action') || 'overview';
+  const dateFrom = searchParams.get('dateFrom') || undefined;
+  const dateTo = searchParams.get('dateTo') || undefined;
 
   try {
     switch (action) {
       case 'overview':
-        return NextResponse.json(await getOverview());
+        return NextResponse.json(await getOverview(dateFrom, dateTo));
       case 'users':
         return NextResponse.json(await getUsers());
       case 'user-detail': {
@@ -55,15 +57,27 @@ export async function GET(request: NextRequest) {
         if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
         return NextResponse.json(await getUserDetail(userId));
       }
+      case 'sessions': {
+        const page = parseInt(searchParams.get('page') || '1', 10);
+        const limit = parseInt(searchParams.get('limit') || '30', 10);
+        return NextResponse.json(await getSessions(page, limit, dateFrom, dateTo));
+      }
+      case 'session-detail': {
+        const sessionId = searchParams.get('sessionId');
+        if (!sessionId) return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
+        return NextResponse.json(await getSessionDetail(sessionId));
+      }
       case 'events': {
         const page = parseInt(searchParams.get('page') || '1', 10);
         const limit = parseInt(searchParams.get('limit') || '50', 10);
         const eventType = searchParams.get('type') || undefined;
         const userId = searchParams.get('userId') || undefined;
-        return NextResponse.json(await getEvents(page, limit, eventType, userId));
+        return NextResponse.json(await getEvents(page, limit, eventType, userId, dateFrom, dateTo));
       }
       case 'analytics':
-        return NextResponse.json(await getAnalytics());
+        return NextResponse.json(await getAnalytics(dateFrom, dateTo));
+      case 'marketing':
+        return NextResponse.json(await getMarketing(dateFrom, dateTo));
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
@@ -78,11 +92,23 @@ export async function GET(request: NextRequest) {
 // OVERVIEW
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function getOverview() {
+async function getOverview(dateFrom?: string, dateTo?: string) {
   const supabase = getServiceClient()!;
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  // Build date-filtered count queries
+  const sessionsQuery = supabase.from('activity_sessions').select('id', { count: 'exact', head: true });
+  const eventsQuery = supabase.from('activity_events').select('id', { count: 'exact', head: true });
+  if (dateFrom) {
+    sessionsQuery.gte('created_at', dateFrom);
+    eventsQuery.gte('timestamp', dateFrom);
+  }
+  if (dateTo) {
+    sessionsQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+    eventsQuery.lte('timestamp', dateTo + 'T23:59:59.999Z');
+  }
 
   const [
     totalSessionsRes,
@@ -95,9 +121,10 @@ async function getOverview() {
     uniqueUsersRes,
     topCountriesRes,
     topDevicesRes,
+    marketingCountRes,
   ] = await Promise.all([
-    supabase.from('activity_sessions').select('id', { count: 'exact', head: true }),
-    supabase.from('activity_events').select('id', { count: 'exact', head: true }),
+    sessionsQuery,
+    eventsQuery,
     supabase.from('activity_page_views').select('id', { count: 'exact', head: true }),
     supabase.from('activity_sessions').select('id', { count: 'exact', head: true }).gte('created_at', todayStart),
     supabase.from('activity_events').select('id', { count: 'exact', head: true }).gte('timestamp', todayStart),
@@ -110,6 +137,7 @@ async function getOverview() {
     supabase.rpc('get_unique_user_count'),
     supabase.rpc('get_top_countries', { max_results: 10 }),
     supabase.rpc('get_device_breakdown'),
+    supabase.from('marketing_events').select('id', { count: 'exact', head: true }),
   ]);
 
   // For recent events, fetch session info separately
@@ -134,6 +162,7 @@ async function getOverview() {
     todaySessions: todaySessionsRes.count ?? 0,
     todayEvents: todayEventsRes.count ?? 0,
     weekSessions: weekSessionsRes.count ?? 0,
+    totalMarketingEvents: marketingCountRes.count ?? 0,
     recentEvents: recentEvents.map((e: { id: string; event_type: string; event_data: unknown; view: string | null; user_id: string | null; timestamp: string; session_id: string }) => {
       const session = sessionMap[e.session_id];
       return {
@@ -156,6 +185,148 @@ async function getOverview() {
       deviceType: d.device_type || 'Unknown',
       count: d.count,
     })),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESSIONS LIST (paginated, date-filtered)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function getSessions(page: number, limit: number, dateFrom?: string, dateTo?: string) {
+  const supabase = getServiceClient()!;
+  const offset = (page - 1) * limit;
+
+  let query = supabase
+    .from('activity_sessions')
+    .select('id, user_id, user_name, country, city, device_type, browser, os, app_language, created_at, ended_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (dateFrom) query = query.gte('created_at', dateFrom);
+  if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59.999Z');
+
+  const sessionsRes = await query;
+  const sessions = sessionsRes.data || [];
+  const total = sessionsRes.count ?? 0;
+
+  // Get event counts per session
+  const sessionIds = sessions.map((s: { id: string }) => s.id);
+  let eventCountMap: Record<string, number> = {};
+  if (sessionIds.length > 0) {
+    const { data: eventCounts } = await supabase
+      .from('activity_events')
+      .select('session_id')
+      .in('session_id', sessionIds);
+    if (eventCounts) {
+      for (const e of eventCounts) {
+        eventCountMap[e.session_id] = (eventCountMap[e.session_id] || 0) + 1;
+      }
+    }
+  }
+
+  return {
+    sessions: sessions.map((s: Record<string, unknown>) => ({
+      id: s.id,
+      userId: s.user_id,
+      userName: s.user_name,
+      country: s.country,
+      city: s.city,
+      deviceType: s.device_type,
+      browser: s.browser,
+      os: s.os,
+      appLanguage: s.app_language,
+      createdAt: s.created_at,
+      endedAt: s.ended_at,
+      eventCount: eventCountMap[s.id as string] || 0,
+    })),
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESSION DETAIL (chronological timeline)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function getSessionDetail(sessionId: string) {
+  const supabase = getServiceClient()!;
+
+  const [sessionRes, eventsRes, pageViewsRes] = await Promise.all([
+    supabase
+      .from('activity_sessions')
+      .select('id, user_id, user_name, ip_address, country, city, region, browser, browser_version, os, os_version, device_type, screen_width, screen_height, app_language, referrer, created_at, ended_at')
+      .eq('id', sessionId)
+      .single(),
+    supabase
+      .from('activity_events')
+      .select('id, event_type, event_data, view, timestamp')
+      .eq('session_id', sessionId)
+      .order('timestamp', { ascending: true })
+      .limit(500),
+    supabase
+      .from('activity_page_views')
+      .select('view_name, entered_at, duration')
+      .eq('session_id', sessionId)
+      .order('entered_at', { ascending: true })
+      .limit(200),
+  ]);
+
+  const session = sessionRes.data;
+  if (!session) {
+    return { session: null, timeline: [] };
+  }
+
+  // Merge events and page views into a single chronological timeline
+  const timeline: { time: string; type: 'event' | 'pageview'; description: string; detail: string | null; screen: string | null; raw: string | null }[] = [];
+
+  for (const e of (eventsRes.data || [])) {
+    timeline.push({
+      time: e.timestamp,
+      type: 'event',
+      description: '', // will be filled client-side with describeEvent
+      detail: null,
+      screen: e.view,
+      raw: e.event_type,
+      ...{ eventData: e.event_data }, // pass through for client-side description
+    });
+  }
+
+  for (const pv of (pageViewsRes.data || [])) {
+    timeline.push({
+      time: pv.entered_at,
+      type: 'pageview',
+      description: `Viewed "${pv.view_name}"`,
+      detail: pv.duration != null ? `${pv.duration}s` : null,
+      screen: pv.view_name,
+      raw: null,
+    });
+  }
+
+  // Sort by time
+  timeline.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
+  return {
+    session: {
+      id: session.id,
+      userId: session.user_id,
+      userName: session.user_name,
+      country: session.country,
+      city: session.city,
+      region: session.region,
+      browser: session.browser,
+      browserVersion: session.browser_version,
+      os: session.os,
+      osVersion: session.os_version,
+      deviceType: session.device_type,
+      screenWidth: session.screen_width,
+      screenHeight: session.screen_height,
+      appLanguage: session.app_language,
+      referrer: session.referrer,
+      createdAt: session.created_at,
+      endedAt: session.ended_at,
+    },
+    timeline,
   };
 }
 
@@ -314,7 +485,9 @@ async function getEvents(
   page: number,
   limit: number,
   eventType?: string,
-  userId?: string
+  userId?: string,
+  dateFrom?: string,
+  dateTo?: string,
 ) {
   const supabase = getServiceClient()!;
   const offset = (page - 1) * limit;
@@ -328,6 +501,8 @@ async function getEvents(
 
   if (eventType) query = query.eq('event_type', eventType);
   if (userId) query = query.eq('user_id', userId);
+  if (dateFrom) query = query.gte('timestamp', dateFrom);
+  if (dateTo) query = query.lte('timestamp', dateTo + 'T23:59:59.999Z');
 
   const [eventsRes, eventTypesRes] = await Promise.all([
     query,
@@ -380,8 +555,16 @@ async function getEvents(
 // ANALYTICS
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function getAnalytics() {
+async function getAnalytics(dateFrom?: string, dateTo?: string) {
   const supabase = getServiceClient()!;
+
+  // Calculate days_back from dateFrom if provided
+  let daysBack = 30;
+  if (dateFrom) {
+    const from = new Date(dateFrom);
+    const now = new Date();
+    daysBack = Math.ceil((now.getTime() - from.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  }
 
   const [
     screenViewsRes,
@@ -392,8 +575,8 @@ async function getAnalytics() {
     languageRes,
   ] = await Promise.all([
     supabase.rpc('get_screen_analytics'),
-    supabase.rpc('get_event_type_counts', { days_back: 9999 }),
-    supabase.rpc('get_sessions_per_day', { days_back: 30 }),
+    supabase.rpc('get_event_type_counts', { days_back: dateFrom ? daysBack : 9999 }),
+    supabase.rpc('get_sessions_per_day', { days_back: daysBack }),
     supabase.rpc('get_browser_breakdown', { max_results: 10 }),
     supabase.rpc('get_os_breakdown', { max_results: 10 }),
     supabase.rpc('get_language_breakdown'),
@@ -407,11 +590,10 @@ async function getAnalytics() {
   }
 
   const sessionsPerDay: { date: string; count: number }[] = [];
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 30);
+  const cutoff = dateFrom ? new Date(dateFrom) : new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
   const current = new Date(cutoff);
-  const today = new Date();
-  while (current <= today) {
+  const end = dateTo ? new Date(dateTo) : new Date();
+  while (current <= end) {
     const day = current.toISOString().split('T')[0];
     sessionsPerDay.push({ date: day, count: dayMap.get(day) || 0 });
     current.setDate(current.getDate() + 1);
@@ -439,6 +621,115 @@ async function getAnalytics() {
     languageBreakdown: (languageRes.data || []).map((l: { language: string; count: number }) => ({
       language: l.language || 'Unknown',
       count: l.count,
+    })),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARKETING (Landing page / /site analytics)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function getMarketing(dateFrom?: string, dateTo?: string) {
+  const supabase = getServiceClient()!;
+
+  // Build base query filters
+  let totalQuery = supabase.from('marketing_events').select('id', { count: 'exact', head: true });
+  let pageViewQuery = supabase.from('marketing_events').select('id', { count: 'exact', head: true }).eq('event_type', 'page_view');
+  let ctaQuery = supabase.from('marketing_events').select('id', { count: 'exact', head: true }).eq('event_type', 'cta_click');
+
+  if (dateFrom) {
+    totalQuery = totalQuery.gte('created_at', dateFrom);
+    pageViewQuery = pageViewQuery.gte('created_at', dateFrom);
+    ctaQuery = ctaQuery.gte('created_at', dateFrom);
+  }
+  if (dateTo) {
+    totalQuery = totalQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+    pageViewQuery = pageViewQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+    ctaQuery = ctaQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+  }
+
+  // Get scroll depth data
+  let scrollQuery = supabase
+    .from('marketing_events')
+    .select('event_data')
+    .eq('event_type', 'scroll_depth');
+  if (dateFrom) scrollQuery = scrollQuery.gte('created_at', dateFrom);
+  if (dateTo) scrollQuery = scrollQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+
+  // Get CTA breakdown
+  let ctaBreakdownQuery = supabase
+    .from('marketing_events')
+    .select('event_data')
+    .eq('event_type', 'cta_click');
+  if (dateFrom) ctaBreakdownQuery = ctaBreakdownQuery.gte('created_at', dateFrom);
+  if (dateTo) ctaBreakdownQuery = ctaBreakdownQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+
+  // Get unique sessions
+  let uniqueSessionQuery = supabase
+    .from('marketing_events')
+    .select('session_id')
+    .eq('event_type', 'page_view');
+  if (dateFrom) uniqueSessionQuery = uniqueSessionQuery.gte('created_at', dateFrom);
+  if (dateTo) uniqueSessionQuery = uniqueSessionQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+
+  // Recent marketing events
+  let recentQuery = supabase
+    .from('marketing_events')
+    .select('id, session_id, event_type, event_data, page, created_at')
+    .order('created_at', { ascending: false })
+    .limit(30);
+  if (dateFrom) recentQuery = recentQuery.gte('created_at', dateFrom);
+  if (dateTo) recentQuery = recentQuery.lte('created_at', dateTo + 'T23:59:59.999Z');
+
+  const [totalRes, pageViewRes, ctaRes, scrollRes, ctaBreakdownRes, uniqueSessionRes, recentRes] = await Promise.all([
+    totalQuery,
+    pageViewQuery,
+    ctaQuery,
+    scrollQuery,
+    ctaBreakdownQuery,
+    uniqueSessionQuery,
+    recentQuery,
+  ]);
+
+  // Compute unique visitors from page views
+  const uniqueVisitors = new Set((uniqueSessionRes.data || []).map((r: { session_id: string }) => r.session_id)).size;
+
+  // Compute scroll depth funnel
+  const scrollData = scrollRes.data || [];
+  const scrollCounts = { 25: 0, 50: 0, 75: 0, 100: 0 };
+  for (const s of scrollData) {
+    const percent = (s.event_data as { percent?: number })?.percent;
+    if (percent && percent in scrollCounts) {
+      scrollCounts[percent as keyof typeof scrollCounts]++;
+    }
+  }
+
+  // Compute CTA breakdown
+  const ctaData = ctaBreakdownRes.data || [];
+  const ctaMap = new Map<string, number>();
+  for (const c of ctaData) {
+    const data = c.event_data as { type?: string; location?: string } | null;
+    const label = data?.location ? `${data.type || 'cta'} (${data.location})` : (data?.type || 'unknown');
+    ctaMap.set(label, (ctaMap.get(label) || 0) + 1);
+  }
+  const ctaBreakdown = Array.from(ctaMap.entries())
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    totalEvents: totalRes.count ?? 0,
+    pageViews: pageViewRes.count ?? 0,
+    uniqueVisitors,
+    ctaClicks: ctaRes.count ?? 0,
+    scrollFunnel: scrollCounts,
+    ctaBreakdown,
+    recentEvents: (recentRes.data || []).map((e: { id: string; session_id: string; event_type: string; event_data: unknown; page: string | null; created_at: string }) => ({
+      id: e.id,
+      sessionId: e.session_id,
+      eventType: e.event_type,
+      eventData: e.event_data,
+      page: e.page,
+      createdAt: e.created_at,
     })),
   };
 }
