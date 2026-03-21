@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ChevronUp, Lightbulb, Bug, Heart, HelpCircle, CheckCircle2, Eye, Loader2 } from 'lucide-react';
+import { ChevronUp, Lightbulb, Bug, Heart, HelpCircle, CheckCircle2, Eye, Loader2, MessageCircle } from 'lucide-react';
 import type { AgoraPost, AgoraStatus } from '@/types/agora';
 import { useTranslation } from '@/i18n';
 
@@ -9,8 +9,8 @@ interface AgoraPostCardProps {
   post: AgoraPost;
   hasVoted: boolean;
   onVote: () => void;
+  onClick: () => void;
   isOwnPost?: boolean;
-  isSeed?: boolean;
 }
 
 const CATEGORY_CONFIG = {
@@ -66,7 +66,7 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 30)}mo`;
 }
 
-export function AgoraPostCard({ post, hasVoted, onVote, isOwnPost, isSeed }: AgoraPostCardProps) {
+export function AgoraPostCard({ post, hasVoted, onVote, onClick, isOwnPost }: AgoraPostCardProps) {
   const { t, isRTL } = useTranslation();
   const cat = CATEGORY_CONFIG[post.category];
   const CategoryIcon = cat.icon;
@@ -81,7 +81,8 @@ export function AgoraPostCard({ post, hasVoted, onVote, isOwnPost, isSeed }: Ago
       exit={{ opacity: 0, y: -8 }}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      className="relative group"
+      onClick={onClick}
+      className="relative group cursor-pointer"
     >
       {/* Subtle glow on hover */}
       <div
@@ -137,9 +138,19 @@ export function AgoraPostCard({ post, hasVoted, onVote, isOwnPost, isSeed }: Ago
           </div>
 
           {/* Post content */}
-          <p className="text-sm text-stone-200 light:text-stone-800 leading-relaxed line-clamp-4">
+          <p className="text-sm text-stone-200 light:text-stone-800 leading-relaxed line-clamp-3">
             {post.content}
           </p>
+
+          {/* Comment count + tap hint */}
+          <div className={`flex items-center gap-3 mt-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <MessageCircle size={11} className={post.commentCount > 0 ? 'text-amber-500/60' : 'text-stone-600'} />
+              <span className={`text-[10px] ${post.commentCount > 0 ? 'text-amber-500/60 font-medium' : 'text-stone-600'}`}>
+                {post.commentCount > 0 ? post.commentCount : ''} {post.commentCount > 0 ? t('agora.comments') : t('agora.tapToRead')}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>

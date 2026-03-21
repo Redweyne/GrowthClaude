@@ -1689,6 +1689,13 @@ const en = {
     emptyTitle: 'The Agora is quiet',
     emptyDescription: 'Be the first to share your thoughts and shape this community.',
     votes: 'votes',
+    comments: 'comments',
+    tapToRead: 'Tap to read & comment',
+    noCommentsYet: 'No comments yet — be the first to share your thoughts',
+    writeComment: 'Write a comment...',
+    communityVoice: 'Community voice',
+    you: 'You',
+    member: 'Member',
   },
 } as const;
 

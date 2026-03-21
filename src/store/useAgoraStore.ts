@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AgoraPost, AgoraCategory } from '@/types/agora';
-import { mapRowToPost } from '@/types/agora';
+import type { AgoraPost, AgoraCategory, AgoraComment } from '@/types/agora';
+import { mapRowToPost, mapRowToComment } from '@/types/agora';
 import * as agoraApi from '@/lib/api/agora';
 
 interface AgoraState {
@@ -10,6 +10,9 @@ interface AgoraState {
   categoryFilter: AgoraCategory | null;
   sortOrder: 'top' | 'new';
   isLoading: boolean;
+  // Comments for the currently open post
+  comments: AgoraComment[];
+  commentsLoading: boolean;
 }
 
 interface AgoraActions {
@@ -19,6 +22,9 @@ interface AgoraActions {
   toggleVote: (userId: string, postId: string) => Promise<void>;
   setCategoryFilter: (category: AgoraCategory | null) => void;
   setSortOrder: (sort: 'top' | 'new') => void;
+  fetchComments: (postId: string) => Promise<void>;
+  addComment: (userId: string, postId: string, content: string) => Promise<void>;
+  clearComments: () => void;
 }
 
 export const useAgoraStore = create<AgoraState & AgoraActions>()(
@@ -29,6 +35,8 @@ export const useAgoraStore = create<AgoraState & AgoraActions>()(
       categoryFilter: null,
       sortOrder: 'top',
       isLoading: false,
+      comments: [],
+      commentsLoading: false,
 
       fetchPosts: async () => {
         const { categoryFilter, sortOrder } = get();
@@ -96,6 +104,32 @@ export const useAgoraStore = create<AgoraState & AgoraActions>()(
 
       setSortOrder: (sort: 'top' | 'new') => {
         set({ sortOrder: sort });
+      },
+
+      fetchComments: async (postId: string) => {
+        set({ commentsLoading: true, comments: [] });
+        try {
+          const rows = await agoraApi.listComments(postId);
+          set({ comments: rows.map(mapRowToComment), commentsLoading: false });
+        } catch {
+          set({ commentsLoading: false });
+        }
+      },
+
+      addComment: async (userId: string, postId: string, content: string) => {
+        const row = await agoraApi.createComment(userId, postId, content);
+        const comment = mapRowToComment(row);
+        set((state) => ({
+          comments: [...state.comments, comment],
+          // Optimistic: increment commentCount on the post
+          posts: state.posts.map((p) =>
+            p.id === postId ? { ...p, commentCount: p.commentCount + 1 } : p
+          ),
+        }));
+      },
+
+      clearComments: () => {
+        set({ comments: [], commentsLoading: false });
       },
     }),
     {

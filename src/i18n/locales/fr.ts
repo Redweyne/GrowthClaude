@@ -1683,6 +1683,13 @@ const fr = {
     emptyTitle: 'L\'Agora est silencieuse',
     emptyDescription: 'Soyez le premier à partager vos pensées.',
     votes: 'votes',
+    comments: 'commentaires',
+    tapToRead: 'Appuyez pour lire et commenter',
+    noCommentsYet: 'Pas encore de commentaires — soyez le premier à partager',
+    writeComment: 'Écrire un commentaire...',
+    communityVoice: 'Voix de la communauté',
+    you: 'Vous',
+    member: 'Membre',
   },
 } as const;
 

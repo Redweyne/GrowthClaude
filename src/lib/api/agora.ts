@@ -1,5 +1,5 @@
 import { getRequiredSupabaseClient } from './client';
-import type { AgoraCategory, AgoraPostRow } from '@/types/agora';
+import type { AgoraCategory, AgoraPostRow, AgoraCommentRow } from '@/types/agora';
 
 export async function listPosts(
   category?: AgoraCategory | null,
@@ -72,5 +72,41 @@ export async function unvotePost(userId: string, postId: string): Promise<void> 
     .delete()
     .eq('user_id', userId)
     .eq('post_id', postId);
+  if (error) throw error;
+}
+
+// ── Comments ──────────────────────────────────────────────────────────────
+
+export async function listComments(postId: string): Promise<AgoraCommentRow[]> {
+  const client = getRequiredSupabaseClient();
+  const { data, error } = await client
+    .from('agora_comments')
+    .select('*')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as AgoraCommentRow[];
+}
+
+export async function createComment(
+  userId: string,
+  postId: string,
+  content: string,
+): Promise<AgoraCommentRow> {
+  const client = getRequiredSupabaseClient();
+  const { data, error } = await client
+    .from('agora_comments')
+    .insert({ user_id: userId, post_id: postId, content })
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data as AgoraCommentRow;
+}
+
+export async function deleteComment(commentId: string): Promise<void> {
+  const client = getRequiredSupabaseClient();
+  const { error } = await client.from('agora_comments').delete().eq('id', commentId);
   if (error) throw error;
 }

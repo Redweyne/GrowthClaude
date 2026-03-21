@@ -1683,6 +1683,13 @@ const ar = {
     emptyTitle: 'الأغورا هادئة',
     emptyDescription: 'كن أول من يشارك أفكاره ويشكّل هذا المجتمع.',
     votes: 'أصوات',
+    comments: 'تعليقات',
+    tapToRead: 'اضغط للقراءة والتعليق',
+    noCommentsYet: 'لا توجد تعليقات بعد — كن أول من يشارك',
+    writeComment: 'اكتب تعليقاً...',
+    communityVoice: 'صوت المجتمع',
+    you: 'أنت',
+    member: 'عضو',
   },
 } as const;
 
