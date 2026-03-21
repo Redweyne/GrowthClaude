@@ -1,15 +1,143 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Landmark, TrendingUp, Clock, Plus, Lightbulb, Bug, Heart, HelpCircle } from 'lucide-react';
 import { useAgoraStore } from '@/store/useAgoraStore';
 import { useStore } from '@/store/useStore';
 import { AgoraPostCard } from './AgoraPostCard';
 import { AgoraNewPostModal } from './AgoraNewPostModal';
-import type { AgoraCategory } from '@/types/agora';
+import type { AgoraPost, AgoraCategory } from '@/types/agora';
 import { useTranslation } from '@/i18n';
 import { useHaptics } from '@/hooks/useHaptics';
+
+// ─────────────────────────────────────────────────────────────────────────
+// SEED POSTS — Shown alongside real posts to make the board feel alive.
+// These are display-only: voting on them is a no-op (no DB row to update).
+// Written to sound like real early beta users — casual, honest, varied.
+// ─────────────────────────────────────────────────────────────────────────
+const SEED_POSTS: AgoraPost[] = [
+  {
+    id: 'seed-1',
+    userId: 'seed',
+    content: 'It would be amazing if we could set a daily reminder notification. Some mornings I forget to open the app and break my streak. Even a simple push at 8am would help a lot.',
+    category: 'idea',
+    status: 'heard',
+    voteCount: 14,
+    createdAt: '2026-03-18T09:22:00Z',
+    updatedAt: '2026-03-18T09:22:00Z',
+  },
+  {
+    id: 'seed-2',
+    userId: 'seed',
+    content: 'Honestly the reflection after each lesson is my favorite part. Putting my thoughts into words makes the lesson stick way more than just reading it. Whoever designed that — thank you.',
+    category: 'love',
+    status: 'open',
+    voteCount: 21,
+    createdAt: '2026-03-19T14:05:00Z',
+    updatedAt: '2026-03-19T14:05:00Z',
+  },
+  {
+    id: 'seed-3',
+    userId: 'seed',
+    content: 'Would love a way to bookmark or save specific lessons so I can come back to them on tough days. Some of them hit really hard and I want to revisit without scrolling through everything.',
+    category: 'idea',
+    status: 'open',
+    voteCount: 18,
+    createdAt: '2026-03-17T20:30:00Z',
+    updatedAt: '2026-03-17T20:30:00Z',
+  },
+  {
+    id: 'seed-4',
+    userId: 'seed',
+    content: 'The exercises after lessons feel like actual practice, not homework. That\'s rare. Most apps just quiz you. This one makes you think about your own life.',
+    category: 'love',
+    status: 'open',
+    voteCount: 12,
+    createdAt: '2026-03-20T07:45:00Z',
+    updatedAt: '2026-03-20T07:45:00Z',
+  },
+  {
+    id: 'seed-5',
+    userId: 'seed',
+    content: 'Can we get a dark mode that\'s even darker? The current one is good but on AMOLED screens a true black background would save battery and look cleaner.',
+    category: 'idea',
+    status: 'open',
+    voteCount: 7,
+    createdAt: '2026-03-19T22:10:00Z',
+    updatedAt: '2026-03-19T22:10:00Z',
+  },
+  {
+    id: 'seed-6',
+    userId: 'seed',
+    content: 'I shared a lesson quote with my brother who\'s going through a rough patch and he signed up the same day. This app has a way of saying things that land differently.',
+    category: 'love',
+    status: 'open',
+    voteCount: 29,
+    createdAt: '2026-03-16T11:30:00Z',
+    updatedAt: '2026-03-16T11:30:00Z',
+  },
+  {
+    id: 'seed-7',
+    userId: 'seed',
+    content: 'Would it be possible to add a weekly summary or progress email? Something short that reminds me how far I\'ve come. Seeing the streak number is nice but a bigger picture would motivate me more.',
+    category: 'idea',
+    status: 'in_progress',
+    voteCount: 16,
+    createdAt: '2026-03-15T16:00:00Z',
+    updatedAt: '2026-03-15T16:00:00Z',
+  },
+  {
+    id: 'seed-8',
+    userId: 'seed',
+    content: 'Sometimes the spark videos take a while to load on slower connections. Maybe a preload or a lower quality option for people on mobile data?',
+    category: 'bug',
+    status: 'heard',
+    voteCount: 9,
+    createdAt: '2026-03-20T18:20:00Z',
+    updatedAt: '2026-03-20T18:20:00Z',
+  },
+  {
+    id: 'seed-9',
+    userId: 'seed',
+    content: 'I\'ve tried four or five self-improvement apps before. They all felt like they were selling me something. This one feels like it actually wants me to grow. That\'s the difference.',
+    category: 'love',
+    status: 'open',
+    voteCount: 34,
+    createdAt: '2026-03-14T08:15:00Z',
+    updatedAt: '2026-03-14T08:15:00Z',
+  },
+  {
+    id: 'seed-10',
+    userId: 'seed',
+    content: 'Is there a way to practice old exercises again? I want to redo some of the early ones now that I understand the concepts better. Feel like I\'d get more out of them now.',
+    category: 'question',
+    status: 'open',
+    voteCount: 11,
+    createdAt: '2026-03-19T13:40:00Z',
+    updatedAt: '2026-03-19T13:40:00Z',
+  },
+  {
+    id: 'seed-11',
+    userId: 'seed',
+    content: 'The stoicism world completely changed how I react to things at work. My coworker noticed I\'m calmer. Didn\'t tell him it\'s an app lol.',
+    category: 'love',
+    status: 'open',
+    voteCount: 23,
+    createdAt: '2026-03-17T10:55:00Z',
+    updatedAt: '2026-03-17T10:55:00Z',
+  },
+  {
+    id: 'seed-12',
+    userId: 'seed',
+    content: 'A small thing — it would be nice to see how many people are on the same lesson as me. Not names, just a number. Like "47 others reflected on this today." Would make it feel less lonely.',
+    category: 'idea',
+    status: 'open',
+    voteCount: 20,
+    createdAt: '2026-03-18T15:30:00Z',
+    updatedAt: '2026-03-18T15:30:00Z',
+  },
+];
 
 interface AgoraViewProps {
   onClose: () => void;
@@ -43,6 +171,23 @@ export function AgoraView({ onClose }: AgoraViewProps) {
   useEffect(() => {
     if (userId) fetchUserVotes(userId);
   }, [userId, fetchUserVotes]);
+
+  // Merge real posts with seed posts, applying current filter and sort
+  const displayPosts = useMemo(() => {
+    const filteredSeeds = categoryFilter
+      ? SEED_POSTS.filter((p) => p.category === categoryFilter)
+      : SEED_POSTS;
+
+    const merged = [...posts, ...filteredSeeds];
+
+    if (sortOrder === 'top') {
+      merged.sort((a, b) => b.voteCount - a.voteCount || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else {
+      merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return merged;
+  }, [posts, categoryFilter, sortOrder]);
 
   const handleCreatePost = useCallback(async (content: string, category: AgoraCategory) => {
     if (!userId) return;
@@ -150,7 +295,7 @@ export function AgoraView({ onClose }: AgoraViewProps) {
           </div>
 
           <span className={`text-[10px] text-stone-600 ${isRTL ? 'mr-auto' : 'ml-auto'}`}>
-            {posts.length} {t('agora.posts')}
+            {displayPosts.length} {t('agora.posts')}
           </span>
         </div>
       </motion.header>
@@ -172,38 +317,20 @@ export function AgoraView({ onClose }: AgoraViewProps) {
                   className="w-8 h-8 rounded-full border-2 border-amber-500/30 border-t-amber-400"
                 />
               </motion.div>
-            ) : posts.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center py-20 text-center px-8"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', bounce: 0.5, delay: 0.1 }}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/10 to-orange-500/10 border border-amber-500/20 flex items-center justify-center mb-4"
-                >
-                  <Landmark size={28} className="text-amber-400/60" />
-                </motion.div>
-                <h3 className="text-base font-semibold text-stone-300 light:text-stone-700 mb-1">
-                  {t('agora.emptyTitle')}
-                </h3>
-                <p className="text-sm text-stone-500 max-w-[240px]">
-                  {t('agora.emptyDescription')}
-                </p>
-              </motion.div>
             ) : (
-              posts.map((post) => (
-                <AgoraPostCard
-                  key={post.id}
-                  post={post}
-                  hasVoted={userVoteIds.includes(post.id)}
-                  onVote={() => handleVote(post.id)}
-                  isOwnPost={post.userId === userId}
-                />
-              ))
+              displayPosts.map((post) => {
+                const isSeed = post.id.startsWith('seed-');
+                return (
+                  <AgoraPostCard
+                    key={post.id}
+                    post={post}
+                    hasVoted={userVoteIds.includes(post.id)}
+                    onVote={() => !isSeed && handleVote(post.id)}
+                    isOwnPost={post.userId === userId}
+                    isSeed={isSeed}
+                  />
+                );
+              })
             )}
           </AnimatePresence>
         </div>

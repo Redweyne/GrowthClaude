@@ -10,6 +10,7 @@ interface AgoraPostCardProps {
   hasVoted: boolean;
   onVote: () => void;
   isOwnPost?: boolean;
+  isSeed?: boolean;
 }
 
 const CATEGORY_CONFIG = {
@@ -65,7 +66,7 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 30)}mo`;
 }
 
-export function AgoraPostCard({ post, hasVoted, onVote, isOwnPost }: AgoraPostCardProps) {
+export function AgoraPostCard({ post, hasVoted, onVote, isOwnPost, isSeed }: AgoraPostCardProps) {
   const { t, isRTL } = useTranslation();
   const cat = CATEGORY_CONFIG[post.category];
   const CategoryIcon = cat.icon;
