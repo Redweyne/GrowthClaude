@@ -422,7 +422,7 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+      <div className="h-screen overflow-y-auto bg-zinc-950 flex items-center justify-center p-4">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold text-zinc-100">Admin Dashboard</h1>
@@ -461,7 +461,7 @@ export default function AdminPage() {
       : null;
 
     return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
+      <div className="h-screen overflow-y-auto bg-zinc-950 text-zinc-100 p-4 md:p-8">
         <button
           onClick={() => setSessionDetail(null)}
           className="mb-6 px-4 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors"
@@ -558,7 +558,7 @@ export default function AdminPage() {
   if (userDetail) {
     const { userId, data } = userDetail;
     return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4 md:p-8">
+      <div className="h-screen overflow-y-auto bg-zinc-950 text-zinc-100 p-4 md:p-8">
         <button
           onClick={() => setUserDetail(null)}
           className="mb-6 px-4 py-2 text-sm bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors"
@@ -629,7 +629,7 @@ export default function AdminPage() {
   // ═══════════════════════════════════════════════════════════════════════
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="h-screen overflow-y-auto bg-zinc-950 text-zinc-100">
       {/* Header */}
       <header className="border-b border-zinc-800 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-bold">
