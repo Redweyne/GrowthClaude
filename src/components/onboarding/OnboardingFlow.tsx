@@ -216,7 +216,7 @@ export function OnboardingFlow() {
 
   return (
     <div
-      className="relative min-h-[100dvh] flex flex-col overflow-x-hidden"
+      className="relative h-[100dvh] flex flex-col overflow-hidden"
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
     >

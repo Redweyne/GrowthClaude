@@ -431,6 +431,10 @@ html {
   scroll-behavior: smooth;
   /* Prevent pull-to-refresh on Android Chrome and overscroll bounce */
   overscroll-behavior: none;
+  /* Lock html to viewport so the browser chrome never collapses on scroll.
+     All scrolling must happen inside inner containers (overflow-y-auto). */
+  height: 100%;
+  overflow: hidden;
 }
 
 html.light {
@@ -469,10 +473,11 @@ body {
   touch-action: manipulation; /* Prevent double-tap zoom on Android */
   overscroll-behavior: none; /* Prevent pull-to-refresh and overscroll */
 
-  /* Layout */
-  min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
-  overflow-x: hidden;
+  /* Layout — fixed to viewport, no body-level scroll.
+     This keeps the mobile browser chrome (address bar / nav bar) permanently visible.
+     Inner containers handle their own scrolling via overflow-y-auto. */
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Light mode body background - bright and elevated */

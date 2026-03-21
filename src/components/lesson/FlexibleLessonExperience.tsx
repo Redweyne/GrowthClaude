@@ -596,7 +596,7 @@ export function FlexibleLessonExperience({
 
   return (
     <div
-      className={`min-h-[100dvh] bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-x-hidden ${isRTL ? 'rtl' : ''}`}
+      className={`h-[100dvh] bg-stone-950 light:bg-stone-50 flex flex-col relative overflow-hidden ${isRTL ? 'rtl' : ''}`}
       dir={isRTL ? 'rtl' : 'ltr'}
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
