@@ -216,7 +216,7 @@ export function OnboardingFlow() {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col overflow-hidden"
+      className="relative min-h-[100dvh] flex flex-col overflow-x-hidden"
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
     >
@@ -319,8 +319,8 @@ export function OnboardingFlow() {
         </motion.div>
       )}
 
-      {/* Step content - adjusted padding for mobile to avoid overlap with indicator */}
-      <div className={`relative z-10 flex-1 flex justify-center p-4 sm:p-6 ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-24 sm:pt-24' : 'items-center'}`}>
+      {/* Step content - scrollable with extra bottom padding to clear music controls */}
+      <div className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar flex justify-center p-4 sm:p-6 pb-[max(8rem,calc(4rem+env(safe-area-inset-bottom)))] ${onboardingStep > 0 && onboardingStep < TOTAL_STEPS - 1 ? 'items-start pt-24 sm:pt-24' : 'items-center'}`}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={onboardingStep}

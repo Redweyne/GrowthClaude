@@ -661,7 +661,8 @@ export function FlexibleLessonExperience({
       </div>
 
       {/* Main content area — scrollable when content overflows, centered when short */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar px-4 pt-8 pb-[max(6rem,calc(2rem+env(safe-area-inset-bottom)))]">
+      {/* Extra bottom padding (8rem+) ensures content scrolls past the fixed music controls */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar px-4 pt-8 pb-[max(8rem,calc(4rem+env(safe-area-inset-bottom)))]">
         <div className="min-h-full flex flex-col">
           <AnimatePresence mode="wait">
             {!isTransitioning && currentStep && (

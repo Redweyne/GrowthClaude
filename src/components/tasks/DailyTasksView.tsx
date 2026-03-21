@@ -172,7 +172,7 @@ export function DailyTasksView() {
       {/* Task list — SCROLLABLE with generous bottom padding */}
       <div
         className="flex-1 min-h-0 overflow-y-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        style={{ paddingBottom: '120px' }}
+        style={{ paddingBottom: 'max(10rem, calc(6rem + env(safe-area-inset-bottom)))' }}
       >
         <AnimatePresence mode="popLayout">
           {pendingTasks.length === 0 && todaysTasks.length === 0 ? (
