@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, Loader2, Pause, Play, Volume2 } from 'lucide-react';
+import { AlertCircle, Loader2, Pause, Play } from 'lucide-react';
 import {
   type YouTubeApi,
   type YouTubePlayer,
   loadYouTubeApi,
 } from './youtubeApi';
+import { useSparkStore } from '@/store/useSparkStore';
 import { useTranslation } from '@/i18n';
 
 type PlayerStatus = 'loading' | 'ready' | 'error';
@@ -45,21 +46,18 @@ export function SparkVideoPlayer({
       swipeNext: 'Swipe up for the next one',
       pauseVideo: 'Pause video',
       playVideo: 'Play video',
-      soundOn: 'Sound on',
     },
     fr: {
       videoUnavailable: 'Vidéo indisponible',
       swipeNext: 'Glissez vers le haut pour la suivante',
       pauseVideo: 'Mettre la vidéo en pause',
       playVideo: 'Lire la vidéo',
-      soundOn: 'Son activé',
     },
     ar: {
       videoUnavailable: 'الفيديو غير متاح',
       swipeNext: 'اسحب للأعلى للمقطع التالي',
       pauseVideo: 'إيقاف الفيديو مؤقتاً',
       playVideo: 'تشغيل الفيديو',
-      soundOn: 'الصوت مفعّل',
     },
   } as const;
   const c = copy[locale] ?? copy.en;
@@ -462,6 +460,10 @@ export function SparkVideoPlayer({
               clearUnmuteTimers();
               setStatus('error');
               setIsPlaying(false);
+              useSparkStore.getState().logAnalyticsEvent({
+                type: 'video_error',
+                videoId: youtubeId,
+              });
             },
           },
         });
@@ -573,7 +575,6 @@ export function SparkVideoPlayer({
   ]);
 
   const loading = isActive && status === 'loading';
-  const showSoundBadge = isActive && status === 'ready' && soundEnabled && allowAutoplaySound;
 
   const icon = useMemo(() => {
     if (playIndicator === 'play') return <Play size={28} className="text-white ml-1" />;
@@ -676,22 +677,6 @@ export function SparkVideoPlayer({
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showSoundBadge && (
-          <motion.div
-            className="absolute top-[max(4.25rem,calc(2.5rem+env(safe-area-inset-top)))] left-1/2 -translate-x-1/2 z-40 pointer-events-none"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="px-3 py-1.5 rounded-full bg-black/60 border border-white/15 text-white/90 text-xs font-medium backdrop-blur-md flex items-center gap-1.5">
-              <Volume2 size={14} className="text-emerald-300" />
-              {c.soundOn}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
