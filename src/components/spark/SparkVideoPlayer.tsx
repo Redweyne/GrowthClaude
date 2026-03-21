@@ -22,6 +22,8 @@ interface SparkVideoPlayerProps {
   allowAutoplaySound?: boolean;
   disableTapToggle?: boolean;
   onAutoplaySoundBlocked?: () => void;
+  /** Called when the video or API fails irrecoverably */
+  onVideoError?: () => void;
 }
 
 const TAP_MAX_MOVE_PX = 10;
@@ -38,6 +40,7 @@ export function SparkVideoPlayer({
   allowAutoplaySound = false,
   disableTapToggle = false,
   onAutoplaySoundBlocked,
+  onVideoError,
 }: SparkVideoPlayerProps) {
   const { locale } = useTranslation();
   const copy = {
@@ -71,6 +74,7 @@ export function SparkVideoPlayer({
   const soundRef = useRef(soundEnabled);
   const allowAutoplaySoundRef = useRef(allowAutoplaySound);
   const onAutoplaySoundBlockedRef = useRef(onAutoplaySoundBlocked);
+  const onVideoErrorRef = useRef(onVideoError);
   const userPausedRef = useRef(false);
   const readyRef = useRef(false);
 
@@ -332,6 +336,7 @@ export function SparkVideoPlayer({
     soundRef.current = soundEnabled;
     allowAutoplaySoundRef.current = allowAutoplaySound;
     onAutoplaySoundBlockedRef.current = onAutoplaySoundBlocked;
+    onVideoErrorRef.current = onVideoError;
 
     if (!wasSoundEnabled && soundEnabled) {
       soundBlockedForActivationRef.current = false;
@@ -341,7 +346,7 @@ export function SparkVideoPlayer({
       userPausedRef.current = false;
       soundBlockedForActivationRef.current = false;
     }
-  }, [allowAutoplaySound, isActive, onAutoplaySoundBlocked, soundEnabled]);
+  }, [allowAutoplaySound, isActive, onAutoplaySoundBlocked, onVideoError, soundEnabled]);
 
   useEffect(() => {
     if (!hostRef.current || playerRef.current) return;
@@ -464,6 +469,7 @@ export function SparkVideoPlayer({
                 type: 'video_error',
                 videoId: youtubeId,
               });
+              onVideoErrorRef.current?.();
             },
           },
         });
@@ -474,6 +480,7 @@ export function SparkVideoPlayer({
         clearUnmuteTimers();
         setStatus('error');
         setIsPlaying(false);
+        onVideoErrorRef.current?.();
       });
 
     return () => {

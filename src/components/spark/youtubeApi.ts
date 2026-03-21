@@ -61,24 +61,18 @@ function resolveExistingApi(): YouTubeApi | null {
   return window.YT;
 }
 
-export function loadYouTubeApi(): Promise<YouTubeApi> {
-  const existingApi = resolveExistingApi();
-  if (existingApi) {
-    return Promise.resolve(existingApi);
-  }
+const MAX_RETRIES = 3;
+const RETRY_BASE_DELAY_MS = 1500;
 
-  if (youtubeApiPromise) {
-    return youtubeApiPromise;
-  }
-
-  youtubeApiPromise = new Promise<YouTubeApi>((resolve, reject) => {
+function loadYouTubeApiOnce(): Promise<YouTubeApi> {
+  return new Promise<YouTubeApi>((resolve, reject) => {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       reject(new Error('YouTube API can only be loaded in the browser.'));
       return;
     }
 
     const scriptSelector = 'script[data-spark-youtube-api="true"]';
-    const existingScript = document.querySelector<HTMLScriptElement>(scriptSelector);
+    let existingScript = document.querySelector<HTMLScriptElement>(scriptSelector);
 
     const cleanup = (pollTimer: number, timeoutTimer: number) => {
       window.clearInterval(pollTimer);
@@ -101,7 +95,6 @@ export function loadYouTubeApi(): Promise<YouTubeApi> {
 
     const timeoutTimer = window.setTimeout(() => {
       cleanup(pollTimer, timeoutTimer);
-      youtubeApiPromise = null;
       reject(new Error('YouTube IFrame API load timed out.'));
     }, 20000);
 
@@ -110,19 +103,59 @@ export function loadYouTubeApi(): Promise<YouTubeApi> {
       finish(pollTimer, timeoutTimer);
     };
 
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.src = YOUTUBE_IFRAME_API_URL;
-      script.async = true;
-      script.dataset.sparkYoutubeApi = 'true';
-      script.onerror = () => {
-        cleanup(pollTimer, timeoutTimer);
-        youtubeApiPromise = null;
-        reject(new Error('Failed to load YouTube IFrame API script.'));
-      };
-      document.head.appendChild(script);
+    if (existingScript) {
+      // Remove stale script from a previous failed attempt so we get a fresh load
+      existingScript.remove();
+      existingScript = null;
     }
+
+    const script = document.createElement('script');
+    script.src = YOUTUBE_IFRAME_API_URL;
+    script.async = true;
+    script.dataset.sparkYoutubeApi = 'true';
+    script.onerror = () => {
+      cleanup(pollTimer, timeoutTimer);
+      script.remove();
+      reject(new Error('Failed to load YouTube IFrame API script.'));
+    };
+    document.head.appendChild(script);
   });
+}
+
+export function loadYouTubeApi(): Promise<YouTubeApi> {
+  const existingApi = resolveExistingApi();
+  if (existingApi) {
+    return Promise.resolve(existingApi);
+  }
+
+  if (youtubeApiPromise) {
+    return youtubeApiPromise;
+  }
+
+  youtubeApiPromise = (async () => {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      // Check if API appeared between retries (e.g. another component loaded it)
+      const api = resolveExistingApi();
+      if (api) return api;
+
+      try {
+        return await loadYouTubeApiOnce();
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.warn(`[youtubeApi] Attempt ${attempt + 1}/${MAX_RETRIES} failed:`, lastError.message);
+
+        if (attempt < MAX_RETRIES - 1) {
+          await new Promise((r) => setTimeout(r, RETRY_BASE_DELAY_MS * (attempt + 1)));
+        }
+      }
+    }
+
+    // All retries exhausted
+    youtubeApiPromise = null;
+    throw lastError ?? new Error('Failed to load YouTube API after retries.');
+  })();
 
   return youtubeApiPromise;
 }

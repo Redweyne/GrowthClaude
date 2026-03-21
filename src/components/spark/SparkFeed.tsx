@@ -127,6 +127,17 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
     setSoundWanted(false);
   }, []);
 
+  // Auto-skip to the next video when one fails (e.g. deleted from YouTube)
+  const handleVideoError = useCallback(() => {
+    if (activeIndexRef.current < playlist.length - 1) {
+      // Small delay so the error state is visible briefly before skipping
+      const timer = window.setTimeout(() => {
+        scrollToIndex(activeIndexRef.current + 1);
+      }, 800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [playlist.length, scrollToIndex]);
+
   useEffect(() => {
     activeIndexRef.current = activeIndex;
   }, [activeIndex]);
@@ -294,6 +305,7 @@ export function SparkFeed({ onExit }: SparkFeedProps) {
               soundEnabled={soundEnabled}
               allowAutoplaySound={soundGestureUnlocked}
               onAutoplaySoundBlocked={handleAutoplaySoundBlocked}
+              onVideoError={handleVideoError}
             />
           </div>
         </div>
