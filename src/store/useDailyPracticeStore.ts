@@ -33,6 +33,14 @@ import modernWisdomWorld from '@/content/modernWisdom';
 // STATE INTERFACE
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Persisted session for redo lessons — survives navigation and refresh
+export interface RedoSession {
+  lessonId: string;
+  lessonTitle: string;
+  phase: 'lesson' | 'echo' | 'exercises';
+  exercisesCompleted: string[];
+}
+
 interface DailyPracticeState {
   // Today's progress
   todayProgress: DailyProgress | null;
@@ -45,6 +53,9 @@ interface DailyPracticeState {
 
   // Flag for when user has seen today's flow
   hasInitializedToday: boolean;
+
+  // Redo session — persisted so users can leave and return
+  redoSession: RedoSession | null;
 }
 
 interface DailyPracticeActions {
@@ -82,6 +93,12 @@ interface DailyPracticeActions {
   completeCurrentWorld: () => void;
   startNextWorld: (nextWorld: FlexibleWorld) => void;
 
+  // Redo session
+  startRedoSession: (lessonId: string, lessonTitle: string) => void;
+  advanceRedoPhase: (phase: RedoSession['phase']) => void;
+  completeRedoExercise: (exerciseId: string) => void;
+  clearRedoSession: () => void;
+
   // Reset
   resetDailyPractice: () => void;
 }
@@ -95,6 +112,7 @@ const initialState: DailyPracticeState = {
   globalCalendar: null,
   pastWorldAccess: [],
   hasInitializedToday: false,
+  redoSession: null,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -491,6 +509,43 @@ export const useDailyPracticeStore = create<DailyPracticeState & DailyPracticeAc
       // ═══════════════════════════════════════════════════════════════════════
       // RESET
       // ═══════════════════════════════════════════════════════════════════════
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // REDO SESSION
+      // ═══════════════════════════════════════════════════════════════════════
+
+      startRedoSession: (lessonId: string, lessonTitle: string) => {
+        set({
+          redoSession: {
+            lessonId,
+            lessonTitle,
+            phase: 'lesson',
+            exercisesCompleted: [],
+          },
+        });
+      },
+
+      advanceRedoPhase: (phase: RedoSession['phase']) => {
+        const { redoSession } = get();
+        if (!redoSession) return;
+        set({ redoSession: { ...redoSession, phase } });
+      },
+
+      completeRedoExercise: (exerciseId: string) => {
+        const { redoSession } = get();
+        if (!redoSession) return;
+        if (redoSession.exercisesCompleted.includes(exerciseId)) return;
+        set({
+          redoSession: {
+            ...redoSession,
+            exercisesCompleted: [...redoSession.exercisesCompleted, exerciseId],
+          },
+        });
+      },
+
+      clearRedoSession: () => {
+        set({ redoSession: null });
+      },
 
       resetDailyPractice: () => {
         set(initialState);

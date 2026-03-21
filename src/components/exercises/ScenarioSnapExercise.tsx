@@ -247,13 +247,13 @@ export function ScenarioSnapExercise({
   // Frame view
   return (
     <motion.div
-      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col`}
+      className={`h-[100dvh] bg-stone-950 light:bg-stone-50 flex flex-col overflow-y-auto`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Header */}
-      <div className="px-6 pt-6 pb-2">
+      <div className="px-6 pt-6 pb-2 flex-shrink-0">
         <button
           onClick={onBack}
           className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}
@@ -269,7 +269,7 @@ export function ScenarioSnapExercise({
       </div>
 
       {/* Frame content */}
-      <div className="flex-1 flex flex-col justify-center px-6 pb-16" onClick={skipTypewriter}>
+      <div className="flex-1 flex flex-col justify-center px-6 pb-32" onClick={skipTypewriter}>
         <AnimatePresence mode="wait">
           <motion.div
             key={currentFrameId}

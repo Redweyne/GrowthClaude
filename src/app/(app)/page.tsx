@@ -147,6 +147,11 @@ function HomeInner() {
     completeExercise,
     markDailyComplete,
     todayProgress,
+    redoSession,
+    startRedoSession,
+    advanceRedoPhase,
+    completeRedoExercise,
+    clearRedoSession,
   } = useDailyPracticeStore();
 
   // Spark store
@@ -401,6 +406,20 @@ function HomeInner() {
     return null;
   }, [todayProgress?.lessonId, allWorlds]);
 
+  // Look up exercises for the persisted redo session (survives navigation + refresh)
+  const redoSessionExercises = useMemo(() => {
+    const lessonId = redoSession?.lessonId;
+    if (!lessonId) return null;
+    for (const world of allWorlds) {
+      for (const chapter of world.chapters) {
+        for (const lesson of chapter.lessons) {
+          if (lesson.id === lessonId) return lesson.exercises;
+        }
+      }
+    }
+    return null;
+  }, [redoSession?.lessonId, allWorlds]);
+
   // Safety net: redirect away from exercises view if no exercises are available.
   // exercisesForSession is ephemeral React state lost on refresh; todaysLesson is null
   // when dayNumber > world size. The persisted lessonId fallback handles most cases,
@@ -422,7 +441,8 @@ function HomeInner() {
         }
       }
     }
-    if (!hasSession && !hasToday && !hasPersisted) {
+    const hasRedo = redoSessionExercises && redoSessionExercises.length > 0;
+    if (!hasSession && !hasToday && !hasPersisted && !hasRedo) {
       markDailyComplete();
       setCurrentView('home');
     }
@@ -563,6 +583,8 @@ function HomeInner() {
 
     setSelectedFlexibleLesson(lesson);
     setFlexibleLessonProgress(null);
+    // Persist redo session so progress survives navigation
+    startRedoSession(lesson.id, lesson.title);
     setCurrentView('lesson');
   };
 
@@ -603,6 +625,11 @@ function HomeInner() {
     setSelectedFlexibleLesson(null);
     setFlexibleLessonProgress(null);
 
+    // Advance redo session to echo phase
+    if (redoSession) {
+      advanceRedoPhase('echo');
+    }
+
     // Show coaching before echo if first session
     // Set skipEchoIntro to true so MandatoryEchoFlow skips its own intro (prevents double popup)
     if (isFirstSession() && !isCoachingStepSeen('afterLessonBeforeEcho')) {
@@ -622,6 +649,11 @@ function HomeInner() {
   const handleMandatoryEchoComplete = (reflectionId: string) => {
     completeMandatoryEcho(reflectionId);
 
+    // Advance redo session to exercises phase
+    if (redoSession) {
+      advanceRedoPhase('exercises');
+    }
+
     // Show coaching before exercises if first session
     if (isFirstSession() && !isCoachingStepSeen('afterEchoBeforeExercises')) {
       showCoaching('afterEchoBeforeExercises');
@@ -634,6 +666,10 @@ function HomeInner() {
   // Handle exercise completion
   const handleExerciseComplete = (exerciseId: string, response?: string) => {
     completeExercise(exerciseId, response);
+    // Track in redo session too
+    if (redoSession) {
+      completeRedoExercise(exerciseId);
+    }
   };
 
   // Handle all exercises done
@@ -641,9 +677,10 @@ function HomeInner() {
     // Mark the daily practice as complete - this is critical!
     markDailyComplete();
 
-    // Clear the session exercises state
+    // Clear the session exercises state and redo session
     setExercisesForSession(null);
     setCompletedLessonInfo(null);
+    clearRedoSession();
 
     // Show celebration coaching if first session
     if (isFirstSession() && !isCoachingStepSeen('afterFirstDayComplete')) {
@@ -1086,9 +1123,9 @@ function HomeInner() {
     );
   }
 
-  // Exercise fallbacks computed above (persistedLessonExercises via useMemo, before conditional returns)
-  const availableExercises = exercisesForSession || persistedLessonExercises || todaysLesson?.exercises;
-  const exerciseLessonTitle = completedLessonInfo?.title || todaysLesson?.title || c.practiceFallback;
+  // Exercise fallbacks: ephemeral state → redo session (persisted) → today's persisted → today's lesson
+  const availableExercises = exercisesForSession || redoSessionExercises || persistedLessonExercises || todaysLesson?.exercises;
+  const exerciseLessonTitle = completedLessonInfo?.title || redoSession?.lessonTitle || todaysLesson?.title || c.practiceFallback;
 
   if (currentView === 'exercises') {
     // Check if we have exercises available

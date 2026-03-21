@@ -250,13 +250,13 @@ export function HeatCheckExercise({
   // Grid placement view
   return (
     <motion.div
-      className="min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col"
+      className="h-[100dvh] bg-stone-950 light:bg-stone-50 flex flex-col overflow-y-auto"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       {/* Header */}
-      <div className="px-6 pt-6 pb-2">
+      <div className="px-6 pt-6 pb-2 flex-shrink-0">
         <button
           onClick={onBack}
           className={`flex items-center gap-1 text-stone-500 light:text-stone-600 hover:text-stone-300 light:hover:text-stone-900 transition-colors text-sm mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}
@@ -296,7 +296,7 @@ export function HeatCheckExercise({
       )}
 
       {/* Grid */}
-      <div className="flex-1 px-6 pb-4 flex flex-col items-center justify-center">
+      <div className="flex-1 px-6 pb-4 flex flex-col items-center justify-center flex-shrink-0">
         {/* Y-axis labels — placed ABOVE the grid container so they don't overflow the screen */}
         <div className="w-full max-w-sm flex justify-between mb-1 px-1">
           <span className="text-[10px] text-stone-500 light:text-stone-600 truncate max-w-[45%]">
@@ -379,7 +379,7 @@ export function HeatCheckExercise({
 
       {/* Place button */}
       {!allPlaced && (
-        <div className="px-6 pb-20">
+        <div className="px-6 pb-32 flex-shrink-0">
           <p className="text-stone-500 light:text-stone-600 text-xs text-center mb-3">
             {t('exercises.dragToPlace')}
           </p>

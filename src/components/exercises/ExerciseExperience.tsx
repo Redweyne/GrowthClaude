@@ -198,7 +198,7 @@ export function ExerciseExperience({
   // Exercise list view
   return (
     <motion.div
-      className={`min-h-screen bg-stone-950 light:bg-stone-50 flex flex-col ${isRTL ? 'rtl' : ''}`}
+      className={`h-[100dvh] bg-stone-950 light:bg-stone-50 flex flex-col overflow-y-auto ${isRTL ? 'rtl' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
