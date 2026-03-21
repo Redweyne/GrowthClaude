@@ -1039,9 +1039,11 @@ function HomeInner() {
   // Settings
   if (currentView === 'settings') {
     return (
-      <>
-        <SettingsPanel onBack={() => setCurrentView('home')} />
-      </>
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 min-h-0">
+          <SettingsPanel onBack={() => setCurrentView('home')} />
+        </main>
+      </div>
     );
   }
 

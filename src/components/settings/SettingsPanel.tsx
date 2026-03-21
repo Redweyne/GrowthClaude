@@ -103,7 +103,7 @@ export function SettingsPanel({ onBack }: SettingsPanelProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 light:from-stone-50 light:via-stone-100 light:to-stone-50">
+    <div className="h-full overflow-y-auto bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 light:from-stone-50 light:via-stone-100 light:to-stone-50">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
