@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabaseService';
+import { z } from 'zod';
+
+const AdminQuerySchema = z.object({
+  action: z.enum(['overview', 'users', 'user-detail', 'sessions', 'session-detail', 'events', 'analytics', 'marketing']).default('overview'),
+  dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  page: z.coerce.number().int().min(1).max(10000).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+  userId: z.string().max(200).optional(),
+  sessionId: z.string().max(200).optional(),
+  type: z.string().max(100).optional(),
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN API - Protected endpoint for the admin dashboard
@@ -42,9 +54,14 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action') || 'overview';
-  const dateFrom = searchParams.get('dateFrom') || undefined;
-  const dateTo = searchParams.get('dateTo') || undefined;
+  const params = Object.fromEntries(searchParams.entries());
+  const parsed = AdminQuerySchema.safeParse(params);
+
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid query parameters', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+  }
+
+  const { action, dateFrom, dateTo, page, limit, userId, sessionId, type: eventType } = parsed.data;
 
   try {
     switch (action) {
@@ -53,33 +70,21 @@ export async function GET(request: NextRequest) {
       case 'users':
         return NextResponse.json(await getUsers());
       case 'user-detail': {
-        const userId = searchParams.get('userId');
         if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
         return NextResponse.json(await getUserDetail(userId));
       }
-      case 'sessions': {
-        const page = parseInt(searchParams.get('page') || '1', 10);
-        const limit = parseInt(searchParams.get('limit') || '30', 10);
+      case 'sessions':
         return NextResponse.json(await getSessions(page, limit, dateFrom, dateTo));
-      }
       case 'session-detail': {
-        const sessionId = searchParams.get('sessionId');
         if (!sessionId) return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
         return NextResponse.json(await getSessionDetail(sessionId));
       }
-      case 'events': {
-        const page = parseInt(searchParams.get('page') || '1', 10);
-        const limit = parseInt(searchParams.get('limit') || '50', 10);
-        const eventType = searchParams.get('type') || undefined;
-        const userId = searchParams.get('userId') || undefined;
+      case 'events':
         return NextResponse.json(await getEvents(page, limit, eventType, userId, dateFrom, dateTo));
-      }
       case 'analytics':
         return NextResponse.json(await getAnalytics(dateFrom, dateTo));
       case 'marketing':
         return NextResponse.json(await getMarketing(dateFrom, dateTo));
-      default:
-        return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
   } catch (error) {
     console.error('[Admin API] Error:', error);

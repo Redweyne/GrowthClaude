@@ -28,6 +28,7 @@ import { ProgressDashboard } from '@/components/progress';
 import { IdentityScreen } from '@/components/identity';
 import { TransformationStory, ShareableStoryCard } from '@/components/story';
 import { EchoPrompt, EchoReview, EchoInbox } from '@/components/echoes';
+import { AgoraView } from '@/components/agora';
 import { SettingsPanel } from '@/components/settings';
 import { useTransformationStory } from '@/hooks';
 import { TransformationStory as TransformationStoryType } from '@/types/story';
@@ -67,7 +68,8 @@ type AppView =
   | 'tasks'
   | 'worlds'
   | 'spark'
-  | 'spark-unlock';
+  | 'spark-unlock'
+  | 'agora';
 
 export default function Home() {
   return (
@@ -986,6 +988,17 @@ function HomeInner() {
     );
   }
 
+  // The Agora — community feedback board
+  if (currentView === 'agora') {
+    return (
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
+        <main className="flex-1 min-h-0">
+          <AgoraView onClose={() => setCurrentView('home')} />
+        </main>
+      </div>
+    );
+  }
+
   // Settings
   if (currentView === 'settings') {
     return (
@@ -1141,6 +1154,7 @@ function HomeInner() {
             onOpenDashboard={() => setCurrentView('dashboard')}
             onExploreWorlds={() => setCurrentView('worlds')}
             onOpenSpark={() => setCurrentView('spark')}
+            onOpenAgora={() => setCurrentView('agora')}
             isSparkForcedClosed={isSparkForcedClosed()}
           />
         </main>

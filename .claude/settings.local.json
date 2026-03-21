@@ -80,7 +80,38 @@
       "Bash(cp -r \"src/app/admin\" \"src/app/\\(app\\)/admin\")",
       "Bash(grep -q '\"\"stripe\"\"' package.json)",
       "Bash(npm install:*)",
-      "Bash(wc -l \"c:/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\(app\\)/page.tsx\")"
+      "Bash(wc -l \"c:/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\(app\\)/page.tsx\")",
+      "Bash(pip install:*)",
+      "Bash(apt-get install:*)",
+      "Bash(choco install:*)",
+      "Bash(plink -ssh root@149.102.143.10 -pw Aa55337278 \"echo connected\")",
+      "Bash(export SSH_ASKPASS_REQUIRE=force SSH_ASKPASS=/tmp/ssh_pass.sh DISPLAY=:0)",
+      "Bash(export SSH_ASKPASS_REQUIRE=force)",
+      "Bash(export SSH_ASKPASS=\"c:/Users/aposl/ssh_pass.sh\")",
+      "Bash(ssh -o StrictHostKeyChecking=no root@149.102.143.10 \"grep ''stripe/webhook'' /var/log/nginx/access.log 2>/dev/null | tail -10; echo ''---''; grep ''stripe/webhook'' /var/log/nginx/Solonsway_access.log 2>/dev/null | tail -10\")",
+      "Bash(ssh -o StrictHostKeyChecking=no root@149.102.143.10 \"cd /var/www/Solonsway && cat package.json | grep -A2 ''\"\"build\"\"''\")",
+      "Bash(SSH_ASKPASS_REQUIRE=force SSH_ASKPASS=\"c:/Users/aposl/ssh_pass.sh\" ssh -o StrictHostKeyChecking=no root@147.93.87.216 \"cd /var/www/solonsway && git pull origin Opencode1 2>&1\")",
+      "Bash(SSH_ASKPASS_REQUIRE=force SSH_ASKPASS=\"c:/Users/aposl/ssh_pass.sh\" setsid ssh -o StrictHostKeyChecking=no root@147.93.87.216 \"cd /var/www/solonsway && git pull origin Opencode1 2>&1\")",
+      "Bash(SSH_ASKPASS=\"c:/Users/aposl/ssh_pass.sh\" DISPLAY=:0 SSH_ASKPASS_REQUIRE=force ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password root@147.93.87.216 \"echo connected\")",
+      "Bash(xxd)",
+      "Bash(grep -o \"\"command\"\":\"\"[^\"\"]*ssh[^\"\"]*147[^\"\"]*\"\" C:/Users/aposl/.claude/projects/c--Users-aposl-OneDrive-Desktop-GrowthClaude-GrowthClaude/9e7f4e9e-c6d6-47b4-8dae-510dfc3875c2.jsonl)",
+      "Read(//dev/**)",
+      "Bash(export SSH_ASKPASS_REQUIRE=force SSH_ASKPASS=\"c:/Users/aposl/ssh_pass.sh\" DISPLAY=:0)",
+      "Bash(grep -r \"ErrorBoundary\\\\|error\\\\.tsx\\\\|global-error\" /c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src --include=*.tsx --include=*.ts)",
+      "Bash(wc -l \"/c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\(app\\)/page.tsx\")",
+      "Bash(ls -la /c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\\\\\(marketing\\\\\\)/)",
+      "Bash(ls -la /c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\\\\\(app\\\\\\)/)",
+      "Bash(find /c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude -type f \\\\\\(-name *.email.ts -o -name *email* -o -name *marketing* \\\\\\))",
+      "Bash(ls c:/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\\\\\(marketing\\\\\\)/)",
+      "Bash(ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@149.102.143.10 \"tail -50 /var/log/nginx/error.log; echo ''---NGINX STATUS---''; nginx -t; echo ''---PORT CHECK---''; ss -tlnp | grep 3002; echo ''---CURL FULL---''; curl -v http://127.0.0.1:3002 2>&1 | head -30; echo ''---PM2 LOGS---''; pm2 logs Solonsway --lines 15 --nostream 2>&1\")",
+      "Bash(npm run:*)",
+      "Bash(cat /c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\\\\\(app\\\\\\)/page.tsx)",
+      "Bash(cat /c/Users/aposl/OneDrive/Desktop/GrowthClaude/GrowthClaude/src/app/\\\\\\(app\\\\\\)/admin/page.tsx)",
+      "Bash(wc -l 'c:\\\\Users\\\\aposl\\\\OneDrive\\\\Desktop\\\\GrowthClaude\\\\GrowthClaude\\\\src\\\\app\\\\\\(app\\)\\\\page.tsx')"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\aposl",
+      "\\tmp"
     ]
   }
 }

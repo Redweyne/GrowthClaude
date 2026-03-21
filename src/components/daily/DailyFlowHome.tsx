@@ -2,12 +2,13 @@
 
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Heart, Dumbbell, ChevronRight, ChevronLeft, Zap, Check, BarChart3, Map, MessageCircle } from 'lucide-react';
+import { BookOpen, Heart, Dumbbell, ChevronRight, ChevronLeft, Zap, Check, BarChart3, Map, MessageCircle, Landmark } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { AmbientBackground } from '@/components/ambient';
 import { WisdomText } from '@/components/ui/WisdomText';
 import { SparkLockedCard } from '@/components/spark/SparkLockedCard';
+import { AgoraCTA } from '@/components/agora/AgoraCTA';
 import { HeroGreeting } from '@/components/home/HeroGreeting';
 import { getLevelFromXp, getXpProgress } from '@/types';
 import { useTranslation } from '@/i18n';
@@ -68,6 +69,9 @@ interface DailyFlowHomeProps {
   // Spark
   onOpenSpark?: () => void;
   isSparkForcedClosed?: boolean;
+
+  // Agora
+  onOpenAgora?: () => void;
 }
 
 export function DailyFlowHome({
@@ -99,6 +103,7 @@ export function DailyFlowHome({
   onExploreWorlds,
   onOpenSpark,
   isSparkForcedClosed,
+  onOpenAgora,
 }: DailyFlowHomeProps) {
   const { t, isRTL } = useTranslation();
   const { lastLessonDate, completedLessons, transformationGoal, streakShieldCount } = useStore();
@@ -248,6 +253,13 @@ export function DailyFlowHome({
                 isUnlocked={false}
                 onOpen={onOpenSpark}
               />
+            </div>
+          )}
+
+          {/* The Agora — community feedback CTA */}
+          {onOpenAgora && (
+            <div className="mb-4">
+              <AgoraCTA onClick={onOpenAgora} />
             </div>
           )}
 

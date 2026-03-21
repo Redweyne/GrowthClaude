@@ -1654,6 +1654,42 @@ const en = {
       copy: '© 2026 SolonsWay. All rights reserved.',
     },
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // THE AGORA — Community Feedback Board
+  // ─────────────────────────────────────────────────────────────────────────
+  agora: {
+    title: 'The Agora',
+    subtitle: 'Community voices',
+    ctaTitle: 'Share Your Voice',
+    ctaSubtitle: 'Shape the future of Solon\'s Way',
+    filterAll: 'All',
+    filterIdeas: 'Ideas',
+    filterBugs: 'Bugs',
+    filterLove: 'Love',
+    filterQuestions: 'Questions',
+    sortTop: 'Top',
+    sortNew: 'New',
+    posts: 'posts',
+    newPost: 'New Post',
+    pickCategory: 'What kind of post?',
+    postPlaceholder: 'Share an idea, report a bug, or tell us what you love...',
+    minWords: 'words min',
+    submitPost: 'Post to the Agora',
+    posting: 'Posting...',
+    postPublished: 'Your voice has been heard',
+    thankYou: 'Thank you for shaping this journey',
+    categoryIdea: 'Idea',
+    categoryBug: 'Bug',
+    categoryLove: 'Love',
+    categoryQuestion: 'Question',
+    statusHeard: 'Heard',
+    statusInProgress: 'In Progress',
+    statusDone: 'Done',
+    emptyTitle: 'The Agora is quiet',
+    emptyDescription: 'Be the first to share your thoughts and shape this community.',
+    votes: 'votes',
+  },
 } as const;
 
 export default en;

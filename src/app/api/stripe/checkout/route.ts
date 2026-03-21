@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe, PRICE_IDS } from '@/lib/stripe';
+import { z } from 'zod';
+
+const CheckoutSchema = z.object({
+  tier: z.enum(['supporter', 'founding_member']),
+  email: z.string().email().max(320).optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const { tier, email } = await req.json();
+    const body = await req.json();
+    const parsed = CheckoutSchema.safeParse(body);
 
-    if (!tier || !PRICE_IDS[tier]) {
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { tier, email } = parsed.data;
+
+    if (!PRICE_IDS[tier]) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
     }
 

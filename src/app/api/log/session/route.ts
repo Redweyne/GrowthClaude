@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabaseService';
 import { parseUserAgent, resolveGeo, getClientIp } from '@/lib/activityLogger.server';
+import { z } from 'zod';
+
+const SessionSchema = z.object({
+  userId: z.string().max(200).optional(),
+  userName: z.string().max(200).optional(),
+  appLanguage: z.string().max(10).optional(),
+  screenWidth: z.union([z.string(), z.number()]).optional(),
+  screenHeight: z.union([z.string(), z.number()]).optional(),
+  referrer: z.string().max(2000).optional(),
+});
 
 export async function POST(request: Request) {
   try {
@@ -10,6 +20,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+    const parsed = SessionSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ sessionId: null }, { status: 200 });
+    }
+
     const {
       userId,
       userName,
@@ -17,7 +33,7 @@ export async function POST(request: Request) {
       screenWidth,
       screenHeight,
       referrer,
-    } = body;
+    } = parsed.data;
 
     const ip = getClientIp(request);
     const userAgentString = request.headers.get('user-agent') || '';
@@ -39,8 +55,8 @@ export async function POST(request: Request) {
         country: geo?.country || null,
         city: geo?.city || null,
         region: geo?.region || null,
-        screen_width: screenWidth ? parseInt(screenWidth, 10) : null,
-        screen_height: screenHeight ? parseInt(screenHeight, 10) : null,
+        screen_width: screenWidth ? parseInt(String(screenWidth), 10) : null,
+        screen_height: screenHeight ? parseInt(String(screenHeight), 10) : null,
         app_language: appLanguage || null,
         referrer: referrer || null,
       })

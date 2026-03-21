@@ -1,18 +1,26 @@
 import { NextResponse } from 'next/server';
 import { getServiceClient } from '@/lib/supabaseService';
+import { z } from 'zod';
 
-interface IncomingEvent {
-  eventType: string;
-  eventData?: string | null;
-  view?: string | null;
-  timestamp?: string;
-}
+const EventSchema = z.object({
+  eventType: z.string().max(100),
+  eventData: z.string().max(5000).nullish(),
+  view: z.string().max(100).nullish(),
+  timestamp: z.string().max(50).optional(),
+});
 
-interface IncomingPageView {
-  viewName: string;
-  enteredAt: string;
-  duration?: number | null;
-}
+const PageViewSchema = z.object({
+  viewName: z.string().max(100),
+  enteredAt: z.string().max(50),
+  duration: z.number().min(0).max(86400).nullish(),
+});
+
+const EventLogSchema = z.object({
+  sessionId: z.string().uuid(),
+  userId: z.string().max(200).optional(),
+  events: z.array(EventSchema).max(100).optional(),
+  pageViews: z.array(PageViewSchema).max(100).optional(),
+});
 
 export async function POST(request: Request) {
   try {
@@ -22,12 +30,13 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { sessionId, userId, events, pageViews } = body as {
-      sessionId: string;
-      userId?: string;
-      events?: IncomingEvent[];
-      pageViews?: IncomingPageView[];
-    };
+    const parsed = EventLogSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const { sessionId, userId, events, pageViews } = parsed.data;
 
     if (!sessionId) {
       return NextResponse.json({ ok: true });
@@ -35,15 +44,11 @@ export async function POST(request: Request) {
 
     const promises: PromiseLike<unknown>[] = [];
 
-    // Cap batch sizes to prevent abuse
-    const cappedEvents = events?.slice(0, 100);
-    const cappedPageViews = pageViews?.slice(0, 100);
-
-    // Batch insert events
-    if (cappedEvents && cappedEvents.length > 0) {
+    // Batch insert events (zod already caps at 100)
+    if (events && events.length > 0) {
       promises.push(
         supabase.from('activity_events').insert(
-          cappedEvents.map((e) => ({
+          events.map((e) => ({
             session_id: sessionId,
             user_id: userId || null,
             event_type: e.eventType,
@@ -55,11 +60,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Batch insert page views
-    if (cappedPageViews && cappedPageViews.length > 0) {
+    // Batch insert page views (zod already caps at 100)
+    if (pageViews && pageViews.length > 0) {
       promises.push(
         supabase.from('activity_page_views').insert(
-          cappedPageViews.map((pv) => ({
+          pageViews.map((pv) => ({
             session_id: sessionId,
             user_id: userId || null,
             view_name: pv.viewName,
