@@ -18,7 +18,7 @@ export default async function SitePage() {
   const { t } = await getSiteTranslation();
 
   return (
-    <main className="min-h-screen bg-[#0a0908] text-amber-50 overflow-x-hidden">
+    <main className="h-screen overflow-y-auto bg-[#0a0908] text-amber-50 overflow-x-hidden">
       <SiteNav />
       <HeroSection />
       <ProofStrip />

@@ -19,7 +19,7 @@ export default function AppError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-stone-950 flex items-center justify-center p-6">
+    <div className="h-screen overflow-y-auto bg-stone-950 flex items-center justify-center p-6">
       <div className="text-center max-w-sm">
         {/* Decorative element */}
         <div className="text-5xl mb-6 opacity-80">
