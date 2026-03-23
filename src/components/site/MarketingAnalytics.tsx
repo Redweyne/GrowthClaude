@@ -26,12 +26,57 @@ function track(eventType: string, data?: Record<string, unknown>) {
     }).catch(() => {});
 }
 
+/** Parse UTM parameters from URL */
+function getUtmParams(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  const params = new URLSearchParams(window.location.search);
+  const utm: Record<string, string> = {};
+  for (const key of ['utm_source', 'utm_medium', 'utm_campaign']) {
+    const val = params.get(key);
+    if (val) utm[key] = val;
+  }
+  return utm;
+}
+
+/** Register the session with full visitor metadata (called once per session) */
+function registerSession() {
+  const sessionId = getSessionId();
+  if (!sessionId) return;
+  // Only register once per session
+  if (sessionStorage.getItem('sw-session-registered')) return;
+  sessionStorage.setItem('sw-session-registered', '1');
+
+  const utm = getUtmParams();
+  const payload = {
+    session_id: sessionId,
+    event_type: 'session_start',
+    event_data: {
+      referrer: document.referrer || null,
+      screen_width: window.screen.width,
+      screen_height: window.screen.height,
+      language: navigator.language || null,
+      landing_page: window.location.pathname,
+      ...utm,
+    },
+    page: '/site',
+  };
+
+  fetch('/api/log/marketing', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 export default function MarketingAnalytics() {
   const scrollMilestones = useRef(new Set<number>());
 
   useEffect(() => {
     const handleScroll = () => {
-      const pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      const scrollable = document.body.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      const pct = Math.round((window.scrollY / scrollable) * 100);
       for (const milestone of [25, 50, 75, 100]) {
         if (pct >= milestone && !scrollMilestones.current.has(milestone)) {
           scrollMilestones.current.add(milestone);
@@ -43,7 +88,11 @@ export default function MarketingAnalytics() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => { track('page_view'); }, []);
+  // Register session + track page view on mount
+  useEffect(() => {
+    registerSession();
+    track('page_view');
+  }, []);
 
   // Track CTA clicks via data-cta attributes (locale-independent)
   useEffect(() => {
@@ -56,6 +105,17 @@ export default function MarketingAnalytics() {
     };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
+  }, []);
+
+  // Track session end (time on page) when user leaves
+  useEffect(() => {
+    const startTime = Date.now();
+    const handleUnload = () => {
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      track('session_end', { duration_seconds: duration });
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
   }, []);
 
   return null;

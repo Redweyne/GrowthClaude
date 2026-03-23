@@ -5,7 +5,7 @@
 // filtering, marketing site tracking, and step-by-step user journey views.
 // ============================================================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useTranslation } from '@/i18n';
 import { describeEvent } from '@/lib/eventDescriptions';
 
@@ -127,13 +127,45 @@ interface AnalyticsData {
   languageBreakdown: { language: string; count: number }[];
 }
 
+interface MarketingVisitor {
+  sessionId: string;
+  country: string | null;
+  city: string | null;
+  region: string | null;
+  deviceType: string | null;
+  browser: string | null;
+  os: string | null;
+  referrer: string | null;
+  screenWidth: number | null;
+  screenHeight: number | null;
+  language: string | null;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  arrivedAt: string;
+  maxScrollDepth: number;
+  ctaClicks: string[];
+  durationSeconds: number | null;
+  pageViews: number;
+  totalEvents: number;
+}
+
 interface MarketingData {
   totalEvents: number;
   pageViews: number;
   uniqueVisitors: number;
   ctaClicks: number;
+  avgDuration: number | null;
+  bounceRate: number;
   scrollFunnel: { 25: number; 50: number; 75: number; 100: number };
   ctaBreakdown: { label: string; count: number }[];
+  countryBreakdown: { country: string; count: number }[];
+  deviceBreakdown: { device: string; count: number }[];
+  browserBreakdown: { browser: string; count: number }[];
+  osBreakdown: { os: string; count: number }[];
+  referrerBreakdown: { source: string; count: number }[];
+  visitorsPerDay: { date: string; visitors: number }[];
+  visitors: MarketingVisitor[];
   recentEvents: {
     id: string;
     sessionId: string;
@@ -1134,74 +1166,267 @@ function EventsTab({
 // SITE TAB (Landing Page / Marketing Analytics)
 // ═══════════════════════════════════════════════════════════════════════════
 
+function formatDuration(seconds: number | null): string {
+  if (seconds === null || seconds <= 0) return '—';
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
+function formatVisitDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function BreakdownBar({ label, count, max, color = 'purple' }: { label: string; count: number; max: number; color?: string }) {
+  const colorClass = color === 'emerald' ? 'bg-emerald-500/50' : color === 'blue' ? 'bg-blue-500/50' : color === 'amber' ? 'bg-amber-500/50' : 'bg-purple-500/50';
+  const labelColor = color === 'emerald' ? 'text-emerald-400' : color === 'blue' ? 'text-blue-400' : color === 'amber' ? 'text-amber-400' : 'text-purple-400';
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-sm">
+        <span className={labelColor}>{label}</span>
+        <span className="text-zinc-500">{count}</span>
+      </div>
+      <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+        <div className={`h-full ${colorClass} rounded-full`} style={{ width: `${Math.max((count / (max || 1)) * 100, 2)}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function SiteTab({ data }: { data: MarketingData }) {
+  const [expandedVisitor, setExpandedVisitor] = useState<string | null>(null);
+  const [visitorPage, setVisitorPage] = useState(0);
+  const visitorsPerPage = 15;
+  const pagedVisitors = data.visitors.slice(visitorPage * visitorsPerPage, (visitorPage + 1) * visitorsPerPage);
+  const totalVisitorPages = Math.ceil(data.visitors.length / visitorsPerPage);
+
   return (
     <div className="space-y-8">
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* ── Top Stats ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard label="Page Views" value={data.pageViews.toLocaleString()} accent="purple" />
         <StatCard label="Unique Visitors" value={data.uniqueVisitors.toLocaleString()} accent="blue" />
         <StatCard label="CTA Clicks" value={data.ctaClicks.toLocaleString()} accent="emerald" />
+        <StatCard label="Bounce Rate" value={`${data.bounceRate}%`} accent="amber" />
+        <StatCard label="Avg. Time on Page" value={formatDuration(data.avgDuration)} accent="blue" />
         <StatCard label="Total Events" value={data.totalEvents.toLocaleString()} />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Scroll Depth Funnel */}
+      {/* ── Daily Visitors Chart ─────────────────────────────────────── */}
+      {data.visitorsPerDay.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Scroll Depth Funnel</h3>
-          <div className="space-y-2">
-            {([25, 50, 75, 100] as const).map((pct) => {
-              const count = data.scrollFunnel[pct];
-              const max = Math.max(data.scrollFunnel[25], 1);
-              const pctWidth = (count / max) * 100;
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Visitors Per Day</h3>
+          <div className="flex items-end gap-1 h-32 bg-zinc-900/30 rounded-lg p-3">
+            {data.visitorsPerDay.map((d) => {
+              const maxV = Math.max(...data.visitorsPerDay.map(x => x.visitors), 1);
+              const h = (d.visitors / maxV) * 100;
               return (
-                <div key={pct} className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-300">{pct}% scrolled</span>
-                    <span className="text-zinc-500">{count} visitors</span>
-                  </div>
-                  <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-purple-500/60 rounded-full transition-all"
-                      style={{ width: `${Math.max(pctWidth, 2)}%` }}
-                    />
-                  </div>
+                <div key={d.date} className="flex-1 flex flex-col items-center gap-1 min-w-0" title={`${d.date}: ${d.visitors} visitors`}>
+                  <span className="text-[10px] text-zinc-500">{d.visitors}</span>
+                  <div className="w-full bg-purple-500/40 rounded-t" style={{ height: `${Math.max(h, 4)}%` }} />
+                  <span className="text-[9px] text-zinc-600 truncate w-full text-center">{d.date.slice(5)}</span>
                 </div>
               );
             })}
           </div>
         </section>
+      )}
 
-        {/* CTA Breakdown */}
+      {/* ── Breakdowns Grid ──────────────────────────────────────────── */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Countries */}
         <section>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">CTA Clicks Breakdown</h3>
-          {data.ctaBreakdown.length === 0 ? (
-            <p className="text-sm text-zinc-600">No CTA clicks yet</p>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Top Countries</h3>
+          {data.countryBreakdown.length === 0 ? (
+            <p className="text-sm text-zinc-600">No location data yet</p>
           ) : (
             <div className="space-y-2">
-              {data.ctaBreakdown.map((cta) => {
-                const max = data.ctaBreakdown[0]?.count || 1;
-                return (
-                  <div key={cta.label} className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-emerald-400">{cta.label}</span>
-                      <span className="text-zinc-500">{cta.count}</span>
-                    </div>
-                    <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500/40 rounded-full"
-                        style={{ width: `${(cta.count / max) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              {data.countryBreakdown.slice(0, 10).map((c) => (
+                <BreakdownBar key={c.country} label={c.country} count={c.count} max={data.countryBreakdown[0]?.count || 1} color="blue" />
+              ))}
             </div>
           )}
         </section>
+
+        {/* Devices */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Devices</h3>
+          {data.deviceBreakdown.length === 0 ? (
+            <p className="text-sm text-zinc-600">No device data yet</p>
+          ) : (
+            <div className="space-y-2">
+              {data.deviceBreakdown.map((d) => (
+                <BreakdownBar key={d.device} label={d.device} count={d.count} max={data.deviceBreakdown[0]?.count || 1} color="amber" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Browsers */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Browsers</h3>
+          {data.browserBreakdown.length === 0 ? (
+            <p className="text-sm text-zinc-600">No browser data yet</p>
+          ) : (
+            <div className="space-y-2">
+              {data.browserBreakdown.slice(0, 8).map((b) => (
+                <BreakdownBar key={b.browser} label={b.browser} count={b.count} max={data.browserBreakdown[0]?.count || 1} color="purple" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* OS */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Operating Systems</h3>
+          {data.osBreakdown.length === 0 ? (
+            <p className="text-sm text-zinc-600">No OS data yet</p>
+          ) : (
+            <div className="space-y-2">
+              {data.osBreakdown.slice(0, 8).map((o) => (
+                <BreakdownBar key={o.os} label={o.os} count={o.count} max={data.osBreakdown[0]?.count || 1} color="emerald" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Referrers */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Traffic Sources</h3>
+          {data.referrerBreakdown.length === 0 ? (
+            <p className="text-sm text-zinc-600">No referrer data yet</p>
+          ) : (
+            <div className="space-y-2">
+              {data.referrerBreakdown.slice(0, 8).map((r) => (
+                <BreakdownBar key={r.source} label={r.source} count={r.count} max={data.referrerBreakdown[0]?.count || 1} color="blue" />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Scroll Depth Funnel */}
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Scroll Depth Funnel</h3>
+          <div className="space-y-2">
+            {([25, 50, 75, 100] as const).map((pct) => (
+              <BreakdownBar key={pct} label={`${pct}% scrolled`} count={data.scrollFunnel[pct]} max={Math.max(data.scrollFunnel[25], 1)} color="purple" />
+            ))}
+          </div>
+        </section>
       </div>
 
-      {/* Recent Marketing Events */}
+      {/* ── CTA Breakdown ────────────────────────────────────────────── */}
+      {data.ctaBreakdown.length > 0 && (
+        <section>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">CTA Clicks Breakdown</h3>
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-2">
+            {data.ctaBreakdown.map((cta) => (
+              <BreakdownBar key={cta.label} label={cta.label} count={cta.count} max={data.ctaBreakdown[0]?.count || 1} color="emerald" />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Visitor List (Full Details) ──────────────────────────────── */}
+      <section>
+        <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">
+          All Visitors ({data.visitors.length})
+        </h3>
+        {data.visitors.length === 0 ? (
+          <p className="text-sm text-zinc-600">No visitor session data yet. New visitors will appear here once the tracking picks up their session info.</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-zinc-500 text-left text-xs uppercase tracking-wider border-b border-zinc-800">
+                    <th className="py-2 px-2">When</th>
+                    <th className="py-2 px-2">Country</th>
+                    <th className="py-2 px-2">Device</th>
+                    <th className="py-2 px-2">Browser / OS</th>
+                    <th className="py-2 px-2">Source</th>
+                    <th className="py-2 px-2 text-right">Scroll</th>
+                    <th className="py-2 px-2 text-right">Time</th>
+                    <th className="py-2 px-2 text-right">CTAs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedVisitors.map((v) => {
+                    const isExpanded = expandedVisitor === v.sessionId;
+                    const source = v.utmSource || (v.referrer ? (() => { try { return new URL(v.referrer).hostname; } catch { return v.referrer; } })() : 'Direct');
+                    return (
+                      <Fragment key={v.sessionId}>
+                        <tr
+                          className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer transition-colors"
+                          onClick={() => setExpandedVisitor(isExpanded ? null : v.sessionId)}
+                        >
+                          <td className="py-2 px-2 text-zinc-300 whitespace-nowrap">{formatVisitDate(v.arrivedAt)}</td>
+                          <td className="py-2 px-2 text-blue-400">{v.country ? `${v.city ? v.city + ', ' : ''}${v.country}` : '—'}</td>
+                          <td className="py-2 px-2 text-amber-400 capitalize">{v.deviceType || '—'}</td>
+                          <td className="py-2 px-2 text-zinc-400">{[v.browser, v.os].filter(Boolean).join(' / ') || '—'}</td>
+                          <td className="py-2 px-2 text-purple-400 truncate max-w-[140px]">{source}</td>
+                          <td className="py-2 px-2 text-right text-zinc-300">{v.maxScrollDepth > 0 ? `${v.maxScrollDepth}%` : '—'}</td>
+                          <td className="py-2 px-2 text-right text-zinc-300">{formatDuration(v.durationSeconds)}</td>
+                          <td className="py-2 px-2 text-right text-emerald-400">{v.ctaClicks.length || '—'}</td>
+                        </tr>
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan={8} className="bg-zinc-900/60 px-4 py-3">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs mb-3">
+                                <div><span className="text-zinc-500">Session ID:</span> <span className="text-zinc-400 font-mono">{v.sessionId.slice(0, 12)}...</span></div>
+                                <div><span className="text-zinc-500">Screen:</span> <span className="text-zinc-400">{v.screenWidth && v.screenHeight ? `${v.screenWidth}x${v.screenHeight}` : '—'}</span></div>
+                                <div><span className="text-zinc-500">Language:</span> <span className="text-zinc-400">{v.language || '—'}</span></div>
+                                <div><span className="text-zinc-500">Region:</span> <span className="text-zinc-400">{v.region || '—'}</span></div>
+                                {v.utmSource && <div><span className="text-zinc-500">UTM Source:</span> <span className="text-purple-400">{v.utmSource}</span></div>}
+                                {v.utmMedium && <div><span className="text-zinc-500">UTM Medium:</span> <span className="text-purple-400">{v.utmMedium}</span></div>}
+                                {v.utmCampaign && <div><span className="text-zinc-500">UTM Campaign:</span> <span className="text-purple-400">{v.utmCampaign}</span></div>}
+                                <div><span className="text-zinc-500">Full Referrer:</span> <span className="text-zinc-400 break-all">{v.referrer || 'None'}</span></div>
+                              </div>
+                              {v.ctaClicks.length > 0 && (
+                                <div className="text-xs">
+                                  <span className="text-zinc-500">CTAs clicked:</span>{' '}
+                                  {v.ctaClicks.map((c, i) => (
+                                    <span key={i} className="inline-block bg-emerald-500/20 text-emerald-400 rounded px-1.5 py-0.5 mr-1 mb-1">{c}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalVisitorPages > 1 && (
+              <div className="flex items-center justify-between mt-3 text-sm">
+                <button
+                  onClick={() => setVisitorPage(p => Math.max(0, p - 1))}
+                  disabled={visitorPage === 0}
+                  className="px-3 py-1 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="text-zinc-500">Page {visitorPage + 1} of {totalVisitorPages}</span>
+                <button
+                  onClick={() => setVisitorPage(p => Math.min(totalVisitorPages - 1, p + 1))}
+                  disabled={visitorPage >= totalVisitorPages - 1}
+                  className="px-3 py-1 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* ── Recent Event Stream ──────────────────────────────────────── */}
       <section>
         <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Recent Site Events</h3>
         <div className="space-y-1 max-h-[400px] overflow-y-auto">
